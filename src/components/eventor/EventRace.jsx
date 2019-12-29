@@ -1,10 +1,11 @@
 import React, { Component } from "react";
-import CircularProgress from "@material-ui/core/CircularProgress";
+import { Spin } from "antd";
 import styled from "styled-components";
 import { observer, inject } from "mobx-react";
 import { GetJsonData } from "../../utils/api";
 import PropTypes from "prop-types";
 import FadeOutItem from "../fadeOutItem/FadeOutItem";
+import { withTranslation } from "react-i18next";
 
 const ContentHolder = styled.div``;
 
@@ -98,7 +99,8 @@ const EventRace = inject("clubModel")(
                 "&includeEntryFees=true"
             ) +
             "&headers=" +
-            encodeURIComponent("ApiKey: " + self.props.clubModel.eventor.apiKey)
+            encodeURIComponent("ApiKey: " + self.props.clubModel.eventor.apiKey),
+          false
         );
         const startPromise =
           eventObject.Event.EventStatusId < 8
@@ -112,9 +114,8 @@ const EventRace = inject("clubModel")(
                       self.props.clubModel.eventor.organisationId
                   ) +
                   "&headers=" +
-                  encodeURIComponent(
-                    "ApiKey: " + self.props.clubModel.eventor.apiKey
-                  )
+                  encodeURIComponent("ApiKey: " + self.props.clubModel.eventor.apiKey),
+                false
               )
             : new Promise(resolve => resolve(undefined));
         const resultPromise =
@@ -130,9 +131,8 @@ const EventRace = inject("clubModel")(
                       "&top=0&includeSplitTimes=true"
                   ) +
                   "&headers=" +
-                  encodeURIComponent(
-                    "ApiKey: " + self.props.clubModel.eventor.apiKey
-                  )
+                  encodeURIComponent("ApiKey: " + self.props.clubModel.eventor.apiKey),
+                false
               )
             : new Promise(resolve => resolve(undefined));
         const lengthPromise = GetJsonData(
@@ -145,37 +145,28 @@ const EventRace = inject("clubModel")(
                 self.props.eventObject.Event.EventRace.EventRaceId +
                 "&groupBy=EventClass"
             ) +
-            "&headers=" +
-            encodeURIComponent("ApiKey: " + self.props.clubModel.eventor.apiKey)
+            "&noJsonConvert=true&headers=" +
+            encodeURIComponent("ApiKey: " + self.props.clubModel.eventor.apiKey),
+          false
         );
-        Promise.all([
-          classPromise,
-          startPromise,
-          resultPromise,
-          lengthPromise
-        ]).then(jsons => {
+        Promise.all([classPromise, startPromise, resultPromise, lengthPromise]).then(jsons => {
           const classJson = jsons[0];
           const startJson = jsons[1];
           const resultJson = jsons[2];
           const lengthHtmlJson = jsons[3];
           if (startJson !== undefined && startJson.ClassStart !== undefined) {
             eventObject.Competitors = [];
-            const ClassStarts = Array.isArray(startJson.ClassStart)
-              ? startJson.ClassStart
-              : [startJson.ClassStart];
+            const ClassStarts = Array.isArray(startJson.ClassStart) ? startJson.ClassStart : [startJson.ClassStart];
             ClassStarts.forEach(classStart => {
               let currentClass = { EventClassId: classStart.EventClassId };
               if (classJson !== undefined) {
-                currentClass = classJson.EventClass.find(
-                  evtClass => evtClass.EventClassId === classStart.EventClassId
-                );
+                currentClass = classJson.EventClass.find(evtClass => evtClass.EventClassId === classStart.EventClassId);
                 if (Array.isArray(currentClass.ClassRaceInfo)) {
                   currentClass.numberOfEntries = currentClass.ClassRaceInfo.find(
                     raceInfo => raceInfo.EventRaceId === eventObject.EventRaceId
                   )["@attributes"].noOfEntries;
                 } else {
-                  currentClass.numberOfEntries =
-                    currentClass["@attributes"].numberOfEntries;
+                  currentClass.numberOfEntries = currentClass["@attributes"].numberOfEntries;
                 }
               }
 
@@ -184,25 +175,19 @@ const EventRace = inject("clubModel")(
                   ? classStart.PersonStart.filter(
                       personStart =>
                         personStart.RaceStart === undefined ||
-                        personStart.RaceStart.EventRaceId ===
-                          eventObject.EventRaceId
+                        personStart.RaceStart.EventRaceId === eventObject.EventRaceId
                     )
                   : [classStart.PersonStart];
                 PersonStarts.forEach(personStart => {
                   eventObject.Competitors.push({
                     Person: personStart.Person,
                     EntryClass: currentClass,
-                    Start:
-                      personStart.RaceStart !== undefined
-                        ? personStart.RaceStart.Start
-                        : personStart.Start
+                    Start: personStart.RaceStart !== undefined ? personStart.RaceStart.Start : personStart.Start
                   });
                 });
               }
               if (classStart.TeamStart !== undefined) {
-                const TeamStarts = Array.isArray(classStart.TeamStart)
-                  ? classStart.TeamStart
-                  : [classStart.TeamStart];
+                const TeamStarts = Array.isArray(classStart.TeamStart) ? classStart.TeamStart : [classStart.TeamStart];
                 TeamStarts.forEach(teamStart => {
                   eventObject.Competitors.push({
                     Person: {
@@ -215,10 +200,7 @@ const EventRace = inject("clubModel")(
               }
             });
           }
-          if (
-            resultJson !== undefined &&
-            resultJson.ClassResult !== undefined
-          ) {
+          if (resultJson !== undefined && resultJson.ClassResult !== undefined) {
             eventObject.Competitors = [];
             const ClassResults = Array.isArray(resultJson.ClassResult)
               ? resultJson.ClassResult
@@ -229,19 +211,15 @@ const EventRace = inject("clubModel")(
               };
               if (classJson !== undefined) {
                 currentClass = classJson.EventClass.find(
-                  evtClass =>
-                    evtClass.EventClassId ===
-                    classResult.EventClass.EventClassId
+                  evtClass => evtClass.EventClassId === classResult.EventClass.EventClassId
                 );
                 if (Array.isArray(currentClass.ClassRaceInfo)) {
                   currentClass.ClassRaceInfo = currentClass.ClassRaceInfo.find(
                     raceInfo => raceInfo.EventRaceId === eventObject.EventRaceId
                   );
                 }
-                currentClass.numberOfEntries =
-                  currentClass.ClassRaceInfo["@attributes"].noOfEntries;
-                currentClass.numberOfStarts =
-                  currentClass.ClassRaceInfo["@attributes"].noOfStarts;
+                currentClass.numberOfEntries = currentClass.ClassRaceInfo["@attributes"].noOfEntries;
+                currentClass.numberOfStarts = currentClass.ClassRaceInfo["@attributes"].noOfStarts;
               }
 
               if (classResult.PersonResult !== undefined) {
@@ -249,22 +227,17 @@ const EventRace = inject("clubModel")(
                   ? classResult.PersonResult.filter(
                       personResult =>
                         personResult.RaceResult === undefined ||
-                        personResult.RaceResult.EventRaceId ===
-                          eventObject.EventRaceId
+                        personResult.RaceResult.EventRaceId === eventObject.EventRaceId
                     )
                   : classResult.PersonResult.RaceResult === undefined ||
-                    classResult.PersonResult.RaceResult.EventRaceId ===
-                      eventObject.EventRaceId
+                    classResult.PersonResult.RaceResult.EventRaceId === eventObject.EventRaceId
                   ? [classResult.PersonResult]
                   : [];
                 PersonResults.forEach(personResult => {
                   eventObject.Competitors.push({
                     Person: personResult.Person,
                     EntryClass: currentClass,
-                    Result:
-                      personResult.RaceResult !== undefined
-                        ? personResult.RaceResult.Result
-                        : personResult.Result
+                    Result: personResult.RaceResult !== undefined ? personResult.RaceResult.Result : personResult.Result
                   });
                 });
               }
@@ -285,33 +258,24 @@ const EventRace = inject("clubModel")(
             });
           }
           eventObject.Competitors.forEach(competitor => {
-            if (
-              competitor.Start === undefined ||
-              competitor.Start.StartTime === undefined
-            ) {
+            if (competitor.Start === undefined || competitor.Start.StartTime === undefined) {
               competitor.Start = {
                 StartTime: {
                   Clock: ""
                 }
               };
             }
-            if (
-              competitor.EntryClass.ClassShortName === undefined &&
-              classJson !== undefined
-            ) {
+            if (competitor.EntryClass.ClassShortName === undefined && classJson !== undefined) {
               const currentClass = classJson.EventClass.find(
-                evtClass =>
-                  evtClass.EventClassId === competitor.EntryClass.EventClassId
+                evtClass => evtClass.EventClassId === competitor.EntryClass.EventClassId
               );
               if (Array.isArray(currentClass.ClassRaceInfo)) {
                 currentClass.ClassRaceInfo = currentClass.ClassRaceInfo.find(
                   raceInfo => raceInfo.EventRaceId === eventObject.EventRaceId
                 );
               }
-              currentClass.numberOfEntries =
-                currentClass.ClassRaceInfo["@attributes"].noOfEntries;
-              currentClass.numberOfStarts =
-                currentClass.ClassRaceInfo["@attributes"].noOfStarts;
+              currentClass.numberOfEntries = currentClass.ClassRaceInfo["@attributes"].noOfEntries;
+              currentClass.numberOfStarts = currentClass.ClassRaceInfo["@attributes"].noOfStarts;
               competitor.EntryClass = currentClass;
             }
           });
@@ -323,21 +287,15 @@ const EventRace = inject("clubModel")(
                 ? -1
                 : 0
             );
-          } else if (
-            resultJson !== undefined &&
-            resultJson.ClassResult !== undefined
-          ) {
+          } else if (resultJson !== undefined && resultJson.ClassResult !== undefined) {
             eventObject.Competitors = eventObject.Competitors.filter(
               competitor =>
-                competitor.Result !== undefined &&
-                competitor.Result.CompetitorStatus["@attributes"].value === "OK"
+                competitor.Result !== undefined && competitor.Result.CompetitorStatus["@attributes"].value === "OK"
             );
             eventObject.Competitors = eventObject.Competitors.sort((a, b) =>
-              parseInt(a.Result.ResultPosition) >
-              parseInt(b.Result.ResultPosition)
+              parseInt(a.Result.ResultPosition) > parseInt(b.Result.ResultPosition)
                 ? 1
-                : parseInt(a.Result.ResultPosition) <
-                  parseInt(b.Result.ResultPosition)
+                : parseInt(a.Result.ResultPosition) < parseInt(b.Result.ResultPosition)
                 ? -1
                 : 0
             );
@@ -345,30 +303,24 @@ const EventRace = inject("clubModel")(
           self.setState({
             loaded: true,
             eventObject: eventObject,
-            showStart:
-              startJson !== undefined && startJson.ClassStart !== undefined,
-            showResult:
-              resultJson !== undefined && resultJson.ClassResult !== undefined
+            showStart: startJson !== undefined && startJson.ClassStart !== undefined,
+            showResult: resultJson !== undefined && resultJson.ClassResult !== undefined
           });
         });
       }
 
       render() {
+        const { t } = this.props;
+        const moduleInfo = this.props.clubModel.module("Eventor");
+
         const EventItem =
           this.state.loaded && this.state.showStart ? (
             <StyledTable>
               <StyledTableBody>
                 {this.state.eventObject.Competitors.map(competitor => (
-                  <StyledTableRow
-                    key={
-                      "entryID#" +
-                      (competitor.EntryId || competitor.Start.StartId)
-                    }
-                  >
+                  <StyledTableRow key={"entryID#" + (competitor.EntryId || competitor.Start.StartId)}>
                     <StyledTableDataName>
-                      {competitor.Person.PersonName.Given +
-                        " " +
-                        competitor.Person.PersonName.Family}
+                      {competitor.Person.PersonName.Given + " " + competitor.Person.PersonName.Family}
                     </StyledTableDataName>
                     <StyledTableDataClass>
                       {competitor.EntryClass.ClassShortName +
@@ -377,9 +329,7 @@ const EventRace = inject("clubModel")(
                           : "")}
                     </StyledTableDataClass>
                     <StyledTableDataStart>
-                      {competitor.Start !== undefined
-                        ? competitor.Start.StartTime.Clock
-                        : ""}
+                      {competitor.Start !== undefined ? competitor.Start.StartTime.Clock : ""}
                     </StyledTableDataStart>
                   </StyledTableRow>
                 ))}
@@ -389,12 +339,7 @@ const EventRace = inject("clubModel")(
             <StyledTable>
               <StyledTableBody>
                 {this.state.eventObject.Competitors.map(competitor => (
-                  <StyledTableRow
-                    key={
-                      "entryID#" +
-                      (competitor.EntryId || competitor.Result.ResultId)
-                    }
-                  >
+                  <StyledTableRow key={"entryID#" + (competitor.EntryId || competitor.Result.ResultId)}>
                     <StyledTableDataName>
                       {competitor.Result.ResultPosition +
                         ". " +
@@ -411,23 +356,40 @@ const EventRace = inject("clubModel")(
                     <StyledTableDataStart>
                       {parseInt(competitor.Result.ResultPosition) === 1
                         ? competitor.Result.Time
-                        : competitor.Result.Time +
-                          " (+" +
-                          competitor.Result.TimeDiff +
-                          ")"}
+                        : competitor.Result.Time + " (+" + competitor.Result.TimeDiff + ")"}
                     </StyledTableDataStart>
+                  </StyledTableRow>
+                ))}
+              </StyledTableBody>
+            </StyledTable>
+          ) : this.state.loaded ? (
+            <StyledTable>
+              <StyledTableBody>
+                {this.state.eventObject.Competitors.map(competitor => (
+                  <StyledTableRow key={"entryID#" + (competitor.EntryId || competitor.Start.StartId)}>
+                    <StyledTableDataName>
+                      {competitor.Person.PersonName.Given + " " + competitor.Person.PersonName.Family}
+                    </StyledTableDataName>
+                    <StyledTableDataClass>
+                      {competitor.EntryClass.ClassShortName +
+                        (competitor.EntryClass.numberOfEntries !== undefined
+                          ? " (" + competitor.EntryClass.numberOfEntries + ")"
+                          : "")}
+                    </StyledTableDataClass>
+                    <StyledTableDataStart>{t("eventor.Participant")}</StyledTableDataStart>
                   </StyledTableRow>
                 ))}
               </StyledTableBody>
             </StyledTable>
           ) : !this.state.loaded ? (
             <SpinnerDiv>
-              <CircularProgress color="primary" size={25} thickness={3} />
+              <Spin size="large" />
             </SpinnerDiv>
           ) : null;
         const ShowEventItem =
           EventItem !== null ? (
             <FadeOutItem
+              module={moduleInfo}
               content={
                 <ContentHolder>
                   <EventHeader>{this.props.header}</EventHeader>
@@ -442,6 +404,7 @@ const EventRace = inject("clubModel")(
                   {EventItem}
                 </ContentHolder>
               }
+              modalColumns={1}
             />
           ) : null;
         return ShowEventItem;
@@ -450,4 +413,6 @@ const EventRace = inject("clubModel")(
   )
 );
 
-export default EventRace;
+const EventRaceWithI18n = withTranslation()(EventRace); // pass `t` function to App
+
+export default EventRaceWithI18n;

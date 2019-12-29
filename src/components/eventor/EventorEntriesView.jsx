@@ -1,6 +1,5 @@
 import React, { Component } from "react";
-import Grid from "@material-ui/core/Grid";
-import CircularProgress from "@material-ui/core/CircularProgress";
+import { Spin } from "antd";
 import styled from "styled-components";
 import { observer, inject } from "mobx-react";
 import { GetJsonData } from "../../utils/api";
@@ -10,6 +9,9 @@ const SpinnerDiv = styled.div`
   text-align: center;
   width: 100%;
 `;
+
+const flatten = list => list.reduce((a, b) => a.concat(Array.isArray(b) ? flatten(b) : b), []);
+
 // @inject("clubModel")
 // @observer
 const EventorEntriesView = inject("clubModel")(
@@ -25,8 +27,17 @@ const EventorEntriesView = inject("clubModel")(
 
       componentDidMount() {
         const self = this;
-        const fromDate = "2018-09-01";
-        const toDate = "2018-09-30";
+        const now = new Date();
+        const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+        let prevWeek = new Date(today.valueOf());
+        let nextWeek = new Date(today.valueOf());
+        let nextMonths = new Date(today.valueOf());
+        prevWeek.setDate(prevWeek.getDate() - ([0, 1, 2, 11].includes(today.getMonth()) ? 31 : 7));
+        nextWeek.setDate(nextWeek.getDate() + ([0, 1, 10, 11].includes(today.getMonth()) ? 31 : 7));
+        nextMonths.setDate(nextMonths.getDate() + 60);
+        const fromDate = prevWeek.toISOString().substr(0, 10);
+        const toDate = nextWeek.toISOString().substr(0, 10);
+        const toOringenDate = nextMonths.toISOString().substr(0, 10);
         const entriesPromise = GetJsonData(
           self.props.clubModel.corsProxy +
             encodeURIComponent(
@@ -40,7 +51,8 @@ const EventorEntriesView = inject("clubModel")(
                 "&includeEntryFees=true&includePersonElement=true&includeOrganisationElement=true&includeEventElement=true"
             ) +
             "&headers=" +
-            encodeURIComponent("ApiKey: " + self.props.clubModel.eventor.apiKey)
+            encodeURIComponent("ApiKey: " + self.props.clubModel.eventor.apiKey),
+          false
         );
         const oringenEventsPromise = GetJsonData(
           self.props.clubModel.corsProxy +
@@ -51,35 +63,35 @@ const EventorEntriesView = inject("clubModel")(
                 "&fromDate=" +
                 fromDate +
                 "&toDate=" +
-                toDate +
+                toOringenDate +
                 "&includeAttributes=true"
             ) +
             "&headers=" +
-            encodeURIComponent("ApiKey: " + self.props.clubModel.eventor.apiKey)
+            encodeURIComponent("ApiKey: " + self.props.clubModel.eventor.apiKey),
+          false
         );
-        Promise.all([entriesPromise, oringenEventsPromise]).then(jsons => {
-          let entriesJson = jsons[0];
-          let oringenEventsJson = jsons[1];
-
-          if (entriesJson === undefined) {
+        Promise.all([entriesPromise, oringenEventsPromise]).then(([entriesJson, oringenEventsJson]) => {
+          if (entriesJson === undefined || entriesJson.Entry === undefined) {
             entriesJson = { Entry: [] };
           } else if (!Array.isArray(entriesJson.Entry)) {
             entriesJson.Entry = [entriesJson.Entry];
           }
-          if (
-            oringenEventsJson === undefined ||
-            oringenEventsJson.Event === undefined
-          ) {
+          if (oringenEventsJson === undefined || oringenEventsJson.Event === undefined) {
             oringenEventsJson = { Event: [] };
           } else if (!Array.isArray(oringenEventsJson.Event)) {
             oringenEventsJson.Event = [oringenEventsJson.Event];
           }
+          entriesJson.Entry.forEach(entry => {
+            if (Array.isArray(entry.Event.EventRace)) {
+              entry.EventRaceId = entry.Event.EventRace.map(eventRace => eventRace.EventRaceId);
+            } else {
+              entry.EventRaceId = entry.Event.EventRace.EventRaceId;
+            }
+          });
           let events = [
             ...new Set([
-              ...entriesJson.Entry.map(entry => entry.EventRaceId).flat(),
-              ...oringenEventsJson.Event.map(event => event.EventRace)
-                .flat()
-                .map(eventRace => eventRace.EventRaceId)
+              ...flatten(entriesJson.Entry.map(entry => entry.EventRaceId)),
+              ...flatten(oringenEventsJson.Event.map(event => event.EventRace)).map(eventRace => eventRace.EventRaceId)
             ])
           ]
             .filter(eventRaceId => eventRaceId !== undefined)
@@ -96,9 +108,7 @@ const EventorEntriesView = inject("clubModel")(
               entry = {
                 Event: oringenEventsJson.Event.find(e =>
                   Array.isArray(e.EventRace)
-                    ? e.EventRace.map(er => er.EventRaceId).includes(
-                        event.EventRaceId
-                      )
+                    ? e.EventRace.map(er => er.EventRaceId).includes(event.EventRaceId)
                     : e.EventRace.EventRaceId === event.EventRaceId
                 )
               };
@@ -110,8 +120,7 @@ const EventorEntriesView = inject("clubModel")(
               event.Event.EventRace = event.Event.EventRace.find(
                 eventRace => eventRace.EventRaceId === event.EventRaceId
               );
-              event.Event.Name =
-                event.Event.Name + ", " + event.Event.EventRace.Name;
+              event.Event.Name = event.Event.Name + ", " + event.Event.EventRace.Name;
             }
             event.Competitors = entriesJson.Entry.filter(
               entry =>
@@ -140,14 +149,11 @@ const EventorEntriesView = inject("clubModel")(
           // 9 Completed
           // 10 Canceled
           // 11 Reported
-          events = events.filter(event =>
-            ["5", "6", "7", "8", "9", "11"].includes(event.Event.EventStatusId)
-          );
+          events = events.filter(event => ["5", "6", "7", "8", "9", "11"].includes(event.Event.EventStatusId));
           events = events.sort((a, b) =>
             a.Event.EventRace.RaceDate.Date > b.Event.EventRace.RaceDate.Date
               ? 1
-              : a.Event.EventRace.RaceDate.Date <
-                b.Event.EventRace.RaceDate.Date
+              : a.Event.EventRace.RaceDate.Date < b.Event.EventRace.RaceDate.Date
               ? -1
               : 0
           );
@@ -160,7 +166,7 @@ const EventorEntriesView = inject("clubModel")(
 
       render() {
         const Items = this.state.loaded ? (
-          <React.Fragment>
+          <>
             {this.state.events.map((event, index) => (
               <EventRace
                 key={"entryObject#" + index}
@@ -169,13 +175,11 @@ const EventorEntriesView = inject("clubModel")(
                 eventObject={event}
               />
             ))}
-          </React.Fragment>
+          </>
         ) : (
-          <Grid item key="eventsInProgress" xs={12} sm={6} md={4} lg={3} xl={2}>
-            <SpinnerDiv>
-              <CircularProgress color="primary" size={50} thickness={5} />
-            </SpinnerDiv>
-          </Grid>
+          <SpinnerDiv>
+            <Spin size="large" />
+          </SpinnerDiv>
         );
         return Items;
       }

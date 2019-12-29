@@ -1,39 +1,49 @@
 import React from "react";
-import HomeIcon from "@material-ui/icons/Home";
-import MenuIcon from "@material-ui/icons/Menu";
-import AddressIcon from "@material-ui/icons/People";
-import CalendarIcon from "@material-ui/icons/CalendarToday";
-import ScoringBoardIcon from "@material-ui/icons/FormatListNumbered";
-import NewsIcon from "@material-ui/icons/ArtTrack";
-import PhotoIcon from "@material-ui/icons/PhotoLibrary";
+import { Icon } from "antd";
+import styled from "styled-components";
 
-const MaterialIcon = ({ icon }) => {
+const StyledIcon = styled(Icon)`
+  vertical-align: middle;
+`;
+
+const StyledImg = styled.img`
+  vertical-align: middle;
+`;
+
+const MaterialIcon = ({ icon, fontSize, marginRight }) => {
   switch (icon) {
     case "HomeIcon":
-      return <HomeIcon />;
+      return <StyledIcon type="home" style={{ fontSize: fontSize }} />;
+    case "LoginIcon":
+      return <StyledIcon type="login" style={{ fontSize: fontSize }} />;
+    case "LogoutIcon":
+      return <StyledIcon type="logout" style={{ fontSize: fontSize }} />;
     case "MenuIcon":
-      return <MenuIcon />;
+      return <StyledIcon type="menu" style={{ fontSize: fontSize }} />;
     case "AddressIcon":
-      return <AddressIcon />;
+      return <StyledIcon type="team" style={{ fontSize: fontSize }} />;
     case "CalendarIcon":
-      return <CalendarIcon />;
+      return <StyledIcon type="calendar" style={{ fontSize: fontSize }} />;
     case "NewsIcon":
-      return <NewsIcon />;
+      return <StyledIcon type="pic-right" style={{ fontSize: fontSize }} />;
+    case "ResultsIcon":
+      return <StyledIcon type="ordered-list" style={{ fontSize: fontSize }} />;
     case "PhotoIcon":
-      return <PhotoIcon />;
+      return <StyledIcon type="picture" style={{ fontSize: fontSize }} />;
     case "ScoringBoardIcon":
-      return <ScoringBoardIcon />;
+      return <StyledIcon type="trophy" style={{ fontSize: fontSize }} />;
     case "EventorIcon":
       return (
-        <img
+        <StyledImg
           src="https://eventor.orientering.se/Content/Images/FederationWebsiteIcon.png"
-          width="24"
-          height="24"
+          width={fontSize}
+          height={fontSize}
           alt="SOFT"
+          style={{ marginRight: marginRight }}
         />
       );
     default:
-      return <div style={{ minWidth: 24, minHeight: 27 }} />;
+      return <StyledIcon type={icon} style={{ fontSize: fontSize }} />;
   }
 };
 

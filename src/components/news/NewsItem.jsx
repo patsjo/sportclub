@@ -3,7 +3,11 @@ import styled from "styled-components";
 import PropTypes from "prop-types";
 import FadeOutItem from "../fadeOutItem/FadeOutItem";
 import { observer, inject } from "mobx-react";
+import { applySnapshot } from "mobx-state-tree";
 import NewsEdit from "./NewsEdit";
+import { PostJsonData } from "../../utils/api";
+import withForwardedRef from "../../utils/withForwardedRef";
+import MaterialIcon from "../materialIcon/MaterialIcon";
 
 const ContentHolder = styled.div``;
 
@@ -38,8 +42,8 @@ const NewsText = styled.div`
 
 const NewsImage = styled.img`
   float: right;
-  padding-left: 10px;
-  padding-bottom: 2px;
+  margin-left: 10px;
+  margin-bottom: 2px;
   max-width: 100%;
   height: auto;
 `;
@@ -51,9 +55,17 @@ const NewsBy = styled.div`
   text-color: #606060;
 `;
 
+const FloatRightAnchor = styled.a`
+  float: right;
+`;
+
 // @inject("clubModel")
 // @observer
-const NewsItem = inject("clubModel")(
+const NewsItem = inject(
+  "clubModel",
+  "sessionModel",
+  "globalStateModel"
+)(
   observer(
     class NewsItem extends Component {
       static propTypes = {
@@ -67,13 +79,14 @@ const NewsItem = inject("clubModel")(
 
       getImage(maxSize) {
         let Image = undefined;
+        const { newsObject, clubModel } = this.props;
         if (
-          this.props.newsObject &&
-          this.props.newsObject.imageWidth > 0 &&
-          this.props.newsObject.imageHeight > 0
+          newsObject &&
+          newsObject.imageWidth > 0 &&
+          newsObject.imageHeight > 0
         ) {
-          let ImageHeight = this.props.newsObject.imageHeight;
-          let ImageWidth = this.props.newsObject.imageWidth;
+          let ImageHeight = newsObject.imageHeight;
+          let ImageWidth = newsObject.imageWidth;
           if (ImageHeight > maxSize && ImageHeight > ImageWidth) {
             ImageWidth = ImageWidth * (maxSize / ImageHeight);
             ImageHeight = maxSize;
@@ -83,10 +96,7 @@ const NewsItem = inject("clubModel")(
           }
           Image = (
             <NewsImage
-              src={
-                this.props.clubModel.attachmentUrl +
-                this.props.newsObject.fileId
-              }
+              src={clubModel.attachmentUrl + newsObject.fileId}
               width={ImageWidth}
               height={ImageHeight}
             />
@@ -94,51 +104,79 @@ const NewsItem = inject("clubModel")(
         }
         return Image;
       }
+
+      getFile() {
+        const { newsObject, clubModel } = this.props;
+
+        if (
+          newsObject &&
+          (!newsObject.imageWidth || !newsObject.imageHeight) &&
+          newsObject.fileId > 0
+        ) {
+          return (
+            <FloatRightAnchor
+              href={clubModel.attachmentUrl + newsObject.fileId}
+              // eslint-disable-next-line react/jsx-no-target-blank
+              target="_blank"
+            >
+              <MaterialIcon icon="download" fontSize={24} />
+            </FloatRightAnchor>
+          );
+        }
+        return null;
+      }
+
       render() {
+        const {
+          sessionModel,
+          clubModel,
+          globalStateModel,
+          forwardedRef,
+          newsObject
+        } = this.props;
+        const moduleInfo = clubModel.module("News");
+        const FileDownload = this.getFile();
         const Image = this.getImage(200);
         const ImageBig = this.getImage(400);
 
-        const Header = this.props.newsObject.link ? (
+        const Header = newsObject.link ? (
           <NewsHeader>
-            <a
-              href={this.props.newsObject.link}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            {FileDownload}
+            <a href={newsObject.link} target="_blank" rel="noopener noreferrer">
               <div
                 dangerouslySetInnerHTML={{
-                  __html: this.props.newsObject.header
+                  __html: newsObject.header
                 }}
               />
             </a>
           </NewsHeader>
         ) : (
           <NewsHeader>
-            {" "}
-            <div
-              dangerouslySetInnerHTML={{ __html: this.props.newsObject.header }}
-            />
+            {FileDownload}{" "}
+            <div dangerouslySetInnerHTML={{ __html: newsObject.header }} />
           </NewsHeader>
         );
 
         return (
           <FadeOutItem
+            ref={forwardedRef}
+            module={moduleInfo}
             content={
               <ContentHolder>
                 <NewsHeader>
-                  {" "}
+                  {FileDownload}{" "}
                   <div
                     dangerouslySetInnerHTML={{
-                      __html: this.props.newsObject.header
+                      __html: newsObject.header
                     }}
                   />
                 </NewsHeader>
-                <NewsTime>{this.props.newsObject.modificationDate}</NewsTime>
+                <NewsTime>{newsObject.modificationDate}</NewsTime>
                 {Image}
                 <NewsIntroduction>
                   <div
                     dangerouslySetInnerHTML={{
-                      __html: this.props.newsObject.introduction
+                      __html: newsObject.introduction
                     }}
                   />
                 </NewsIntroduction>
@@ -146,22 +184,22 @@ const NewsItem = inject("clubModel")(
                   {" "}
                   <div
                     dangerouslySetInnerHTML={{
-                      __html: this.props.newsObject.text
+                      __html: newsObject.text
                     }}
                   />
                 </NewsText>
-                <NewsBy>{this.props.newsObject.modifiedBy}</NewsBy>
+                <NewsBy>{newsObject.modifiedBy}</NewsBy>
               </ContentHolder>
             }
             modalContent={
               <ContentHolder>
                 {Header}
-                <NewsTime>{this.props.newsObject.modificationDate}</NewsTime>
+                <NewsTime>{newsObject.modificationDate}</NewsTime>
                 {ImageBig}
                 <NewsIntroduction>
                   <div
                     dangerouslySetInnerHTML={{
-                      __html: this.props.newsObject.introduction
+                      __html: newsObject.introduction
                     }}
                   />
                 </NewsIntroduction>
@@ -169,18 +207,39 @@ const NewsItem = inject("clubModel")(
                   {" "}
                   <div
                     dangerouslySetInnerHTML={{
-                      __html: this.props.newsObject.text
+                      __html: newsObject.text
                     }}
                   />
                 </NewsText>
-                <NewsBy>{this.props.newsObject.modifiedBy}</NewsBy>
+                <NewsBy>{newsObject.modifiedBy}</NewsBy>
               </ContentHolder>
             }
-            editFormContent={<NewsEdit newsObject={this.props.newsObject} />}
+            modalColumns={3}
+            editFormContent={
+              <NewsEdit
+                newsObject={newsObject}
+                onChange={updatedNewsObject =>
+                  applySnapshot(newsObject, updatedNewsObject)
+                }
+              />
+            }
+            deletePromise={() =>
+              PostJsonData(
+                moduleInfo.deleteUrl,
+                {
+                  iNewsID: newsObject.id,
+                  username: sessionModel.username,
+                  password: sessionModel.password
+                },
+                true,
+                sessionModel.authorizationHeader
+              )
+            }
+            onDelete={() => globalStateModel.news.removeNewsItem(newsObject)}
           />
         );
       }
     }
   )
 );
-export default NewsItem;
+export default withForwardedRef(NewsItem);

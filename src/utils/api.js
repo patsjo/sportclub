@@ -12,12 +12,29 @@ const isJSON = input =>
       .replace(rxFour, "")
   );
 
-const decodeHeaders = base64Headers =>
-  base64Headers === undefined
-    ? {}
-    : JSON.parse("{" + atob(base64Headers) + "}");
+const isHTML = input =>
+  input.length && (input.toUpperCase().indexOf("<HTML") === 0 || input.toUpperCase().indexOf("<!DOCTYPE HTML>") === 0);
 
-const fetch_retry = (url, options, n) =>
+const isHTMLError = input =>
+  input.length &&
+  (input.toUpperCase().indexOf("<TITLE>FELMEDDELANDE</TITLE>") >= 0 ||
+    input.toUpperCase().indexOf("<TITLE>ERROR</TITLE>") >= 0);
+
+const getHTMLError = input => {
+  const bodyIndex = input.length && input.toUpperCase().indexOf("<BODY>");
+
+  if (bodyIndex < 0) return undefined;
+
+  return input
+    .substr(bodyIndex)
+    .replace(/<[^>]*>?/gm, "")
+    .split("\n")
+    .map(line => line.trim())
+    .filter(line => line.length > 0)
+    .join("\n");
+};
+
+const fetch_retry = (url, options, throwError, n) =>
   fetch(url, options)
     .then(res => {
       if (!res.ok) {
@@ -27,17 +44,24 @@ const fetch_retry = (url, options, n) =>
     })
     .then(text => {
       if (!isJSON(text)) {
-        throw new Error("Empty response from server " + url);
+        if (isHTML(text)) {
+          if (isHTMLError(text)) {
+            n = 1;
+            throw new Error(getHTMLError(text));
+          }
+          return text;
+        }
+        return undefined;
       }
       return JSON.parse(text); // parses response to JSON
     })
     .catch(error => {
+      if (n === 1 && throwError) throw new Error(error.message);
       if (n === 1) return undefined;
-      return fetch_retry(url, options, n - 1);
+      return fetch_retry(url, options, throwError, n - 1);
     });
 
-export async function GetJsonData(url = "", base64headers = undefined) {
-  const requestHeaders = decodeHeaders(base64headers);
+export async function GetJsonData(url = "", throwError = true, requestHeaders = {}, retries = RETRIES) {
   // Default options are marked with *
   return fetch_retry(
     url,
@@ -45,20 +69,25 @@ export async function GetJsonData(url = "", base64headers = undefined) {
       method: "GET", // *GET, POST, PUT, DELETE, etc.
       // mode: "cors", // no-cors, cors, *same-origin
       cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-      // credentials: "same-origin", // include, *same-origin, omit
-      headers: requestHeaders
+      credentials: "include", // include, *same-origin, omit
+      headers: {
+        ...requestHeaders,
+        Accept: "application/json,text/html"
+        // DONT USE "Content-Type": "application/x-www-form-urlencoded"
+      }
       // redirect: "follow", // manual, *follow, error
       // referrer: "no-referrer" // no-referrer, *client
     },
-    RETRIES
+    throwError,
+    retries
   );
 }
-export async function PostJsonData(
-  url = "",
-  data = {},
-  base64headers = undefined
-) {
-  const requestHeaders = decodeHeaders(base64headers);
+export async function PostJsonData(url = "", data = {}, throwError = true, requestHeaders = {}, retries = RETRIES) {
+  const formData = new FormData();
+  for (var key in data) {
+    formData.append(key, data[key]);
+  }
+
   // Default options are marked with *
   return fetch_retry(
     url,
@@ -66,12 +95,17 @@ export async function PostJsonData(
       method: "POST", // *GET, POST, PUT, DELETE, etc.
       // mode: "cors", // no-cors, cors, *same-origin
       cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-      // credentials: "same-origin", // include, *same-origin, omit
-      headers: requestHeaders,
+      credentials: "include", // include, *same-origin, omit
+      headers: {
+        ...requestHeaders,
+        Accept: "application/json,text/html"
+        // DONT USE "Content-Type": "application/x-www-form-urlencoded"
+      },
       // redirect: "follow", // manual, *follow, error
       // referrer: "no-referrer", // no-referrer, *client
-      body: JSON.stringify(data) // body data type must match "Content-Type" header
+      body: formData // body data type must match "Content-Type" header
     },
-    RETRIES
+    throwError,
+    retries
   );
 }

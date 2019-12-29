@@ -1,142 +1,266 @@
 import React, { Component } from "react";
-import Dialog from "@material-ui/core/Dialog";
-import DialogActions from "@material-ui/core/DialogActions";
-import DialogContent from "@material-ui/core/DialogContent";
-import DialogContentText from "@material-ui/core/DialogContentText";
-import DialogTitle from "@material-ui/core/DialogTitle";
+import { Button, Modal, Form, Input, DatePicker, Select, message } from "antd";
 import PropTypes from "prop-types";
 import { observer, inject } from "mobx-react";
-import TextField from "@material-ui/core/TextField";
-import Button from "@material-ui/core/Button";
-import { withNamespaces } from "react-i18next";
+import { withTranslation } from "react-i18next";
+import styled from "styled-components";
+import { hasErrors, errorRequiredField, dateFormat, normFile, maxByteSize } from "../../utils/formHelper";
+import { PostJsonData } from "../../utils/api";
+import moment from "moment";
+import UploadDragger from "../formItems/UploadDragger";
+import FormItem from "../formItems/FormItem";
+
+const { TextArea } = Input;
+const Option = Select.Option;
+const StyledModalContent = styled.div``;
 
 // @inject("clubModel")
 // @observer
-const NewsEdit = inject("clubModel")(
+const NewsEdit = inject(
+  "clubModel",
+  "sessionModel"
+)(
   observer(
     class NewsEdit extends Component {
       static propTypes = {
         newsObject: PropTypes.object.isRequired,
         open: PropTypes.bool.isRequired,
-        onClose: PropTypes.func.isRequired
+        onClose: PropTypes.func.isRequired,
+        onChange: PropTypes.func.isRequired
       };
 
       constructor(props) {
         super(props);
         this.state = {
           saving: false,
-          formValues: {
-            id: 0,
-            typeId: 1,
-            header: "",
-            link: "",
-            introduction: "",
-            text: "",
-            expireDate: "",
-            fileData: undefined,
-            fileID: 0
-          }
+          formId: "newsEditForm" + Math.floor(Math.random() * 10000000000000000)
         };
-        this.onSave = this.onSave.bind(this);
-        this.handleInputChange = this.handleInputChange.bind(this);
       }
 
-      componentWillReceiveProps(nextProps) {
-        this.setState({
-          formValues: { ...nextProps.newsObject }
-        });
+      componentDidMount() {
+        // To disable submit button at the beginning.
+        this.props.form.validateFields();
       }
 
-      handleInputChange(event) {
-        const target = event.target;
-        const value =
-          target.type === "checkbox" ? target.checked : target.value;
-        const name = target.name;
-
-        this.setState({
-          formValues: { ...this.state.formValues, [name]: value }
-        });
-      }
-
-      onSave(evt) {
+      onSave = evt => {
+        const self = this;
         evt.stopPropagation();
         evt.preventDefault();
-        // TODO: Implement fetch to update backend
-        // this.props.newsObject is read only { ...this.state.formValues };
-        this.props.onClose();
-      }
+        self.props.form.validateFields((err, values) => {
+          if (!err) {
+            const { clubModel, sessionModel, onChange } = self.props;
+            const newsModule = clubModel.modules.find(module => module.name === "News");
+            const saveUrl = values.iNewsID === -1 ? newsModule.addUrl : newsModule.updateUrl;
+            self.setState({
+              saving: true
+            });
+            values.iExpireDate =
+              values.iExpireDate && typeof values.iExpireDate.format === "function"
+                ? values.iExpireDate.format(dateFormat)
+                : values.iExpireDate;
+            if (!Array.isArray(values.iFiles)) {
+              values.iFiles = [];
+            }
+            Promise.all(values.iFiles.map(file => normFile(file)))
+              .then(files => {
+                values.iFiles = undefined;
+                if (files.length === 0) {
+                  values.iFileID = 0;
+                } else if (files[0].originalFile) {
+                  values.iFileID = files[0].uid;
+                } else {
+                  values.iFileID = -1;
+                  values.iFileData = files[0].originFileObj;
+                }
+                PostJsonData(
+                  saveUrl,
+                  {
+                    ...values,
+                    username: sessionModel.username,
+                    password: sessionModel.password,
+                    jsonResponse: true
+                  },
+                  true,
+                  sessionModel.authorizationHeader
+                )
+                  .then(newsObjectResponse => {
+                    onChange && onChange(newsObjectResponse);
+                    self.setState({
+                      saving: false
+                    });
+                    self.props.onClose();
+                  })
+                  .catch(e => {
+                    message.error(e.message);
+                    self.setState({
+                      saving: false
+                    });
+                  });
+              })
+              .catch(() => {
+                self.setState({
+                  saving: false
+                });
+              });
+          }
+        });
+      };
 
       render() {
-        const { t } = this.props;
+        const self = this;
+        const { t, form, newsObject } = self.props;
+        const { saving, formId } = self.state;
+        const { getFieldDecorator, getFieldsError, getFieldError, isFieldTouched } = form;
+        // Only show error after a field is touched.
+        const headerError = isFieldTouched("iRubrik") && getFieldError("iRubrik");
+        const introductionError = isFieldTouched("iInledning") && getFieldError("iInledning");
+        const expireDateError = isFieldTouched("iExpireDate") && getFieldError("iExpireDate");
+
         return (
-          <Dialog
-            open={this.props.open}
-            onClose={this.props.onClose}
-            onEscapeKeyDown={this.props.onClose}
-            onBackdropClick={this.props.onClose}
-          >
-            <form onSubmit={this.onSave}>
-              <DialogTitle>Redigera nyhet</DialogTitle>
-              <DialogContent>
-                <DialogContentText>
-                  <TextField
-                    label={t("news.Header")}
-                    type="text"
-                    name="header"
-                    value={this.state.formValues.header}
-                    onChange={this.handleInputChange}
-                    fullWidth={true}
-                    margin="normal"
-                  />
-                  <TextField
-                    label={t("news.Link")}
-                    type="text"
-                    name="link"
-                    value={this.state.formValues.link}
-                    onChange={this.handleInputChange}
-                    fullWidth={true}
-                    margin="normal"
-                  />
-                  <TextField
-                    label={t("news.Introduction")}
-                    type="text"
-                    name="introduction"
-                    value={this.state.formValues.introduction}
-                    onChange={this.handleInputChange}
-                    multiline={true}
-                    rowsMax={3}
-                    fullWidth={true}
-                    margin="normal"
-                  />
-                  <TextField
-                    label={t("news.Text")}
-                    type="text"
-                    name="text"
-                    value={this.state.formValues.text}
-                    onChange={this.handleInputChange}
-                    multiline={true}
-                    rowsMax={3}
-                    fullWidth={true}
-                    margin="normal"
-                  />
-                </DialogContentText>
-              </DialogContent>
-              <DialogActions>
-                <Button variant="contained" color="primary" type="submit">
+          <Form id={formId} onSubmit={self.onSave}>
+            <Modal
+              closable={false}
+              centered={true}
+              title={t("news.Edit")}
+              visible={self.props.open}
+              onCancel={self.props.onClose}
+              footer={[
+                <Button
+                  form={formId}
+                  key="submit"
+                  variant="contained"
+                  color="primary"
+                  type="primary"
+                  htmlType="submit"
+                  disabled={hasErrors(getFieldsError())}
+                  loading={saving}
+                >
                   {t("common.Save")}
-                </Button>
-                <Button variant="contained" onClick={this.props.onClose}>
+                </Button>,
+                <Button variant="contained" onClick={self.props.onClose} loading={saving}>
                   {t("common.Cancel")}
                 </Button>
-              </DialogActions>
-            </form>
-          </Dialog>
+              ]}
+            >
+              <StyledModalContent>
+                <FormItem>
+                  {getFieldDecorator("iNewsID", {
+                    initialValue: newsObject.id
+                  })(<Input type="hidden" />)}
+                </FormItem>
+                <FormItem>
+                  {getFieldDecorator("iNewsTypeID", {
+                    initialValue: newsObject.newsTypeId.toString()
+                  })(
+                    <Select style={{ minWidth: 174 }}>
+                      <Option value="1">{t("modules.News")}</Option>
+                      <Option value="2">{t("news.LongTimeNews")}</Option>
+                      <Option value="3">{t("news.Educations")}</Option>
+                    </Select>
+                  )}
+                </FormItem>
+                <FormItem label={t("news.Header")} validateStatus={headerError ? "error" : ""} help={headerError || ""}>
+                  {getFieldDecorator("iRubrik", {
+                    initialValue: newsObject.header,
+                    rules: [
+                      {
+                        required: true,
+                        message: errorRequiredField(t, "news.Header")
+                      }
+                    ]
+                  })(<Input />)}
+                </FormItem>
+                <FormItem label={t("news.Link")}>
+                  {getFieldDecorator("iLank", {
+                    initialValue: newsObject.link,
+                    rules: [
+                      {
+                        required: false
+                      }
+                    ]
+                  })(<Input />)}
+                </FormItem>
+                <FormItem
+                  label={t("news.Introduction")}
+                  validateStatus={introductionError ? "error" : ""}
+                  help={introductionError || ""}
+                >
+                  {getFieldDecorator("iInledning", {
+                    initialValue: newsObject.introduction,
+                    rules: [
+                      {
+                        required: true,
+                        message: errorRequiredField(t, "news.Introduction")
+                      }
+                    ]
+                  })(<TextArea autosize={{ minRows: 1, maxRows: 4 }} />)}
+                </FormItem>
+                <FormItem label={t("news.Text")}>
+                  {getFieldDecorator("iTexten", {
+                    initialValue: newsObject.text,
+                    rules: [
+                      {
+                        required: false
+                      }
+                    ]
+                  })(<TextArea autosize={{ minRows: 2, maxRows: 6 }} />)}
+                </FormItem>
+                <FormItem
+                  label={t("news.ExpireDate")}
+                  validateStatus={expireDateError ? "error" : ""}
+                  help={expireDateError || ""}
+                >
+                  {getFieldDecorator("iExpireDate", {
+                    initialValue: moment(newsObject.expireDate, dateFormat),
+                    rules: [
+                      {
+                        required: true,
+                        type: "object",
+                        message: errorRequiredField(t, "news.ExpireDate")
+                      }
+                    ]
+                  })(<DatePicker format={dateFormat} />)}
+                </FormItem>
+                <UploadDragger
+                  form={form}
+                  fieldName="iFiles"
+                  maxByteSize={maxByteSize}
+                  multiple={false}
+                  initialValue={
+                    newsObject.fileId !== 0
+                      ? [
+                          {
+                            uid: newsObject.fileId,
+                            name: newsObject.fileName,
+                            type: newsObject.fileType,
+                            size: newsObject.fileSize,
+                            status: "done",
+                            originalFile: true
+                          }
+                        ]
+                      : []
+                  }
+                />
+                <FormItem>
+                  {getFieldDecorator("iFileID", {
+                    initialValue: newsObject.fileId
+                  })(<Input type="hidden" />)}
+                </FormItem>
+                <FormItem>
+                  {getFieldDecorator("iFileData", {
+                    initialValue: null
+                  })(<Input type="hidden" />)}
+                </FormItem>
+              </StyledModalContent>
+            </Modal>
+          </Form>
         );
       }
     }
   )
 );
 
-const NewsEditWithI18n = withNamespaces()(NewsEdit); // pass `t` function to App
+const NewsEditForm = Form.create()(NewsEdit);
+const NewsEditWithI18n = withTranslation()(NewsEditForm); // pass `t` function to App
 
 export default NewsEditWithI18n;

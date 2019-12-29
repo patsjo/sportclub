@@ -1,19 +1,10 @@
 import React, { Component } from "react";
 import styled from "styled-components";
-import Dialog from "@material-ui/core/Dialog";
-import DialogActions from "@material-ui/core/DialogActions";
-import DialogContent from "@material-ui/core/DialogContent";
-import DialogContentText from "@material-ui/core/DialogContentText";
-import Button from "@material-ui/core/Button";
+import { Button, Modal, Popconfirm, message } from "antd";
 import PropTypes from "prop-types";
-import { withNamespaces } from "react-i18next";
-
-const StyledDialog = styled(Dialog)`
-  &&& .MuiPaper-root-10 {
-    max-width: 750px;
-    margin: 24px;
-  }
-`;
+import { withTranslation } from "react-i18next";
+import { observer, inject } from "mobx-react";
+import withForwardedRef from "../../utils/withForwardedRef";
 
 const ItemHolder = styled.div`
   max-height: 300px;
@@ -27,6 +18,7 @@ const ItemFadeOut = styled.div`
   overflow: hidden;
   position: relative;
   white-space: nowrap;
+  cursor: pointer;
   :after {
     content: "";
     position: absolute;
@@ -65,10 +57,10 @@ const ItemFadeOut = styled.div`
     pointer-events: none;
   }
 `;
-const StyledDialogContentText = styled(DialogContentText)`
-  -webkit-columns: 3 200px;
-  -moz-columns: 3 200px;
-  columns: 3 200px;
+const StyledModalContent = styled.div`
+  -webkit-columns: ${props => props.columns} 200px;
+  -moz-columns: ${props => props.columns} 200px;
+  columns: ${props => props.columns} 200px;
   -webkit-column-gap: 1em;
   -moz-column-gap: 1em;
   column-gap: 1em;
@@ -77,88 +69,142 @@ const StyledDialogContentText = styled(DialogContentText)`
   column-rule: 1px dotted #ccc;
 `;
 
-class FadeOutItem extends Component {
-  static propTypes = {
-    content: PropTypes.object.isRequired,
-    modalContent: PropTypes.object.isRequired,
-    editFormContent: PropTypes.object
-  };
-  constructor(props) {
-    super(props);
-    this.state = {
-      showModalItem: false,
-      showEdit: false
-    };
-    this.openModal = this.openModal.bind(this);
-    this.closeModal = this.closeModal.bind(this);
-  }
+// @inject("sessionModel")
+// @observer
+const FadeOutItem = inject("sessionModel")(
+  observer(
+    class FadeOutItem extends Component {
+      static propTypes = {
+        content: PropTypes.object.isRequired,
+        module: PropTypes.object.isRequired,
+        modalContent: PropTypes.object.isRequired,
+        modalColumns: PropTypes.number.isRequired,
+        editFormContent: PropTypes.object,
+        deletePromise: PropTypes.func,
+        onDelete: PropTypes.func
+      };
+      constructor(props) {
+        super(props);
+        this.state = {
+          saving: false,
+          showModalItem: false,
+          showEdit: false
+        };
+      }
 
-  openModal() {
-    this.setState({
-      showModalItem: true
-    });
-  }
+      openModal = () => {
+        this.setState({
+          showModalItem: true
+        });
+      };
 
-  closeModal() {
-    this.setState({
-      showModalItem: false,
-      showEdit: false
-    });
-  }
+      closeModal = () => {
+        this.setState({
+          saving: false,
+          showModalItem: false,
+          showEdit: false
+        });
+      };
 
-  render() {
-    const { t } = this.props;
-    const ShowEditButton =
-      this.props.editFormContent !== undefined ? (
-        <Button
-          variant="contained"
-          onClick={() =>
-            this.setState({ showEdit: true, showModalItem: false })
-          }
-        >
-          {t("common.Edit")}
-        </Button>
-      ) : null;
+      render() {
+        const {
+          t,
+          modalColumns,
+          sessionModel,
+          editFormContent,
+          module,
+          deletePromise,
+          onDelete,
+          forwardedRef
+        } = this.props;
+        const self = this;
 
-    const EditFormContent =
-      this.props.editFormContent !== undefined
-        ? React.cloneElement(this.props.editFormContent, {
-            open: this.state.showEdit,
-            onClose: this.closeModal
-          })
-        : null;
-
-    return (
-      <ItemHolder>
-        <ItemFadeOut onClick={this.openModal}>{this.props.content}</ItemFadeOut>
-        <StyledDialog
-          open={this.state.showModalItem}
-          onClose={this.closeModal}
-          onEscapeKeyDown={this.closeModal}
-          onBackdropClick={this.closeModal}
-        >
-          <DialogContent>
-            <StyledDialogContentText>
-              {this.props.modalContent}
-            </StyledDialogContentText>
-          </DialogContent>
-          <DialogActions>
-            {ShowEditButton}
+        const ShowEditButton =
+          editFormContent !== undefined &&
+          module.updateUrl !== undefined &&
+          sessionModel.loggedIn ? (
             <Button
-              variant="contained"
-              color="primary"
-              onClick={this.closeModal}
+              loading={this.state.saving}
+              onClick={() =>
+                this.setState({ showEdit: true, showModalItem: false })
+              }
             >
-              {t("common.Close")}
+              {t("common.Edit")}
             </Button>
-          </DialogActions>
-        </StyledDialog>
-        {EditFormContent}
-      </ItemHolder>
-    );
-  }
-}
+          ) : null;
 
-const FadeOutItemWithI18n = withNamespaces()(FadeOutItem); // pass `t` function to App
+        const ShowDeleteButton =
+          module.deleteUrl !== undefined &&
+          deletePromise &&
+          sessionModel.loggedIn ? (
+            <Popconfirm
+              title={t("common.Confirm")}
+              okText={t("common.Yes")}
+              cancelText={t("common.No")}
+              onConfirm={() => {
+                this.setState({
+                  saving: true
+                });
+                deletePromise()
+                  .then(() => {
+                    onDelete && onDelete();
+                    self.closeModal();
+                  })
+                  .catch(e => {
+                    message.error(e.message);
+                    self.setState({
+                      saving: false
+                    });
+                  });
+              }}
+            >
+              <Button type="danger" loading={this.state.saving}>
+                {t("common.Delete")}
+              </Button>
+            </Popconfirm>
+          ) : null;
 
-export default FadeOutItemWithI18n;
+        const EditFormContent = ShowEditButton
+          ? React.cloneElement(editFormContent, {
+              open: this.state.showEdit,
+              onClose: this.closeModal
+            })
+          : null;
+
+        return (
+          <ItemHolder ref={forwardedRef}>
+            <ItemFadeOut onClick={this.openModal}>
+              {this.props.content}
+            </ItemFadeOut>
+            <Modal
+              closable={false}
+              centered={true}
+              visible={this.state.showModalItem}
+              onCancel={this.closeModal}
+              footer={[
+                ShowDeleteButton,
+                ShowEditButton,
+                <Button
+                  type="primary"
+                  onClick={this.closeModal}
+                  loading={this.state.saving}
+                >
+                  {t("common.Close")}
+                </Button>
+              ]}
+            >
+              <StyledModalContent columns={modalColumns}>
+                {this.props.modalContent}
+              </StyledModalContent>
+            </Modal>
+            {EditFormContent}
+          </ItemHolder>
+        );
+      }
+    }
+  )
+);
+
+const FadeOutItemWithI18n = withTranslation()(FadeOutItem); // pass `t` function to App
+
+export default withForwardedRef(FadeOutItemWithI18n);
