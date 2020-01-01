@@ -116,7 +116,17 @@ i18next
             NofStartsInClass: "Starts",
             EventFee: "Event fee",
             FeeToClub: "Fee to club",
-            DeviantEventClassification: "Deviant event type"
+            DeviantEventClassification: "Deviant event type",
+            RaceLightCondition: "Light condition",
+            Day: "Day",
+            Night: "Night",
+            RaceDistance: "Distance",
+            Sprint: "Sprint",
+            Middle: "Middle",
+            Long: "Long",
+            UltraLong: "Ultra long",
+            PaymentModel: "Payment model",
+            Difficulty: "Difficulty"
           },
           eventor: {
             Participant: "Participant"
@@ -211,7 +221,17 @@ i18next
             NofStartsInClass: "Startande",
             EventFee: "Tävlingsavgift",
             FeeToClub: "Avgift till klubben",
-            DeviantEventClassification: "Avvikande tävlingstyp"
+            DeviantEventClassification: "Avvikande tävlingstyp",
+            RaceLightCondition: "Ljusförhållanden",
+            Day: "Dag",
+            Night: "Natt",
+            RaceDistance: "Distans",
+            Sprint: "Sprint",
+            Middle: "Medel",
+            Long: "Lång",
+            UltraLong: "Ultra lång",
+            PaymentModel: "Betalningsmodell",
+            Difficulty: "Nivå"
           },
           eventor: {
             Participant: "Anmäld"

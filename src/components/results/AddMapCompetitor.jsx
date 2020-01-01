@@ -49,7 +49,7 @@ class AddMapCompetitor extends Component {
     const startDateError = isFieldTouched("iStartDate") && getFieldError("iStartDate");
 
     return (
-      <Form id={formId} onSubmit={self.onSave}>
+      <Form id={formId}>
         <Tabs defaultActiveKey="1" onChange={self.onThisTabChange.bind(self)}>
           <TabPane tab={t("results.MapCompetitor")} key="1">
             <FormItem

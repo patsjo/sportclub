@@ -50,15 +50,17 @@ const ResultsWizardModal = inject(
         const { clubModel, sessionModel, onClose } = this.props;
         const url = clubModel.modules.find(module => module.name === "Results").queryUrl;
 
-        PostJsonData(
+        const clubsPromise = PostJsonData(
           url,
           {
             iType: "CLUBS"
           },
           true,
           sessionModel.authorizationHeader
-        )
-          .then(clubsJson => {
+        );
+
+        Promise.all([clubsPromise])
+          .then(([clubsJson]) => {
             clubModel.setRaceClubs(clubsJson);
             self.setState({
               wizardStep: 0,

@@ -2,6 +2,19 @@ import { types } from "mobx-state-tree";
 import { RaceEvent } from "./resultModel";
 import moment from "moment";
 
+export const failedReasons = {
+  NotStarted: "EJ START",
+  NotFinished: "UTGÅTT",
+  Finished: "FULLFÖ",
+  Approved: "GODK"
+};
+
+export const failedReasonOptions = t => [
+  { code: failedReasons.NotStarted, description: t("results.NotStarted") },
+  { code: failedReasons.NotFinished, description: t("results.NotFinished") },
+  { code: failedReasons.Finished, description: t("results.Finished") }
+];
+
 export const payments = {
   defaultFee0And100IfNotStarted: 0,
   defaultFee0And100IfNotFinished: 1,
@@ -16,7 +29,19 @@ export const paymentOptions = t => [
   { code: payments.defaultFeePaidByCompetitor, description: t("results.DefaultFeePaidByCompetitor") }
 ];
 
-export const setLocalStorage = raceWizard => {
+export const raceLightConditionOptions = t => [
+  { code: "Day", description: t("results.Day") },
+  { code: "Night", description: t("results.Night") }
+];
+
+export const raceDistanceOptions = t => [
+  { code: "Sprint", description: t("results.Sprint") },
+  { code: "Middle", description: t("results.Middle") },
+  { code: "Long", description: t("results.Long") },
+  { code: "UltraLong", description: t("results.UltraLong") }
+];
+
+const setLocalStorage = raceWizard => {
   const obj = {
     queryStartDate: raceWizard.queryStartDate,
     paymentModel: raceWizard.paymentModel
@@ -43,14 +68,14 @@ export const getLocalStorage = () => {
       };
     }
 
-    return { ...JSON.parse(raceWizardData), queryEndDate: endDate, queryIncludeExisting: false, existInEventor: false };
+    return { ...JSON.parse(raceWizardData), queryEndDate: endDate, queryIncludeExisting: false, existInEventor: true };
   } catch (error) {
     return {
       queryStartDate: startDate,
       queryEndDate: endDate,
       paymentModel: payments.defaultFee0And100IfNotStarted,
       queryIncludeExisting: false,
-      existInEventor: false
+      existInEventor: true
     };
   }
 };
@@ -70,6 +95,7 @@ export const RaceWizard = types
     return {
       setValue(key, value) {
         self[key] = value;
+        setLocalStorage(self);
       }
     };
   });

@@ -1,19 +1,9 @@
 import React, { Component } from "react";
 import { withTranslation } from "react-i18next";
-import { Icon, Spin, Table, message } from "antd";
-import styled from "styled-components";
+import { Spin, message } from "antd";
+import { SpinnerDiv, StyledIcon, StyledTable } from "../styled/styled";
 import { observer, inject } from "mobx-react";
 import { GetJsonData, PostJsonData } from "../../utils/api";
-
-const SpinnerDiv = styled.div`
-  text-align: center;
-  width: 100%;
-`;
-const StyledIcon = styled(Icon)`
-  &&& {
-    margin-right: 8px;
-  }
-`;
 
 const flatten = list => list.reduce((a, b) => a.concat(Array.isArray(b) ? flatten(b) : b), []);
 
@@ -236,7 +226,7 @@ const ResultWizardStep1ChooseRace = inject(
         }));
 
         return loaded && visible ? (
-          <Table
+          <StyledTable
             rowSelection={rowSelection}
             onRow={(record, rowIndex) => {
               return {
@@ -245,7 +235,7 @@ const ResultWizardStep1ChooseRace = inject(
             }}
             columns={columns}
             dataSource={data}
-            pagination={{ pageSize: 5 }}
+            pagination={{ pageSize: 8 }}
             size="middle"
           />
         ) : visible ? (

@@ -34,6 +34,13 @@ const RaceCompetitor = types
     }
   }));
 
+const RaceClassLevel = types.model({
+  classShortName: types.identifier,
+  classTypeShortName: types.string,
+  age: types.integer,
+  difficulty: types.string
+});
+
 const RaceClassClassification = types.model({
   classClassificationId: types.identifierNumber,
   description: types.string,
@@ -104,7 +111,8 @@ export const RaceClubs = types
   .model({
     clubs: types.array(RaceClub),
     selectedClub: types.reference(RaceClub),
-    eventClassifications: types.array(RaceEventClassification)
+    eventClassifications: types.array(RaceEventClassification),
+    classLevels: types.array(RaceClassLevel)
   })
   .actions(self => {
     return {
@@ -114,6 +122,11 @@ export const RaceClubs = types
     };
   })
   .views(self => ({
+    classClassification(eventClassificationId, classClassificationId) {
+      return self.eventClassifications
+        .find(ec => ec.eventClassificationId === eventClassificationId)
+        .classClassifications.find(cc => cc.classClassificationId === classClassificationId).description;
+    },
     get clubOptions() {
       return self.clubs.map(club => ({
         code: club.clubId.toString(),
@@ -135,7 +148,8 @@ const RaceTeamResult = types.model({
   position: types.maybeNull(types.integer),
   nofStartsInClass: types.maybeNull(types.integer),
   stage: types.integer,
-  totalStages: types.integer
+  totalStages: types.integer,
+  deviantRaceLightCondition: types.maybeNull(types.string)
 });
 
 const RaceResultMultiDay = types.model({
@@ -161,6 +175,7 @@ const RaceResult = types
     className: types.string,
     deviantEventClassificationId: types.maybeNull(types.string),
     classClassificationId: types.maybeNull(types.integer),
+    difficulty: types.maybeNull(types.string),
     lengthInMeter: types.maybeNull(types.integer),
     failedReason: types.maybeNull(types.string),
     competitorTime: types.maybeNull(types.string),
@@ -169,6 +184,7 @@ const RaceResult = types
     position: types.maybeNull(types.integer),
     nofStartsInClass: types.maybeNull(types.integer),
     originalFee: types.maybeNull(types.number),
+    lateFee: types.maybeNull(types.number),
     feeToClub: types.maybeNull(types.number),
     award: types.maybeNull(types.string),
     points: types.maybeNull(types.integer),
@@ -189,16 +205,20 @@ export const RaceEvent = types
     eventorId: types.integer,
     eventorRaceId: types.integer,
     name: types.string,
-    organiserName: types.string,
+    organiserName: types.maybeNull(types.string),
     raceDate: types.string,
     raceTime: types.maybeNull(types.string),
     eventClassificationId: types.string,
     raceLightCondition: types.maybeNull(types.string),
     raceDistance: types.maybeNull(types.string),
+    paymentModel: types.integer,
     results: types.array(RaceResult)
   })
   .actions(self => {
     return {
+      setValue(key, value) {
+        self[key] = value;
+      },
       addResult(result) {
         self.results.push(result);
       },

@@ -6,6 +6,7 @@ const Option = Select.Option;
 
 export const dateFormat = "YYYY-MM-DD";
 export const timeFormat = "HH:mm:ss";
+export const shortTimeFormat = "HH:mm";
 export const maxByteSize = 10485760;
 
 export const FormSelect = ({ options, ...props }) => {

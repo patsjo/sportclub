@@ -117,7 +117,7 @@ elseif ($iType == "CLUBS")
       $x->oldPositionBasePoint  = intval($row['OLD_POSITION_BASE_POINT']);
       $x->classClassifications  = array();
 
-      $sql2 = "SELECT * FROM RACE_CLASS_CLASSIFICATION WHERE EVENT_CLASSIFICATION_ID = '" . $x->eventClassificationId . "'";
+      $sql2 = "SELECT * FROM RACE_CLASS_CLASSIFICATION WHERE EVENT_CLASSIFICATION_ID = '" . $x->eventClassificationId . "' ORDER BY DECREASE_BASE_POINT ASC";
       $result2 = \db\mysql_query($sql2);
       if (!$result2)
       {
@@ -206,9 +206,34 @@ elseif ($iType == "CLUBS")
   
       array_push($clubs, $x);
     }
+
+    $domainClassLevel = new stdClass();
+    $domainClassLevel->name = "RACE_CLASS_LEVEL";
+    $domainClassLevel->values = array();
+    $sql = "SELECT * FROM RACE_CLASS_LEVEL ORDER BY SHORTNAME ASC";
+    $result = \db\mysql_query($sql);
+    if (!$result)
+    {
+      die('SQL Error: ' . \db\mysql_error());
+    }
+  
+    if (\db\mysql_num_rows($result) > 0)
+    {
+      while($row = \db\mysql_fetch_assoc($result))
+      {
+        $x = new stdClass();
+        $x->classShortName       = $row['SHORTNAME'];
+        $x->classTypeShortName   = $row['CLASSTYPE_SHORTNAME'];
+        $x->age                  = intval($row['AGE']);
+        $x->difficulty           = $row['DIFFICULTY'];
+        array_push($domainClassLevel->values, $x);
+      }
+    }
+    
     $rows = new stdClass();
     $rows->clubs                = $clubs;
     $rows->eventClassifications = $eventClassifications;
+    $rows->classLevels          = $domainClassLevel->values;
   }
 }
 else

@@ -1,8 +1,6 @@
 import moment from "moment";
 import { timeFormat } from "./formHelper";
-
-export const FAILED_REASON_APPROVED = "GODK";
-export const FAILED_REASON_COMPLETED = "FULLFÖ";
+import { payments, failedReasons } from "../models/resultWizardModel";
 
 const ConvertTimeToSeconds = timeString => {
   try {
@@ -39,31 +37,35 @@ export const GetAge = (birthDateStr, raceDateStr) => {
   return raceYear - birthYear;
 };
 
-export const GetFee = (entryFees, entryFeeIds, age, isOpenClass) => {
+export const GetFees = (entryFees, entryFeeIds, age, isOpenClass) => {
+  const fees = { originalFee: 0, lateFee: 0 };
   if (entryFeeIds === undefined) {
-    return 0;
+    return fees;
   }
   const originalFees = entryFees.filter(
-    fee => entryFeeIds.includes(fee.EntryFeeId) && fee["@attributes"].valueOperator === "fixed"
+    fee => !fee.ValidFromDate && entryFeeIds.includes(fee.EntryFeeId) && fee["@attributes"].valueOperator === "fixed"
+  );
+  const lateFees = entryFees.filter(
+    fee => fee.ValidFromDate && entryFeeIds.includes(fee.EntryFeeId) && fee["@attributes"].valueOperator === "fixed"
   );
   const extraPercentage = entryFees.find(
     fee => entryFeeIds.includes(fee.EntryFeeId) && fee["@attributes"].valueOperator === "percent"
   );
-  let amount = 0;
 
   if (isOpenClass) {
     if (age <= 16) {
-      amount = Math.min(...originalFees.map(fee => parseInt(fee.Amount)));
+      fees.originalFee = Math.min(...originalFees.map(fee => parseInt(fee.Amount)));
     } else {
-      amount = Math.max(...originalFees.map(fee => parseInt(fee.Amount)));
+      fees.originalFee = Math.max(...originalFees.map(fee => parseInt(fee.Amount)));
     }
   } else {
-    amount = originalFees.map(fee => parseInt(fee.Amount)).reduce((a, b) => a + b, 0);
+    fees.originalFee = originalFees.map(fee => parseInt(fee.Amount)).reduce((a, b) => a + b, 0);
+    fees.lateFee = lateFees.map(fee => parseInt(fee.Amount)).reduce((a, b) => a + b, 0);
     if (extraPercentage !== undefined) {
-      amount = Math.round((amount * (100 + parseInt(extraPercentage.Amount))) / 100, 2);
+      fees.lateFee += Math.round((fees.originalFee * parseInt(extraPercentage.Amount)) / 100, 2);
     }
   }
-  return amount;
+  return fees;
 };
 
 export const GetLength = (lengthHtmlJson, fullClassName) => {
@@ -101,7 +103,7 @@ export const GetRacePoint = (raceEventClassification, raceClassClassification, r
     !result.competitorTime ||
     !result.winnerTime
   ) {
-    if (result.failedReason === FAILED_REASON_APPROVED || result.failedReason === FAILED_REASON_COMPLETED) {
+    if (result.failedReason === failedReasons.Approved || result.failedReason === failedReasons.Finished) {
       Math.round(basePoint / 3);
     } else {
       return 0;
@@ -144,7 +146,7 @@ export const GetPointRunTo1000 = (raceEventClassification, raceClassClassificati
     !result.competitorTime ||
     !result.winnerTime
   ) {
-    if (result.failedReason === FAILED_REASON_APPROVED || result.failedReason === FAILED_REASON_COMPLETED) {
+    if (result.failedReason === failedReasons.Approved || result.failedReason === failedReasons.Finished) {
       return 30;
     } else {
       return 0;
@@ -158,4 +160,97 @@ export const GetPointRunTo1000 = (raceEventClassification, raceClassClassificati
     Math.round((basePoint / (result.nofStartsInClass - 1)) * (result.nofStartsInClass - result.position)),
     30
   );
+};
+
+export const CalculateCompetitorsFee = raceEvent => {
+  if (raceEvent.results && raceEvent.results.length > 0) {
+    raceEvent.results.forEach(result => {
+      switch (raceEvent.paymentModel) {
+        case payments.defaultFee0And100IfNotStarted:
+          result.setValue(
+            "feeToClub",
+            result.failedReason === failedReasons.NotStarted ? result.originalFee + result.lateFee : result.lateFee
+          );
+          break;
+        case payments.defaultFee0And100IfNotFinished:
+          result.setValue(
+            "feeToClub",
+            result.failedReason === failedReasons.NotStarted || result.failedReason === failedReasons.NotFinished
+              ? result.originalFee + result.lateFee
+              : result.lateFee
+          );
+          break;
+        case payments.defaultFee50And100IfNotFinished:
+          result.setValue(
+            "feeToClub",
+            result.failedReason === failedReasons.NotStarted || result.failedReason === failedReasons.NotFinished
+              ? result.originalFee + result.lateFee
+              : result.originalFee / 2 + result.lateFee
+          );
+          break;
+        case payments.defaultFeePaidByCompetitor:
+          result.setValue("feeToClub", 0);
+          break;
+        default:
+      }
+    });
+  }
+};
+
+export const GetClassShortName = className => {
+  if (!className || className.length === 0) {
+    return null;
+  }
+  const eIndex = className.toLowerCase().indexOf(" elit");
+  const lIndex = className.toLowerCase().indexOf(" lång");
+  const kIndex = className.toLowerCase().indexOf(" kort");
+  const mIndex = className.toLowerCase().indexOf(" motion");
+  const l2Index = className.toLowerCase().indexOf(" lätt");
+  const oIndex = className.toLowerCase().indexOf("öppen ");
+  const o2Index = className.toLowerCase().indexOf("öppen motion ");
+  const o3Index = className.toLowerCase().indexOf("öm");
+
+  if (eIndex >= 0) {
+    return `${className.substr(0, eIndex)}E${className.substr(eIndex + 5)}`;
+  } else if (lIndex >= 0) {
+    return `${className.substr(0, lIndex)}L${className.substr(lIndex + 5)}`;
+  } else if (kIndex >= 0) {
+    return `${className.substr(0, kIndex)}K${className.substr(kIndex + 5)}`;
+  } else if (mIndex >= 0) {
+    return `${className.substr(0, mIndex)}M${className.substr(mIndex + 7)}`;
+  } else if (l2Index >= 0) {
+    return `${className.substr(0, l2Index)}L${className.substr(l2Index + 5)}`;
+  } else if (o3Index >= 0) {
+    return `Ö${className.substr(2)}`;
+  } else if (o2Index >= 0) {
+    return `Ö${className.substr(13)}`;
+  } else if (oIndex >= 0) {
+    return `Ö${className.substr(6)}`;
+  } else {
+    return className;
+  }
+};
+
+export const GetClassClassificationId = (eventClassificationId, classLevel, eventClassifications) => {
+  if (!eventClassificationId || !classLevel || !eventClassifications) {
+    return null;
+  }
+  const eventClassification = eventClassifications.find(ec => ec.eventClassificationId === eventClassificationId);
+  if (!eventClassification) {
+    return null;
+  }
+  const classClassification = eventClassification.classClassifications
+    .filter(
+      cc =>
+        (cc.classTypeShortName && cc.classTypeShortName === classLevel.classTypeShortName) ||
+        (cc.ageUpperLimit && cc.ageUpperLimit >= classLevel.age) ||
+        (cc.ageLowerLimit && cc.ageLowerLimit <= classLevel.age) ||
+        (!cc.classTypeShortName && !cc.ageUpperLimit && !cc.ageLowerLimit)
+    )
+    .sort((a, b) => (!a.ageUpperLimit && !a.ageLowerLimit ? 1 : a.ageUpperLimit > b.ageUpperLimit ? 1 : -1))
+    .find(() => true);
+  if (!classClassification) {
+    return null;
+  }
+  return classClassification.classClassificationId;
 };
