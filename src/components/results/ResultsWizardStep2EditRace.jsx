@@ -17,6 +17,7 @@ import {
   GetAge,
   GetFees,
   CalculateCompetitorsFee,
+  ResetClassClassifications,
   GetClassShortName,
   GetClassClassificationId
 } from "../../utils/resultHelper";
@@ -542,6 +543,8 @@ const ResultWizardStep2EditRace = inject(
         const raceDistanceError = isFieldTouched("iRaceDistance") && getFieldError("iRaceDistance");
         const raceLightConditionError = isFieldTouched("iRaceLightCondition") && getFieldError("iRaceLightCondition");
         const paymentModelError = isFieldTouched("iPaymentModel") && getFieldError("iPaymentModel");
+        const eventClassificationError =
+          isFieldTouched("iEventClassificationId") && getFieldError("iEventClassificationId");
 
         return this.state.loaded ? (
           <Form id={formId}>
@@ -625,7 +628,36 @@ const ResultWizardStep2EditRace = inject(
               </Col>
             </Row>
             <Row gutter={8}>
-              <Col span={7}>eventClassificationId</Col>
+              <Col span={7}>
+                <FormItem
+                  label={t("results.EventClassification")}
+                  validateStatus={eventClassificationError ? "error" : ""}
+                  help={eventClassificationError || ""}
+                >
+                  {getFieldDecorator("iEventClassificationId", {
+                    initialValue: raceWizardModel.raceEvent.eventClassificationId,
+                    rules: [
+                      {
+                        required: true,
+                        message: errorRequiredField(t, "results.EventClassification")
+                      }
+                    ]
+                  })(
+                    <FormSelect
+                      allowClear={false}
+                      options={clubModel.raceClubs.eventClassificationOptions}
+                      onChange={code => {
+                        raceWizardModel.raceEvent.setValue("eventClassificationId", code);
+                        ResetClassClassifications(
+                          raceWizardModel.raceEvent,
+                          clubModel.raceClubs.eventClassifications,
+                          clubModel.raceClubs.classLevels
+                        );
+                      }}
+                    />
+                  )}
+                </FormItem>
+              </Col>
               <Col span={7}>
                 <FormItem
                   label={t("results.PaymentModel")}

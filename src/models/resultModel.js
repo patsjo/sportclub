@@ -127,6 +127,12 @@ export const RaceClubs = types
         .find(ec => ec.eventClassificationId === eventClassificationId)
         .classClassifications.find(cc => cc.classClassificationId === classClassificationId).description;
     },
+    get eventClassificationOptions() {
+      return self.eventClassifications.map(ec => ({
+        code: ec.eventClassificationId,
+        description: ec.description
+      }));
+    },
     get clubOptions() {
       return self.clubs.map(club => ({
         code: club.clubId.toString(),

@@ -162,6 +162,25 @@ export const GetPointRunTo1000 = (raceEventClassification, raceClassClassificati
   );
 };
 
+export const ResetClassClassifications = (raceEvent, eventClassifications, classLevels) => {
+  if (raceEvent.results && raceEvent.results.length > 0) {
+    raceEvent.results.forEach(result => {
+      if (!result.deviantEventClassificationId) {
+        const classLevel = classLevels
+          .filter(cl => result.className.indexOf(cl.classShortName) >= 0)
+          .sort((a, b) => (a.classShortName.length < b.classShortName.length ? 1 : -1))
+          .find(() => true);
+        const classClassificationId = GetClassClassificationId(
+          raceEvent.eventClassificationId,
+          classLevel,
+          eventClassifications
+        );
+        result.setValue("classClassificationId", classClassificationId);
+      }
+    });
+  }
+};
+
 export const CalculateCompetitorsFee = raceEvent => {
   if (raceEvent.results && raceEvent.results.length > 0) {
     raceEvent.results.forEach(result => {
