@@ -4,7 +4,10 @@ import { payments, failedReasons } from "../models/resultWizardModel";
 
 const ConvertTimeToSeconds = timeString => {
   try {
-    const momentTime = moment(timeString, timeFormat);
+    if (!timeString || timeString.length < 4) {
+      return 0;
+    }
+    const momentTime = moment(timeString.length <= 5 ? `0:${timeString}` : timeString, timeFormat);
     if (!moment.isMoment(momentTime)) {
       return 0;
     }
@@ -15,6 +18,21 @@ const ConvertTimeToSeconds = timeString => {
   } catch (e) {
     return 0;
   }
+};
+
+export const ConvertSecondsToTime = timeInSeconds => {
+  var hours = Math.floor(timeInSeconds / 3600);
+  var minutes = Math.floor((timeInSeconds - hours * 3600) / 60);
+  var seconds = timeInSeconds - hours * 3600 - minutes * 60;
+  var time = "";
+
+  if (hours != 0) {
+    time = hours + ":";
+  }
+  minutes = minutes < 10 && time !== "" ? "0" + minutes : String(minutes);
+  time += minutes + ":";
+  time += seconds < 10 ? "0" + seconds : String(seconds);
+  return time;
 };
 
 export const WinnerTime = (timeStr, timeDiffStr, position) => {
@@ -39,18 +57,33 @@ export const GetAge = (birthDateStr, raceDateStr) => {
 
 export const GetFees = (entryFees, entryFeeIds, age, isOpenClass) => {
   const fees = { originalFee: 0, lateFee: 0 };
-  if (entryFeeIds === undefined) {
+  // eslint-disable-next-line eqeqeq
+  if (entryFeeIds == undefined) {
     return fees;
   }
-  const originalFees = entryFees.filter(
-    fee => !fee.ValidFromDate && entryFeeIds.includes(fee.EntryFeeId) && fee["@attributes"].valueOperator === "fixed"
+  const competitorEntryFees = entryFees
+    .filter(fee => entryFeeIds.includes(fee.EntryFeeId))
+    .sort((a, b) =>
+      !a.ValidFromDate ? -1 : !b.ValidFromDate ? 1 : a.ValidFromDate.Date < b.ValidFromDate.Date ? -1 : 1
+    );
+  // eslint-disable-next-line eqeqeq
+  if (competitorEntryFees == undefined || competitorEntryFees.length === 0) {
+    return fees;
+  }
+  const firstValidFromDate = competitorEntryFees[0].ValidFromDate
+    ? competitorEntryFees[0].ValidFromDate.Date
+    : undefined;
+  const originalFees = competitorEntryFees.filter(
+    fee =>
+      (!fee.ValidFromDate || fee.ValidFromDate.Date === firstValidFromDate) &&
+      fee["@attributes"].valueOperator === "fixed"
   );
-  const lateFees = entryFees.filter(
-    fee => fee.ValidFromDate && entryFeeIds.includes(fee.EntryFeeId) && fee["@attributes"].valueOperator === "fixed"
+  const lateFees = competitorEntryFees.filter(
+    fee =>
+      !originalFees.map(oFee => oFee.EntryFeeId).includes(fee.EntryFeeId) &&
+      fee["@attributes"].valueOperator === "fixed"
   );
-  const extraPercentage = entryFees.find(
-    fee => entryFeeIds.includes(fee.EntryFeeId) && fee["@attributes"].valueOperator === "percent"
-  );
+  const extraPercentage = competitorEntryFees.find(fee => fee["@attributes"].valueOperator === "percent");
 
   if (isOpenClass) {
     if (age <= 16) {
@@ -61,7 +94,8 @@ export const GetFees = (entryFees, entryFeeIds, age, isOpenClass) => {
   } else {
     fees.originalFee = originalFees.map(fee => parseInt(fee.Amount)).reduce((a, b) => a + b, 0);
     fees.lateFee = lateFees.map(fee => parseInt(fee.Amount)).reduce((a, b) => a + b, 0);
-    if (extraPercentage !== undefined) {
+    // eslint-disable-next-line eqeqeq
+    if (extraPercentage != undefined) {
       fees.lateFee += Math.round((fees.originalFee * parseInt(extraPercentage.Amount)) / 100, 2);
     }
   }
@@ -81,13 +115,23 @@ export const GetLength = (lengthHtmlJson, fullClassName) => {
   const meterIndex = lengthHtmlJson.indexOf("m,", classIndex);
   const lengthString = lengthHtmlJson.substr(classIndex, meterIndex - classIndex).replace(" ", "");
   if (lengthString.length > 10) {
-    return undefined;
+    return null;
   }
   try {
     return parseInt(lengthString);
   } catch (e) {
+    return null;
+  }
+};
+
+export const GetSecondsPerKiloMeter = (timeString, length) => {
+  if (!length || length === 0) {
     return undefined;
   }
+  const seconds = ConvertTimeToSeconds(timeString);
+  const secondsPerKilometer = Math.round((1000 * seconds) / length);
+
+  return secondsPerKilometer;
 };
 
 export const GetRacePoint = (raceEventClassification, raceClassClassification, result) => {
@@ -181,37 +225,33 @@ export const ResetClassClassifications = (raceEvent, eventClassifications, class
   }
 };
 
+export const GetCompetitorFee = (paymentModel, result) => {
+  // eslint-disable-next-line eqeqeq
+  if (result.originalFee == undefined || result.lateFee == undefined) {
+    return undefined;
+  }
+  switch (paymentModel) {
+    case payments.defaultFee0And100IfNotStarted:
+      return result.failedReason === failedReasons.NotStarted ? result.originalFee + result.lateFee : result.lateFee;
+    case payments.defaultFee0And100IfNotFinished:
+      return result.failedReason === failedReasons.NotStarted || result.failedReason === failedReasons.NotFinished
+        ? result.originalFee + result.lateFee
+        : result.lateFee;
+    case payments.defaultFee50And100IfNotFinished:
+      return result.failedReason === failedReasons.NotStarted || result.failedReason === failedReasons.NotFinished
+        ? result.originalFee + result.lateFee
+        : result.originalFee / 2 + result.lateFee;
+    case payments.defaultFeePaidByCompetitor:
+      return 0;
+    default:
+  }
+  return undefined;
+};
+
 export const CalculateCompetitorsFee = raceEvent => {
   if (raceEvent.results && raceEvent.results.length > 0) {
     raceEvent.results.forEach(result => {
-      switch (raceEvent.paymentModel) {
-        case payments.defaultFee0And100IfNotStarted:
-          result.setValue(
-            "feeToClub",
-            result.failedReason === failedReasons.NotStarted ? result.originalFee + result.lateFee : result.lateFee
-          );
-          break;
-        case payments.defaultFee0And100IfNotFinished:
-          result.setValue(
-            "feeToClub",
-            result.failedReason === failedReasons.NotStarted || result.failedReason === failedReasons.NotFinished
-              ? result.originalFee + result.lateFee
-              : result.lateFee
-          );
-          break;
-        case payments.defaultFee50And100IfNotFinished:
-          result.setValue(
-            "feeToClub",
-            result.failedReason === failedReasons.NotStarted || result.failedReason === failedReasons.NotFinished
-              ? result.originalFee + result.lateFee
-              : result.originalFee / 2 + result.lateFee
-          );
-          break;
-        case payments.defaultFeePaidByCompetitor:
-          result.setValue("feeToClub", 0);
-          break;
-        default:
-      }
+      result.setValue("feeToClub", GetCompetitorFee(raceEvent.paymentModel, result));
     });
   }
 };
@@ -228,6 +268,7 @@ export const GetClassShortName = className => {
   const oIndex = className.toLowerCase().indexOf("öppen ");
   const o2Index = className.toLowerCase().indexOf("öppen motion ");
   const o3Index = className.toLowerCase().indexOf("öm");
+  const inskIndex = className.toLowerCase().indexOf("insk");
 
   if (eIndex >= 0) {
     return `${className.substr(0, eIndex)}E${className.substr(eIndex + 5)}`;
@@ -245,6 +286,8 @@ export const GetClassShortName = className => {
     return `Ö${className.substr(13)}`;
   } else if (oIndex >= 0) {
     return `Ö${className.substr(6)}`;
+  } else if (inskIndex >= 0) {
+    return "INSK";
   } else {
     return className;
   }

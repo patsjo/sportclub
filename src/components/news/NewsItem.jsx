@@ -80,11 +80,7 @@ const NewsItem = inject(
       getImage(maxSize) {
         let Image = undefined;
         const { newsObject, clubModel } = this.props;
-        if (
-          newsObject &&
-          newsObject.imageWidth > 0 &&
-          newsObject.imageHeight > 0
-        ) {
+        if (newsObject && newsObject.imageWidth > 0 && newsObject.imageHeight > 0) {
           let ImageHeight = newsObject.imageHeight;
           let ImageWidth = newsObject.imageWidth;
           if (ImageHeight > maxSize && ImageHeight > ImageWidth) {
@@ -95,11 +91,7 @@ const NewsItem = inject(
             ImageWidth = maxSize;
           }
           Image = (
-            <NewsImage
-              src={clubModel.attachmentUrl + newsObject.fileId}
-              width={ImageWidth}
-              height={ImageHeight}
-            />
+            <NewsImage src={clubModel.attachmentUrl + newsObject.fileId} width={ImageWidth} height={ImageHeight} />
           );
         }
         return Image;
@@ -108,11 +100,7 @@ const NewsItem = inject(
       getFile() {
         const { newsObject, clubModel } = this.props;
 
-        if (
-          newsObject &&
-          (!newsObject.imageWidth || !newsObject.imageHeight) &&
-          newsObject.fileId > 0
-        ) {
+        if (newsObject && (!newsObject.imageWidth || !newsObject.imageHeight) && newsObject.fileId > 0) {
           return (
             <FloatRightAnchor
               href={clubModel.attachmentUrl + newsObject.fileId}
@@ -127,13 +115,7 @@ const NewsItem = inject(
       }
 
       render() {
-        const {
-          sessionModel,
-          clubModel,
-          globalStateModel,
-          forwardedRef,
-          newsObject
-        } = this.props;
+        const { sessionModel, clubModel, globalStateModel, forwardedRef, newsObject } = this.props;
         const moduleInfo = clubModel.module("News");
         const FileDownload = this.getFile();
         const Image = this.getImage(200);
@@ -152,7 +134,7 @@ const NewsItem = inject(
           </NewsHeader>
         ) : (
           <NewsHeader>
-            {FileDownload}{" "}
+            {FileDownload}
             <div dangerouslySetInnerHTML={{ __html: newsObject.header }} />
           </NewsHeader>
         );
@@ -164,7 +146,7 @@ const NewsItem = inject(
             content={
               <ContentHolder>
                 <NewsHeader>
-                  {FileDownload}{" "}
+                  {FileDownload}
                   <div
                     dangerouslySetInnerHTML={{
                       __html: newsObject.header
@@ -181,7 +163,6 @@ const NewsItem = inject(
                   />
                 </NewsIntroduction>
                 <NewsText>
-                  {" "}
                   <div
                     dangerouslySetInnerHTML={{
                       __html: newsObject.text
@@ -204,7 +185,6 @@ const NewsItem = inject(
                   />
                 </NewsIntroduction>
                 <NewsText>
-                  {" "}
                   <div
                     dangerouslySetInnerHTML={{
                       __html: newsObject.text
@@ -218,9 +198,7 @@ const NewsItem = inject(
             editFormContent={
               <NewsEdit
                 newsObject={newsObject}
-                onChange={updatedNewsObject =>
-                  applySnapshot(newsObject, updatedNewsObject)
-                }
+                onChange={updatedNewsObject => applySnapshot(newsObject, updatedNewsObject)}
               />
             }
             deletePromise={() =>

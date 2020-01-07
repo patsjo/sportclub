@@ -29,7 +29,8 @@ class AddMapCompetitor extends Component {
 
     onTabChange(key);
     if (key === "1") {
-      onValidate(addLinkCompetitor.competitorId !== undefined);
+      // eslint-disable-next-line eqeqeq
+      onValidate(addLinkCompetitor.competitorId != undefined);
     } else {
       onValidate(iFirstName && iLastName && iBirthDay && iStartDate && iFirstName.length > 0 && iLastName.length > 0);
     }
@@ -59,7 +60,8 @@ class AddMapCompetitor extends Component {
             >
               {getFieldDecorator("iCompetitorId", {
                 initialValue:
-                  addLinkCompetitor.competitorId === undefined ? undefined : addLinkCompetitor.competitorId.toString(),
+                  // eslint-disable-next-line eqeqeq
+                  addLinkCompetitor.competitorId == undefined ? undefined : addLinkCompetitor.competitorId.toString(),
                 rules: [
                   {
                     required: true,
@@ -68,6 +70,7 @@ class AddMapCompetitor extends Component {
                 ]
               })(
                 <FormSelect
+                  style={{ minWidth: 174, maxWidth: 334 }}
                   allowClear={true}
                   showSearch
                   optionFilterProp="children"
@@ -76,8 +79,10 @@ class AddMapCompetitor extends Component {
                   }
                   options={competitorsOptions}
                   onChange={code => {
-                    addLinkCompetitor.competitorId = code === undefined ? undefined : parseInt(code);
-                    onValidate(addLinkCompetitor.competitorId !== undefined);
+                    // eslint-disable-next-line eqeqeq
+                    addLinkCompetitor.competitorId = code == undefined ? undefined : parseInt(code);
+                    // eslint-disable-next-line eqeqeq
+                    onValidate(addLinkCompetitor.competitorId != undefined);
                   }}
                 />
               )}
@@ -149,7 +154,8 @@ class AddMapCompetitor extends Component {
             >
               {getFieldDecorator("iBirthDay", {
                 initialValue:
-                  addLinkCompetitor.newCompetitor.iBirthDay === null
+                  // eslint-disable-next-line eqeqeq
+                  addLinkCompetitor.newCompetitor.iBirthDay == null
                     ? null
                     : moment(addLinkCompetitor.newCompetitor.iBirthDay, dateFormat),
                 rules: [
@@ -184,7 +190,8 @@ class AddMapCompetitor extends Component {
             >
               {getFieldDecorator("iStartDate", {
                 initialValue:
-                  addLinkCompetitor.newCompetitor.iStartDate === null
+                  // eslint-disable-next-line eqeqeq
+                  addLinkCompetitor.newCompetitor.iStartDate == null
                     ? null
                     : moment(addLinkCompetitor.newCompetitor.iStartDate, dateFormat),
                 rules: [

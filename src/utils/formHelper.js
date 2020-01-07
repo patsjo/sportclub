@@ -6,12 +6,13 @@ const Option = Select.Option;
 
 export const dateFormat = "YYYY-MM-DD";
 export const timeFormat = "HH:mm:ss";
+export const timeFormatWithoutHour = "mm:ss";
 export const shortTimeFormat = "HH:mm";
 export const maxByteSize = 10485760;
 
 export const FormSelect = ({ options, ...props }) => {
   return (
-    <Select style={{ minWidth: 174, maxWidth: 334 }} {...props}>
+    <Select {...props}>
       {options.map(option => (
         <Option value={option.code}>{option.description}</Option>
       ))}
@@ -20,7 +21,8 @@ export const FormSelect = ({ options, ...props }) => {
 };
 
 export const normFile = file => {
-  if (FileReader.prototype.readAsBinaryString === undefined) {
+  // eslint-disable-next-line eqeqeq
+  if (FileReader.prototype.readAsBinaryString == undefined) {
     FileReader.prototype.readAsBinaryString = function(fileData) {
       let binary = "";
       let pt = this;

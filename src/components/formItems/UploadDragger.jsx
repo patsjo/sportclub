@@ -65,8 +65,7 @@ class UploadDragger extends Component {
 
   constructor(props) {
     super(props);
-    const files =
-      props.form.getFieldsValue()[props.fieldName] || props.initialValue || [];
+    const files = props.form.getFieldsValue()[props.fieldName] || props.initialValue || [];
     const nofFiles = files ? files.length : 0;
 
     this.state = {
@@ -76,13 +75,11 @@ class UploadDragger extends Component {
 
   shouldComponentUpdate(nextProps) {
     const files = nextProps.form.getFieldValue(nextProps.fieldName);
-    if (
-      Array.isArray(files) &&
-      files.filter(attachment => attachment.status === "uploading").length > 0
-    ) {
+    if (Array.isArray(files) && files.filter(attachment => attachment.status === "uploading").length > 0) {
       return true;
     }
-    const numberOfFiles = files === undefined ? 0 : files.length;
+    // eslint-disable-next-line eqeqeq
+    const numberOfFiles = files == undefined ? 0 : files.length;
     if (numberOfFiles === this.state.numberOfFiles) {
       return false;
     }
@@ -103,14 +100,13 @@ class UploadDragger extends Component {
     let fileList;
     if (Array.isArray(e)) {
       fileList = e;
-    } else if (e !== undefined) {
+      // eslint-disable-next-line eqeqeq
+    } else if (e != undefined) {
       fileList = e.fileList;
     } else {
       fileList = [];
     }
-    fileList = fileList.filter(
-      file => this.validFile(file) && file.size <= maxByteSize
-    );
+    fileList = fileList.filter(file => this.validFile(file) && file.size <= maxByteSize);
     return fileList;
   };
 
@@ -138,9 +134,7 @@ class UploadDragger extends Component {
     }
     if (!validSize) {
       const maxByteSizeMegaByte = Math.round(maxByteSize / 1024 / 1024);
-      message.error(
-        t("error.FileSizeTooLarge").replace("{0}", maxByteSizeMegaByte)
-      );
+      message.error(t("error.FileSizeTooLarge").replace("{0}", maxByteSizeMegaByte));
     }
     if (!this.props.multiple && fileList.length > 1) {
       while (fileList.length > 1) {
@@ -151,20 +145,18 @@ class UploadDragger extends Component {
 
   validFile = file => {
     const fileType = getFileType(file);
-    const isImage = fileType.match(/^image\/.*$/) !== null;
+    // eslint-disable-next-line eqeqeq
+    const isImage = fileType.match(/^image\/.*$/) != null;
     const isPdf = fileType === "application/pdf";
     const isWord =
       fileType === "application/msword" ||
-      fileType ===
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+      fileType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
     const isExcel =
       fileType === "application/vnd.ms-excel" ||
-      fileType ===
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+      fileType === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     const isPowerpoint =
       fileType === "application/vnd.ms-powerpoint" ||
-      fileType ===
-        "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+      fileType === "application/vnd.openxmlformats-officedocument.presentationml.presentation";
 
     return isImage || isPdf || isWord || isExcel || isPowerpoint;
   };

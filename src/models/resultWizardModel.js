@@ -2,6 +2,17 @@ import { types } from "mobx-state-tree";
 import { RaceEvent } from "./resultModel";
 import moment from "moment";
 
+export const difficulties = {
+  green: "Grön",
+  white: "Vit",
+  yellow: "Gul",
+  orange: "Orange",
+  red: "Röd",
+  purple: "Lila",
+  blue: "Blå",
+  black: "Svart"
+};
+
 export const failedReasons = {
   NotStarted: "EJ START",
   NotFinished: "UTGÅTT",
@@ -41,6 +52,12 @@ export const raceDistanceOptions = t => [
   { code: "UltraLong", description: t("results.UltraLong") }
 ];
 
+export const raceRelayDistanceOptions = t =>
+  raceDistanceOptions(t).map(option => ({
+    code: `Relay${option.code}`,
+    description: `${option.description}${t("results.Relay")}`
+  }));
+
 const setLocalStorage = raceWizard => {
   const obj = {
     queryStartDate: raceWizard.queryStartDate,
@@ -79,6 +96,16 @@ export const getLocalStorage = () => {
     };
   }
 };
+const WinnerResult = types.model({
+  id: types.identifierNumber,
+  personName: types.string,
+  className: types.string,
+  difficulty: types.maybeNull(types.string),
+  lengthInMeter: types.maybeNull(types.integer),
+  winnerTime: types.maybeNull(types.string),
+  secondsPerKilometer: types.maybeNull(types.integer),
+  timePerKilometer: types.maybeNull(types.string)
+});
 
 export const RaceWizard = types
   .model({
@@ -89,7 +116,8 @@ export const RaceWizard = types
     paymentModel: types.integer,
     selectedEventorId: types.maybeNull(types.integer),
     selectedEventorRaceId: types.maybeNull(types.integer),
-    raceEvent: types.maybeNull(RaceEvent)
+    raceEvent: types.maybeNull(RaceEvent),
+    raceWinnerResults: types.array(WinnerResult)
   })
   .actions(self => {
     return {

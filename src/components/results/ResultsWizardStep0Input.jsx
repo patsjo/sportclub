@@ -41,9 +41,9 @@ const ResultWizardStep0Input = inject(
         const self = this;
         const { t, form, clubModel, raceWizardModel } = self.props;
         const { formId } = self.state;
-        const { getFieldDecorator, getFieldError, isFieldTouched } = form;
+        const { getFieldDecorator, getFieldError } = form;
         // Only show error after a field is touched.
-        const queryDateRangeError = isFieldTouched("iQueryDateRange") && getFieldError("iQueryDateRange");
+        const queryDateRangeError = getFieldError("iQueryDateRange");
 
         return (
           <Form id={formId} onSubmit={self.onSave}>
@@ -52,6 +52,7 @@ const ResultWizardStep0Input = inject(
                 initialValue: clubModel.raceClubs.selectedClub.clubId.toString()
               })(
                 <FormSelect
+                  style={{ minWidth: 174, maxWidth: 334 }}
                   options={clubModel.raceClubs.clubOptions}
                   onChange={code => clubModel.raceClubs.setSelectedClub(code)}
                 />

@@ -9,16 +9,15 @@ import { PostJsonData } from "../../utils/api";
 import ResultWizardStep0Input from "./ResultsWizardStep0Input";
 import ResultWizardStep1ChooseRace from "./ResultsWizardStep1ChooseRace";
 import ResultWizardStep2EditRace from "./ResultsWizardStep2EditRace";
+import { SpinnerDiv, StyledIcon } from "../styled/styled";
+import EditResultIndividual from "./EditResultIndividual";
 
+const { confirm } = Modal;
 const StyledModalContent = styled.div``;
 const StyledSteps = styled(Steps)`
   &&& {
     margin-bottom: 16px;
   }
-`;
-const SpinnerDiv = styled.div`
-  text-align: center;
-  width: 100%;
 `;
 const { Step } = Steps;
 
@@ -40,6 +39,7 @@ const ResultsWizardModal = inject(
         this.raceWizardModel = RaceWizard.create(getLocalStorage());
         this.state = {
           wizardStep: -1,
+          nextStepValid: true,
           inputForm: undefined,
           loaded: false
         };
@@ -78,7 +78,7 @@ const ResultsWizardModal = inject(
         if (wizardStep === 1 && !this.raceWizardModel.existInEventor) {
           wizardStep++;
         }
-        this.setState({ wizardStep });
+        this.setState({ wizardStep, nextStepValid: false });
       }
 
       prev() {
@@ -86,7 +86,17 @@ const ResultsWizardModal = inject(
         if (wizardStep === 1 && !this.raceWizardModel.existInEventor) {
           wizardStep--;
         }
-        this.setState({ wizardStep });
+        this.setState({
+          wizardStep,
+          nextStepValid:
+            wizardStep === 0 ||
+            (wizardStep === 1 && this.raceWizardModel.selectedEventorId) ||
+            (wizardStep === 2 && this.raceWizardModel.raceEvent && this.raceWizardModel.raceEvent.valid)
+        });
+      }
+
+      onValidate(valid) {
+        this.setState({ nextStepValid: valid });
       }
 
       save() {
@@ -95,11 +105,11 @@ const ResultsWizardModal = inject(
 
       render() {
         const self = this;
-        const { t } = self.props;
-        const { wizardStep, loaded } = self.state;
+        const { t, clubModel } = self.props;
+        const { wizardStep, loaded, nextStepValid } = self.state;
 
         return (
-          <Provider raceWizardModel={this.raceWizardModel}>
+          <Provider raceWizardModel={self.raceWizardModel}>
             <Modal
               closable={false}
               centered={true}
@@ -114,9 +124,47 @@ const ResultsWizardModal = inject(
                 </Button>,
                 <Button
                   variant="contained"
-                  disabled={
-                    !loaded || !(wizardStep === 0 || (wizardStep === 1 && this.raceWizardModel.selectedEventorId))
-                  }
+                  style={wizardStep === 2 ? {} : { display: "none" }}
+                  onClick={() => {
+                    const resultObject = { resultId: -1 - self.raceWizardModel.raceEvent.results.length };
+                    let confirmModal;
+                    confirmModal = confirm({
+                      width: 800,
+                      icon: <StyledIcon type="plus" theme="twoTone" />,
+                      title: t("results.AddCompetitor"),
+                      content: (
+                        <EditResultIndividual
+                          clubModel={clubModel}
+                          paymentModel={self.raceWizardModel.raceEvent.paymentModel}
+                          eventClassificationId={self.raceWizardModel.raceEvent.eventClassificationId}
+                          result={resultObject}
+                          competitorsOptions={clubModel.raceClubs.selectedClub.competitorsOptions}
+                          onValidate={valid =>
+                            confirmModal.update({
+                              okButtonProps: {
+                                disabled: !valid
+                              }
+                            })
+                          }
+                        />
+                      ),
+                      okText: t("common.Save"),
+                      okButtonProps: {
+                        disabled: true
+                      },
+                      cancelText: t("common.Cancel"),
+                      onOk() {
+                        self.raceWizardModel.raceEvent.addResult(resultObject);
+                      }
+                    });
+                  }}
+                >
+                  <Icon type="plus" />
+                  {t("results.AddCompetitor")}
+                </Button>,
+                <Button
+                  variant="contained"
+                  disabled={!loaded || !nextStepValid}
                   onClick={() => (wizardStep === 3 ? self.save() : self.next())}
                 >
                   {wizardStep === 3 ? t("common.Save") : t("common.Next")}
@@ -132,16 +180,24 @@ const ResultsWizardModal = inject(
                   <Step key="ResultsWizardModalStep0" title={t("results.Step0Input")} />
                   <Step key="ResultsWizardModalStep1" title={t("results.Step1ChooseRace")} />
                   <Step key="ResultsWizardModalStep2" title={t("results.Step2EditRace")} />
-                  <Step key="ResultsWizardModalStep3" title={t("results.Step3SaveRace")} />
+                  <Step key="ResultsWizardModalStep3" title={t("results.Step3Ranking")} />
                 </StyledSteps>
                 {wizardStep === 0 ? (
                   <ResultWizardStep0Input onMount={form => self.setState({ inputForm: form })} />
                 ) : null}
                 {wizardStep >= 1 ? (
-                  <ResultWizardStep1ChooseRace visible={wizardStep === 1} onFailed={() => self.prev()} />
+                  <ResultWizardStep1ChooseRace
+                    onValidate={self.onValidate.bind(self)}
+                    visible={wizardStep === 1}
+                    onFailed={() => self.prev()}
+                  />
                 ) : null}
                 {wizardStep >= 2 ? (
-                  <ResultWizardStep2EditRace visible={wizardStep === 2} onFailed={() => self.prev()} />
+                  <ResultWizardStep2EditRace
+                    onValidate={self.onValidate.bind(self)}
+                    visible={wizardStep === 2}
+                    onFailed={() => self.prev()}
+                  />
                 ) : null}
                 {!loaded ? (
                   <SpinnerDiv>

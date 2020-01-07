@@ -36,24 +36,9 @@ const ItemFadeOut = styled.div`
       color-stop(80%, #ffffff),
       color-stop(100%, #ffffff)
     );
-    background-image: -moz-linear-gradient(
-      top,
-      rgba(255, 255, 255, 0) 0%,
-      #ffffff 80%,
-      #ffffff 100%
-    );
-    background-image: -webkit-linear-gradient(
-      top,
-      rgba(255, 255, 255, 0) 0%,
-      #ffffff 80%,
-      #ffffff 100%
-    );
-    background-image: linear-gradient(
-      to bottom,
-      rgba(255, 255, 255, 0) 0%,
-      #ffffff 80%,
-      #ffffff 100%
-    );
+    background-image: -moz-linear-gradient(top, rgba(255, 255, 255, 0) 0%, #ffffff 80%, #ffffff 100%);
+    background-image: -webkit-linear-gradient(top, rgba(255, 255, 255, 0) 0%, #ffffff 80%, #ffffff 100%);
+    background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #ffffff 80%, #ffffff 100%);
     pointer-events: none;
   }
 `;
@@ -120,23 +105,16 @@ const FadeOutItem = inject("sessionModel")(
         const self = this;
 
         const ShowEditButton =
-          editFormContent !== undefined &&
-          module.updateUrl !== undefined &&
-          sessionModel.loggedIn ? (
-            <Button
-              loading={this.state.saving}
-              onClick={() =>
-                this.setState({ showEdit: true, showModalItem: false })
-              }
-            >
+          // eslint-disable-next-line eqeqeq
+          editFormContent != undefined && module.updateUrl != undefined && sessionModel.loggedIn ? (
+            <Button loading={this.state.saving} onClick={() => this.setState({ showEdit: true, showModalItem: false })}>
               {t("common.Edit")}
             </Button>
           ) : null;
 
         const ShowDeleteButton =
-          module.deleteUrl !== undefined &&
-          deletePromise &&
-          sessionModel.loggedIn ? (
+          // eslint-disable-next-line eqeqeq
+          module.deleteUrl != undefined && deletePromise && sessionModel.loggedIn ? (
             <Popconfirm
               title={t("common.Confirm")}
               okText={t("common.Yes")}
@@ -173,9 +151,7 @@ const FadeOutItem = inject("sessionModel")(
 
         return (
           <ItemHolder ref={forwardedRef}>
-            <ItemFadeOut onClick={this.openModal}>
-              {this.props.content}
-            </ItemFadeOut>
+            <ItemFadeOut onClick={this.openModal}>{this.props.content}</ItemFadeOut>
             <Modal
               closable={false}
               centered={true}
@@ -184,18 +160,12 @@ const FadeOutItem = inject("sessionModel")(
               footer={[
                 ShowDeleteButton,
                 ShowEditButton,
-                <Button
-                  type="primary"
-                  onClick={this.closeModal}
-                  loading={this.state.saving}
-                >
+                <Button type="primary" onClick={this.closeModal} loading={this.state.saving}>
                   {t("common.Close")}
                 </Button>
               ]}
             >
-              <StyledModalContent columns={modalColumns}>
-                {this.props.modalContent}
-              </StyledModalContent>
+              <StyledModalContent columns={modalColumns}>{this.props.modalContent}</StyledModalContent>
             </Modal>
             {EditFormContent}
           </ItemHolder>

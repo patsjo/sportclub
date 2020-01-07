@@ -72,12 +72,14 @@ const ResultWizardStep1ChooseRace = inject(
 
         Promise.all([alreadySavedEventsPromise, entriesPromise, oringenEventsPromise])
           .then(([alreadySavedEventsJson, entriesJson, oringenEventsJson]) => {
-            if (entriesJson === undefined || entriesJson.Entry === undefined) {
+            // eslint-disable-next-line eqeqeq
+            if (entriesJson == undefined || entriesJson.Entry == undefined) {
               entriesJson = { Entry: [] };
             } else if (!Array.isArray(entriesJson.Entry)) {
               entriesJson.Entry = [entriesJson.Entry];
             }
-            if (oringenEventsJson === undefined || oringenEventsJson.Event === undefined) {
+            // eslint-disable-next-line eqeqeq
+            if (oringenEventsJson == undefined || oringenEventsJson.Event == undefined) {
               oringenEventsJson = { Event: [] };
             } else if (!Array.isArray(oringenEventsJson.Event)) {
               oringenEventsJson.Event = [oringenEventsJson.Event];
@@ -97,7 +99,8 @@ const ResultWizardStep1ChooseRace = inject(
                 )
               ])
             ]
-              .filter(eventRaceId => eventRaceId !== undefined)
+              // eslint-disable-next-line eqeqeq
+              .filter(eventRaceId => eventRaceId != undefined)
               .map(eventRaceId => {
                 return { EventRaceId: eventRaceId };
               });
@@ -107,7 +110,8 @@ const ResultWizardStep1ChooseRace = inject(
                   ? e.EventRaceId.includes(event.EventRaceId)
                   : e.EventRaceId === event.EventRaceId
               );
-              if (entry === undefined) {
+              // eslint-disable-next-line eqeqeq
+              if (entry == undefined) {
                 entry = {
                   Event: oringenEventsJson.Event.find(e =>
                     Array.isArray(e.EventRace)
@@ -164,12 +168,13 @@ const ResultWizardStep1ChooseRace = inject(
       }
 
       onSelectChange = selectedRowKeys => {
-        const { raceWizardModel } = this.props;
+        const { raceWizardModel, onValidate } = this.props;
         const selected = JSON.parse(selectedRowKeys);
 
         raceWizardModel.setValue("selectedEventorId", parseInt(selected.selectedEventorId));
         raceWizardModel.setValue("selectedEventorRaceId", parseInt(selected.selectedEventorRaceId));
         this.setState({ selectedRowKeys });
+        onValidate(true);
       };
 
       render() {

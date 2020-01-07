@@ -38,18 +38,8 @@ const News = inject(
       }
 
       componentDidUpdate(prevProps) {
-        const {
-          startDate,
-          endDate,
-          type,
-          globalStateModel,
-          infiniteScroll
-        } = this.props;
-        if (
-          prevProps.startDate !== startDate ||
-          prevProps.endDate !== endDate ||
-          prevProps.type !== type
-        ) {
+        const { startDate, endDate, type, globalStateModel, infiniteScroll } = this.props;
+        if (prevProps.startDate !== startDate || prevProps.endDate !== endDate || prevProps.type !== type) {
           globalStateModel.news.reset();
           if (!infiniteScroll) {
             this.loadNews();
@@ -59,9 +49,7 @@ const News = inject(
 
       loadNews() {
         const self = this;
-        const url = this.props.clubModel.modules.find(
-          module => module.name === "News"
-        ).queryUrl;
+        const url = this.props.clubModel.modules.find(module => module.name === "News").queryUrl;
         const { startDate, endDate, type, globalStateModel } = this.props;
         const { limit, offset } = globalStateModel.news;
         const data = {
@@ -73,7 +61,8 @@ const News = inject(
         };
 
         PostJsonData(url, data, false).then(json => {
-          const newArray = json !== undefined ? json : [];
+          // eslint-disable-next-line eqeqeq
+          const newArray = json != undefined ? json : [];
           newArray.forEach(newsItem => {
             newsItem.link = decodeURIComponent(newsItem.link);
           });
@@ -100,20 +89,14 @@ const News = inject(
           >
             <Columns>
               {newsItems.map(newsObject => (
-                <NewsItem
-                  key={"newsObject#" + newsObject.id}
-                  newsObject={newsObject}
-                />
+                <NewsItem key={"newsObject#" + newsObject.id} newsObject={newsObject} />
               ))}
             </Columns>
           </InfiniteScroll>
         ) : !firstLoading ? (
           <>
             {newsItems.map(newsObject => (
-              <NewsItem
-                key={"newsObject#" + newsObject.id}
-                newsObject={newsObject}
-              />
+              <NewsItem key={"newsObject#" + newsObject.id} newsObject={newsObject} />
             ))}
           </>
         ) : (

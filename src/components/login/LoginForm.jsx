@@ -54,7 +54,8 @@ const Login = inject(
             )
               .then(json => {
                 sessionModel.setLogin(values.username, values.password, values.rememberLogin);
-                if (json === undefined || json === null) {
+                // eslint-disable-next-line eqeqeq
+                if (json == undefined) {
                   json = { id: undefined, name: values.username, isAdmin: false };
                 }
                 sessionModel.setSuccessfullyLogin(json.id, json.name, json.isAdmin);

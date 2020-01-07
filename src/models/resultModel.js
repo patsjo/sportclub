@@ -127,6 +127,14 @@ export const RaceClubs = types
         .find(ec => ec.eventClassificationId === eventClassificationId)
         .classClassifications.find(cc => cc.classClassificationId === classClassificationId).description;
     },
+    classClassificationOptions(eventClassificationId) {
+      return self.eventClassifications
+        .find(ec => ec.eventClassificationId === eventClassificationId)
+        .classClassifications.map(cc => ({
+          code: cc.classClassificationId.toString(),
+          description: cc.description
+        }));
+    },
     get eventClassificationOptions() {
       return self.eventClassifications.map(ec => ({
         code: ec.eventClassificationId,
@@ -195,7 +203,8 @@ const RaceResult = types
     award: types.maybeNull(types.string),
     points: types.maybeNull(types.integer),
     pointsOld: types.maybeNull(types.integer),
-    points1000: types.maybeNull(types.integer)
+    points1000: types.maybeNull(types.integer),
+    ranking: types.maybeNull(types.number)
   })
   .actions(self => {
     return {
@@ -203,22 +212,43 @@ const RaceResult = types
         self[key] = value;
       }
     };
-  });
+  })
+  .views(self => ({
+    get valid() {
+      return (
+        self.competitorId != null &&
+        self.className != null &&
+        self.classClassificationId != null &&
+        self.difficulty != null &&
+        self.originalFee != null &&
+        self.lateFee != null &&
+        self.feeToClub != null &&
+        (self.failedReason != null ||
+          (self.lengthInMeter != null &&
+            self.competitorTime != null &&
+            self.winnerTime != null &&
+            self.position != null &&
+            self.nofStartsInClass != null))
+      );
+    }
+  }));
 
 export const RaceEvent = types
   .model({
     eventId: types.identifierNumber,
-    eventorId: types.integer,
-    eventorRaceId: types.integer,
-    name: types.string,
+    eventorId: types.maybeNull(types.integer),
+    eventorRaceId: types.maybeNull(types.integer),
+    name: types.maybeNull(types.string),
     organiserName: types.maybeNull(types.string),
-    raceDate: types.string,
+    raceDate: types.maybeNull(types.string),
     raceTime: types.maybeNull(types.string),
     eventClassificationId: types.string,
     raceLightCondition: types.maybeNull(types.string),
     raceDistance: types.maybeNull(types.string),
     paymentModel: types.integer,
-    results: types.array(RaceResult)
+    results: types.array(RaceResult),
+    rankingBasetimePerKilometer: types.maybeNull(types.string),
+    rankingBasepoint: types.maybeNull(types.number)
   })
   .actions(self => {
     return {
@@ -240,4 +270,19 @@ export const RaceEvent = types
         }
       })
     };
-  });
+  })
+  .views(self => ({
+    get valid() {
+      return (
+        self.name != null &&
+        self.organiserName != null &&
+        self.raceDate != null &&
+        self.eventClassificationId != null &&
+        self.paymentModel != null &&
+        self.raceLightCondition != null &&
+        self.raceDistance != null &&
+        self.results.length > 0 &&
+        !self.results.some(result => !result.valid)
+      );
+    }
+  }));

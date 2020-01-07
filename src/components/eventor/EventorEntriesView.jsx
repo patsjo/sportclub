@@ -71,12 +71,14 @@ const EventorEntriesView = inject("clubModel")(
           false
         );
         Promise.all([entriesPromise, oringenEventsPromise]).then(([entriesJson, oringenEventsJson]) => {
-          if (entriesJson === undefined || entriesJson.Entry === undefined) {
+          // eslint-disable-next-line eqeqeq
+          if (entriesJson == undefined || entriesJson.Entry == undefined) {
             entriesJson = { Entry: [] };
           } else if (!Array.isArray(entriesJson.Entry)) {
             entriesJson.Entry = [entriesJson.Entry];
           }
-          if (oringenEventsJson === undefined || oringenEventsJson.Event === undefined) {
+          // eslint-disable-next-line eqeqeq
+          if (oringenEventsJson == undefined || oringenEventsJson.Event == undefined) {
             oringenEventsJson = { Event: [] };
           } else if (!Array.isArray(oringenEventsJson.Event)) {
             oringenEventsJson.Event = [oringenEventsJson.Event];
@@ -94,7 +96,8 @@ const EventorEntriesView = inject("clubModel")(
               ...flatten(oringenEventsJson.Event.map(event => event.EventRace)).map(eventRace => eventRace.EventRaceId)
             ])
           ]
-            .filter(eventRaceId => eventRaceId !== undefined)
+            // eslint-disable-next-line eqeqeq
+            .filter(eventRaceId => eventRaceId != undefined)
             .map(eventRaceId => {
               return { EventRaceId: eventRaceId };
             });
@@ -104,7 +107,8 @@ const EventorEntriesView = inject("clubModel")(
                 ? e.EventRaceId.includes(event.EventRaceId)
                 : e.EventRaceId === event.EventRaceId
             );
-            if (entry === undefined) {
+            // eslint-disable-next-line eqeqeq
+            if (entry == undefined) {
               entry = {
                 Event: oringenEventsJson.Event.find(e =>
                   Array.isArray(e.EventRace)
@@ -124,8 +128,10 @@ const EventorEntriesView = inject("clubModel")(
             }
             event.Competitors = entriesJson.Entry.filter(
               entry =>
-                entry.Competitor !== undefined &&
-                entry.Competitor.Person !== undefined &&
+                // eslint-disable-next-line eqeqeq
+                entry.Competitor != undefined &&
+                // eslint-disable-next-line eqeqeq
+                entry.Competitor.Person != undefined &&
                 (Array.isArray(entry.EventRaceId)
                   ? entry.EventRaceId.includes(event.EventRaceId)
                   : entry.EventRaceId === event.EventRaceId)

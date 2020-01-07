@@ -1,6 +1,10 @@
 import styled from "styled-components";
 import { Table, Icon } from "antd";
 
+export const NoWrap = styled.div`
+  white-space: nowrap;
+`;
+
 export const SpinnerDiv = styled.div`
   text-align: center;
   width: 100%;
@@ -9,6 +13,7 @@ export const SpinnerDiv = styled.div`
 export const StyledIcon = styled(Icon)`
   &&& {
     margin-right: 8px;
+    font-size: 20px;
   }
 `;
 export const StyledTable = styled(Table)`

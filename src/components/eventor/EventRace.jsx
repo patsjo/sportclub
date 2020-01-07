@@ -154,12 +154,14 @@ const EventRace = inject("clubModel")(
           const startJson = jsons[1];
           const resultJson = jsons[2];
           const lengthHtmlJson = jsons[3];
-          if (startJson !== undefined && startJson.ClassStart !== undefined) {
+          // eslint-disable-next-line eqeqeq
+          if (startJson != undefined && startJson.ClassStart != undefined) {
             eventObject.Competitors = [];
             const ClassStarts = Array.isArray(startJson.ClassStart) ? startJson.ClassStart : [startJson.ClassStart];
             ClassStarts.forEach(classStart => {
               let currentClass = { EventClassId: classStart.EventClassId };
-              if (classJson !== undefined) {
+              // eslint-disable-next-line eqeqeq
+              if (classJson != undefined) {
                 currentClass = classJson.EventClass.find(evtClass => evtClass.EventClassId === classStart.EventClassId);
                 if (Array.isArray(currentClass.ClassRaceInfo)) {
                   currentClass.numberOfEntries = currentClass.ClassRaceInfo.find(
@@ -170,11 +172,13 @@ const EventRace = inject("clubModel")(
                 }
               }
 
-              if (classStart.PersonStart !== undefined) {
+              // eslint-disable-next-line eqeqeq
+              if (classStart.PersonStart != undefined) {
                 const PersonStarts = Array.isArray(classStart.PersonStart)
                   ? classStart.PersonStart.filter(
                       personStart =>
-                        personStart.RaceStart === undefined ||
+                        // eslint-disable-next-line eqeqeq
+                        personStart.RaceStart == undefined ||
                         personStart.RaceStart.EventRaceId === eventObject.EventRaceId
                     )
                   : [classStart.PersonStart];
@@ -182,11 +186,13 @@ const EventRace = inject("clubModel")(
                   eventObject.Competitors.push({
                     Person: personStart.Person,
                     EntryClass: currentClass,
-                    Start: personStart.RaceStart !== undefined ? personStart.RaceStart.Start : personStart.Start
+                    // eslint-disable-next-line eqeqeq
+                    Start: personStart.RaceStart != undefined ? personStart.RaceStart.Start : personStart.Start
                   });
                 });
               }
-              if (classStart.TeamStart !== undefined) {
+              // eslint-disable-next-line eqeqeq
+              if (classStart.TeamStart != undefined) {
                 const TeamStarts = Array.isArray(classStart.TeamStart) ? classStart.TeamStart : [classStart.TeamStart];
                 TeamStarts.forEach(teamStart => {
                   eventObject.Competitors.push({
@@ -200,7 +206,8 @@ const EventRace = inject("clubModel")(
               }
             });
           }
-          if (resultJson !== undefined && resultJson.ClassResult !== undefined) {
+          // eslint-disable-next-line eqeqeq
+          if (resultJson != undefined && resultJson.ClassResult != undefined) {
             eventObject.Competitors = [];
             const ClassResults = Array.isArray(resultJson.ClassResult)
               ? resultJson.ClassResult
@@ -209,7 +216,8 @@ const EventRace = inject("clubModel")(
               let currentClass = {
                 EventClassId: classResult.EventClass.EventClassId
               };
-              if (classJson !== undefined) {
+              // eslint-disable-next-line eqeqeq
+              if (classJson != undefined) {
                 currentClass = classJson.EventClass.find(
                   evtClass => evtClass.EventClassId === classResult.EventClass.EventClassId
                 );
@@ -222,14 +230,17 @@ const EventRace = inject("clubModel")(
                 currentClass.numberOfStarts = currentClass.ClassRaceInfo["@attributes"].noOfStarts;
               }
 
-              if (classResult.PersonResult !== undefined) {
+              // eslint-disable-next-line eqeqeq
+              if (classResult.PersonResult != undefined) {
                 const PersonResults = Array.isArray(classResult.PersonResult)
                   ? classResult.PersonResult.filter(
                       personResult =>
-                        personResult.RaceResult === undefined ||
+                        // eslint-disable-next-line eqeqeq
+                        personResult.RaceResult == undefined ||
                         personResult.RaceResult.EventRaceId === eventObject.EventRaceId
                     )
-                  : classResult.PersonResult.RaceResult === undefined ||
+                  : // eslint-disable-next-line eqeqeq
+                  classResult.PersonResult.RaceResult == undefined ||
                     classResult.PersonResult.RaceResult.EventRaceId === eventObject.EventRaceId
                   ? [classResult.PersonResult]
                   : [];
@@ -237,11 +248,12 @@ const EventRace = inject("clubModel")(
                   eventObject.Competitors.push({
                     Person: personResult.Person,
                     EntryClass: currentClass,
-                    Result: personResult.RaceResult !== undefined ? personResult.RaceResult.Result : personResult.Result
+                    // eslint-disable-next-line eqeqeq
+                    Result: personResult.RaceResult != undefined ? personResult.RaceResult.Result : personResult.Result
                   });
                 });
               }
-              // if (classResult.TeamStart !== undefined) {
+              // if (classResult.TeamStart != undefined) {
               //   const TeamStarts = Array.isArray(classResult.TeamStart)
               //     ? classResult.TeamStart
               //     : [classResult.TeamStart];
@@ -258,14 +270,16 @@ const EventRace = inject("clubModel")(
             });
           }
           eventObject.Competitors.forEach(competitor => {
-            if (competitor.Start === undefined || competitor.Start.StartTime === undefined) {
+            // eslint-disable-next-line eqeqeq
+            if (competitor.Start == undefined || competitor.Start.StartTime == undefined) {
               competitor.Start = {
                 StartTime: {
                   Clock: ""
                 }
               };
             }
-            if (competitor.EntryClass.ClassShortName === undefined && classJson !== undefined) {
+            // eslint-disable-next-line eqeqeq
+            if (competitor.EntryClass.ClassShortName == undefined && classJson != undefined) {
               const currentClass = classJson.EventClass.find(
                 evtClass => evtClass.EventClassId === competitor.EntryClass.EventClassId
               );
@@ -279,7 +293,8 @@ const EventRace = inject("clubModel")(
               competitor.EntryClass = currentClass;
             }
           });
-          if (startJson !== undefined && startJson.ClassStart !== undefined) {
+          // eslint-disable-next-line eqeqeq
+          if (startJson != undefined && startJson.ClassStart != undefined) {
             eventObject.Competitors = eventObject.Competitors.sort((a, b) =>
               a.Start.StartTime.Clock > b.Start.StartTime.Clock
                 ? 1
@@ -287,10 +302,12 @@ const EventRace = inject("clubModel")(
                 ? -1
                 : 0
             );
-          } else if (resultJson !== undefined && resultJson.ClassResult !== undefined) {
+            // eslint-disable-next-line eqeqeq
+          } else if (resultJson != undefined && resultJson.ClassResult != undefined) {
             eventObject.Competitors = eventObject.Competitors.filter(
               competitor =>
-                competitor.Result !== undefined && competitor.Result.CompetitorStatus["@attributes"].value === "OK"
+                // eslint-disable-next-line eqeqeq
+                competitor.Result != undefined && competitor.Result.CompetitorStatus["@attributes"].value === "OK"
             );
             eventObject.Competitors = eventObject.Competitors.sort((a, b) =>
               parseInt(a.Result.ResultPosition) > parseInt(b.Result.ResultPosition)
@@ -303,8 +320,10 @@ const EventRace = inject("clubModel")(
           self.setState({
             loaded: true,
             eventObject: eventObject,
-            showStart: startJson !== undefined && startJson.ClassStart !== undefined,
-            showResult: resultJson !== undefined && resultJson.ClassResult !== undefined
+            // eslint-disable-next-line eqeqeq
+            showStart: startJson != undefined && startJson.ClassStart != undefined,
+            // eslint-disable-next-line eqeqeq
+            showResult: resultJson != undefined && resultJson.ClassResult != undefined
           });
         });
       }
@@ -324,12 +343,14 @@ const EventRace = inject("clubModel")(
                     </StyledTableDataName>
                     <StyledTableDataClass>
                       {competitor.EntryClass.ClassShortName +
-                        (competitor.EntryClass.numberOfEntries !== undefined
+                        // eslint-disable-next-line eqeqeq
+                        (competitor.EntryClass.numberOfEntries != undefined
                           ? " (" + competitor.EntryClass.numberOfEntries + ")"
                           : "")}
                     </StyledTableDataClass>
                     <StyledTableDataStart>
-                      {competitor.Start !== undefined ? competitor.Start.StartTime.Clock : ""}
+                      {// eslint-disable-next-line eqeqeq
+                      competitor.Start != undefined ? competitor.Start.StartTime.Clock : ""}
                     </StyledTableDataStart>
                   </StyledTableRow>
                 ))}
@@ -349,7 +370,8 @@ const EventRace = inject("clubModel")(
                     </StyledTableDataName>
                     <StyledTableDataClass>
                       {competitor.EntryClass.ClassShortName +
-                        (competitor.EntryClass.numberOfStarts !== undefined
+                        // eslint-disable-next-line eqeqeq
+                        (competitor.EntryClass.numberOfStarts != undefined
                           ? " (" + competitor.EntryClass.numberOfStarts + ")"
                           : "")}
                     </StyledTableDataClass>
@@ -372,7 +394,8 @@ const EventRace = inject("clubModel")(
                     </StyledTableDataName>
                     <StyledTableDataClass>
                       {competitor.EntryClass.ClassShortName +
-                        (competitor.EntryClass.numberOfEntries !== undefined
+                        // eslint-disable-next-line eqeqeq
+                        (competitor.EntryClass.numberOfEntries != undefined
                           ? " (" + competitor.EntryClass.numberOfEntries + ")"
                           : "")}
                     </StyledTableDataClass>
@@ -387,7 +410,8 @@ const EventRace = inject("clubModel")(
             </SpinnerDiv>
           ) : null;
         const ShowEventItem =
-          EventItem !== null ? (
+          // eslint-disable-next-line eqeqeq
+          EventItem != null ? (
             <FadeOutItem
               module={moduleInfo}
               content={
