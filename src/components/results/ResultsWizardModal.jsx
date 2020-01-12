@@ -4,13 +4,22 @@ import PropTypes from "prop-types";
 import { observer, inject, Provider } from "mobx-react";
 import { withTranslation } from "react-i18next";
 import styled from "styled-components";
-import { RaceWizard, getLocalStorage } from "../../models/resultWizardModel";
+import { RaceWizard, getLocalStorage, distances } from "../../models/resultWizardModel";
 import { PostJsonData } from "../../utils/api";
 import ResultWizardStep0Input from "./ResultsWizardStep0Input";
 import ResultWizardStep1ChooseRace from "./ResultsWizardStep1ChooseRace";
 import ResultWizardStep2EditRace from "./ResultsWizardStep2EditRace";
+import ResultWizardStep3Ranking from "./ResultsWizardStep3Ranking";
 import { SpinnerDiv, StyledIcon } from "../styled/styled";
 import EditResultIndividual from "./EditResultIndividual";
+import {
+  GetAge,
+  GetRanking,
+  GetRacePoint,
+  GetRaceOldPoint,
+  GetPointRunTo1000,
+  GetAward
+} from "../../utils/resultHelper";
 
 const { confirm } = Modal;
 const StyledModalContent = styled.div``;
@@ -41,7 +50,8 @@ const ResultsWizardModal = inject(
           wizardStep: -1,
           nextStepValid: true,
           inputForm: undefined,
-          loaded: false
+          loaded: false,
+          saving: false
         };
       }
 
@@ -100,13 +110,54 @@ const ResultsWizardModal = inject(
       }
 
       save() {
+        this.setState({ saving: true });
+        const { clubModel } = this.props;
+        const { raceEvent } = this.raceWizardModel;
+        const raceEventClassification = clubModel.raceClubs.eventClassifications.find(
+          ec => ec.eventClassificationId === raceEvent.eventClassificationId
+        );
+        raceEvent.results.forEach(result => {
+          const raceClassClassification = raceEventClassification.classClassifications.find(
+            cc => cc.classClassificationId === result.classClassificationId
+          );
+          const competitor = clubModel.raceClubs.selectedClub.competitorById(result.competitorId);
+          const age = GetAge(competitor.birthDay, raceEvent.raceDate);
+
+          result.setValue(
+            "ranking",
+            GetRanking(
+              raceEvent.rankingBasetimePerKilometer,
+              raceEvent.rankingBasepoint,
+              result,
+              raceEvent.raceDistance === distances.sprint,
+              raceEvent.sportCode
+            )
+          );
+          result.setValue("points", GetRacePoint(raceEventClassification, raceClassClassification, result));
+          result.setValue("pointsOld", GetRaceOldPoint(raceEventClassification, raceClassClassification, result));
+          result.setValue("points1000", GetPointRunTo1000(raceEventClassification, raceClassClassification, result));
+          if (raceEvent.meetsAwardRequirements) {
+            result.setValue(
+              "award",
+              GetAward(
+                raceEventClassification,
+                clubModel.raceClubs.classLevels,
+                result,
+                age,
+                raceEvent.raceDistance === distances.sprint
+              )
+            );
+          } else {
+            result.setValue("award", null);
+          }
+        });
         this.props.onClose();
       }
 
       render() {
         const self = this;
         const { t, clubModel } = self.props;
-        const { wizardStep, loaded, nextStepValid } = self.state;
+        const { wizardStep, loaded, nextStepValid, saving } = self.state;
 
         return (
           <Provider raceWizardModel={self.raceWizardModel}>
@@ -165,6 +216,7 @@ const ResultsWizardModal = inject(
                 <Button
                   variant="contained"
                   disabled={!loaded || !nextStepValid}
+                  loading={saving}
                   onClick={() => (wizardStep === 3 ? self.save() : self.next())}
                 >
                   {wizardStep === 3 ? t("common.Save") : t("common.Next")}
@@ -198,6 +250,9 @@ const ResultsWizardModal = inject(
                     visible={wizardStep === 2}
                     onFailed={() => self.prev()}
                   />
+                ) : null}
+                {wizardStep === 3 ? (
+                  <ResultWizardStep3Ranking saving={saving} onValidate={self.onValidate.bind(self)} />
                 ) : null}
                 {!loaded ? (
                   <SpinnerDiv>

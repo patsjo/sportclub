@@ -51,6 +51,7 @@ i18next
             Next: "Next"
           },
           error: {
+            Missing: "MISSING",
             FileTypeNotSupported: "Filetype not supported",
             FileSizeTooLarge: "File is larger than {0} MB",
             RequiredField: "Please input your"
@@ -138,7 +139,11 @@ i18next
             Difficulty: "Difficulty",
             WinnerTimeLessOrEqualThanTime: "Winner time <= time",
             SecondTimeGreaterOrEqualThanWinnerTime: "Second time >= winner time",
-            PositionGreaterThanStarts: "Position > starts"
+            PositionGreaterThanStarts: "Position > starts",
+            MeetsAwardRequirements: "Meets SOFT requirements for award",
+            Area: "Area",
+            TimePerKilometer: "Speed [min/km]",
+            Ranking: "Ranking"
           },
           eventor: {
             Participant: "Participant"
@@ -168,6 +173,7 @@ i18next
             Next: "Nästa"
           },
           error: {
+            Missing: "SAKNAS",
             FileTypeNotSupported: "Denna filtyp kan inte laddas upp",
             FileSizeTooLarge: "Filen är större än {0} MB",
             RequiredField: "Vänligen ange"
@@ -255,7 +261,11 @@ i18next
             Difficulty: "Nivå",
             WinnerTimeLessOrEqualThanTime: "Segratid <= tid",
             SecondTimeGreaterOrEqualThanWinnerTime: "Tvåans tid >= segratid",
-            PositionGreaterThanStarts: "Placering > startande"
+            PositionGreaterThanStarts: "Placering > startande",
+            MeetsAwardRequirements: "SOFT märkesgrundande",
+            Area: "Terrängtyp",
+            TimePerKilometer: "Fart [min/km]",
+            Ranking: "Ranking"
           },
           eventor: {
             Participant: "Anmäld"

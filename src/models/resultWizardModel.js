@@ -40,16 +40,28 @@ export const paymentOptions = t => [
   { code: payments.defaultFeePaidByCompetitor, description: t("results.DefaultFeePaidByCompetitor") }
 ];
 
+export const lightConditions = {
+  day: "Day",
+  night: "Night"
+};
+
 export const raceLightConditionOptions = t => [
-  { code: "Day", description: t("results.Day") },
-  { code: "Night", description: t("results.Night") }
+  { code: lightConditions.day, description: t("results.Day") },
+  { code: lightConditions.night, description: t("results.Night") }
 ];
 
+export const distances = {
+  sprint: "Sprint",
+  middle: "Middle",
+  long: "Long",
+  ultraLong: "UltraLong"
+};
+
 export const raceDistanceOptions = t => [
-  { code: "Sprint", description: t("results.Sprint") },
-  { code: "Middle", description: t("results.Middle") },
-  { code: "Long", description: t("results.Long") },
-  { code: "UltraLong", description: t("results.UltraLong") }
+  { code: distances.sprint, description: t("results.Sprint") },
+  { code: distances.middle, description: t("results.Middle") },
+  { code: distances.long, description: t("results.Long") },
+  { code: distances.ultraLong, description: t("results.UltraLong") }
 ];
 
 export const raceRelayDistanceOptions = t =>
@@ -126,4 +138,25 @@ export const RaceWizard = types
         setLocalStorage(self);
       }
     };
-  });
+  })
+  .views(self => ({
+    get raceWinnerResultOptions() {
+      return self.raceWinnerResults
+        .sort((a, b) => {
+          if (a.difficulty === difficulties.black && b.difficulty !== difficulties.black) {
+            return -1;
+          } else if (a.difficulty !== difficulties.black && b.difficulty === difficulties.black) {
+            return 1;
+          }
+
+          if (a.secondsPerKilometer < b.secondsPerKilometer) {
+            return -1;
+          }
+          return 1;
+        })
+        .map(wr => ({
+          code: JSON.stringify(wr),
+          description: `${wr.timePerKilometer}, ${wr.className}, ${wr.personName}`
+        }));
+    }
+  }));

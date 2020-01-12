@@ -230,10 +230,32 @@ elseif ($iType == "CLUBS")
       }
     }
     
+    $sports = new stdClass();
+    $sports->name = "RACE_SPORT";
+    $sports->values = array();
+    $sql = "SELECT * FROM RACE_SPORT ORDER BY DESCRIPTION ASC";
+    $result = \db\mysql_query($sql);
+    if (!$result)
+    {
+      die('SQL Error: ' . \db\mysql_error());
+    }
+  
+    if (\db\mysql_num_rows($result) > 0)
+    {
+      while($row = \db\mysql_fetch_assoc($result))
+      {
+        $x = new stdClass();
+        $x->sportCode     = $row['SPORT_CODE'];
+        $x->description   = $row['DESCRIPTION'];
+        array_push($sports->values, $x);
+      }
+    }
+
     $rows = new stdClass();
     $rows->clubs                = $clubs;
     $rows->eventClassifications = $eventClassifications;
     $rows->classLevels          = $domainClassLevel->values;
+    $rows->sports               = $sports->values;
   }
 }
 else

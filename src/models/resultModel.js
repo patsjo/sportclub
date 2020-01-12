@@ -62,6 +62,11 @@ const RaceEventClassification = types.model({
   classClassifications: types.array(RaceClassClassification)
 });
 
+const RaceSport = types.model({
+  sportCode: types.identifier,
+  description: types.string
+});
+
 const RaceClub = types
   .model({
     clubId: types.identifierNumber,
@@ -112,7 +117,8 @@ export const RaceClubs = types
     clubs: types.array(RaceClub),
     selectedClub: types.reference(RaceClub),
     eventClassifications: types.array(RaceEventClassification),
-    classLevels: types.array(RaceClassLevel)
+    classLevels: types.array(RaceClassLevel),
+    sports: types.array(RaceSport)
   })
   .actions(self => {
     return {
@@ -145,6 +151,12 @@ export const RaceClubs = types
       return self.clubs.map(club => ({
         code: club.clubId.toString(),
         description: club.name
+      }));
+    },
+    get sportOptions() {
+      return self.sports.map(sport => ({
+        code: sport.sportCode,
+        description: sport.description
       }));
     }
   }));
@@ -242,13 +254,16 @@ export const RaceEvent = types
     organiserName: types.maybeNull(types.string),
     raceDate: types.maybeNull(types.string),
     raceTime: types.maybeNull(types.string),
+    sportCode: types.string,
     eventClassificationId: types.string,
     raceLightCondition: types.maybeNull(types.string),
     raceDistance: types.maybeNull(types.string),
     paymentModel: types.integer,
+    meetsAwardRequirements: types.boolean,
     results: types.array(RaceResult),
     rankingBasetimePerKilometer: types.maybeNull(types.string),
-    rankingBasepoint: types.maybeNull(types.number)
+    rankingBasepoint: types.maybeNull(types.number),
+    rankingBaseDescription: types.maybeNull(types.string)
   })
   .actions(self => {
     return {
@@ -277,12 +292,21 @@ export const RaceEvent = types
         self.name != null &&
         self.organiserName != null &&
         self.raceDate != null &&
+        self.sportCode != null &&
         self.eventClassificationId != null &&
         self.paymentModel != null &&
         self.raceLightCondition != null &&
         self.raceDistance != null &&
         self.results.length > 0 &&
         !self.results.some(result => !result.valid)
+      );
+    },
+    get validRanking() {
+      return (
+        self.valid &&
+        self.rankingBasetimePerKilometer != null &&
+        self.rankingBasepoint != null &&
+        self.rankingBaseDescription != null
       );
     }
   }));

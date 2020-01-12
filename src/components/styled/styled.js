@@ -1,5 +1,10 @@
+import React from "react";
 import styled from "styled-components";
-import { Table, Icon } from "antd";
+import { Table, Icon, Tag } from "antd";
+
+export const MissingTag = ({ t }) => {
+  return <Tag color="volcano">{t("error.Missing")}</Tag>;
+};
 
 export const NoWrap = styled.div`
   white-space: nowrap;

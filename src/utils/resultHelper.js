@@ -1,6 +1,6 @@
 import moment from "moment";
 import { timeFormat } from "./formHelper";
-import { payments, failedReasons } from "../models/resultWizardModel";
+import { payments, failedReasons, difficulties } from "../models/resultWizardModel";
 
 const ConvertTimeToSeconds = timeString => {
   try {
@@ -26,7 +26,7 @@ export const ConvertSecondsToTime = timeInSeconds => {
   var seconds = timeInSeconds - hours * 3600 - minutes * 60;
   var time = "";
 
-  if (hours != 0) {
+  if (hours !== 0) {
     time = hours + ":";
   }
   minutes = minutes < 10 && time !== "" ? "0" + minutes : String(minutes);
@@ -315,4 +315,154 @@ export const GetClassClassificationId = (eventClassificationId, classLevel, even
     return null;
   }
   return classClassification.classClassificationId;
+};
+
+export const GetAward = (raceEventClassification, classLevels, result, competitorAge, isSprint) => {
+  if (
+    result.failedReason === failedReasons.NotStarted ||
+    result.failedReason === failedReasons.NotFinished ||
+    raceEventClassification.eventClassificationId === "H"
+  ) {
+    return null;
+  }
+
+  let classLevel = classLevels
+    .filter(cl => result.className.indexOf(cl.classShortName) >= 0)
+    .sort((a, b) => (a.classShortName.length < b.classShortName.length ? 1 : -1))
+    .find(() => true);
+  if (!classLevel || result.className.toLowerCase().indexOf("ö") >= 0) {
+    classLevel = {
+      age: competitorAge
+    };
+  }
+
+  if (
+    result.className.toLowerCase().indexOf("insk") >= 0 ||
+    result.className.toLowerCase().indexOf("u") >= 0 ||
+    ((result.className.toLowerCase().indexOf("ö") >= 0 ||
+      result.failedReason === failedReasons.Finished ||
+      result.failedReason === failedReasons.Approved) &&
+      classLevel.age <= 16)
+  ) {
+    return "UJ";
+  }
+  if (result.failedReason != null || result.nofStartsInClass == null || result.nofStartsInClass < 2) {
+    return null;
+  }
+
+  const timeInMinutes = Math.ceil(ConvertTimeToSeconds(result.competitorTime) / 60);
+  const winnerTimeInMinutes = Math.ceil(ConvertTimeToSeconds(result.winnerTime) / 60);
+
+  if (timeInMinutes === 0 || winnerTimeInMinutes === 0) {
+    return null;
+  }
+
+  const maxMinutes = percentage => Math.ceil(((100 + percentage) * winnerTimeInMinutes) / 100);
+  let award = null;
+
+  if (classLevel.age <= 16) {
+    if (
+      classLevel.classTypeShortName !== "T" &&
+      classLevel.classTypeShortName !== "S" &&
+      classLevel.classTypeShortName !== "M"
+    ) {
+      return "UJ";
+    }
+    const classAge = classLevel.classTypeShortName === "M" ? classLevel.age - 2 : classLevel.age;
+    award = "UJ";
+    if (timeInMinutes <= maxMinutes(50) || (classAge >= 14 && timeInMinutes <= maxMinutes(75))) {
+      award = "UB";
+    }
+    if ((classAge >= 12 && timeInMinutes <= maxMinutes(30)) || (classAge >= 14 && timeInMinutes <= maxMinutes(50))) {
+      award = "US";
+    }
+    if (
+      (classAge >= 12 && timeInMinutes <= maxMinutes(10)) ||
+      (classAge >= 14 && timeInMinutes <= maxMinutes(20)) ||
+      (classAge >= 16 && timeInMinutes <= maxMinutes(30))
+    ) {
+      award = "UG";
+    }
+    if ((classAge >= 14 && timeInMinutes <= maxMinutes(10)) || (classAge >= 16 && timeInMinutes <= maxMinutes(20))) {
+      award = "UE";
+    }
+    if (classAge >= 16 && timeInMinutes <= maxMinutes(10)) {
+      award = "UM";
+    }
+    if (["A", "B"].includes(raceEventClassification.eventClassificationId)) {
+      if (award === "UJ" && timeInMinutes <= maxMinutes(100)) {
+        award = "US";
+      } else if (award === "UB") {
+        award = "UG";
+      } else if (award === "US") {
+        award = "UE";
+      } else if (award === "UG") {
+        award = "UM";
+      }
+    }
+  } else if (raceEventClassification.eventClassificationId === "G") {
+    if (timeInMinutes <= maxMinutes(30)) {
+      award = "B";
+    }
+  } else if (
+    classLevel.classTypeShortName !== "E" &&
+    classLevel.classTypeShortName !== "T" &&
+    classLevel.classTypeShortName !== "S" &&
+    classLevel.classTypeShortName !== "M"
+  ) {
+    if (timeInMinutes <= maxMinutes(50)) {
+      award = "B";
+    }
+    if (timeInMinutes <= maxMinutes(20)) {
+      award = "S";
+    }
+  } else {
+    if (timeInMinutes <= maxMinutes(50)) {
+      award = "B";
+    }
+    if (timeInMinutes <= maxMinutes(40)) {
+      award = "S";
+    }
+    if (timeInMinutes <= maxMinutes(10)) {
+      award = "G";
+    }
+    if (["A", "B", "C"].includes(raceEventClassification.eventClassificationId) && timeInMinutes <= maxMinutes(20)) {
+      award = "G";
+    }
+  }
+  return award;
+};
+
+export const GetRanking = (rankingBasetimePerKilometer, rankingBasepoint, result, isSprint, sportCode) => {
+  if (result.failedReason != null || !result.lengthInMeter || result.lengthInMeter < 500) {
+    return null;
+  }
+  const secondsPerMeter = ConvertTimeToSeconds(result.competitorTime) / result.lengthInMeter;
+  const baseSecondsPerKilometer = ConvertTimeToSeconds(rankingBasetimePerKilometer);
+  let baseLengthInMeter = (1000 * (4500 + rankingBasepoint * 60)) / baseSecondsPerKilometer;
+
+  if (sportCode === "OL") {
+    const length330 = 4500000 / ConvertTimeToSeconds("3:30");
+    const length345 = 4500000 / ConvertTimeToSeconds("3:45");
+    const length400 = 4500000 / ConvertTimeToSeconds("4:00");
+
+    if (result.difficulty === difficulties.green && baseLengthInMeter < length330) {
+      baseLengthInMeter = length330;
+    } else if (result.difficulty === difficulties.white && baseLengthInMeter < length345) {
+      baseLengthInMeter = length345;
+    } else if ((result.difficulty === difficulties.yellow || isSprint) && baseLengthInMeter < length400) {
+      baseLengthInMeter = length400;
+    }
+  } else if (sportCode === "SKIO") {
+    const length430 = 4500000 / ConvertTimeToSeconds("4:30");
+    if (baseLengthInMeter < length430) {
+      baseLengthInMeter = length430;
+    }
+  } else if (sportCode === "MTBO") {
+    const length430 = 4500000 / ConvertTimeToSeconds("4:30");
+    if (baseLengthInMeter < length430) {
+      baseLengthInMeter = length430;
+    }
+  }
+  return (secondsPerMeter * baseLengthInMeter - 4500) / 60;
 };
