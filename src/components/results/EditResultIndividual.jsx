@@ -3,8 +3,8 @@ import PropTypes from "prop-types";
 import { Form, TimePicker, Select, Input, InputNumber, Row, Col } from "antd";
 import { withTranslation } from "react-i18next";
 import FormItem from "../formItems/FormItem";
-import { errorRequiredField, FormSelect, timeFormat, timeFormatWithoutHour } from "../../utils/formHelper";
-import { GetAge, GetFees, GetCompetitorFee, GetClassClassificationId } from "../../utils/resultHelper";
+import { errorRequiredField, FormSelect, timeFormat } from "../../utils/formHelper";
+import { GetCompetitorFee, GetClassClassificationId } from "../../utils/resultHelper";
 import { difficulties, failedReasons, failedReasonOptions } from "../../models/resultWizardModel";
 import moment from "moment";
 import styled from "styled-components";
@@ -371,9 +371,7 @@ class EditResultIndividual extends Component {
                   allowClear={true}
                   style={{ width: "100%" }}
                   onChange={time => {
-                    result.competitorTime = !time
-                      ? null
-                      : time.format(time.get("hour") === 0 ? timeFormatWithoutHour : timeFormat);
+                    result.competitorTime = !time ? null : time.format(timeFormat);
                     self.setState({}, () => {
                       validateFields(["iWinnerTime"], { force: true });
                     });
@@ -413,9 +411,7 @@ class EditResultIndividual extends Component {
                   allowClear={true}
                   style={{ width: "100%" }}
                   onChange={time => {
-                    result.winnerTime = !time
-                      ? null
-                      : time.format(time.get("hour") === 0 ? timeFormatWithoutHour : timeFormat);
+                    result.winnerTime = !time ? null : time.format(timeFormat);
                     self.setState({}, () => {
                       validateFields(["iSecondTime"], { force: true });
                     });
@@ -451,9 +447,7 @@ class EditResultIndividual extends Component {
                   allowClear={true}
                   style={{ width: "100%" }}
                   onChange={time => {
-                    result.secondTime = !time
-                      ? null
-                      : time.format(time.get("hour") === 0 ? timeFormatWithoutHour : timeFormat);
+                    result.secondTime = !time ? null : time.format(timeFormat);
                   }}
                 />
               )}

@@ -165,7 +165,7 @@ const RaceTeamResult = types.model({
   teamResultId: types.identifierNumber,
   className: types.string,
   clubTeamNumber: types.integer,
-  competitorId: types.reference(RaceCompetitor),
+  competitorId: types.integer,
   lengthInMeter: types.maybeNull(types.integer),
   failedReason: types.maybeNull(types.string),
   competitorTime: types.maybeNull(types.string),
@@ -175,7 +175,11 @@ const RaceTeamResult = types.model({
   nofStartsInClass: types.maybeNull(types.integer),
   stage: types.integer,
   totalStages: types.integer,
-  deviantRaceLightCondition: types.maybeNull(types.string)
+  deviantRaceLightCondition: types.maybeNull(types.string),
+  totalTime: types.maybeNull(types.string),
+  totalWinnerTime: types.maybeNull(types.string),
+  totalSecondTime: types.maybeNull(types.string),
+  totalPosition: types.maybeNull(types.integer)
 });
 
 const RaceResultMultiDay = types.model({
@@ -189,7 +193,11 @@ const RaceResultMultiDay = types.model({
   position: types.maybeNull(types.integer),
   nofStartsInClass: types.maybeNull(types.integer),
   stage: types.integer,
-  totalStages: types.integer
+  totalStages: types.integer,
+  totalTime: types.maybeNull(types.string),
+  totalWinnerTime: types.maybeNull(types.string),
+  totalSecondTime: types.maybeNull(types.string),
+  totalPosition: types.maybeNull(types.integer)
 });
 
 const RaceResult = types
@@ -197,7 +205,6 @@ const RaceResult = types
     resultId: types.identifierNumber,
     competitorId: types.integer,
     resultMultiDay: types.maybeNull(RaceResultMultiDay),
-    teamResult: types.maybeNull(RaceTeamResult),
     className: types.string,
     deviantEventClassificationId: types.maybeNull(types.string),
     classClassificationId: types.maybeNull(types.integer),
@@ -261,6 +268,7 @@ export const RaceEvent = types
     paymentModel: types.integer,
     meetsAwardRequirements: types.boolean,
     results: types.array(RaceResult),
+    teamResults: types.array(RaceTeamResult),
     rankingBasetimePerKilometer: types.maybeNull(types.string),
     rankingBasepoint: types.maybeNull(types.number),
     rankingBaseDescription: types.maybeNull(types.string)
@@ -275,15 +283,7 @@ export const RaceEvent = types
       },
       removeResult(result) {
         self.results = self.results.filter(item => item.resultId !== result.resultId);
-      },
-      save: flow(function* save(url) {
-        try {
-          yield PostJsonData(url, self.getSnapshot(), false);
-          return true;
-        } catch (error) {
-          return error;
-        }
-      })
+      }
     };
   })
   .views(self => ({

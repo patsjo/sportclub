@@ -19,6 +19,7 @@ import {
   GetLength,
   GetAge,
   GetFees,
+  GetTimeWithHour,
   GetSecondsPerKiloMeter,
   CalculateCompetitorsFee,
   ResetClassClassifications,
@@ -81,7 +82,8 @@ const ResultWizardStep2EditRace = inject(
             meetsAwardRequirements: true,
             sportCode: "OL",
             eventClassificationId: "F",
-            results: []
+            results: [],
+            teamResults: []
           });
           onValidate(raceWizardModel.raceEvent.valid);
           self.setState(
@@ -197,7 +199,8 @@ const ResultWizardStep2EditRace = inject(
                 raceDistance: resultJson.EventRace["@attributes"].raceDistance,
                 paymentModel: raceWizardModel.paymentModel,
                 meetsAwardRequirements: true,
-                results: []
+                results: [],
+                teamResults: []
               };
               const ClassResults = Array.isArray(resultJson.ClassResult)
                 ? resultJson.ClassResult
@@ -382,7 +385,7 @@ const ResultWizardStep2EditRace = inject(
                           personResult.Result.Time == undefined
                           ? failedReasons.Finished
                           : null,
-                        competitorTime: valid ? personResult.Result.Time : null,
+                        competitorTime: valid ? GetTimeWithHour(personResult.Result.Time) : null,
                         winnerTime: valid
                           ? WinnerTime(
                               personResult.Result.Time,
@@ -390,7 +393,7 @@ const ResultWizardStep2EditRace = inject(
                               parseInt(personResult.Result.ResultPosition)
                             )
                           : null,
-                        secondTime: secondTime,
+                        secondTime: GetTimeWithHour(secondTime),
                         position: position,
                         nofStartsInClass: nofStartsInClass,
                         originalFee: fees.originalFee,

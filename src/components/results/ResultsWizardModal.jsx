@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { Button, Icon, Modal, Spin, Steps, message } from "antd";
 import PropTypes from "prop-types";
 import { observer, inject, Provider } from "mobx-react";
+import { getSnapshot } from "mobx-state-tree";
 import { withTranslation } from "react-i18next";
 import styled from "styled-components";
 import { RaceWizard, getLocalStorage, distances } from "../../models/resultWizardModel";
@@ -110,12 +111,16 @@ const ResultsWizardModal = inject(
       }
 
       save() {
+        const self = this;
         this.setState({ saving: true });
-        const { clubModel } = this.props;
+        const { clubModel, sessionModel } = this.props;
         const { raceEvent } = this.raceWizardModel;
         const raceEventClassification = clubModel.raceClubs.eventClassifications.find(
           ec => ec.eventClassificationId === raceEvent.eventClassificationId
         );
+        const resultsModule = clubModel.modules.find(module => module.name === "Results");
+        const saveUrl = raceEvent.eventId === -1 ? resultsModule.addUrl : resultsModule.updateUrl;
+
         raceEvent.results.forEach(result => {
           const raceClassClassification = raceEventClassification.classClassifications.find(
             cc => cc.classClassificationId === result.classClassificationId
@@ -151,7 +156,35 @@ const ResultsWizardModal = inject(
             result.setValue("award", null);
           }
         });
-        this.props.onClose();
+
+        const snapshot = getSnapshot(raceEvent);
+        const data = {
+          ...snapshot,
+          results: JSON.stringify(snapshot.results),
+          teamResults: JSON.stringify(snapshot.teamResults)
+        };
+
+        PostJsonData(
+          saveUrl,
+          {
+            ...data,
+            iType: "EVENT",
+            username: sessionModel.username,
+            password: sessionModel.password,
+            jsonResponse: true
+          },
+          true,
+          sessionModel.authorizationHeader
+        )
+          .then(() => {
+            self.props.onClose();
+          })
+          .catch(e => {
+            message.error(e.message);
+            self.setState({
+              saving: false
+            });
+          });
       }
 
       render() {

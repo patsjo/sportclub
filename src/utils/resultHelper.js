@@ -2,6 +2,18 @@ import moment from "moment";
 import { timeFormat } from "./formHelper";
 import { payments, failedReasons, difficulties } from "../models/resultWizardModel";
 
+export const GetTimeWithHour = timeString => {
+  if (!timeString || timeString.length < 4) {
+    return null;
+  } else if (timeString.length === 4) {
+    return `0:0${timeString}`;
+  } else if (timeString.length === 5) {
+    return `0:${timeString}`;
+  } else {
+    return timeString;
+  }
+};
+
 const ConvertTimeToSeconds = timeString => {
   try {
     if (!timeString || timeString.length < 4) {
@@ -24,12 +36,8 @@ export const ConvertSecondsToTime = timeInSeconds => {
   var hours = Math.floor(timeInSeconds / 3600);
   var minutes = Math.floor((timeInSeconds - hours * 3600) / 60);
   var seconds = timeInSeconds - hours * 3600 - minutes * 60;
-  var time = "";
-
-  if (hours !== 0) {
-    time = hours + ":";
-  }
-  minutes = minutes < 10 && time !== "" ? "0" + minutes : String(minutes);
+  var time = hours + ":";
+  minutes = minutes < 10 ? "0" + minutes : String(minutes);
   time += minutes + ":";
   time += seconds < 10 ? "0" + seconds : String(seconds);
   return time;
@@ -37,7 +45,7 @@ export const ConvertSecondsToTime = timeInSeconds => {
 
 export const WinnerTime = (timeStr, timeDiffStr, position) => {
   if (position === 1) {
-    return timeStr;
+    return GetTimeWithHour(timeStr);
   }
   const time = timeStr.length > 5 ? moment(timeStr, "HH:mm:ss") : moment(`00:${timeStr}`, "HH:mm:ss");
   const timeDiff = timeDiffStr.length > 5 ? moment(timeDiffStr, "HH:mm:ss") : moment(`00:${timeDiffStr}`, "HH:mm:ss");
@@ -45,7 +53,7 @@ export const WinnerTime = (timeStr, timeDiffStr, position) => {
   time.subtract(timeDiff.second(), "seconds");
   time.subtract(timeDiff.minute(), "minutes");
   time.subtract(timeDiff.hour(), "hours");
-  return time.hour() > 0 ? time.format("HH:mm:ss") : time.format("mm:ss");
+  return time.format("HH:mm:ss");
 };
 
 export const GetAge = (birthDateStr, raceDateStr) => {
@@ -150,7 +158,7 @@ export const GetRacePoint = (raceEventClassification, raceClassClassification, r
     if (result.failedReason === failedReasons.Approved || result.failedReason === failedReasons.Finished) {
       Math.round(basePoint / 3);
     } else {
-      return 0;
+      return null;
     }
   }
 
@@ -163,6 +171,19 @@ export const GetRacePoint = (raceEventClassification, raceClassClassification, r
 };
 
 export const GetRaceOldPoint = (raceEventClassification, raceClassClassification, result) => {
+  if (
+    result.failedReason ||
+    !result.position ||
+    !result.nofStartsInClass ||
+    !result.competitorTime ||
+    !result.winnerTime
+  ) {
+    if (result.failedReason === failedReasons.Approved || result.failedReason === failedReasons.Finished) {
+      return 30;
+    } else {
+      return null;
+    }
+  }
   const basePoint = raceEventClassification.oldBasePoint - raceClassClassification.decreaseOldBasePoint;
   const positionPoint = Math.max(
     raceEventClassification.oldPositionBasePoint -
@@ -193,7 +214,7 @@ export const GetPointRunTo1000 = (raceEventClassification, raceClassClassificati
     if (result.failedReason === failedReasons.Approved || result.failedReason === failedReasons.Finished) {
       return 30;
     } else {
-      return 0;
+      return null;
     }
   }
   if (result.nofStartsInClass < 2 || result.position < 1) {
@@ -400,6 +421,10 @@ export const GetAward = (raceEventClassification, classLevels, result, competito
         award = "UM";
       }
     }
+  } else if (
+    [difficulties.green, difficulties.white, difficulties.yellow, difficulties.orange].includes(result.difficulty)
+  ) {
+    award = null;
   } else if (raceEventClassification.eventClassificationId === "G") {
     if (timeInMinutes <= maxMinutes(30)) {
       award = "B";

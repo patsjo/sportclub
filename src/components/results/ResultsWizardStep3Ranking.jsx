@@ -242,9 +242,13 @@ const ResultWizardStep3Ranking = inject(
                       min={-5}
                       max={100}
                       step={0.01}
+                      decimalSeparator=","
                       style={{ width: "100%" }}
                       onChange={value => {
-                        raceWizardModel.raceEvent.setValue("rankingBasepoint", value);
+                        try {
+                          const val = value.indexOf(".") === value.length - 1 ? `${value}0` : value;
+                          raceWizardModel.raceEvent.setValue("rankingBasepoint", val);
+                        } catch (error) {}
                         onValidate(raceWizardModel.raceEvent.validRanking);
                       }}
                     />
