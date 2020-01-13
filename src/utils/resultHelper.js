@@ -104,7 +104,7 @@ export const GetFees = (entryFees, entryFeeIds, age, isOpenClass) => {
     fees.lateFee = lateFees.map(fee => parseInt(fee.Amount)).reduce((a, b) => a + b, 0);
     // eslint-disable-next-line eqeqeq
     if (extraPercentage != undefined) {
-      fees.lateFee += Math.round((fees.originalFee * parseInt(extraPercentage.Amount)) / 100, 2);
+      fees.lateFee += (fees.originalFee * parseInt(extraPercentage.Amount)) / 100;
     }
   }
   return fees;
@@ -394,23 +394,30 @@ export const GetAward = (raceEventClassification, classLevels, result, competito
     if (timeInMinutes <= maxMinutes(50) || (classAge >= 14 && timeInMinutes <= maxMinutes(75))) {
       award = "UB";
     }
-    if ((classAge >= 12 && timeInMinutes <= maxMinutes(30)) || (classAge >= 14 && timeInMinutes <= maxMinutes(50))) {
+    if (
+      !isSprint &&
+      ((classAge >= 12 && timeInMinutes <= maxMinutes(30)) || (classAge >= 14 && timeInMinutes <= maxMinutes(50)))
+    ) {
       award = "US";
     }
     if (
-      (classAge >= 12 && timeInMinutes <= maxMinutes(10)) ||
-      (classAge >= 14 && timeInMinutes <= maxMinutes(20)) ||
-      (classAge >= 16 && timeInMinutes <= maxMinutes(30))
+      !isSprint &&
+      ((classAge >= 12 && timeInMinutes <= maxMinutes(10)) ||
+        (classAge >= 14 && timeInMinutes <= maxMinutes(20)) ||
+        (classAge >= 16 && timeInMinutes <= maxMinutes(30)))
     ) {
       award = "UG";
     }
-    if ((classAge >= 14 && timeInMinutes <= maxMinutes(10)) || (classAge >= 16 && timeInMinutes <= maxMinutes(20))) {
+    if (
+      !isSprint &&
+      ((classAge >= 14 && timeInMinutes <= maxMinutes(10)) || (classAge >= 16 && timeInMinutes <= maxMinutes(20)))
+    ) {
       award = "UE";
     }
-    if (classAge >= 16 && timeInMinutes <= maxMinutes(10)) {
+    if (!isSprint && classAge >= 16 && timeInMinutes <= maxMinutes(10)) {
       award = "UM";
     }
-    if (["A", "B"].includes(raceEventClassification.eventClassificationId)) {
+    if (!isSprint && ["A", "B"].includes(raceEventClassification.eventClassificationId)) {
       if (award === "UJ" && timeInMinutes <= maxMinutes(100)) {
         award = "US";
       } else if (award === "UB") {
@@ -438,20 +445,24 @@ export const GetAward = (raceEventClassification, classLevels, result, competito
     if (timeInMinutes <= maxMinutes(50)) {
       award = "B";
     }
-    if (timeInMinutes <= maxMinutes(20)) {
+    if (!isSprint && timeInMinutes <= maxMinutes(20)) {
       award = "S";
     }
   } else {
     if (timeInMinutes <= maxMinutes(50)) {
       award = "B";
     }
-    if (timeInMinutes <= maxMinutes(40)) {
+    if (!isSprint && timeInMinutes <= maxMinutes(40)) {
       award = "S";
     }
-    if (timeInMinutes <= maxMinutes(10)) {
+    if (!isSprint && timeInMinutes <= maxMinutes(10)) {
       award = "G";
     }
-    if (["A", "B", "C"].includes(raceEventClassification.eventClassificationId) && timeInMinutes <= maxMinutes(20)) {
+    if (
+      !isSprint &&
+      ["A", "B", "C"].includes(raceEventClassification.eventClassificationId) &&
+      timeInMinutes <= maxMinutes(20)
+    ) {
       award = "G";
     }
   }
