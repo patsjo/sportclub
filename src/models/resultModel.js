@@ -1,5 +1,7 @@
 import { flow, types } from "mobx-state-tree";
 import { PostJsonData } from "../utils/api";
+import { GetAward, GetAge } from "../utils/resultHelper";
+import { distances } from "../utils/resultConstants";
 
 const RaceCompetitor = types
   .model({
@@ -225,10 +227,39 @@ const RaceResult = types
     points1000: types.maybeNull(types.integer),
     ranking: types.maybeNull(types.number)
   })
+  .volatile(self => ({
+    isAwardTouched: false
+  }))
   .actions(self => {
     return {
       setValue(key, value) {
         self[key] = value;
+        if (key === "award") {
+          self.isAwardTouched = true;
+        }
+      },
+      setIsAwardTouched(raceClubs, raceEvent) {
+        const raceEventClassification = raceClubs.eventClassifications.find(
+          ec => ec.eventClassificationId === raceEvent.eventClassificationId
+        );
+        const competitor = raceClubs.selectedClub.competitorById(self.competitorId);
+        const age = GetAge(competitor.birthDay, raceEvent.raceDate);
+        const calculatedAward = raceEvent.meetsAwardRequirements
+          ? GetAward(
+              raceEventClassification,
+              raceClubs.classLevels,
+              self,
+              age,
+              raceEvent.raceDistance === distances.sprint
+            )
+          : null;
+        self.isAwardTouched =
+          self.isAwardTouched || !((!calculatedAward && !self.award) || calculatedAward === self.award);
+      },
+      setCalculatedAward(value) {
+        if (!self.isAwardTouched) {
+          self.award = value;
+        }
       }
     };
   })

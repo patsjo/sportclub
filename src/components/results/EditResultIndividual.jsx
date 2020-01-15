@@ -4,8 +4,8 @@ import { Form, TimePicker, Select, Input, InputNumber, Row, Col } from "antd";
 import { withTranslation } from "react-i18next";
 import FormItem from "../formItems/FormItem";
 import { errorRequiredField, FormSelect, timeFormat } from "../../utils/formHelper";
-import { GetCompetitorFee, GetClassClassificationId } from "../../utils/resultHelper";
-import { difficulties, failedReasons, failedReasonOptions } from "../../models/resultWizardModel";
+import { GetCompetitorFee, GetClassClassificationId, GetAward, GetAge } from "../../utils/resultHelper";
+import { difficulties, failedReasons, failedReasonOptions } from "../../utils/resultConstants";
 import moment from "moment";
 import styled from "styled-components";
 import { StyledIcon } from "../styled/styled";
@@ -24,6 +24,9 @@ class EditResultIndividual extends Component {
   static propTypes = {
     clubModel: PropTypes.object.isRequired,
     paymentModel: PropTypes.number,
+    meetsAwardRequirements: PropTypes.bool,
+    isSprint: PropTypes.bool,
+    raceDate: PropTypes.string,
     eventClassificationId: PropTypes.object.isRequired,
     result: PropTypes.object.isRequired,
     competitorsOptions: PropTypes.arrayOf(PropTypes.object),
@@ -32,10 +35,23 @@ class EditResultIndividual extends Component {
 
   constructor(props) {
     super(props);
+
+    const eventClassificationId = props.result.deviantEventClassificationId
+      ? props.result.deviantEventClassificationId
+      : props.eventClassificationId;
+    const raceEventClassification = props.clubModel.raceClubs.eventClassifications.find(
+      ec => ec.eventClassificationId === eventClassificationId
+    );
+    const competitor = props.clubModel.raceClubs.selectedClub.competitorById(props.result.competitorId);
+    const age = competitor ? GetAge(competitor.birthDay, props.raceDate) : null;
+
     this.state = {
       formId: "editResultIndividual" + Math.floor(Math.random() * 10000000000000000),
       failedReason: props.result.failedReason,
-      valid: false
+      valid: false,
+      age: age,
+      raceEventClassification: raceEventClassification,
+      isAwardTouched: props.result.isAwardTouched
     };
   }
 
@@ -61,11 +77,20 @@ class EditResultIndividual extends Component {
       eventClassificationId,
       result,
       competitorsOptions,
-      form
+      form,
+      meetsAwardRequirements,
+      isSprint,
+      raceDate
     } = this.props;
-    const { formId, failedReason, valid } = this.state;
+    const { formId, failedReason, valid, raceEventClassification, age, isAwardTouched } = this.state;
     const { getFieldDecorator, getFieldError, getFieldsError, getFieldValue, validateFields, setFieldsValue } = form;
     const { raceClubs } = clubModel;
+    const calculatedAward = meetsAwardRequirements
+      ? GetAward(raceEventClassification, raceClubs.classLevels, result, age, isSprint)
+      : null;
+    if (!isAwardTouched && result.award !== calculatedAward) {
+      result.award = calculatedAward;
+    }
 
     // Only show error after a field is touched.
     const competitorIdError = getFieldError("iCompetitorId");
@@ -151,7 +176,7 @@ class EditResultIndividual extends Component {
                       // eslint-disable-next-line eqeqeq
                       iCompetitorId: result.competitorId == undefined ? undefined : result.competitorId.toString()
                     });
-                    self.setState({}, () => {
+                    self.setState({ age: competitor ? GetAge(competitor.birthDay, raceDate) : null }, () => {
                       validateFields(["iCompetitorId"], { force: true });
                     });
                   })
@@ -521,6 +546,23 @@ class EditResultIndividual extends Component {
               )}
             </FormItem>
           </Col>
+          <Col span={6}>
+            <FormItem label={t("results.Award")}>
+              {getFieldDecorator("iAward", {
+                initialValue: result.award
+              })(
+                <Select
+                  allowClear={true}
+                  onChange={code => {
+                    result.award = code;
+                    self.setState({ isAwardTouched: true });
+                  }}
+                >
+                  {calculatedAward ? <Option value={calculatedAward}>{calculatedAward}</Option> : null}
+                </Select>
+              )}
+            </FormItem>
+          </Col>
         </Row>
         <Row gutter={8}>
           <Col span={6}>
@@ -656,12 +698,16 @@ class EditResultIndividual extends Component {
                       classLevel,
                       raceClubs.eventClassifications
                     );
+                    const newEventClassificationId = code ? code : eventClassificationId;
+                    const raceEventClassification = raceClubs.eventClassifications.find(
+                      ec => ec.eventClassificationId === newEventClassificationId
+                    );
                     setFieldsValue({
                       iClassClassificationId:
                         // eslint-disable-next-line eqeqeq
                         result.classClassificationId == undefined ? undefined : result.classClassificationId.toString()
                     });
-                    self.setState({}, () => {
+                    self.setState({ raceEventClassification: raceEventClassification }, () => {
                       validateFields(["iClassClassificationId"], { force: true });
                     });
                   }}

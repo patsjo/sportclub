@@ -4,7 +4,7 @@ import { Row, Col, Form, TimePicker, InputNumber } from "antd";
 import { observer, inject } from "mobx-react";
 import FormItem from "../formItems/FormItem";
 import { errorRequiredField, FormSelect, timeFormat, timeFormatWithoutHour } from "../../utils/formHelper";
-import { lightConditions } from "../../models/resultWizardModel";
+import { lightConditions } from "../../utils/resultConstants";
 import moment from "moment";
 
 const areaResultOptions = [
@@ -246,7 +246,7 @@ const ResultWizardStep3Ranking = inject(
                       style={{ width: "100%" }}
                       onChange={value => {
                         try {
-                          const val = value.indexOf(".") === value.length - 1 ? `${value}0` : value;
+                          const val = value.indexOf && value.indexOf(".") === value.length - 1 ? `${value}0` : value;
                           raceWizardModel.raceEvent.setValue("rankingBasepoint", val);
                         } catch (error) {}
                         onValidate(raceWizardModel.raceEvent.validRanking);

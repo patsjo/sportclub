@@ -1,6 +1,6 @@
 import moment from "moment";
 import { timeFormat } from "./formHelper";
-import { payments, failedReasons, difficulties } from "../models/resultWizardModel";
+import { payments, failedReasons, difficulties, distances } from "../utils/resultConstants";
 
 export const GetTimeWithHour = timeString => {
   if (!timeString || timeString.length < 4) {
@@ -12,6 +12,15 @@ export const GetTimeWithHour = timeString => {
   } else {
     return timeString;
   }
+};
+
+export const FormatTime = timeString => {
+  const time = moment(GetTimeWithHour(timeString), timeFormat);
+
+  if (time.get("hour") === 0) {
+    return time.format("m:ss");
+  }
+  return time.format("H:mm:ss");
 };
 
 const ConvertTimeToSeconds = timeString => {
@@ -467,6 +476,28 @@ export const GetAward = (raceEventClassification, classLevels, result, competito
     }
   }
   return award;
+};
+
+export const CalculateAllAwards = (raceClubs, raceEvent) => {
+  const raceEventClassification = raceClubs.eventClassifications.find(
+    ec => ec.eventClassificationId === raceEvent.eventClassificationId
+  );
+  raceEvent.results.forEach(result => {
+    const competitor = raceClubs.selectedClub.competitorById(result.competitorId);
+    const age = GetAge(competitor.birthDay, raceEvent.raceDate);
+
+    result.setCalculatedAward(
+      raceEvent.meetsAwardRequirements
+        ? GetAward(
+            raceEventClassification,
+            raceClubs.classLevels,
+            result,
+            age,
+            raceEvent.raceDistance === distances.sprint
+          )
+        : null
+    );
+  });
 };
 
 export const GetRanking = (rankingBasetimePerKilometer, rankingBasepoint, result, isSprint, sportCode) => {

@@ -140,9 +140,11 @@ i18next
             SecondTimeGreaterOrEqualThanWinnerTime: "Second time >= winner time",
             PositionGreaterThanStarts: "Position > starts",
             MeetsAwardRequirements: "Meets SOFT requirements for award",
+            Award: "Award",
             Area: "Area",
             TimePerKilometer: "Speed [min/km]",
-            Ranking: "Ranking"
+            Ranking: "Ranking",
+            Sport: "Sport"
           },
           eventor: {
             Participant: "Participant"
@@ -261,9 +263,11 @@ i18next
             SecondTimeGreaterOrEqualThanWinnerTime: "Tvåans tid >= segratid",
             PositionGreaterThanStarts: "Placering > startande",
             MeetsAwardRequirements: "SOFT märkesgrundande",
+            Award: "Märke",
             Area: "Terrängtyp",
             TimePerKilometer: "Fart [min/km]",
-            Ranking: "Ranking"
+            Ranking: "Ranking",
+            Sport: "Idrott"
           },
           eventor: {
             Participant: "Anmäld"

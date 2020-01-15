@@ -31,7 +31,7 @@ const ResultsSubMenus = inject(
           key={"menuItem#results"}
           icon={moduleName + "Icon"}
           name={t("results.Latest")}
-          disabled={!sessionModel.loggedIn}
+          disabled={true || !sessionModel.loggedIn}
           isSubMenu
           onClick={() => {
             globalStateModel.setDashboard(dashboardContents.results, "1990-01-01", "2099-12-31", 1);
@@ -41,7 +41,7 @@ const ResultsSubMenus = inject(
           key={"menuItem#resultsIndividual"}
           icon="user"
           name={t("results.Individual")}
-          disabled={!sessionModel.loggedIn}
+          disabled={true || !sessionModel.loggedIn}
           isSubMenu
           onClick={() => {
             globalStateModel.setDashboard(dashboardContents.news, "1990-01-01", "2099-12-31", 2);
@@ -51,7 +51,7 @@ const ResultsSubMenus = inject(
           key={"menuItem#resultsTeam"}
           icon="team"
           name={t("results.Team")}
-          disabled={!sessionModel.loggedIn}
+          disabled={true || !sessionModel.loggedIn}
           isSubMenu
           onClick={() => {
             globalStateModel.setDashboard(dashboardContents.news, "1990-01-01", "2099-12-31", 3);
@@ -72,7 +72,7 @@ const ResultsSubMenus = inject(
           key={"menuItem#resultsConvert"}
           icon="cloud-upload"
           name={t("results.Convert")}
-          disabled={!sessionModel.loggedIn || !sessionModel.isAdmin}
+          disabled={true || !sessionModel.loggedIn || !sessionModel.isAdmin}
           isSubMenu
           onClick={() => {
             globalStateModel.setValue("rightMenuVisible", false);

@@ -5,7 +5,8 @@ import { observer, inject, Provider } from "mobx-react";
 import { getSnapshot } from "mobx-state-tree";
 import { withTranslation } from "react-i18next";
 import styled from "styled-components";
-import { RaceWizard, getLocalStorage, distances } from "../../models/resultWizardModel";
+import { RaceWizard, getLocalStorage } from "../../models/resultWizardModel";
+import { distances } from "../../utils/resultConstants";
 import { PostJsonData } from "../../utils/api";
 import ResultWizardStep0Input from "./ResultsWizardStep0Input";
 import ResultWizardStep1ChooseRace from "./ResultsWizardStep1ChooseRace";
@@ -13,14 +14,7 @@ import ResultWizardStep2EditRace from "./ResultsWizardStep2EditRace";
 import ResultWizardStep3Ranking from "./ResultsWizardStep3Ranking";
 import { SpinnerDiv, StyledIcon } from "../styled/styled";
 import EditResultIndividual from "./EditResultIndividual";
-import {
-  GetAge,
-  GetRanking,
-  GetRacePoint,
-  GetRaceOldPoint,
-  GetPointRunTo1000,
-  GetAward
-} from "../../utils/resultHelper";
+import { GetRanking, GetRacePoint, GetRaceOldPoint, GetPointRunTo1000 } from "../../utils/resultHelper";
 
 const { confirm } = Modal;
 const StyledModalContent = styled.div``;
@@ -125,8 +119,6 @@ const ResultsWizardModal = inject(
           const raceClassClassification = raceEventClassification.classClassifications.find(
             cc => cc.classClassificationId === result.classClassificationId
           );
-          const competitor = clubModel.raceClubs.selectedClub.competitorById(result.competitorId);
-          const age = GetAge(competitor.birthDay, raceEvent.raceDate);
 
           result.setValue(
             "ranking",
@@ -141,20 +133,6 @@ const ResultsWizardModal = inject(
           result.setValue("points", GetRacePoint(raceEventClassification, raceClassClassification, result));
           result.setValue("pointsOld", GetRaceOldPoint(raceEventClassification, raceClassClassification, result));
           result.setValue("points1000", GetPointRunTo1000(raceEventClassification, raceClassClassification, result));
-          if (raceEvent.meetsAwardRequirements) {
-            result.setValue(
-              "award",
-              GetAward(
-                raceEventClassification,
-                clubModel.raceClubs.classLevels,
-                result,
-                age,
-                raceEvent.raceDistance === distances.sprint
-              )
-            );
-          } else {
-            result.setValue("award", null);
-          }
         });
 
         const snapshot = getSnapshot(raceEvent);

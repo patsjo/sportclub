@@ -129,11 +129,12 @@ const ResultWizardStep1ChooseRace = inject(
                 );
                 event.Event.Name = event.Event.Name + ", " + event.Event.EventRace.Name;
               }
-              event.alreadySaved = alreadySavedEventsJson.some(
+              const alreadySaved = alreadySavedEventsJson.find(
                 saved =>
                   saved.eventorId.toString() === event.Event.EventId &&
                   saved.eventorRaceId.toString() === event.EventRaceId
               );
+              event.alreadySavedEventId = alreadySaved ? alreadySaved.eventId : -1;
             });
             // EventStatusId:
             // 1 Applied
@@ -148,6 +149,9 @@ const ResultWizardStep1ChooseRace = inject(
             // 10 Canceled
             // 11 Reported
             events = events.filter(event => ["9", "11"].includes(event.Event.EventStatusId));
+            if (!raceWizardModel.queryIncludeExisting) {
+              events = events.filter(event => event.alreadySavedEventId === -1);
+            }
             events = events.sort((a, b) =>
               a.Event.EventRace.RaceDate.Date > b.Event.EventRace.RaceDate.Date
                 ? 1
@@ -171,6 +175,7 @@ const ResultWizardStep1ChooseRace = inject(
         const { raceWizardModel, onValidate } = this.props;
         const selected = JSON.parse(selectedRowKeys);
 
+        raceWizardModel.setValue("selectedEventId", parseInt(selected.selectedEventId));
         raceWizardModel.setValue("selectedEventorId", parseInt(selected.selectedEventorId));
         raceWizardModel.setValue("selectedEventorRaceId", parseInt(selected.selectedEventorRaceId));
         this.setState({ selectedRowKeys });
@@ -203,31 +208,21 @@ const ResultWizardStep1ChooseRace = inject(
           },
           {
             title: t("results.AlreadySaved"),
-            dataIndex: "alreadySaved",
-            key: "alreadySaved",
-            render: selected => (
-              <b>
-                {selected ? (
-                  <>
-                    <StyledIcon type="check-square" theme="twoTone" twoToneColor="#52c41a" />
-                    {t("common.Yes")}
-                  </>
-                ) : (
-                  <>
-                    <StyledIcon type="plus-square" theme="twoTone" />
-                    {t("common.No")}
-                  </>
-                )}
-              </b>
-            )
+            dataIndex: "alreadySavedEventId",
+            key: "alreadySavedEventId",
+            render: alreadySavedEventId => (alreadySavedEventId !== -1 ? t("common.Yes") : t("common.No"))
           }
         ];
         const data = events.map(event => ({
-          key: JSON.stringify({ selectedEventorId: event.Event.EventId, selectedEventorRaceId: event.EventRaceId }),
+          key: JSON.stringify({
+            selectedEventorId: event.Event.EventId,
+            selectedEventorRaceId: event.EventRaceId,
+            selectedEventId: event.alreadySavedEventId
+          }),
           date: event.Event.EventRace.RaceDate.Date,
           time: event.Event.EventRace.RaceDate.Clock === "00:00:00" ? "" : event.Event.EventRace.RaceDate.Clock,
           name: `${event.Event.Name}`,
-          alreadySaved: event.alreadySaved
+          alreadySavedEventId: event.alreadySavedEventId
         }));
 
         return loaded && visible ? (

@@ -100,7 +100,14 @@ const ResultWizardStep0Input = inject(
               {getFieldDecorator("ExistInEventor", {
                 valuePropName: "checked",
                 initialValue: raceWizardModel.existInEventor
-              })(<Switch onChange={checked => raceWizardModel.setValue("existInEventor", checked)} />)}
+              })(
+                <Switch
+                  onChange={checked => {
+                    raceWizardModel.setValue("existInEventor", checked);
+                    raceWizardModel.setValue("selectedEventId", -1);
+                  }}
+                />
+              )}
             </FormItem>
           </Form>
         );

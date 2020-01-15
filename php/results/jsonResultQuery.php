@@ -86,6 +86,7 @@ if ($iType == "EVENTS")
     while($row = \db\mysql_fetch_assoc($result))
     {
       $x = new stdClass();
+      $x->eventId               = intval($row['EVENT_ID']);
       $x->eventorId             = intval($row['EVENTOR_ID']);
       $x->eventorRaceId         = is_null($row['EVENTOR_RACE_ID']) ? NULL : intval($row['EVENTOR_RACE_ID']);
       array_push($rows, $x);
