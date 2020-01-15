@@ -9,6 +9,13 @@ import ModuleSubMenu from "./moduleSubMenus/ModuleSubMenu";
 import MaterialIcon from "../materialIcon/MaterialIcon";
 import { dashboardContents } from "../../models/globalStateModel";
 
+const StyledDrawer = styled(Drawer)`
+  &&& {
+    top: 64px;
+    height: calc(100% - 64px);
+  }
+`;
+
 const StyledMenu = styled(Menu)`
   &&&.ant-menu-inline {
     border-right: 0px;
@@ -39,7 +46,7 @@ const DrawerRightMenu = inject(
         const { t, clubModel, globalStateModel } = this.props;
 
         return (
-          <Drawer
+          <StyledDrawer
             title={t("common.Menu")}
             placement="right"
             closable={false}
@@ -76,7 +83,7 @@ const DrawerRightMenu = inject(
                 )
               )}
             </StyledMenu>
-          </Drawer>
+          </StyledDrawer>
         );
       }
     }

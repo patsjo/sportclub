@@ -54,18 +54,11 @@ const Toolbar = inject(
                   onClick={() => {
                     switch (module.name) {
                       case "Eventor":
-                        const win = window.open(
-                          clubModel.eventor.url,
-                          "_blank"
-                        );
+                        const win = window.open(clubModel.eventor.url, "_blank");
                         win.focus();
                         break;
                       case "News":
-                        globalStateModel.setDashboard(
-                          dashboardContents.news,
-                          "1990-01-01",
-                          "2099-12-31"
-                        );
+                        globalStateModel.setDashboard(dashboardContents.news, "1990-01-01", "2099-12-31");
                         break;
                       default:
                         return null;
@@ -75,14 +68,9 @@ const Toolbar = inject(
               ))}
             </WideToolbarHolder>
             <ToolbarItem
-              icon="MenuIcon"
+              icon={globalStateModel.rightMenuVisible ? "menu-unfold" : "menu-fold"}
               name={t("common.Menu")}
-              onClick={() =>
-                globalStateModel.setValue(
-                  "rightMenuVisible",
-                  !globalStateModel.rightMenuVisible
-                )
-              }
+              onClick={() => globalStateModel.setValue("rightMenuVisible", !globalStateModel.rightMenuVisible)}
             />
             <DrawerRightMenu />
           </ToolbarHolder>
