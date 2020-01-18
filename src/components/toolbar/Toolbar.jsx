@@ -50,7 +50,7 @@ const Toolbar = inject(
                   key={"toolbarItem#" + module.name + index}
                   icon={module.name + "Icon"}
                   name={t("modules." + module.name)}
-                  disabled={module.name !== "News" && module.name !== "Eventor"}
+                  disabled={module.name !== "News" && module.name !== "Eventor" && module.name !== "ScoringBoard"}
                   onClick={() => {
                     switch (module.name) {
                       case "Eventor":
@@ -59,6 +59,9 @@ const Toolbar = inject(
                         break;
                       case "News":
                         globalStateModel.setDashboard(dashboardContents.news, "1990-01-01", "2099-12-31");
+                        break;
+                      case "ScoringBoard":
+                        globalStateModel.setDashboard(dashboardContents.scoringBoard);
                         break;
                       default:
                         return null;

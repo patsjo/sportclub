@@ -230,10 +230,9 @@ export const GetPointRunTo1000 = (raceEventClassification, raceClassClassificati
     return 30;
   }
 
-  return Math.min(
-    Math.round((basePoint / (result.nofStartsInClass - 1)) * (result.nofStartsInClass - result.position)),
-    30
-  );
+  const points = Math.round((basePoint / (result.nofStartsInClass - 1)) * (result.nofStartsInClass - result.position));
+  if (points < 30) return 30;
+  return points;
 };
 
 export const ResetClassClassifications = (raceEvent, eventClassifications, classLevels) => {

@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import styled from "styled-components";
 import News from "../news/News";
+import League from "../results/League";
 import EventorEntriesView from "../eventor/EventorEntriesView";
 import { observer, inject } from "mobx-react";
 import { dashboardContents } from "../../models/globalStateModel";
@@ -51,6 +52,8 @@ const Dashboard = inject(
               type={globalStateModel.type}
               infiniteScroll
             />
+          ) : globalStateModel.dashboardContentId === dashboardContents.scoringBoard ? (
+            <League />
           ) : null;
 
         return <ContentArea>{Content}</ContentArea>;

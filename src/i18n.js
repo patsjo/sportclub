@@ -60,7 +60,7 @@ i18next
             Home: "Home",
             News: "News",
             Calendar: "Calendar",
-            ScoringBoard: "ScoringBoard",
+            ScoringBoard: "Club leagues",
             Eventor: "Eventor",
             Results: "Results",
             Address: "Address",
@@ -144,7 +144,14 @@ i18next
             Area: "Area",
             TimePerKilometer: "Speed [min/km]",
             Ranking: "Ranking",
-            Sport: "Sport"
+            Sport: "Sport",
+            RankingLeague: "Ranking",
+            Points1000League: "Run to 1000",
+            PointsLeague: "Points league",
+            PointsOldLeague: "Old points League (until 2002)",
+            GrandSlam: "Grand slam",
+            Total: "Total",
+            CurrentSeason: "Current season"
           },
           eventor: {
             Participant: "Participant"
@@ -183,7 +190,7 @@ i18next
             Home: "Startsida",
             News: "Nyheter",
             Calendar: "Kalender",
-            ScoringBoard: "Poängliga",
+            ScoringBoard: "Klubbligor",
             Eventor: "Eventor",
             Results: "Resultat",
             Address: "Adress",
@@ -267,7 +274,14 @@ i18next
             Area: "Terrängtyp",
             TimePerKilometer: "Fart [min/km]",
             Ranking: "Ranking",
-            Sport: "Idrott"
+            Sport: "Idrott",
+            RankingLeague: "Ranking",
+            Points1000League: "Spring till 1000",
+            PointsLeague: "Poängligan",
+            PointsOldLeague: "Gamla poängligan (fram till 2002)",
+            GrandSlam: "Grand slam",
+            Total: "Totalt",
+            CurrentSeason: "Senaste året"
           },
           eventor: {
             Participant: "Anmäld"

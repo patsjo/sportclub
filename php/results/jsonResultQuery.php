@@ -19,8 +19,6 @@ include_once($_SERVER["DOCUMENT_ROOT"] . "/include/db.php");
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/functions.php");
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/users.php");
 
-ValidLogin();
-
 $offset = 0;
 $limit = 10000;
 $iType = 0;
@@ -49,31 +47,35 @@ if(isset($_REQUEST['iToDate']) && $_REQUEST['iToDate']!="")
   $iToDate = string2Date($_REQUEST['iToDate']);
 }
 
+if ($iType == "CLUBS")
+{
+  ValidLogin();
+}
+
 OpenDatabase();
 if (!$db_conn->set_charset('utf8')) {
   die('Could not set character set to latin1_swedish_ci');
 }
+if (is_null($iFromDate))
+{
+  $whereStartDate = "";
+}
+else
+{
+  $whereStartDate = " AND DATE_FORMAT(RACEDATE, '%Y-%m-%d') >= '" . date2String($iFromDate) . "'";
+}
+
+if (is_null($iToDate))
+{
+  $whereEndDate = "";
+}
+else
+{
+  $whereEndDate = " AND DATE_FORMAT(RACEDATE, '%Y-%m-%d') <= '" . date2String($iToDate) . "'";
+}
 
 if ($iType == "EVENTS")
 {
-  if (is_null($iFromDate))
-  {
-    $whereStartDate = "";
-  }
-  else
-  {
-    $whereStartDate = " AND DATE_FORMAT(RACEDATE, '%Y-%m-%d') >= '" . date2String($iFromDate) . "'";
-  }
-
-  if (is_null($iToDate))
-  {
-    $whereEndDate = "";
-  }
-  else
-  {
-    $whereEndDate = " AND DATE_FORMAT(RACEDATE, '%Y-%m-%d') <= '" . date2String($iToDate) . "'";
-  }
-
   $sql = "SELECT * FROM RACE_EVENT WHERE 1=1" . $whereStartDate . $whereEndDate . " ORDER BY RACEDATE ASC";
   $result = \db\mysql_query($sql);
   if (!$result)
@@ -259,6 +261,44 @@ elseif ($iType == "CLUBS")
     $rows->sports               = $sports->values;
   }
 }
+elseif ($iType == "POINTS")
+{
+  $sql = "SELECT RACE_EVENT_RESULTS.COMPETITOR_ID, FIRST_NAME, LAST_NAME," .
+    "   GROUP_CONCAT(POINTS SEPARATOR ',') AS POINTS," .
+    "   GROUP_CONCAT(POINTS_OLD SEPARATOR ',') AS POINTS_OLD," .
+    "   GROUP_CONCAT(POINTS_1000 SEPARATOR ',') AS POINTS_1000," .
+    "   GROUP_CONCAT(RANKING SEPARATOR ',') AS RANKING " .
+    "FROM RACE_EVENT " .
+    "INNER JOIN RACE_EVENT_RESULTS ON (RACE_EVENT.EVENT_ID = RACE_EVENT_RESULTS.EVENT_ID) ".
+    "INNER JOIN RACE_COMPETITORS ON (RACE_EVENT_RESULTS.COMPETITOR_ID = RACE_COMPETITORS.COMPETITOR_ID) ".
+    "WHERE 1=1" . $whereStartDate . $whereEndDate . " " .
+    "GROUP BY RACE_EVENT_RESULTS.COMPETITOR_ID, FIRST_NAME, LAST_NAME";
+
+  $result = \db\mysql_query($sql);
+  if (!$result)
+  {
+    die('SQL Error: ' . \db\mysql_error());
+  }
+
+  if (\db\mysql_num_rows($result) > 0)
+  {
+    while($row = \db\mysql_fetch_assoc($result))
+    {
+      $x = new stdClass();
+      $x->competitorId          = intval($row['COMPETITOR_ID']);
+      $x->name                  = $row['FIRST_NAME'] . " " . $row['LAST_NAME'];
+      $x->points                = array_map('intval', explode(",", $row['POINTS']));
+      $x->pointsOld             = array_map('intval', explode(",", $row['POINTS_OLD']));
+      $x->points1000            = array_map('intval', explode(",", $row['POINTS_1000']));
+      $x->ranking               = array_map('floatval', explode(",", $row['RANKING']));
+      rsort($x->points);
+      rsort($x->pointsOld);
+      rsort($x->points1000);
+      sort($x->ranking);
+      array_push($rows, $x);
+    }
+  }
+}
 else
 {
   die('Wrong iType parameter');
@@ -271,6 +311,8 @@ if (isset($_SERVER['HTTP_ORIGIN']))
 }
 header("Access-Control-Allow-Headers: *");
 header("Content-Type: application/json; charset=ISO-8859-1");
+ini_set( 'precision', 14 );
+ini_set( 'serialize_precision', 6 );
 echo utf8_decode(json_encode($rows));
 
 \db\mysql_free_result($result);

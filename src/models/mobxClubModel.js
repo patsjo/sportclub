@@ -48,7 +48,7 @@ const Module = types
   })
   .views(self => ({
     get hasSubMenus() {
-      return self.name !== "Eventor";
+      return self.name !== "Eventor" && self.name !== "ScoringBoard";
     }
   }));
 
