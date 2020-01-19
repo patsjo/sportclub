@@ -1,10 +1,13 @@
-import React, { Component } from "react";
+import React from "react";
 import styled from "styled-components";
-import News from "../news/News";
+import useNews from "../news/useNews";
 import League from "../results/League";
-import EventorEntriesView from "../eventor/EventorEntriesView";
+import useEventorEntries from "../eventor/useEventorEntries";
 import { observer, inject } from "mobx-react";
 import { dashboardContents } from "../../models/globalStateModel";
+import Columns from "./Columns";
+import InfiniteScroll from "react-infinite-scroller";
+import { Spin } from "antd";
 
 export const ContentArea = styled.div`
   & {
@@ -14,18 +17,9 @@ export const ContentArea = styled.div`
   }
 `;
 
-const Columns = styled.div`
-  & {
-    -webkit-columns: 5 300px;
-    -moz-columns: 5 300px;
-    columns: 5 300px;
-    -webkit-column-gap: 1em;
-    -moz-column-gap: 1em;
-    column-gap: 1em;
-    -webkit-column-rule: 1px dotted #ccc;
-    -moz-column-rule: 1px dotted #ccc;
-    column-rule: 1px dotted #ccc;
-  }
+const SpinnerDiv = styled.div`
+  text-align: center;
+  width: 100%;
 `;
 
 // @inject("clubModel")
@@ -34,32 +28,35 @@ const Dashboard = inject(
   "clubModel",
   "globalStateModel"
 )(
-  observer(
-    class Dashboard extends Component {
-      render() {
-        const { globalStateModel } = this.props;
+  observer(({ clubModel, globalStateModel }) => {
+    const eventorEntries = useEventorEntries(clubModel, globalStateModel.dashboardContentId);
+    const { loadMoreCallback, newsItems } = useNews(globalStateModel, clubModel);
 
-        const Content =
-          globalStateModel.dashboardContentId === dashboardContents.home ? (
-            <Columns>
-              <News />
-              <EventorEntriesView />
-            </Columns>
-          ) : globalStateModel.dashboardContentId === dashboardContents.news ? (
-            <News
-              startDate={globalStateModel.startDate}
-              endDate={globalStateModel.endDate}
-              type={globalStateModel.type}
-              infiniteScroll
-            />
-          ) : globalStateModel.dashboardContentId === dashboardContents.scoringBoard ? (
-            <League />
-          ) : null;
+    const Content =
+      globalStateModel.dashboardContentId === dashboardContents.home ? (
+        <Columns>
+          {newsItems}
+          {eventorEntries}
+        </Columns>
+      ) : globalStateModel.dashboardContentId === dashboardContents.news ? (
+        <InfiniteScroll
+          pageStart={0}
+          loadMore={loadMoreCallback}
+          hasMore={globalStateModel.news.hasMoreItems}
+          loader={
+            <SpinnerDiv>
+              <Spin size="large" />
+            </SpinnerDiv>
+          }
+        >
+          <Columns>{newsItems}</Columns>
+        </InfiniteScroll>
+      ) : globalStateModel.dashboardContentId === dashboardContents.scoringBoard ? (
+        <League />
+      ) : null;
 
-        return <ContentArea>{Content}</ContentArea>;
-      }
-    }
-  )
+    return <ContentArea>{Content}</ContentArea>;
+  })
 );
 
 export default Dashboard;

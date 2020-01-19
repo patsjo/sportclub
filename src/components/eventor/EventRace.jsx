@@ -58,7 +58,7 @@ const StyledTableDataStart = styled.td`
 // @observer
 const EventRace = inject("clubModel")(
   observer(
-    class EventorEntriesView extends Component {
+    class EventRace extends Component {
       static propTypes = {
         header: PropTypes.string.isRequired,
         date: PropTypes.string.isRequired,
@@ -135,25 +135,11 @@ const EventRace = inject("clubModel")(
                 false
               )
             : new Promise(resolve => resolve(undefined));
-        const lengthPromise = GetJsonData(
-          self.props.clubModel.corsProxy +
-            encodeURIComponent(
-              self.props.clubModel.eventor.lengthUrl +
-                "?eventId=" +
-                self.props.eventObject.Event.EventId +
-                "&eventRaceId=" +
-                self.props.eventObject.Event.EventRace.EventRaceId +
-                "&groupBy=EventClass"
-            ) +
-            "&noJsonConvert=true&headers=" +
-            encodeURIComponent("ApiKey: " + self.props.clubModel.eventor.apiKey),
-          false
-        );
-        Promise.all([classPromise, startPromise, resultPromise, lengthPromise]).then(jsons => {
+
+        Promise.all([classPromise, startPromise, resultPromise]).then(jsons => {
           const classJson = jsons[0];
           const startJson = jsons[1];
           const resultJson = jsons[2];
-          const lengthHtmlJson = jsons[3];
           // eslint-disable-next-line eqeqeq
           if (startJson != undefined && startJson.ClassStart != undefined) {
             eventObject.Competitors = [];

@@ -4,14 +4,15 @@ import { mediaQueryMapper } from "./mq";
 import mapNodesToColumns from "./mapNodesToColumns";
 import styled from "styled-components";
 
+const flatten = list => list.reduce((a, b) => a.concat(Array.isArray(b) ? flatten(b) : b), []);
+
 const StyledColumn = styled.div`
   border-left: ${props => (props.column > 0 ? "#808080 dotted 1px" : "unset")};
   box-sizing: border-box;
   float: left;
   width: ${props => (1 / props.columns) * 100}%;
   padding-left: ${props => (props.column > 0 ? props.gap : 0)}px;
-  padding-right: ${props =>
-    props.column < props.columns - 1 ? props.gap : 0}px;
+  padding-right: ${props => (props.column < props.columns - 1 ? props.gap : 0)}px;
 `;
 
 class Columns extends Component {
@@ -26,20 +27,13 @@ class Columns extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (
-      this.state.columns > 1 &&
-      prevState.dimensions.length !== this.refsArray.length
-    ) {
+    if (this.state.columns > 1 && prevState.dimensions.length !== this.refsArray.length) {
       const refs = this.refsArray;
 
-      if (
-        refs.length > 0 &&
-        refs[refs.length - 1].current &&
-        refs[refs.length - 1].current.clientHeight
-      ) {
+      if (refs.length > 0 && refs[refs.length - 1].current && refs[refs.length - 1].current.clientHeight) {
         const dims = refs.map(ref => ({
-          width: ref.current.clientWidth,
-          height: ref.current.clientHeight
+          width: ref.current.clientWidth === undefined ? 100 : ref.current.clientWidth,
+          height: ref.current.clientHeight === undefined ? 50 : ref.current.clientHeight
         }));
 
         this.setState({ dimensions: dims });
@@ -96,11 +90,11 @@ class Columns extends Component {
 
     if (columns > 1) {
       this.refsArray = [];
-      const childrenWithRef = React.Children.map(children, (child, index) => {
+      const childrenWithRef = React.Children.map(flatten(children), (child, index) => {
         const ref = React.createRef();
         this.refsArray.push(ref);
 
-        return React.cloneElement(child, { ref, key: index });
+        return React.cloneElement(child, { ref, key: `clone#${child.key}` });
       });
       const columnsContainers = mapNodesToColumns({
         children: childrenWithRef,

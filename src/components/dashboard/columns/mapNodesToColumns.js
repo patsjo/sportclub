@@ -1,8 +1,4 @@
-export default function mapNodesToColumns({
-  children = [],
-  columns = 1,
-  dimensions = []
-} = {}) {
+export default function mapNodesToColumns({ children = [], columns = 1, dimensions = [] } = {}) {
   let nodes = [];
   let heights = [];
 
@@ -20,7 +16,7 @@ export default function mapNodesToColumns({
       let { width, height } = dimensions[i];
       let index = heights.indexOf(Math.min(...heights));
       nodes[index].push(child);
-      heights[index] += height / width;
+      heights[index] += width === 0 ? 50 : height / width;
     });
   }
   // equally spread the children across the columns
