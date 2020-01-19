@@ -3,6 +3,7 @@ import styled from "styled-components";
 import useNews from "../news/useNews";
 import League from "../results/League";
 import useEventorEntries from "../eventor/useEventorEntries";
+import EsriOSMOrienteeringMap from "../map/EsriOSMOrienteeringMap";
 import { observer, inject } from "mobx-react";
 import { dashboardContents } from "../../models/globalStateModel";
 import Columns from "./Columns";
@@ -35,7 +36,13 @@ const Dashboard = inject(
     const Content =
       globalStateModel.dashboardContentId === dashboardContents.home ? (
         <Columns>
-          {newsItems}
+          {newsItems.slice(0, 2)}
+          <div column={-1} style={{ height: 400 }}>
+            {clubModel.mapCenter ? (
+              <EsriOSMOrienteeringMap key="dashboard#homeMap" containerId="homeMap" mapCenter={clubModel.mapCenter} />
+            ) : null}
+          </div>
+          {newsItems.slice(2)}
           {eventorEntries}
         </Columns>
       ) : globalStateModel.dashboardContentId === dashboardContents.news ? (

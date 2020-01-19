@@ -6,6 +6,7 @@
   "dependencies": {
     "antd": "^3.25.2",
     "antdeco-react-scripts": "^1.0.0",
+    "esri-loader": "^2.13.0",
     "i18next": "^19.0.1",
     "i18next-browser-languagedetector": "^4.0.1",
     "mobx": "^5.15.0",

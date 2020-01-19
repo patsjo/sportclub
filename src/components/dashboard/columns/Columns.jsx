@@ -21,25 +21,21 @@ class Columns extends Component {
     this.setColumns = this.setColumns.bind(this);
     this.state = {
       columns: 1,
-      dimensions: []
+      dimensions: [],
+      refsCount: 0
     };
-    this.refsArray = [];
+    this.refs = [];
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.state.columns > 1 && prevState.dimensions.length !== this.refsArray.length) {
-      const refs = this.refsArray;
+    const { dimensions } = this.state;
+    const dims = this.refs.map(ref => ({
+      width: !ref.current || !ref.current.clientWidth ? 0 : ref.current.clientWidth,
+      height: !ref.current || !ref.current.clientHeight ? 0 : ref.current.clientHeight
+    }));
 
-      if (refs.length > 0 && refs[refs.length - 1].current && refs[refs.length - 1].current.clientHeight) {
-        const dims = refs.map(ref => ({
-          width: ref.current.clientWidth === undefined ? 100 : ref.current.clientWidth,
-          height: ref.current.clientHeight === undefined ? 50 : ref.current.clientHeight
-        }));
-
-        this.setState({ dimensions: dims });
-      } else if (this.state.dimensions.length > 0) {
-        this.setState({ dimensions: [] });
-      }
+    if (this.state.columns > 1 && JSON.stringify(dimensions) !== JSON.stringify(dims)) {
+      this.setState({ dimensions: dims });
     }
   }
 
@@ -86,16 +82,22 @@ class Columns extends Component {
 
   renderColumns(columns) {
     const { children, gap } = this.props;
-    const { dimensions } = this.state;
+    const { dimensions, refsCount } = this.state;
+    const allChildren = flatten(children);
 
     if (columns > 1) {
-      this.refsArray = [];
-      const childrenWithRef = React.Children.map(flatten(children), (child, index) => {
+      this.refs = [];
+      const childrenWithRef = React.Children.map(allChildren, (child, index) => {
         const ref = React.createRef();
-        this.refsArray.push(ref);
+        this.refs.push(ref);
 
-        return React.cloneElement(child, { ref, key: `clone#${child.key}` });
+        return React.cloneElement(child, { ref: ref, key: child.key });
       });
+
+      if (allChildren.length !== refsCount) {
+        this.setState({ refsCount: this.refs.length });
+        return childrenWithRef;
+      }
       const columnsContainers = mapNodesToColumns({
         children: childrenWithRef,
         columns,

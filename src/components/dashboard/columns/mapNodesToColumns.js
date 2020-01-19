@@ -13,10 +13,24 @@ export default function mapNodesToColumns({ children = [], columns = 1, dimensio
       heights[i] = 0;
     }
     children.forEach((child, i) => {
-      let { width, height } = dimensions[i];
-      let index = heights.indexOf(Math.min(...heights));
+      let { height } = dimensions[i];
+      let index = 0;
+      if (child.props.column === undefined) {
+        index = heights.indexOf(Math.min(...heights));
+      } else if (child.props.column < 0 && columns > 2) {
+        index = columns + child.props.column;
+        if (index < 0) index = 0;
+      } else if (child.props.column < 0) {
+        index = columns - 1;
+      } else if (child.props.column < columns && columns > 2) {
+        index = child.props.column;
+      } else if (child.props.column < columns) {
+        index = 0;
+      } else {
+        index = heights.indexOf(Math.min(...heights));
+      }
       nodes[index].push(child);
-      heights[index] += width === 0 ? 50 : height / width;
+      heights[index] += !height ? 30 : height;
     });
   }
   // equally spread the children across the columns

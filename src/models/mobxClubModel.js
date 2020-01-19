@@ -71,6 +71,7 @@ export const MobxClubModel = types
   .model({
     title: types.string,
     titleLogo: types.maybe(Logo),
+    mapCenter: types.array(types.number),
     defaultLanguage: types.enumeration("Lang", ["sv", "en"]),
     logo: Logo,
     attachmentUrl: types.optional(types.string, "/showfile.php?iFileID="),
