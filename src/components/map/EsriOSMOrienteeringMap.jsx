@@ -31,11 +31,11 @@ const EsriOSMOrienteeringMap = ({ containerId, mapCenter }) => {
 
         var OrienteeringTileLayer = BaseTileLayer.createSubclass({
           properties: {
-            urlTemplate: null
+            urlTemplates: []
           },
 
           getTileUrl: function(level, row, col) {
-            return this.urlTemplate
+            return this.urlTemplates[Math.floor(Math.random() * Math.floor(this.urlTemplates.length))]
               .replace("{z}", level)
               .replace("{x}", col)
               .replace("{y}", row);
@@ -43,7 +43,11 @@ const EsriOSMOrienteeringMap = ({ containerId, mapCenter }) => {
         });
 
         var orienteeringLayer = new OrienteeringTileLayer({
-          urlTemplate: "https://tiler4.oobrien.com/oterrain_global/{z}/{x}/{y}.png",
+          urlTemplates: [
+            "https://tiler4.oobrien.com/oterrain_global/{z}/{x}/{y}.png",
+            "https://tiler5.oobrien.com/oterrain_global/{z}/{x}/{y}.png",
+            "https://tiler6.oobrien.com/oterrain_global/{z}/{x}/{y}.png"
+          ],
           title: "Orienteering layer"
         });
 
