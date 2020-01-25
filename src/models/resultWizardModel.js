@@ -58,6 +58,7 @@ export const RaceWizard = types
     queryEndDate: types.string,
     queryIncludeExisting: types.boolean,
     existInEventor: types.boolean,
+    overwrite: types.optional(types.boolean, false),
     paymentModel: types.integer,
     selectedEventId: types.maybeNull(types.integer),
     selectedEventorId: types.maybeNull(types.integer),

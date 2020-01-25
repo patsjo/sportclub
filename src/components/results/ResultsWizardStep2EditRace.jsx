@@ -3,7 +3,7 @@ import { Spin, Form, Switch, Input, DatePicker, TimePicker, Modal, message, Row,
 import { MissingTag, NoWrap, SpinnerDiv, StyledIcon, StyledTable } from "../styled/styled";
 import { observer, inject } from "mobx-react";
 import { applySnapshot, getSnapshot } from "mobx-state-tree";
-import { GetJsonData } from "../../utils/api";
+import { GetJsonData, PostJsonData } from "../../utils/api";
 import {
   paymentOptions,
   raceDistanceOptions,
@@ -35,7 +35,6 @@ import EditResultIndividual from "./EditResultIndividual";
 import { withTranslation } from "react-i18next";
 import moment from "moment";
 import styled from "styled-components";
-import { formatTimeStr } from "antd/lib/statistic/utils";
 
 const StyledImg = styled.img`
   &&& {
@@ -51,6 +50,7 @@ const { confirm } = Modal;
 // @inject("clubModel")
 // @observer
 const ResultWizardStep2EditRace = inject(
+  "sessionModel",
   "clubModel",
   "raceWizardModel"
 )(
@@ -76,7 +76,7 @@ const ResultWizardStep2EditRace = inject(
 
       componentDidMount() {
         const self = this;
-        const { t, clubModel, raceWizardModel, onFailed, onValidate } = this.props;
+        const { t, sessionModel, clubModel, raceWizardModel, onFailed, onValidate } = this.props;
 
         if (!raceWizardModel.existInEventor) {
           raceWizardModel.setValue("raceEvent", {
@@ -103,6 +103,17 @@ const ResultWizardStep2EditRace = inject(
           );
           return;
         }
+
+        const url = clubModel.modules.find(module => module.name === "Results").queryUrl;
+        const editResultPromise = !raceWizardModel.overwrite
+          ? PostJsonData(
+              url,
+              { iType: "EVENT", iEventId: raceWizardModel.selectedEventId },
+              true,
+              sessionModel.authorizationHeader
+            )
+          : new Promise(resolve => resolve(undefined));
+
         const entriesPromise = GetJsonData(
           clubModel.corsProxy +
             encodeURIComponent(
@@ -162,8 +173,8 @@ const ResultWizardStep2EditRace = inject(
           true
         );
 
-        Promise.all([entriesPromise, classPromise, resultPromise, entryFeePromise, lengthPromise])
-          .then(async ([entriesJson, classJson, resultJson, entryFeeJson, lengthHtmlJson]) => {
+        Promise.all([editResultPromise, entriesPromise, classPromise, resultPromise, entryFeePromise, lengthPromise])
+          .then(async ([editResultJson, entriesJson, classJson, resultJson, entryFeeJson, lengthHtmlJson]) => {
             const isRelay =
               resultJson &&
               resultJson.Event &&
@@ -203,6 +214,12 @@ const ResultWizardStep2EditRace = inject(
                 raceDistance: resultJson.EventRace["@attributes"].raceDistance,
                 paymentModel: raceWizardModel.paymentModel,
                 meetsAwardRequirements: true,
+                longitude: resultJson.EventRace.EventCenterPosition
+                  ? parseFloat(resultJson.EventRace.EventCenterPosition["@attributes"].x)
+                  : null,
+                latitude: resultJson.EventRace.EventCenterPosition
+                  ? parseFloat(resultJson.EventRace.EventCenterPosition["@attributes"].y)
+                  : null,
                 results: [],
                 teamResults: []
               };
@@ -428,10 +445,10 @@ const ResultWizardStep2EditRace = inject(
                 //   });
                 // }
               }
-              raceWizardModel.setValue("raceEvent", raceEvent);
+              raceWizardModel.setValue("raceEvent", editResultJson ? editResultJson : raceEvent);
               raceWizardModel.setValue("raceWinnerResults", raceWinnerResults);
 
-              if (!isRelay) {
+              if (!isRelay && !editResultJson) {
                 CalculateCompetitorsFee(raceWizardModel.raceEvent);
                 CalculateAllAwards(clubModel.raceClubs, raceWizardModel.raceEvent);
               }
@@ -581,13 +598,15 @@ const ResultWizardStep2EditRace = inject(
             title: t("results.Time"),
             dataIndex: "competitorTime",
             key: "competitorTime",
-            render: (value, record) => (record.failedReason == null && value == null ? <MissingTag t={t} /> : FormatTime(value))
+            render: (value, record) =>
+              record.failedReason == null && value == null ? <MissingTag t={t} /> : FormatTime(value)
           },
           {
             title: t("results.WinnerTime"),
             dataIndex: "winnerTime",
             key: "winnerTime",
-            render: (value, record) => (record.failedReason == null && value == null ? <MissingTag t={t} /> : FormatTime(value))
+            render: (value, record) =>
+              record.failedReason == null && value == null ? <MissingTag t={t} /> : FormatTime(value)
           },
           {
             title: t("results.SecondTime"),

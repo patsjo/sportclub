@@ -15,6 +15,7 @@ import ResultWizardStep3Ranking from "./ResultsWizardStep3Ranking";
 import { SpinnerDiv, StyledIcon } from "../styled/styled";
 import EditResultIndividual from "./EditResultIndividual";
 import { GetRanking, GetRacePoint, GetRaceOldPoint, GetPointRunTo1000 } from "../../utils/resultHelper";
+import { ConfirmOverwriteOrEdit } from "./ConfirmOverwriteOrEditPromise";
 
 const { confirm } = Modal;
 const StyledModalContent = styled.div``;
@@ -79,9 +80,17 @@ const ResultsWizardModal = inject(
       }
 
       next() {
+        const self = this;
         let wizardStep = this.state.wizardStep + 1;
         if (wizardStep === 1 && !this.raceWizardModel.existInEventor) {
           wizardStep++;
+        }
+        if (wizardStep === 2 && this.raceWizardModel.overwrite && this.raceWizardModel.selectedEventId > 0) {
+          ConfirmOverwriteOrEdit(this.props.t).then(overwrite => {
+            self.raceWizardModel.setValue("overwrite", overwrite);
+            self.setState({ wizardStep, nextStepValid: false });
+          });
+          return;
         }
         this.setState({ wizardStep, nextStepValid: false });
       }

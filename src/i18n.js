@@ -78,7 +78,7 @@ i18next
             Text: "Text"
           },
           results: {
-            Add: "Get result from Eventor",
+            Add: "Import/Add/Edit",
             AddCompetitor: "Add competitor",
             Edit: "Edit",
             Convert: "Convert old results from GIK-programmet",
@@ -95,7 +95,8 @@ i18next
             DefaultFeePaidByCompetitor: "Fee already paid by competitor",
             QueryDateRange: "Query date range",
             QueryIncludeExisting: "Include already saved races",
-            ExistInEventor: "Race exists in eventor",
+            ImportEventExistInEventor: "Edit existing or import race that exists in eventor",
+            ExistInEventor: "Exists in eventor",
             Date: "Date",
             Time: "Time",
             Name: "Event name",
@@ -151,7 +152,8 @@ i18next
             PointsOldLeague: "Old points League (until 2002)",
             GrandSlam: "Grand slam",
             Total: "Total",
-            CurrentSeason: "Current season"
+            CurrentSeason: "Current season",
+            Overwrite: "Fetch new data from eventor"
           },
           eventor: {
             Participant: "Participant"
@@ -208,7 +210,7 @@ i18next
             Text: "Brödtext"
           },
           results: {
-            Add: "Hämta resultat från Eventor",
+            Add: "Importera/Lägg till/Redigera",
             AddCompetitor: "Lägg till löpare",
             Edit: "Ändra",
             Convert: "Konvertera gamla resultat från GIK-programmet",
@@ -225,7 +227,8 @@ i18next
             DefaultFeePaidByCompetitor: "Avgifter redan betald av löparen",
             QueryDateRange: "Sökperiod",
             QueryIncludeExisting: "Ta med redan sparade i sökningen",
-            ExistInEventor: "Tävlingen finns i eventor",
+            ImportEventExistInEventor: "Redigera eller importera tävling som finns i eventor",
+            ExistInEventor: "Finns i eventor",
             Date: "Datum",
             Time: "Tid",
             Name: "Tävlingens namn",
@@ -281,7 +284,8 @@ i18next
             PointsOldLeague: "Gamla poängligan (fram till 2002)",
             GrandSlam: "Grand slam",
             Total: "Totalt",
-            CurrentSeason: "Senaste året"
+            CurrentSeason: "Senaste året",
+            Overwrite: "Hämta ny data från eventor"
           },
           eventor: {
             Participant: "Anmäld"

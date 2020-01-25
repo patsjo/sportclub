@@ -70,15 +70,38 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.sessionModel = SessionModel.create(getLocalStorage());
+    this.clubModel = MobxClubModel.create(clubJson);
     this.globalStateModel = GlobalStateModel.create({
       news: {
         newsItems: [],
         limit: 12,
         offset: 0,
         hasMoreItems: true
-      }
+      },
+      graphics:
+        this.clubModel.mapCenter && this.clubModel.logo
+          ? [
+              {
+                geometry: { longitude: this.clubModel.mapCenter[0], latitude: this.clubModel.mapCenter[1] },
+                attributes: { name: this.clubModel.title, type: "logo" },
+                symbol: {
+                  type: "picture-marker", // autocasts as new PictureMarkerSymbol()
+                  url: this.clubModel.logo.url,
+                  width: `${
+                    this.clubModel.logo.width > this.clubModel.logo.height
+                      ? 20
+                      : (20 * this.clubModel.logo.width) / this.clubModel.logo.height
+                  }px`,
+                  height: `${
+                    this.clubModel.logo.height > this.clubModel.logo.width
+                      ? 20
+                      : (20 * this.clubModel.logo.height) / this.clubModel.logo.width
+                  }px`
+                }
+              }
+            ]
+          : []
     });
-    this.clubModel = MobxClubModel.create(clubJson);
     document.title = this.clubModel.title;
     // this.theme = createMuiTheme({
     //   ...this.clubModel.theme,

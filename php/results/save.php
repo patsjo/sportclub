@@ -199,6 +199,8 @@ elseif ($iType == "EVENT")
   $x->rankingBasetimePerKilometer = getRequestTime("rankingBasetimePerKilometer");
   $x->rankingBasepoint = getRequestDecimal("rankingBasepoint");
   $x->rankingBaseDescription = getRequestString("rankingBaseDescription");
+  $x->longitude = getRequestDecimal("longitude");
+  $x->latitude = getRequestDecimal("latitude");
   $x->results = json_decode($_REQUEST['results']);
   $x->teamResults = json_decode($_REQUEST['teamResults']);
 
@@ -208,11 +210,12 @@ elseif ($iType == "EVENT")
                  "  ORGANISER_NAME, RACEDATE, RACETIME," .
                  "  SPORT_CODE, EVENT_CLASSIFICATION_ID, RACE_LIGHT_CONDITION," .
                  "  RACE_DISTANCE, PAYMENT_MODEL, MEETS_AWARD_REQUIREMENTS," .
-                 "  RANKING_BASE_TIME_PER_KILOMETER, RANKING_BASE_POINT, RANKING_BASE_DESCRIPTION" .
+                 "  RANKING_BASE_TIME_PER_KILOMETER, RANKING_BASE_POINT, RANKING_BASE_DESCRIPTION," .
+                 "  LONGITUDE, LATITUDE" .
                  ")" .
                  " VALUES " .
                  "(" .
-                 "  %s, %s, '%s', '%s', '%s', %s, '%s', '%s', %s, %s, %d, %d, '%s', %f, '%s'" .
+                 "  %s, %s, '%s', '%s', '%s', %s, '%s', '%s', %s, %s, %d, %d, '%s', %f, '%s', %s, %s" .
                  ")",
                  is_null($x->eventorId) ? "NULL" : $x->eventorId,
                  is_null($x->eventorRaceId) ? "NULL" : $x->eventorRaceId,
@@ -220,7 +223,10 @@ elseif ($iType == "EVENT")
                  $x->organiserName, $x->raceDate, is_null($raceDateTime) ? "NULL" : "'" . $raceDateTime . "'",
                  $x->sportCode, $x->eventClassificationId, is_null($x->raceLightCondition) ? "NULL" : "'" . $x->raceLightCondition . "'",
                  is_null($x->raceDistance) ? "NULL" : "'" . $x->raceDistance . "'", $x->paymentModel, intval($x->meetsAwardRequirements),
-                 $x->rankingBasetimePerKilometer, $x->rankingBasepoint, $x->rankingBaseDescription);
+                 $x->rankingBasetimePerKilometer,
+                 $x->rankingBasepoint, $x->rankingBaseDescription,
+                 is_null($x->longitude) ? "NULL" : $x->longitude,
+                 is_null($x->latitude) ? "NULL" : $x->latitude);
 
   \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
   $x->eventId = \db\mysql_insert_id();
@@ -239,10 +245,11 @@ elseif ($iType == "EVENT")
                     ")" .
                     " VALUES " .
                     "(" .
-                    "  %d, %d, '%s', %s, %d, %s, %s, %s, %s, %s, %s, %s, %s, %f, %f, %f, %s, %s, %s, %s, %s" .
+                    "  %d, %d, '%s', %s, %d, %s, %s, %s, %s, %s, %s, %s, %s, %f, %f, %f, %s, %d, %d, %d, %f" .
                     ")",
                     $x->eventId, $result->competitorId, $result->className,
-                    is_null($result->deviantEventClassificationId) ? "NULL" : "'" . $result->deviantEventClassificationId . "'", $result->classClassificationId,
+                    is_null($result->deviantEventClassificationId) ? "NULL" : "'" . $result->deviantEventClassificationId . "'",
+                    $result->classClassificationId,
                     is_null($result->difficulty) ? "NULL" : "'" . $result->difficulty . "'",
                     is_null($result->lengthInMeter) ? "NULL" : $result->lengthInMeter,
                     is_null($result->failedReason) ? "NULL" : "'" . $result->failedReason . "'",
@@ -264,26 +271,19 @@ elseif ($iType == "EVENT")
     if (!is_null($result->resultMultiDay)) {
       $query = sprintf("INSERT INTO RACE_EVENT_RESULTS_MULTI_DAY " .
       "(" .
-      "  RESULT_ID, CLASS_NAME," .
-      "  COMPETITOR_ID, LENGTH_IN_METER, FAILED_REASON," .
-      "  COMPETITOR_TIME, WINNER_TIME, SECOND_TIME," .
-      "  POSITION, NOF_STARTS_IN_CLASS, STAGE," .
+      "  RESULT_ID, TOTAL_LENGTH_IN_METER, TOTAL_FAILED_REASON," .
+      "  TOTAL_NOF_STARTS_IN_CLASS, STAGE," .
       "  TOTAL_STAGES, TOTAL_TIME," .
       "  TOTAL_WINNER_TIME, TOTAL_SECOND_TIME, TOTAL_POSITION" .
       ")" .
       " VALUES " .
       "(" .
-      "  %d, '%s', %d, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s" .
+      "  %d, %d, %s, %d, %d, %d, %s, %s, %s, %d" .
       ")",
-      $result->resultId, $result->resultMultiDay->className,
-      $result->resultMultiDay->competitorId,
-      is_null($result->resultMultiDay->lengthInMeter) ? "NULL" : $result->resultMultiDay->lengthInMeter,
-      is_null($result->resultMultiDay->failedReason) ? "NULL" : "'" . $result->resultMultiDay->failedReason . "'",
-      is_null($result->resultMultiDay->competitorTime) ? "NULL" : "'" . $result->resultMultiDay->competitorTime . "'",
-      is_null($result->resultMultiDay->winnerTime) ? "NULL" : "'" . $result->resultMultiDay->winnerTime . "'",
-      is_null($result->resultMultiDay->secondTime) ? "NULL" : "'" . $result->resultMultiDay->secondTime . "'",
-      is_null($result->resultMultiDay->position) ? "NULL" : $result->resultMultiDay->position,
-      is_null($result->resultMultiDay->nofStartsInClass) ? "NULL" : $result->resultMultiDay->nofStartsInClass,
+      $result->resultId,
+      is_null($result->resultMultiDay->totalLengthInMeter) ? "NULL" : $result->resultMultiDay->totalLengthInMeter,
+      is_null($result->resultMultiDay->totalFailedReason) ? "NULL" : "'" . $result->resultMultiDay->totalFailedReason . "'",
+      is_null($result->resultMultiDay->totalNofStartsInClass) ? "NULL" : $result->resultMultiDay->totalNofStartsInClass,
       is_null($result->resultMultiDay->stage) ? "NULL" : $result->resultMultiDay->stage,
       is_null($result->resultMultiDay->totalStages) ? "NULL" : $result->resultMultiDay->totalStages,
       is_null($result->resultMultiDay->totalTime) ? "NULL" : "'" . $result->resultMultiDay->totalTime . "'",
@@ -301,17 +301,24 @@ elseif ($iType == "EVENT")
     $query = sprintf("INSERT INTO RACE_EVENT_RESULTS_TEAM " .
                     "(" .
                     "  EVENT_ID, CLASS_NAME, CLUB_TEAM_NUMBER," .
+                    "  DEVIANT_EVENT_CLASSIFICATION_ID, CLASS_CLASSIFICATION_ID, DIFFICULTY," .
                     "  COMPETITOR_ID, LENGTH_IN_METER, FAILED_REASON," .
                     "  COMPETITOR_TIME, WINNER_TIME, SECOND_TIME," .
                     "  POSITION, NOF_STARTS_IN_CLASS, STAGE," .
                     "  TOTAL_STAGES, DEVIANT_RACE_LIGHT_CONDITION, TOTAL_TIME," .
-                    "  TOTAL_WINNER_TIME, TOTAL_SECOND_TIME, TOTAL_POSITION" .
+                    "  TOTAL_WINNER_TIME, TOTAL_SECOND_TIME, TOTAL_POSITION," .
+                    "  POINTS_1000, RANKING" .
                     ")" .
                     " VALUES " .
                     "(" .
-                    "  %d, '%s', %d, %d, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s" .
+                    "  %d, '%s', %d, %s, %d, %s, %d, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %d, %f" .
                     ")",
-                    $x->eventId, $result->className, $result->clubTeamNumber,
+                    $x->eventId,
+                    $result->className,
+                    $result->clubTeamNumber,
+                    is_null($result->deviantEventClassificationId) ? "NULL" : "'" . $result->deviantEventClassificationId . "'",
+                    $result->classClassificationId,
+                    is_null($result->difficulty) ? "NULL" : "'" . $result->difficulty . "'",
                     $result->competitorId,
                     is_null($result->lengthInMeter) ? "NULL" : $result->lengthInMeter,
                     is_null($result->failedReason) ? "NULL" : "'" . $result->failedReason . "'",
@@ -326,7 +333,9 @@ elseif ($iType == "EVENT")
                     is_null($result->totalTime) ? "NULL" : "'" . $result->totalTime . "'",
                     is_null($result->totalWinnerTime) ? "NULL" : "'" . $result->totalWinnerTime . "'",
                     is_null($result->totalSecondTime) ? "NULL" : "'" . $result->totalSecondTime . "'",
-                    is_null($result->totalPosition) ? "NULL" : $result->totalPosition);
+                    is_null($result->totalPosition) ? "NULL" : $result->totalPosition,
+                    is_null($result->points1000) ? "NULL" : $result->points1000,
+                    is_null($result->ranking) ? "NULL" : $result->ranking);
 
     \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
     $result->resultId = \db\mysql_insert_id();

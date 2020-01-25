@@ -166,6 +166,9 @@ export const RaceClubs = types
 const RaceTeamResult = types.model({
   teamResultId: types.identifierNumber,
   className: types.string,
+  deviantEventClassificationId: types.maybeNull(types.string),
+  classClassificationId: types.maybeNull(types.integer),
+  difficulty: types.maybeNull(types.string),
   clubTeamNumber: types.integer,
   competitorId: types.integer,
   lengthInMeter: types.maybeNull(types.integer),
@@ -181,25 +184,22 @@ const RaceTeamResult = types.model({
   totalTime: types.maybeNull(types.string),
   totalWinnerTime: types.maybeNull(types.string),
   totalSecondTime: types.maybeNull(types.string),
-  totalPosition: types.maybeNull(types.integer)
+  totalPosition: types.maybeNull(types.integer),
+  points1000: types.maybeNull(types.integer),
+  ranking: types.maybeNull(types.number)
 });
 
 const RaceResultMultiDay = types.model({
   multiDayResultId: types.identifierNumber,
-  className: types.string,
-  lengthInMeter: types.maybeNull(types.integer),
-  failedReason: types.maybeNull(types.string),
-  competitorTime: types.maybeNull(types.string),
-  winnerTime: types.maybeNull(types.string),
-  secondTime: types.maybeNull(types.string),
-  position: types.maybeNull(types.integer),
-  nofStartsInClass: types.maybeNull(types.integer),
   stage: types.integer,
   totalStages: types.integer,
+  totalLengthInMeter: types.maybeNull(types.integer),
+  totalFailedReason: types.maybeNull(types.string),
   totalTime: types.maybeNull(types.string),
   totalWinnerTime: types.maybeNull(types.string),
   totalSecondTime: types.maybeNull(types.string),
-  totalPosition: types.maybeNull(types.integer)
+  totalPosition: types.maybeNull(types.integer),
+  totalNofStartsInClass: types.maybeNull(types.integer)
 });
 
 const RaceResult = types
@@ -302,7 +302,9 @@ export const RaceEvent = types
     teamResults: types.array(RaceTeamResult),
     rankingBasetimePerKilometer: types.maybeNull(types.string),
     rankingBasepoint: types.maybeNull(types.number),
-    rankingBaseDescription: types.maybeNull(types.string)
+    rankingBaseDescription: types.maybeNull(types.string),
+    longitude: types.maybeNull(types.number),
+    latitude: types.maybeNull(types.number)
   })
   .actions(self => {
     return {

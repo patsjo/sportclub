@@ -74,7 +74,154 @@ else
   $whereEndDate = " AND DATE_FORMAT(RACEDATE, '%Y-%m-%d') <= '" . date2String($iToDate) . "'";
 }
 
-if ($iType == "EVENTS")
+if ($iType == "EVENT")
+{
+  $iEventId = 0;
+  $rows = new stdClass();
+  if(isset($_REQUEST['iEventId']) && $_REQUEST['iEventId']!="")
+  {
+    $iEventId = intval($_REQUEST['iEventId']);
+  }
+  
+  $sql = "SELECT * FROM RACE_EVENT WHERE EVENT_ID = " . $iEventId;
+  $result = \db\mysql_query($sql);
+  if (!$result)
+  {
+    die('SQL Error: ' . \db\mysql_error());
+  }
+
+  if (\db\mysql_num_rows($result) > 0)
+  {
+    while($row = \db\mysql_fetch_assoc($result))
+    {
+      $rows->eventId                     = intval($row['EVENT_ID']);
+      $rows->eventorId                   = intval($row['EVENTOR_ID']);
+      $rows->eventorRaceId               = is_null($row['EVENTOR_RACE_ID']) ? NULL : intval($row['EVENTOR_RACE_ID']);
+      $rows->name                        = $row['NAME'];
+      $rows->organiserName               = $row['ORGANISER_NAME'];
+      $rows->raceDate                    = date2String(strtotime($row['RACEDATE']));
+      $rows->raceTime                    = is_null($row['RACETIME']) ? NULL : time2StringWithSeconds(strtotime($row['RACETIME']));
+      $rows->sportCode                   = $row['SPORT_CODE'];
+      $rows->eventClassificationId       = $row['EVENT_CLASSIFICATION_ID'];
+      $rows->raceLightCondition          = $row['RACE_LIGHT_CONDITION'];
+      $rows->raceDistance                = $row['RACE_DISTANCE'];
+      $rows->paymentModel                = intval($row['PAYMENT_MODEL']);
+      $rows->meetsAwardRequirements      = boolval($row['MEETS_AWARD_REQUIREMENTS']);
+      $rows->rankingBasetimePerKilometer = time2StringWithSeconds(strtotime($row['RANKING_BASE_TIME_PER_KILOMETER']));
+      $rows->rankingBasepoint            = floatval($row['RANKING_BASE_POINT']);
+      $rows->rankingBaseDescription      = $row['RANKING_BASE_DESCRIPTION'];
+      $rows->longitude                   = is_null($row['LONGITUDE']) ? NULL : floatval($row['LONGITUDE']);
+      $rows->latitude                    = is_null($row['LATITUDE']) ? NULL : floatval($row['LATITUDE']);
+      $rows->results                     = array();
+      $rows->teamResults                 = array();
+    }
+  }
+  \db\mysql_free_result($result);
+
+  $sql = "SELECT R.*, MD.MULTI_DAY_RESULT_ID, MD.STAGE, MD.TOTAL_STAGES, " .
+    "  MD.TOTAL_LENGTH_IN_METER, MD.TOTAL_FAILED_REASON, MD.TOTAL_TIME, " .
+    "  MD.TOTAL_WINNER_TIME, MD.TOTAL_SECOND_TIME, " .
+    "  MD.TOTAL_POSITION, MD.TOTAL_NOF_STARTS_IN_CLASS " .
+    "FROM RACE_EVENT_RESULTS AS R " .
+    "LEFT OUTER JOIN RACE_EVENT_RESULTS_MULTI_DAY AS MD ON (R.RESULT_ID = MD.RESULT_ID) " .
+    "WHERE EVENT_ID = " . $iEventId;
+  $result = \db\mysql_query($sql);
+
+  if (!$result)
+  {
+    die('SQL Error: ' . \db\mysql_error());
+  }
+
+  if (\db\mysql_num_rows($result) > 0)
+  {
+    while($row = \db\mysql_fetch_assoc($result))
+    {
+      $x = new stdClass();
+      $x->resultId                     = intval($row['RESULT_ID']);
+      $x->competitorId                 = intval($row['COMPETITOR_ID']);
+      $x->className                    = $row['CLASS_NAME'];
+      $x->deviantEventClassificationId = $row['DEVIANT_EVENT_CLASSIFICATION_ID'];
+      $x->classClassificationId        = intval($row['CLASS_CLASSIFICATION_ID']);
+      $x->difficulty                   = $row['DIFFICULTY'];
+      $x->lengthInMeter                = is_null($row['LENGTH_IN_METER']) ? NULL : intval($row['LENGTH_IN_METER']);
+      $x->failedReason                 = $row['FAILED_REASON'];
+      $x->competitorTime               = is_null($row['COMPETITOR_TIME']) ? NULL : time2StringWithSeconds(strtotime($row['COMPETITOR_TIME']));
+      $x->winnerTime                   = is_null($row['WINNER_TIME']) ? NULL : time2StringWithSeconds(strtotime($row['WINNER_TIME']));
+      $x->secondTime                   = is_null($row['SECOND_TIME']) ? NULL : time2StringWithSeconds(strtotime($row['SECOND_TIME']));
+      $x->position                     = is_null($row['POSITION']) ? NULL : intval($row['POSITION']);
+      $x->nofStartsInClass             = is_null($row['NOF_STARTS_IN_CLASS']) ? NULL : intval($row['NOF_STARTS_IN_CLASS']);
+      $x->originalFee                  = is_null($row['ORIGINAL_FEE']) ? NULL : floatval($row['ORIGINAL_FEE']);
+      $x->lateFee                      = is_null($row['LATE_FEE']) ? NULL : floatval($row['LATE_FEE']);
+      $x->feeToClub                    = is_null($row['FEE_TO_CLUB']) ? NULL : floatval($row['FEE_TO_CLUB']);
+      $x->award                        = $row['AWARD'];
+      $x->points                       = is_null($row['POINTS']) ? NULL : intval($row['POINTS']);
+      $x->pointsOld                    = is_null($row['POINTS_OLD']) ? NULL : intval($row['POINTS_OLD']);
+      $x->points1000                   = is_null($row['POINTS_1000']) ? NULL : intval($row['POINTS_1000']);
+      $x->ranking                      = is_null($row['RANKING']) ? NULL : floatval($row['RANKING']);
+      if (is_null($row['MULTI_DAY_RESULT_ID']))
+      {
+        $x->resultMultiDay = NULL;
+      }
+      else
+      {
+        $x->resultMultiDay = new stdClass();
+        $x->resultMultiDay->multiDayResultId      = intval($row['MULTI_DAY_RESULT_ID']);
+        $x->resultMultiDay->stage                 = is_null($row['STAGE']) ? NULL : intval($row['STAGE']);
+        $x->resultMultiDay->totalStages           = is_null($row['TOTAL_STAGES']) ? NULL : intval($row['TOTAL_STAGES']);
+        $x->resultMultiDay->totalLengthInMeter    = is_null($row['TOTAL_LENGTH_IN_METER']) ? NULL : intval($row['TOTAL_LENGTH_IN_METER']);
+        $x->resultMultiDay->totalFailedReason     = $row['TOTAL_FAILED_REASON'];
+        $x->resultMultiDay->totalTime             = is_null($row['TOTAL_TIME']) ? NULL : time2StringWithSeconds(strtotime($row['TOTAL_TIME']));
+        $x->resultMultiDay->totalWinnerTime       = is_null($row['TOTAL_WINNER_TIME']) ? NULL : time2StringWithSeconds(strtotime($row['TOTAL_WINNER_TIME']));
+        $x->resultMultiDay->totalSecondTime       = is_null($row['TOTAL_SECOND_TIME']) ? NULL : time2StringWithSeconds(strtotime($row['TOTAL_SECOND_TIME']));
+        $x->resultMultiDay->totalPosition         = is_null($row['TOTAL_POSITION']) ? NULL : intval($row['TOTAL_POSITION']);
+        $x->resultMultiDay->totalNofStartsInClass = is_null($row['TOTAL_NOF_STARTS_IN_CLASS']) ? NULL : intval($row['TOTAL_NOF_STARTS_IN_CLASS']);
+      }
+      array_push($rows->results, $x);
+    }
+  }
+  \db\mysql_free_result($result);
+
+  $sql = "SELECT * FROM RACE_EVENT_RESULTS_TEAM WHERE EVENT_ID = " . $iEventId;
+  $result = \db\mysql_query($sql);
+
+  if (!$result)
+  {
+    die('SQL Error: ' . \db\mysql_error());
+  }
+
+  if (\db\mysql_num_rows($result) > 0)
+  {
+    while($row = \db\mysql_fetch_assoc($result))
+    {
+      $x = new stdClass();
+      $x->teamResultId                 = intval($row['TEAM_RESULT_ID']);
+      $x->className                    = $row['CLASS_NAME'];
+      $x->deviantEventClassificationId = $row['DEVIANT_EVENT_CLASSIFICATION_ID'];
+      $x->classClassificationId        = intval($row['CLASS_CLASSIFICATION_ID']);
+      $x->difficulty                   = $row['DIFFICULTY'];
+      $x->clubTeamNumber               = intval($row['CLUB_TEAM_NUMBER']);
+      $x->competitorId                 = intval($row['COMPETITOR_ID']);
+      $x->lengthInMeter                = is_null($row['LENGTH_IN_METER']) ? NULL : intval($row['LENGTH_IN_METER']);
+      $x->failedReason                 = $row['FAILED_REASON'];
+      $x->competitorTime               = is_null($row['COMPETITOR_TIME']) ? NULL : time2StringWithSeconds(strtotime($row['COMPETITOR_TIME']));
+      $x->winnerTime                   = is_null($row['WINNER_TIME']) ? NULL : time2StringWithSeconds(strtotime($row['WINNER_TIME']));
+      $x->secondTime                   = is_null($row['SECOND_TIME']) ? NULL : time2StringWithSeconds(strtotime($row['SECOND_TIME']));
+      $x->position                     = is_null($row['POSITION']) ? NULL : intval($row['POSITION']);
+      $x->nofStartsInClass             = is_null($row['NOF_STARTS_IN_CLASS']) ? NULL : intval($row['NOF_STARTS_IN_CLASS']);
+      $x->stage                        = is_null($row['STAGE']) ? NULL : intval($row['STAGE']);
+      $x->totalStages                  = is_null($row['TOTAL_STAGES']) ? NULL : intval($row['TOTAL_STAGES']);
+      $x->deviantRaceLightCondition    = $row['DEVIANT_RACE_LIGHT_CONDITION'];
+      $x->totalTime                    = is_null($row['TOTAL_TIME']) ? NULL : time2StringWithSeconds(strtotime($row['TOTAL_TIME']));
+      $x->totalWinnerTime              = is_null($row['TOTAL_WINNER_TIME']) ? NULL : time2StringWithSeconds(strtotime($row['TOTAL_WINNER_TIME']));
+      $x->totalSecondTime              = is_null($row['TOTAL_SECOND_TIME']) ? NULL : time2StringWithSeconds(strtotime($row['TOTAL_SECOND_TIME']));
+      $x->totalPosition                = is_null($row['TOTAL_POSITION']) ? NULL : intval($row['TOTAL_POSITION']);
+      $x->points1000                   = is_null($row['POINTS_1000']) ? NULL : intval($row['POINTS_1000']);
+      $x->ranking                      = is_null($row['RANKING']) ? NULL : floatval($row['RANKING']);
+      array_push($rows->teamResults, $x);
+    }
+  }
+}
+elseif ($iType == "EVENTS")
 {
   $sql = "SELECT * FROM RACE_EVENT WHERE 1=1" . $whereStartDate . $whereEndDate . " ORDER BY RACEDATE ASC";
   $result = \db\mysql_query($sql);
@@ -91,6 +238,9 @@ if ($iType == "EVENTS")
       $x->eventId               = intval($row['EVENT_ID']);
       $x->eventorId             = intval($row['EVENTOR_ID']);
       $x->eventorRaceId         = is_null($row['EVENTOR_RACE_ID']) ? NULL : intval($row['EVENTOR_RACE_ID']);
+      $x->name                  = $row['NAME'];
+      $x->date                  = date2String(strtotime($row['RACEDATE']));
+      $x->time                  = is_null($row['RACETIME']) ? NULL : time2StringWithSeconds(strtotime($row['RACETIME']));
       array_push($rows, $x);
     }
   }

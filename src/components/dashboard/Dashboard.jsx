@@ -30,7 +30,7 @@ const Dashboard = inject(
   "globalStateModel"
 )(
   observer(({ clubModel, globalStateModel }) => {
-    const eventorEntries = useEventorEntries(clubModel, globalStateModel.dashboardContentId);
+    const eventorEntries = useEventorEntries(globalStateModel, clubModel, globalStateModel.dashboardContentId);
     const { loadMoreCallback, newsItems } = useNews(globalStateModel, clubModel);
 
     const Content =
@@ -39,7 +39,12 @@ const Dashboard = inject(
           {newsItems.slice(0, 2)}
           <div column={-1} style={{ height: 400 }}>
             {clubModel.mapCenter ? (
-              <EsriOSMOrienteeringMap key="dashboard#homeMap" containerId="homeMap" mapCenter={clubModel.mapCenter} />
+              <EsriOSMOrienteeringMap
+                key="dashboard#homeMap"
+                containerId="homeMap"
+                mapCenter={clubModel.mapCenter}
+                graphics={globalStateModel.graphics}
+              />
             ) : null}
           </div>
           {newsItems.slice(2)}

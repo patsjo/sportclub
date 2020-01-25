@@ -152,6 +152,17 @@ const ResultWizardStep1ChooseRace = inject(
             if (!raceWizardModel.queryIncludeExisting) {
               events = events.filter(event => event.alreadySavedEventId === -1);
             }
+            const alreadySavedEventsNotInEventor = alreadySavedEventsJson
+              .filter(
+                saved =>
+                  !events.some(
+                    event =>
+                      saved.eventorId.toString() === event.Event.EventId &&
+                      saved.eventorRaceId.toString() === event.EventRaceId
+                  )
+              )
+              .map(e => ({ ...e, alreadySavedEventsNotInEventor: true }));
+            events = [...events, ...alreadySavedEventsNotInEventor];
             events = events.sort((a, b) =>
               a.Event.EventRace.RaceDate.Date > b.Event.EventRace.RaceDate.Date
                 ? 1
@@ -178,6 +189,7 @@ const ResultWizardStep1ChooseRace = inject(
         raceWizardModel.setValue("selectedEventId", parseInt(selected.selectedEventId));
         raceWizardModel.setValue("selectedEventorId", parseInt(selected.selectedEventorId));
         raceWizardModel.setValue("selectedEventorRaceId", parseInt(selected.selectedEventorRaceId));
+        raceWizardModel.setValue("overwrite", selected.existInEventor);
         this.setState({ selectedRowKeys });
         onValidate(true);
       };
@@ -211,19 +223,43 @@ const ResultWizardStep1ChooseRace = inject(
             dataIndex: "alreadySavedEventId",
             key: "alreadySavedEventId",
             render: alreadySavedEventId => (alreadySavedEventId !== -1 ? t("common.Yes") : t("common.No"))
+          },
+          {
+            title: t("results.ExistInEventor"),
+            dataIndex: "existInEventor",
+            key: "existInEventor",
+            render: existInEventor => (existInEventor ? t("common.Yes") : t("common.No"))
           }
         ];
-        const data = events.map(event => ({
-          key: JSON.stringify({
-            selectedEventorId: event.Event.EventId,
-            selectedEventorRaceId: event.EventRaceId,
-            selectedEventId: event.alreadySavedEventId
-          }),
-          date: event.Event.EventRace.RaceDate.Date,
-          time: event.Event.EventRace.RaceDate.Clock === "00:00:00" ? "" : event.Event.EventRace.RaceDate.Clock,
-          name: `${event.Event.Name}`,
-          alreadySavedEventId: event.alreadySavedEventId
-        }));
+        const data = events.map(event =>
+          event.alreadySavedEventsNotInEventor
+            ? {
+                ...event,
+                key: JSON.stringify({
+                  selectedEventorId: event.eventorId,
+                  selectedEventorRaceId: event.eventorRaceId,
+                  selectedEventId: event.eventId,
+                  alreadySavedEventId: -1,
+                  existInEventor: false
+                }),
+                alreadySavedEventId: -1,
+                existInEventor: false
+              }
+            : {
+                key: JSON.stringify({
+                  selectedEventorId: event.Event.EventId,
+                  selectedEventorRaceId: event.EventRaceId,
+                  selectedEventId: event.alreadySavedEventId,
+                  alreadySavedEventId: event.alreadySavedEventId,
+                  existInEventor: true
+                }),
+                date: event.Event.EventRace.RaceDate.Date,
+                time: event.Event.EventRace.RaceDate.Clock === "00:00:00" ? "" : event.Event.EventRace.RaceDate.Clock,
+                name: `${event.Event.Name}`,
+                alreadySavedEventId: event.alreadySavedEventId,
+                existInEventor: true
+              }
+        );
 
         return loaded && visible ? (
           <StyledTable

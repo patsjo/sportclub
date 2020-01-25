@@ -12,7 +12,7 @@ const SpinnerDiv = styled.div`
 
 const flatten = list => list.reduce((a, b) => a.concat(Array.isArray(b) ? flatten(b) : b), []);
 
-const useEventorEntries = (clubModel, dashboardContentId) => {
+const useEventorEntries = (globalStateModel, clubModel, dashboardContentId) => {
   const [loaded, setLoaded] = React.useState(false);
   const [events, setEvents] = React.useState([]);
 
@@ -152,6 +152,26 @@ const useEventorEntries = (clubModel, dashboardContentId) => {
           ? -1
           : 0
       );
+      const graphics = events
+        .filter(
+          event => event.Event.EventRace.EventCenterPosition && event.Event.EventRace.EventCenterPosition["@attributes"]
+        )
+        .map(event => ({
+          geometry: {
+            longitude: parseFloat(event.Event.EventRace.EventCenterPosition["@attributes"].x),
+            latitude: parseFloat(event.Event.EventRace.EventCenterPosition["@attributes"].y)
+          },
+          attributes: {
+            type: "event",
+            name: event.Event.Name,
+            time:
+              event.Event.EventRace.RaceDate.Date +
+              (event.Event.EventRace.RaceDate.Clock === "00:00:00"
+                ? ""
+                : ` ${event.Event.EventRace.RaceDate.Clock.substring(0, 5)}`)
+          }
+        }));
+      globalStateModel.setGraphics("event", graphics);
       setLoaded(true);
       setEvents(events);
 

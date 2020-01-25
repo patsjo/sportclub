@@ -96,7 +96,7 @@ const ResultWizardStep0Input = inject(
                 </FormItem>
               </>
             ) : null}
-            <FormItem label={t("results.ExistInEventor")}>
+            <FormItem label={t("results.ImportEventExistInEventor")}>
               {getFieldDecorator("ExistInEventor", {
                 valuePropName: "checked",
                 initialValue: raceWizardModel.existInEventor
