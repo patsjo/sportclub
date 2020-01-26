@@ -9,7 +9,7 @@ const MapDiv = styled.div`
 const MapInfo = styled.div`
   background-color: white;
   color: black;
-  font-size: 10pt;
+  font-size: 9pt;
   padding: 4px;
   visibility: hidden;
 `;
@@ -110,33 +110,22 @@ const EsriOSMOrienteeringMap = ({ containerId, mapCenter, graphics = [], onClick
 
       view.when(() => {
         view.whenLayerView(graphicsLayer).then(layerView => {
-          const eventHandler = event => {
-            // the hitTest() checks to see if any graphics in the view
-            // intersect the x, y coordinates of the pointer
-            view.hitTest(event).then(getGraphics);
-          };
+          let highlight, currentUids;
 
-          view.on("pointer-move", eventHandler);
-          view.on("pointer-down", eventHandler);
+          const highlightGraphics = event => {
+            const highlighted = graphicsLayer.graphics.items.filter(g => {
+              const p = view.toScreen(g.geometry);
+              return Math.abs(p.x - event.x) < 8 && Math.abs(p.y - event.y) < 8;
+            });
 
-          let highlight, currentUid;
-
-          const getGraphics = response => {
-            // the topmost graphic from the hurricanesLayer
-            // and display select attribute values from the
-            // graphic to the user
-            if (response.results.length) {
-              const graphics = response.results
-                .filter(function(result) {
-                  return result.graphic.layer === graphicsLayer;
-                })
-                .map(r => r.graphic);
-              const text = graphics
+            if (highlighted.length) {
+              const text = highlighted
                 .map(g => g.attributes)
                 .map(a => `${a.time ? a.time : ""} ${a.name}`)
                 .join("<br/>");
+              const highlightedUids = highlighted.map(g => g.uid);
 
-              if (highlight && currentUid !== graphics[0].uid) {
+              if (highlight && currentUids !== JSON.stringify(highlightedUids)) {
                 highlight.remove();
                 highlight = null;
                 return;
@@ -149,16 +138,18 @@ const EsriOSMOrienteeringMap = ({ containerId, mapCenter, graphics = [], onClick
               document.getElementById("orienteeringMapInfo").style.visibility = "visible";
               document.getElementById("orienteeringMapInfoText").innerHTML = text;
 
-              currentUid = graphics[0].uid;
-              highlight = layerView.highlight(currentUid);
+              currentUids = JSON.stringify(highlightedUids);
+              highlight = layerView.highlight(highlightedUids);
             } else {
               // remove the highlight if no features are
               // returned from the hitTest
-              highlight.remove();
+              highlight && highlight.remove();
               highlight = null;
               document.getElementById("orienteeringMapInfo").style.visibility = "hidden";
             }
           };
+          view.on("pointer-move", highlightGraphics);
+          view.on("pointer-down", highlightGraphics);
           view.goTo(graphicsLayer.graphics.items);
         });
       });
