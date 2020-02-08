@@ -21,7 +21,7 @@ include_once($_SERVER["DOCUMENT_ROOT"] . "/include/users.php");
 
 $offset = 0;
 $limit = 10000;
-$iType = 0;
+$iType = "";
 $iFromDate = NULL;
 $iToDate = NULL;
 $rows = array();

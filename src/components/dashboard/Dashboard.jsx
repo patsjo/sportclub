@@ -4,6 +4,7 @@ import useNews from "../news/useNews";
 import League from "../results/League";
 import useEventorEntries from "../eventor/useEventorEntries";
 import EsriOSMOrienteeringMap from "../map/EsriOSMOrienteeringMap";
+import WeeklyCalendar from "../calendar/weekly/WeeklyCalendar";
 import { observer, inject } from "mobx-react";
 import { dashboardContents } from "../../models/globalStateModel";
 import Columns from "./Columns";
@@ -46,6 +47,9 @@ const Dashboard = inject(
                 graphics={globalStateModel.graphics}
               />
             ) : null}
+          </div>
+          <div column={-2} key="weeklyCalendar">
+            <WeeklyCalendar />
           </div>
           {newsItems.slice(2)}
           {eventorEntries}

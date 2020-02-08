@@ -76,7 +76,8 @@ const EsriOSMOrienteeringMap = ({ containerId, mapCenter, graphics = [], onClick
           "https://tiler5.oobrien.com/oterrain_global/{z}/{x}/{y}.png",
           "https://tiler6.oobrien.com/oterrain_global/{z}/{x}/{y}.png"
         ],
-        title: "Orienteering layer"
+        title: "Orienteering layer",
+        minScale: 150000
       });
 
       map.add(orienteeringLayer);

@@ -50,6 +50,16 @@ i18next
             Previous: "Previous",
             Next: "Next"
           },
+          calendar: {
+            Week: "Week",
+            DayOfWeek1: "Monday",
+            DayOfWeek2: "Tuesday",
+            DayOfWeek3: "Wednesday",
+            DayOfWeek4: "Thursday",
+            DayOfWeek5: "Friday",
+            DayOfWeek6: "Saturday",
+            DayOfWeek7: "Sunday"
+          },
           error: {
             Missing: "MISSING",
             FileTypeNotSupported: "Filetype not supported",
@@ -181,6 +191,16 @@ i18next
             No: "Nej",
             Previous: "Tillbaka",
             Next: "Nästa"
+          },
+          calendar: {
+            Week: "Vecka",
+            DayOfWeek1: "Måndag",
+            DayOfWeek2: "Tisdag",
+            DayOfWeek3: "Onsdag",
+            DayOfWeek4: "Torsdag",
+            DayOfWeek5: "Fredag",
+            DayOfWeek6: "Lördag",
+            DayOfWeek7: "Söndag"
           },
           error: {
             Missing: "SAKNAS",
