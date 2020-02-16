@@ -25,9 +25,9 @@ const useEventorEntries = (globalStateModel, clubModel, dashboardContentId) => {
     let prevWeek = new Date(today.valueOf());
     let nextWeek = new Date(today.valueOf());
     let nextMonths = new Date(today.valueOf());
-    prevWeek.setDate(prevWeek.getDate() - ([0, 1, 2, 11].includes(today.getMonth()) ? 31 : 7));
-    nextWeek.setDate(nextWeek.getDate() + ([0, 1, 10, 11].includes(today.getMonth()) ? 31 : 7));
-    nextMonths.setDate(nextMonths.getDate() + 60);
+    prevWeek.setDate(prevWeek.getDate() - 10);
+    nextWeek.setDate(nextWeek.getDate() + 4);
+    nextMonths.setDate(nextMonths.getDate() + 20);
     const fromDate = prevWeek.toISOString().substr(0, 10);
     const toDate = nextWeek.toISOString().substr(0, 10);
     const toOringenDate = nextMonths.toISOString().substr(0, 10);
@@ -152,26 +152,6 @@ const useEventorEntries = (globalStateModel, clubModel, dashboardContentId) => {
           ? -1
           : 0
       );
-      const graphics = events
-        .filter(
-          event => event.Event.EventRace.EventCenterPosition && event.Event.EventRace.EventCenterPosition["@attributes"]
-        )
-        .map(event => ({
-          geometry: {
-            longitude: parseFloat(event.Event.EventRace.EventCenterPosition["@attributes"].x),
-            latitude: parseFloat(event.Event.EventRace.EventCenterPosition["@attributes"].y)
-          },
-          attributes: {
-            type: "event",
-            name: event.Event.Name,
-            time:
-              event.Event.EventRace.RaceDate.Date +
-              (event.Event.EventRace.RaceDate.Clock === "00:00:00"
-                ? ""
-                : ` ${event.Event.EventRace.RaceDate.Clock.substring(0, 5)}`)
-          }
-        }));
-      globalStateModel.setGraphics("event", graphics);
       setLoaded(true);
       setEvents(events);
 

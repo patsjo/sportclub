@@ -6,6 +6,7 @@ import useEventorEntries from "../eventor/useEventorEntries";
 import EsriOSMOrienteeringMap from "../map/EsriOSMOrienteeringMap";
 import WeeklyCalendar from "../calendar/weekly/WeeklyCalendar";
 import { observer, inject } from "mobx-react";
+import { getSnapshot } from "mobx-state-tree";
 import { dashboardContents } from "../../models/globalStateModel";
 import Columns from "./Columns";
 import InfiniteScroll from "react-infinite-scroller";
@@ -44,7 +45,8 @@ const Dashboard = inject(
                 key="dashboard#homeMap"
                 containerId="homeMap"
                 mapCenter={clubModel.mapCenter}
-                graphics={globalStateModel.graphics}
+                graphics={getSnapshot(globalStateModel.graphics)}
+                nofGraphics={globalStateModel.graphics.length}
               />
             ) : null}
           </div>

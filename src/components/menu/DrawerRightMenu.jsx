@@ -74,7 +74,12 @@ const DrawerRightMenu = inject(
                         <span>{t("modules." + module.name)}</span>
                       </span>
                     }
-                    disabled={module.name !== "News" && module.name !== "Eventor" && module.name !== "Results"}
+                    disabled={
+                      module.name !== "Calendar" &&
+                      module.name !== "News" &&
+                      module.name !== "Eventor" &&
+                      module.name !== "Results"
+                    }
                   >
                     <ModuleSubMenu module={module} />
                   </StyledSubMenu>

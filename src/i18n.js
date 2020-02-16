@@ -51,6 +51,8 @@ i18next
             Next: "Next"
           },
           calendar: {
+            Calendar: "Calendar",
+            EventSelector: "Select events",
             Week: "Week",
             DayOfWeek1: "Monday",
             DayOfWeek2: "Tuesday",
@@ -163,7 +165,10 @@ i18next
             GrandSlam: "Grand slam",
             Total: "Total",
             CurrentSeason: "Current season",
-            Overwrite: "Fetch new data from eventor"
+            Overwrite: "Fetch new data from eventor",
+            Longitude: "Longitude",
+            Latitude: "Latitude",
+            DistanceKm: "Distance [km]"
           },
           eventor: {
             Participant: "Participant"
@@ -193,6 +198,8 @@ i18next
             Next: "Nästa"
           },
           calendar: {
+            Calendar: "Kalender",
+            EventSelector: "Välj tävlingar",
             Week: "Vecka",
             DayOfWeek1: "Måndag",
             DayOfWeek2: "Tisdag",
@@ -305,7 +312,10 @@ i18next
             GrandSlam: "Grand slam",
             Total: "Totalt",
             CurrentSeason: "Senaste året",
-            Overwrite: "Hämta ny data från eventor"
+            Overwrite: "Hämta ny data från eventor",
+            Longitude: "Longitud",
+            Latitude: "Latitud",
+            DistanceKm: "Avstånd [km]"
           },
           eventor: {
             Participant: "Anmäld"

@@ -25,6 +25,8 @@ const OrienteeringSymbol = {
 const EsriOSMOrienteeringMap = ({ containerId, mapCenter, graphics = [], onClick = () => {} }) => {
   const GraphicRef = React.useRef();
   const geometryEngineRef = React.useRef();
+  const [graphicsLayer, setGraphicsLayer] = React.useState();
+  const [mapView, setMapView] = React.useState();
 
   React.useEffect(() => {
     setDefaultOptions({ css: true });
@@ -82,26 +84,15 @@ const EsriOSMOrienteeringMap = ({ containerId, mapCenter, graphics = [], onClick
 
       map.add(orienteeringLayer);
 
-      const graphicsLayer = new GraphicsLayer({
-        title: "Graphics layer",
-        graphics: graphics.map(
-          graphic =>
-            new Graphic({
-              geometry: {
-                type: "point", // autocasts as new Point()
-                ...graphic.geometry
-              },
-              attributes: graphic.attributes,
-              symbol: graphic.symbol ? graphic.symbol : OrienteeringSymbol
-            })
-        )
+      const newGraphicsLayer = new GraphicsLayer({
+        title: "Graphics layer"
       });
 
-      map.add(graphicsLayer);
+      map.add(newGraphicsLayer);
 
       const onClickEvent = view.on("click", event => {
         onClick(
-          graphicsLayer,
+          newGraphicsLayer,
           new Graphic({
             geometry: event.mapPoint,
             symbol: OrienteeringSymbol
@@ -110,11 +101,11 @@ const EsriOSMOrienteeringMap = ({ containerId, mapCenter, graphics = [], onClick
       });
 
       view.when(() => {
-        view.whenLayerView(graphicsLayer).then(layerView => {
+        view.whenLayerView(newGraphicsLayer).then(layerView => {
           let highlight, currentUids;
 
           const highlightGraphics = event => {
-            const highlighted = graphicsLayer.graphics.items.filter(g => {
+            const highlighted = newGraphicsLayer.graphics.items.filter(g => {
               const p = view.toScreen(g.geometry);
               return Math.abs(p.x - event.x) < 8 && Math.abs(p.y - event.y) < 8;
             });
@@ -151,7 +142,8 @@ const EsriOSMOrienteeringMap = ({ containerId, mapCenter, graphics = [], onClick
           };
           view.on("pointer-move", highlightGraphics);
           view.on("pointer-down", highlightGraphics);
-          view.goTo(graphicsLayer.graphics.items);
+          setMapView(view);
+          setGraphicsLayer(newGraphicsLayer);
         });
       });
 
@@ -160,6 +152,26 @@ const EsriOSMOrienteeringMap = ({ containerId, mapCenter, graphics = [], onClick
       };
     });
   }, []);
+
+  React.useEffect(() => {
+    if (mapView && graphicsLayer) {
+      graphicsLayer.removeAll();
+      graphicsLayer.addMany(
+        graphics.map(
+          graphic =>
+            new GraphicRef.current({
+              geometry: {
+                type: "point", // autocasts as new Point()
+                ...graphic.geometry
+              },
+              attributes: graphic.attributes,
+              symbol: graphic.symbol ? graphic.symbol : OrienteeringSymbol
+            })
+        )
+      );
+      mapView.goTo(graphicsLayer.graphics.items);
+    }
+  }, [mapView, graphics, graphics.length, graphicsLayer]);
 
   return (
     <>

@@ -55,6 +55,7 @@ const Module = types
 const Eventor = types.model({
   url: types.optional(types.string, "https://eventor.orientering.se/Events"),
   eventsUrl: types.optional(types.string, "https://eventor.orientering.se/api/events"),
+  organisationUrl: types.optional(types.string, "https://eventor.orientering.se/api/organisation/"),
   entryFeeUrl: types.optional(types.string, "https://eventor.orientering.se/api/entryfees/events/"),
   entriesUrl: types.optional(types.string, "https://eventor.orientering.se/api/entries"),
   startUrl: types.optional(types.string, "https://eventor.orientering.se/api/starts/organisation"),

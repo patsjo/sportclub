@@ -54,9 +54,12 @@ const ActivityUrl = styled.a`
   color: black;
 `;
 
-const WeeklyCalendar = inject("clubModel")(
+const WeeklyCalendar = inject(
+  "globalStateModel",
+  "clubModel"
+)(
   observer(props => {
-    const { clubModel } = props;
+    const { clubModel, globalStateModel } = props;
     const { t } = useTranslation();
     const [firstDateInWeek, setFirstDateInWeek] = useState(
       moment()
@@ -78,10 +81,41 @@ const WeeklyCalendar = inject("clubModel")(
           .add(7, "days")
           .format("YYYY-MM-DD")
       };
+      const eventsData = {
+        ...data,
+        iType: "EVENTS"
+      };
 
-      PostJsonData(url, data, true)
-        .then(activitiesJson => {
-          setActivities(activitiesJson);
+      const activitesPromise = PostJsonData(url, data, true);
+      const eventsPromise = PostJsonData(url, eventsData, true);
+
+      Promise.all([activitesPromise, eventsPromise])
+        .then(([activitiesJson, eventsJson]) => {
+          const graphics = eventsJson
+            .filter(event => event.longitude && event.latitude)
+            .map(event => ({
+              geometry: {
+                longitude: parseFloat(event.longitude),
+                latitude: parseFloat(event.latitude)
+              },
+              attributes: {
+                type: "event",
+                name: `${event.organiserName}, ${event.name}`,
+                time: event.date + (event.time === "00:00" ? "" : ` ${event.time}`)
+              }
+            }));
+          globalStateModel.setGraphics("event", graphics);
+          setActivities([
+            ...activitiesJson,
+            ...eventsJson.map(event => ({
+              activityId: `event#${event.calendarEventId}`,
+              date: event.date,
+              time: event.time === "00:00" ? "" : event.time,
+              header: event.organiserName,
+              place: event.name,
+              url: `https://eventor.orientering.se/Events/Show/${event.eventorId}`
+            }))
+          ]);
           setLoaded(true);
         })
         .catch(e => {

@@ -19,6 +19,8 @@ include_once($_SERVER["DOCUMENT_ROOT"] . "/include/db.php");
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/functions.php");
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/users.php");
 
+cors();
+
 $iType = "";
 $iFromDate = NULL;
 $iToDate = NULL;
@@ -85,17 +87,56 @@ if ($iType == "ACTIVITIES")
     }
   }
 }
+elseif ($iType == "EVENTS")
+{
+  if (is_null($iFromDate))
+  {
+    $whereStartDate = "";
+  }
+  else
+  {
+    $whereStartDate = " AND DATE_FORMAT(RACEDATE, '%Y-%m-%d') >= '" . date2String($iFromDate) . "'";
+  }
+
+  if (is_null($iToDate))
+  {
+    $whereEndDate = "";
+  }
+  else
+  {
+    $whereEndDate = " AND DATE_FORMAT(RACEDATE, '%Y-%m-%d') <= '" . date2String($iToDate) . "'";
+  }
+
+  $sql = "SELECT * FROM CALENDAR_RACE_EVENT WHERE 1=1" . $whereStartDate . $whereEndDate . " ORDER BY RACEDATE ASC, RACETIME ASC";
+  $result = \db\mysql_query($sql);
+  if (!$result)
+  {
+    die('SQL Error: ' . \db\mysql_error());
+  }
+
+  if (\db\mysql_num_rows($result) > 0)
+  {
+    while($row = \db\mysql_fetch_assoc($result))
+    {
+      $x = new stdClass();
+      $x->calendarEventId       = intval($row['CALENDAR_EVENT_ID']);
+      $x->eventorId             = intval($row['EVENTOR_ID']);
+      $x->eventorRaceId         = is_null($row['EVENTOR_RACE_ID']) ? NULL : intval($row['EVENTOR_RACE_ID']);
+      $x->name                  = $row['NAME'];
+      $x->organiserName         = $row['ORGANISER_NAME'];
+      $x->date                  = date2String(strtotime($row['RACEDATE']));
+      $x->time                  = is_null($row['RACETIME']) ? NULL : time2String(strtotime($row['RACETIME']));
+      $x->longitude             = is_null($row['LONGITUDE']) ? NULL : floatval($row['LONGITUDE']);
+      $x->latitude              = is_null($row['LATITUDE']) ? NULL : floatval($row['LATITUDE']);
+      array_push($rows, $x);
+    }
+  }
+}
 else
 {
   die('Wrong iType parameter');
 }
 
-header("Access-Control-Allow-Credentials: true");
-if (isset($_SERVER['HTTP_ORIGIN']))
-{
-  header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);
-}
-header("Access-Control-Allow-Headers: *");
 header("Content-Type: application/json; charset=ISO-8859-1");
 ini_set( 'precision', 14 );
 ini_set( 'serialize_precision', 6 );

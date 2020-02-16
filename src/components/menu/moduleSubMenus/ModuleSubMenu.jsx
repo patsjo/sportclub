@@ -2,6 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import NewsSubMenus from "./NewsSubMenus";
 import ResultsSubMenus from "./ResultsSubMenus";
+import CalendarSubMenus from "./CalendarSubMenus";
 import MenuItem from "../MenuItem";
 import { useTranslation } from "react-i18next";
 import { inject, observer } from "mobx-react";
@@ -41,6 +42,8 @@ const ModuleSubMenu = inject(
             }}
           />
         );
+      case "Calendar":
+        return <CalendarSubMenus />;
       case "News":
         return <NewsSubMenus />;
       case "Results":
