@@ -60,13 +60,30 @@ i18next
             DayOfWeek4: "Thursday",
             DayOfWeek5: "Friday",
             DayOfWeek6: "Saturday",
-            DayOfWeek7: "Sunday"
+            DayOfWeek7: "Sunday",
+            Add: "Add activity",
+            Edit: "Edit activity",
+            ActivityType: "Activity type",
+            Group: "Group",
+            Header: "Header",
+            ActivityDay: "Date",
+            ActivityTime: "Time",
+            Place: "Place",
+            Description: "Description",
+            Url: "Url",
+            Responsible: "Responsible"
           },
           error: {
             Missing: "MISSING",
             FileTypeNotSupported: "Filetype not supported",
             FileSizeTooLarge: "File is larger than {0} MB",
             RequiredField: "Please input your"
+          },
+          map: {
+            SelectPosition: "Click in map to select position",
+            ChooseMapPosition: "Choose in map",
+            Longitude: "Longitude",
+            Latitude: "Latitude"
           },
           modules: {
             Home: "Home",
@@ -207,13 +224,30 @@ i18next
             DayOfWeek4: "Torsdag",
             DayOfWeek5: "Fredag",
             DayOfWeek6: "Lördag",
-            DayOfWeek7: "Söndag"
+            DayOfWeek7: "Söndag",
+            Add: "Lägg till aktivitet",
+            Edit: "Redigera aktivitet",
+            ActivityType: "Typ av aktivitet",
+            Group: "Grupp",
+            Header: "Rubrik",
+            ActivityDay: "Datum",
+            ActivityTime: "Tid",
+            Place: "Plats",
+            Description: "Beskrivning",
+            Url: "Url",
+            Responsible: "Ansvarig"
           },
           error: {
             Missing: "SAKNAS",
             FileTypeNotSupported: "Denna filtyp kan inte laddas upp",
             FileSizeTooLarge: "Filen är större än {0} MB",
             RequiredField: "Vänligen ange"
+          },
+          map: {
+            SelectPosition: "Klicka i kartan för att välja position",
+            ChooseMapPosition: "Välj i karta",
+            Longitude: "Longitud",
+            Latitude: "Latitud"
           },
           modules: {
             Home: "Startsida",

@@ -461,8 +461,8 @@ if (isset($_SERVER['HTTP_ORIGIN']))
 }
 header("Access-Control-Allow-Headers: *");
 header("Content-Type: application/json; charset=ISO-8859-1");
-ini_set( 'precision', 14 );
-ini_set( 'serialize_precision', 6 );
+ini_set( 'precision', 20 );
+ini_set( 'serialize_precision', 14 );
 echo utf8_decode(json_encode($rows));
 
 \db\mysql_free_result($result);

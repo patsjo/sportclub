@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { GetDates } from "../calendarHelper";
 import moment from "moment";
 import { PostJsonData } from "../../../utils/api";
+import CalendarItem from "../item/CalendarItem";
 
 const WeeklyContainer = styled.div``;
 
@@ -68,6 +69,7 @@ const WeeklyCalendar = inject(
     );
     const [loaded, setLoaded] = useState(false);
     const [activities, setActivities] = useState([]);
+    const [domains, setDomains] = useState({});
 
     useEffect(() => {
       setLoaded(false);
@@ -85,13 +87,31 @@ const WeeklyCalendar = inject(
         ...data,
         iType: "EVENTS"
       };
+      const domainsData = {
+        ...data,
+        iType: "DOMAINS"
+      };
 
       const activitesPromise = PostJsonData(url, data, true);
       const eventsPromise = PostJsonData(url, eventsData, true);
+      const domainsPromise = PostJsonData(url, domainsData, true);
 
-      Promise.all([activitesPromise, eventsPromise])
-        .then(([activitiesJson, eventsJson]) => {
-          const graphics = eventsJson
+      Promise.all([activitesPromise, eventsPromise, domainsPromise])
+        .then(([activitiesJson, eventsJson, domainsJson]) => {
+          const activityGraphics = activitiesJson
+            .filter(act => act.longitude && act.latitude)
+            .map(act => ({
+              geometry: {
+                longitude: parseFloat(act.longitude),
+                latitude: parseFloat(act.latitude)
+              },
+              attributes: {
+                type: "calendar",
+                name: act.header,
+                time: act.date + (act.time === "00:00" ? "" : ` ${act.time}`)
+              }
+            }));
+          const eventGraphics = eventsJson
             .filter(event => event.longitude && event.latitude)
             .map(event => ({
               geometry: {
@@ -104,10 +124,13 @@ const WeeklyCalendar = inject(
                 time: event.date + (event.time === "00:00" ? "" : ` ${event.time}`)
               }
             }));
-          globalStateModel.setGraphics("event", graphics);
+          globalStateModel.setGraphics("calendar", activityGraphics);
+          globalStateModel.setGraphics("event", eventGraphics);
+          setDomains(domainsJson);
           setActivities([
             ...activitiesJson,
             ...eventsJson.map(event => ({
+              isEvent: true,
               activityId: `event#${event.calendarEventId}`,
               date: event.date,
               time: event.time === "00:00" ? "" : event.time,
@@ -156,16 +179,14 @@ const WeeklyCalendar = inject(
                   {activities
                     .filter(act => act.date === dateObj.date.format("YYYY-MM-DD"))
                     .map(act =>
-                      act.url ? (
+                      act.isEvent ? (
                         <Activity key={`activity#${act.activityId}`}>
                           <ActivityUrl href={act.url} target="_blank">{`${act.time}${act.time ? ", " : ""}${
                             act.header
                           }${act.place ? ", " : ""}${act.place}`}</ActivityUrl>
                         </Activity>
                       ) : (
-                        <Activity key={`activity#${act.activityId}`}>{`${act.time}${act.time ? ", " : ""}${act.header}${
-                          act.place ? ", " : ""
-                        }${act.place}`}</Activity>
+                        <CalendarItem key={`activity#${act.activityId}`} calendarObject={act} domains={domains} />
                       )
                     )}
                 </Skeleton>

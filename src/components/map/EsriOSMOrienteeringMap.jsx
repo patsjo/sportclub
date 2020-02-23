@@ -57,7 +57,7 @@ const EsriOSMOrienteeringMap = ({ containerId, mapCenter, graphics = [], onClick
           color: "orange"
         }
       });
-      view.ui.add("orienteeringMapInfo", "top-right");
+      view.ui.add(`${containerId}#orienteeringMapInfo`, "top-right");
 
       const OrienteeringTileLayer = BaseTileLayer.createSubclass({
         properties: {
@@ -107,7 +107,7 @@ const EsriOSMOrienteeringMap = ({ containerId, mapCenter, graphics = [], onClick
           const highlightGraphics = event => {
             const highlighted = newGraphicsLayer.graphics.items.filter(g => {
               const p = view.toScreen(g.geometry);
-              return Math.abs(p.x - event.x) < 8 && Math.abs(p.y - event.y) < 8;
+              return g.attributes && Math.abs(p.x - event.x) < 8 && Math.abs(p.y - event.y) < 8;
             });
 
             if (highlighted.length) {
@@ -127,8 +127,10 @@ const EsriOSMOrienteeringMap = ({ containerId, mapCenter, graphics = [], onClick
                 return;
               }
 
-              document.getElementById("orienteeringMapInfo").style.visibility = "visible";
-              document.getElementById("orienteeringMapInfoText").innerHTML = text;
+              document.getElementById(`${containerId}#orienteeringMapInfo`) &&
+                (document.getElementById(`${containerId}#orienteeringMapInfo`).style.visibility = "visible");
+              document.getElementById(`${containerId}#orienteeringMapInfoText`) &&
+                (document.getElementById(`${containerId}#orienteeringMapInfoText`).innerHTML = text);
 
               currentUids = JSON.stringify(highlightedUids);
               highlight = layerView.highlight(highlightedUids);
@@ -137,7 +139,8 @@ const EsriOSMOrienteeringMap = ({ containerId, mapCenter, graphics = [], onClick
               // returned from the hitTest
               highlight && highlight.remove();
               highlight = null;
-              document.getElementById("orienteeringMapInfo").style.visibility = "hidden";
+              document.getElementById(`${containerId}#orienteeringMapInfo`) &&
+                (document.getElementById(`${containerId}#orienteeringMapInfo`).style.visibility = "hidden");
             }
           };
           view.on("pointer-move", highlightGraphics);
@@ -176,8 +179,8 @@ const EsriOSMOrienteeringMap = ({ containerId, mapCenter, graphics = [], onClick
   return (
     <>
       <MapDiv id={containerId} />
-      <MapInfo id="orienteeringMapInfo">
-        <div id="orienteeringMapInfoText" />
+      <MapInfo id={`${containerId}#orienteeringMapInfo`}>
+        <div id={`${containerId}#orienteeringMapInfoText`} />
       </MapInfo>
     </>
   );

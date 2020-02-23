@@ -77,12 +77,16 @@ if ($iType == "ACTIVITIES")
       $x = new stdClass();
       $x->activityId            = intval($row['activity_id']);
       $x->activityTypeId        = intval($row['activity_type_id']);
+      $x->groupId               = intval($row['group_id']);
       $x->date                  = date2String(strtotime($row['activity_day']));
       $x->time                  = is_null($row['activity_time']) ? NULL : time2String(strtotime($row['activity_time']));
       $x->place                 = $row['place'];
       $x->header                = $row['header'];
       $x->description           = $row['descr'];
       $x->url                   = $row['url'];
+      $x->longitude             = is_null($row['longitude']) ? NULL : floatval($row['longitude']);
+      $x->latitude              = is_null($row['latitude']) ? NULL : floatval($row['latitude']);
+      $x->responsibleUserId     = intval($row['responsible_user_id']);
       array_push($rows, $x);
     }
   }
@@ -132,14 +136,82 @@ elseif ($iType == "EVENTS")
     }
   }
 }
+elseif ($iType == "DOMAINS")
+{
+  $rows = new stdClass();
+  $rows->activityTypes = array();
+  $rows->groups = array();
+  $rows->users = array();
+
+  $sql = "SELECT * FROM activity_type ORDER BY DESCR ASC";
+  $result = \db\mysql_query($sql);
+  if (!$result)
+  {
+    die('SQL Error: ' . \db\mysql_error());
+  }
+
+  if (\db\mysql_num_rows($result) > 0)
+  {
+    while($row = \db\mysql_fetch_assoc($result))
+    {
+      $x = new stdClass();
+      $x->code        = intval($row['activity_type_id']);
+      $x->description = $row['descr'];
+      array_push($rows->activityTypes, $x);
+    }
+  }
+  \db\mysql_free_result($result);
+
+  $sql = "SELECT * FROM groups WHERE UPPER(show_in_calendar) = 'YES' ORDER BY DESCRIPTION ASC";
+  $result = \db\mysql_query($sql);
+  if (!$result)
+  {
+    die('SQL Error: ' . \db\mysql_error());
+  }
+
+  $x = new stdClass();
+  $x->code        = 0;
+  $x->description = '[Alla]';
+  array_push($rows->groups, $x);
+
+  if (\db\mysql_num_rows($result) > 0)
+  {
+    while($row = \db\mysql_fetch_assoc($result))
+    {
+      $x = new stdClass();
+      $x->code        = intval($row['group_id']);
+      $x->description = $row['description'];
+      array_push($rows->groups, $x);
+    }
+  }
+  \db\mysql_free_result($result);
+
+  $sql = "SELECT * FROM users ORDER BY last_name ASC, first_name ASC";
+  $result = \db\mysql_query($sql);
+  if (!$result)
+  {
+    die('SQL Error: ' . \db\mysql_error());
+  }
+
+  if (\db\mysql_num_rows($result) > 0)
+  {
+    while($row = \db\mysql_fetch_assoc($result))
+    {
+      $x = new stdClass();
+      $x->code        = intval($row['user_id']);
+      $x->description = $row['first_name'] . " " . $row['last_name'];
+      array_push($rows->users, $x);
+    }
+  }
+}
 else
 {
   die('Wrong iType parameter');
 }
 
 header("Content-Type: application/json; charset=ISO-8859-1");
-ini_set( 'precision', 14 );
-ini_set( 'serialize_precision', 6 );
+ini_set( 'precision', 20 );
+ini_set( 'serialize_precision', 14 );
 echo utf8_decode(json_encode($rows));
 
 \db\mysql_free_result($result);

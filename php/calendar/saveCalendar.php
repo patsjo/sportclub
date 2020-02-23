@@ -19,10 +19,6 @@ include_once($_SERVER["DOCUMENT_ROOT"] . "/include/functions.php");
 set_error_handler("error_handler");
 
 ValidLogin();
-if (!(ValidGroup($cADMIN_GROUP_ID)))
-{
-  NotAuthorized();
-}
 
 header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
 header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); // Date in the past
@@ -46,8 +42,78 @@ if (!$db_conn->set_charset('utf8')) {
   die('Could not set character set to utf8');
 }
   
-if ($iType == "EVENTS")
+if ($iType == "ACTIVITY")
 {
+  $x = new stdClass();
+  $x->activityId            = getRequestInt("iActivityID");
+  $x->activityTypeId        = getRequestInt("iActivityTypeID");
+  $x->groupId               = getRequestInt("iGroupID");
+  $x->date                  = getRequestDate("iActivityDay");
+  $x->time                  = getRequestTime("iActivityTime");
+  $x->place                 = getRequestString("iPlace");
+  $x->header                = getRequestString("iHeader");
+  $x->description           = getRequestString("iDescr");
+  $x->url                   = getRequestString("iURL");
+  $x->longitude             = getRequestDecimal("iLongitude");
+  $x->latitude              = getRequestDecimal("iLatitude");
+  $x->responsibleUserId     = getRequestInt("iResponsibleUserID");
+
+  if ($x->activityId == 0)
+  {
+    $query =
+        "INSERT INTO activity " .
+        "(" .
+        "  group_id, activity_type_id," .
+        "  activity_day, activity_time, place," .
+        "  header, descr, url," .
+        "  longitude, latitude," .
+        "  responsible_user_id," .
+        "  cre_by_user_id, cre_date, mod_by_user_id, mod_date" .
+        ") " .
+        "VALUES " .
+        "(" .
+        $x->groupId . "," . $x->activityTypeId . "," .
+        "'" . $x->date . "'" . "," .
+        (is_null($x->time) ? "NULL" : "'" . $x->time . "'") . "," .
+        "'" . str_replace("'", "", $x->place) . "','" . str_replace("'", "", $x->header) . "'," .
+        "'" . str_replace("'", "", $x->description) . "','" .
+        str_replace("'", "", $x->url) . "'," .
+        (is_null($x->longitude) ? "NULL" : $x->longitude) . "," .
+        (is_null($x->latitude) ? "NULL" : $x->latitude) . "," .
+        $x->responsibleUserId . "," .
+        $user_id . ",'" . datetime2String(time()) . "'," .
+        $user_id . ",'" . datetime2String(time()) . "'" .
+        ")";
+  }
+  else
+  {
+    $query =
+        "UPDATE activity " .
+        "SET group_id = " . $x->groupId . ", activity_type_id = " . $x->activityTypeId . ", " .
+        "    activity_day = '" . $x->date . "', " .
+        "    activity_time = " . (is_null($x->time) ? "NULL" : "'" . $x->time . "'") . ", " .
+        "    place = '" . str_replace("'", "", $x->place) . "', header = '" . str_replace("''", "Null", $x->header) . "', " .
+        "    descr = '" . str_replace("'", "", $x->description) . "', " .
+        "    url = '" . str_replace("'", "", $x->url) . "', " .
+        "    longitude = " . (is_null($x->longitude) ? "NULL" : $x->longitude) . ", " .
+        "    latitude = " . (is_null($x->latitude) ? "NULL" : $x->latitude) . ", " .
+        "    responsible_user_id = " . $x->responsibleUserId . ", " .
+        "    mod_by_user_id = " . $user_id . ", mod_date = '" . datetime2String(time()) . "'" .
+        "WHERE activity_id = " . $x->activityId;
+  }
+
+  \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
+  if ($x->activityId == 0)
+  {
+    $x->activityId = \db\mysql_insert_id();
+  }
+}
+elseif ($iType == "EVENTS")
+{
+  if (!(ValidGroup($cADMIN_GROUP_ID)))
+  {
+    NotAuthorized();
+  }
   $eventId = getRequestInt("eventId");
 
   $query = "DELETE FROM CALENDAR_RACE_EVENT WHERE DATE_FORMAT(RACEDATE, '%Y-%m-%d') BETWEEN '" . date2String($queryStartDate) . "' AND '" . date2String($queryEndDate) . "'";
