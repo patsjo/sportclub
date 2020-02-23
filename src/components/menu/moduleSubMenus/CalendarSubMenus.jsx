@@ -8,6 +8,8 @@ import EventSelectorWizardModal from "../../calendar/eventSelector/EventSelector
 import CalendarEdit from "../../calendar/item/CalendarEdit";
 import { PostJsonData } from "../../../utils/api";
 import { message } from "antd";
+import moment from "moment";
+import { dateFormat } from "../../../utils/formHelper";
 
 const moduleName = "Calendar";
 const defaultCalendarObject = userId => ({
@@ -75,10 +77,19 @@ const CalendarSubMenus = inject(
           key={"menuItem#calendar"}
           icon={moduleName + "Icon"}
           name={t("calendar.Calendar")}
-          disabled={true}
+          disabled={false}
           isSubMenu
           onClick={() => {
-            globalStateModel.setDashboard(dashboardContents.calendar, "1990-01-01", "2099-12-31", 1);
+            globalStateModel.setDashboard(
+              dashboardContents.calendar,
+              moment()
+                .startOf("month")
+                .format(dateFormat),
+              moment()
+                .endOf("month")
+                .format(dateFormat),
+              1
+            );
           }}
         />
         <MenuItem

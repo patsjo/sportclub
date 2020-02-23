@@ -5,6 +5,7 @@ import League from "../results/League";
 import useEventorEntries from "../eventor/useEventorEntries";
 import EsriOSMOrienteeringMap from "../map/EsriOSMOrienteeringMap";
 import WeeklyCalendar from "../calendar/weekly/WeeklyCalendar";
+import MonthlyCalendar from "../calendar/monthly/MonthlyCalendar";
 import { observer, inject } from "mobx-react";
 import { getSnapshot } from "mobx-state-tree";
 import { dashboardContents } from "../../models/globalStateModel";
@@ -69,6 +70,8 @@ const Dashboard = inject(
         >
           <Columns>{newsItems}</Columns>
         </InfiniteScroll>
+      ) : globalStateModel.dashboardContentId === dashboardContents.calendar ? (
+        <MonthlyCalendar />
       ) : globalStateModel.dashboardContentId === dashboardContents.scoringBoard ? (
         <League />
       ) : null;

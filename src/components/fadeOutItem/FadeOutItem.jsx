@@ -15,9 +15,10 @@ const ItemFadeOut = styled.div`
   page-break-inside: avoid;
   break-inside: avoid-column;
   max-height: 300px;
-  overflow: hidden;
+  overflow-y: hidden;
+  padding-left: 2px;
+  padding-right: 2px;
   position: relative;
-  white-space: nowrap;
   cursor: pointer;
   :after {
     content: "";

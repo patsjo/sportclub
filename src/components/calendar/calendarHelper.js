@@ -5,6 +5,12 @@ const GetDayOfWeek = (date, t) => {
   return t(`calendar.DayOfWeek${dayOfWeek}`);
 };
 
+export const GetMonthName = (date, t) => {
+  const month = date.format("M");
+  const year = date.format("YYYY");
+  return `${t(`calendar.Month${month}`)} - ${year}`;
+};
+
 const GetGaussEasterSunday = year => {
   const a = year % 19;
   const b = year % 4;
