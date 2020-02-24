@@ -87,7 +87,6 @@ const Login = inject(
           <Form id="loginForm" onSubmit={this.onLogin}>
             <Modal
               closable={false}
-              centered={true}
               title={t("common.Login")}
               visible={this.props.open}
               onCancel={this.props.onClose}

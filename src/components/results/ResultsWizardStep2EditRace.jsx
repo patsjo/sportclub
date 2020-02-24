@@ -5,6 +5,7 @@ import { observer, inject } from "mobx-react";
 import { applySnapshot, getSnapshot } from "mobx-state-tree";
 import { GetJsonData, PostJsonData } from "../../utils/api";
 import {
+  payments,
   paymentOptions,
   raceDistanceOptions,
   raceRelayDistanceOptions,
@@ -828,7 +829,9 @@ const ResultWizardStep2EditRace = inject(
                       options={paymentOptions(t)}
                       onChange={code => {
                         raceWizardModel.raceEvent.setValue("paymentModel", code);
-                        raceWizardModel.setValue("paymentModel", code);
+                        if (code !== payments.defaultFeePaidByCompetitor) {
+                          raceWizardModel.setValue("paymentModel", code);
+                        }
                         CalculateCompetitorsFee(raceWizardModel.raceEvent);
                         onValidate(raceWizardModel.raceEvent.valid);
                       }}

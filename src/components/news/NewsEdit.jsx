@@ -120,7 +120,6 @@ const NewsEdit = inject(
           <Form id={formId} onSubmit={self.onSave}>
             <Modal
               closable={false}
-              centered={true}
               title={t("news.Edit")}
               visible={self.props.open}
               onCancel={self.props.onClose}

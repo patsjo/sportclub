@@ -155,7 +155,6 @@ const FadeOutItem = inject("sessionModel")(
             <ItemFadeOut onClick={this.openModal}>{this.props.content}</ItemFadeOut>
             <Modal
               closable={false}
-              centered={true}
               visible={this.state.showModalItem}
               onCancel={this.closeModal}
               footer={[

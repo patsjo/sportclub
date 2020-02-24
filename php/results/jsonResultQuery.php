@@ -19,6 +19,8 @@ include_once($_SERVER["DOCUMENT_ROOT"] . "/include/db.php");
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/functions.php");
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/users.php");
 
+cors();
+
 $offset = 0;
 $limit = 10000;
 $iType = "";

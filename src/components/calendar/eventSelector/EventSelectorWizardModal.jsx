@@ -135,11 +135,11 @@ const EventSelectorWizardModal = inject(
           <Provider eventSelectorWizardModel={self.eventSelectorWizardModel}>
             <Modal
               closable={false}
-              centered={true}
               title={t("calendar.EventSelector")}
               visible={self.props.open}
               onCancel={self.props.onClose}
               width="calc(100% - 80px)"
+              style={{ minWidth: 560 }}
               footer={[
                 <Button variant="contained" disabled={wizardStep < 1} onClick={() => self.prev()}>
                   <Icon type="left" />

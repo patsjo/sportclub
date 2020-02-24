@@ -13,8 +13,14 @@ import { dashboardContents } from "../../../models/globalStateModel";
 const dayNotInMonthColor = "#D0D0D0";
 
 const MonthlyContainer = styled.div`
-  margin-left: 40px;
-  margin-right: 40px;
+  & {
+    margin-left: 40px;
+    margin-right: 40px;
+    display: block;
+  }
+  @media screen and (max-width: 999px) {
+    display: none !important;
+  }
 `;
 
 const MonthlyHeader = styled.div`

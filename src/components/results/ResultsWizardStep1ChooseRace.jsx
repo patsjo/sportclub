@@ -149,9 +149,6 @@ const ResultWizardStep1ChooseRace = inject(
             // 10 Canceled
             // 11 Reported
             events = events.filter(event => ["9", "11"].includes(event.Event.EventStatusId));
-            if (!raceWizardModel.queryIncludeExisting) {
-              events = events.filter(event => event.alreadySavedEventId === -1);
-            }
             const alreadySavedEventsNotInEventor = alreadySavedEventsJson
               .filter(
                 saved =>
@@ -161,7 +158,24 @@ const ResultWizardStep1ChooseRace = inject(
                       saved.eventorRaceId.toString() === event.EventRaceId
                   )
               )
-              .map(e => ({ ...e, alreadySavedEventsNotInEventor: true }));
+              .map(e => ({
+                ...e,
+                alreadySavedEventsNotInEventor: true,
+                Event: {
+                  EventId: e.eventorId,
+                  EventRace: {
+                    RaceDate: {
+                      Date: e.date,
+                      Clock: e.time
+                    }
+                  },
+                  Name: e.name
+                },
+                EventRaceId: e.eventorRaceId
+              }));
+            if (!raceWizardModel.queryIncludeExisting) {
+              events = events.filter(event => event.alreadySavedEventId === -1);
+            }
             events = [...events, ...alreadySavedEventsNotInEventor];
             events = events.sort((a, b) =>
               a.Event.EventRace.RaceDate.Date > b.Event.EventRace.RaceDate.Date

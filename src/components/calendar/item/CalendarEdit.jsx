@@ -140,7 +140,6 @@ const CalendarEdit = inject(
           <Form id={formId} onSubmit={self.onSave}>
             <Modal
               closable={false}
-              centered={true}
               title={title}
               visible={self.props.open}
               onCancel={self.props.onClose}

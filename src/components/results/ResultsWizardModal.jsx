@@ -183,11 +183,11 @@ const ResultsWizardModal = inject(
           <Provider raceWizardModel={self.raceWizardModel}>
             <Modal
               closable={false}
-              centered={true}
               title={t("results.Add")}
               visible={self.props.open}
               onCancel={self.props.onClose}
               width="calc(100% - 80px)"
+              style={{ minWidth: 1250 }}
               footer={[
                 <Button variant="contained" disabled={wizardStep < 1} onClick={() => self.prev()}>
                   <Icon type="left" />

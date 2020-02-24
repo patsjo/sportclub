@@ -20,6 +20,14 @@ export const ContentArea = styled.div`
     margin-right: 8px;
   }
 `;
+const NoMonthlyContainer = styled.div`
+  & {
+    display: block;
+  }
+  @media screen and (min-width: 1000px) {
+    display: none !important;
+  }
+`;
 
 const SpinnerDiv = styled.div`
   text-align: center;
@@ -71,7 +79,12 @@ const Dashboard = inject(
           <Columns>{newsItems}</Columns>
         </InfiniteScroll>
       ) : globalStateModel.dashboardContentId === dashboardContents.calendar ? (
-        <MonthlyCalendar />
+        <>
+          <NoMonthlyContainer>
+            <WeeklyCalendar />
+          </NoMonthlyContainer>
+          <MonthlyCalendar />
+        </>
       ) : globalStateModel.dashboardContentId === dashboardContents.scoringBoard ? (
         <League />
       ) : null;
