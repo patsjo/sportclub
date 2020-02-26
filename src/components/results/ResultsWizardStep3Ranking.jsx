@@ -48,27 +48,35 @@ const ResultWizardStep3Ranking = inject(
       componentDidMount() {
         const { raceWizardModel, clubModel, onValidate } = this.props;
 
-        if (["OL", "SKIO", "MTBO"].includes(raceWizardModel.raceEvent.sportCode)) {
-          raceWizardModel.raceEvent.setValue("rankingBasetimePerKilometer", undefined);
-          raceWizardModel.raceEvent.setValue("rankingBasepoint", undefined);
-          raceWizardModel.raceEvent.setValue("rankingBaseDescription", undefined);
-        } else {
-          let timePerKilometer = "3:00";
-          let description = clubModel.raceClubs.sportOptions.find(
-            option => option.code === raceWizardModel.raceEvent.sportCode
-          ).description;
-
-          if (raceWizardModel.raceEvent.sportCode === "RUN") {
-            timePerKilometer = "2:50";
-          } else if (raceWizardModel.raceEvent.sportCode === "SKI") {
-            timePerKilometer = "2:20";
-          } else if (raceWizardModel.raceEvent.sportCode === "MTB") {
-            timePerKilometer = "1:45";
-          }
-          raceWizardModel.raceEvent.setValue("rankingBasetimePerKilometer", timePerKilometer);
-          raceWizardModel.raceEvent.setValue("rankingBasepoint", 0);
-          raceWizardModel.raceEvent.setValue("rankingBaseDescription", `${timePerKilometer}, ${description}`);
+        if (
+          raceWizardModel.raceEvent.rankingBasetimePerKilometer != null &&
+          raceWizardModel.raceEvent.rankingBasepoint != null &&
+          raceWizardModel.raceEvent.rankingBaseDescription != null
+        ) {
           onValidate(true);
+        } else {
+          if (["OL", "SKIO", "MTBO"].includes(raceWizardModel.raceEvent.sportCode)) {
+            raceWizardModel.raceEvent.setValue("rankingBasetimePerKilometer", undefined);
+            raceWizardModel.raceEvent.setValue("rankingBasepoint", undefined);
+            raceWizardModel.raceEvent.setValue("rankingBaseDescription", undefined);
+          } else {
+            let timePerKilometer = "3:00";
+            let description = clubModel.raceClubs.sportOptions.find(
+              option => option.code === raceWizardModel.raceEvent.sportCode
+            ).description;
+
+            if (raceWizardModel.raceEvent.sportCode === "RUN") {
+              timePerKilometer = "2:50";
+            } else if (raceWizardModel.raceEvent.sportCode === "SKI") {
+              timePerKilometer = "2:20";
+            } else if (raceWizardModel.raceEvent.sportCode === "MTB") {
+              timePerKilometer = "1:45";
+            }
+            raceWizardModel.raceEvent.setValue("rankingBasetimePerKilometer", timePerKilometer);
+            raceWizardModel.raceEvent.setValue("rankingBasepoint", 0);
+            raceWizardModel.raceEvent.setValue("rankingBaseDescription", `${timePerKilometer}, ${description}`);
+            onValidate(true);
+          }
         }
       }
 

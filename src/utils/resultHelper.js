@@ -15,6 +15,9 @@ export const GetTimeWithHour = timeString => {
 };
 
 export const FormatTime = timeString => {
+  if (!timeString) {
+    return null;
+  }
   const time = moment(GetTimeWithHour(timeString), timeFormat);
 
   if (time.get("hour") === 0) {

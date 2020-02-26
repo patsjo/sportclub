@@ -158,6 +158,10 @@ const EventSelectorWizardStep1ChooseRace = inject(
               events: events,
               selectedRowKeys: events.map(event => event.calendarEventId).filter(id => id > 0)
             });
+            eventSelectorWizardModel.setValue(
+              "selectedEvents",
+              events.filter(event => event.calendarEventId > 0)
+            );
             onValidate(true);
           })
           .catch(e => {
