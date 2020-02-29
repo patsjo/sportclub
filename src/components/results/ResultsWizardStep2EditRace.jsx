@@ -115,64 +115,77 @@ const ResultWizardStep2EditRace = inject(
             )
           : new Promise(resolve => resolve(undefined));
 
-        const entriesPromise = GetJsonData(
-          clubModel.corsProxy +
-            encodeURIComponent(
-              clubModel.eventor.entriesUrl +
-                "?eventIds=" +
-                raceWizardModel.selectedEventorId +
-                "&organisationIds=" +
-                clubModel.raceClubs.selectedClub.eventorOrganisationId +
-                "&includeEntryFees=true"
-            ) +
-            "&headers=" +
-            encodeURIComponent("ApiKey: " + clubModel.eventor.apiKey),
-          true
-        );
-        const classPromise = GetJsonData(
-          clubModel.corsProxy +
-            encodeURIComponent(
-              clubModel.eventor.classesUrl + "?eventId=" + raceWizardModel.selectedEventorId + "&includeEntryFees=true"
-            ) +
-            "&headers=" +
-            encodeURIComponent("ApiKey: " + clubModel.eventor.apiKey),
-          false
-        );
-        const resultPromise = GetJsonData(
-          clubModel.corsProxy +
-            encodeURIComponent(
-              clubModel.eventor.resultUrl +
-                "?eventId=" +
-                raceWizardModel.selectedEventorId +
-                "&organisationIds=" +
-                clubModel.raceClubs.selectedClub.eventorOrganisationId +
-                "&top=2&includeSplitTimes=false"
-            ) +
-            "&headers=" +
-            encodeURIComponent("ApiKey: " + clubModel.eventor.apiKey),
-          false
-        );
-        const lengthPromise = GetJsonData(
-          clubModel.corsProxy +
-            encodeURIComponent(
-              clubModel.eventor.lengthUrl +
-                "?eventId=" +
-                raceWizardModel.selectedEventorId +
-                "&eventRaceId=" +
-                raceWizardModel.selectedEventorRaceId +
-                "&groupBy=EventClass"
-            ) +
-            "&noJsonConvert=true&headers=" +
-            encodeURIComponent("ApiKey: " + self.props.clubModel.eventor.apiKey),
-          false
-        );
-        const entryFeePromise = GetJsonData(
-          clubModel.corsProxy +
-            encodeURIComponent(clubModel.eventor.entryFeeUrl + raceWizardModel.selectedEventorId) +
-            "&headers=" +
-            encodeURIComponent("ApiKey: " + clubModel.eventor.apiKey),
-          true
-        );
+        const entriesPromise = raceWizardModel.selectedEventorId
+          ? GetJsonData(
+              clubModel.corsProxy +
+                encodeURIComponent(
+                  clubModel.eventor.entriesUrl +
+                    "?eventIds=" +
+                    raceWizardModel.selectedEventorId +
+                    "&organisationIds=" +
+                    clubModel.raceClubs.selectedClub.eventorOrganisationId +
+                    "&includeEntryFees=true"
+                ) +
+                "&headers=" +
+                encodeURIComponent("ApiKey: " + clubModel.eventor.apiKey),
+              true
+            )
+          : new Promise(resolve => resolve(undefined));
+        const classPromise = raceWizardModel.selectedEventorId
+          ? GetJsonData(
+              clubModel.corsProxy +
+                encodeURIComponent(
+                  clubModel.eventor.classesUrl +
+                    "?eventId=" +
+                    raceWizardModel.selectedEventorId +
+                    "&includeEntryFees=true"
+                ) +
+                "&headers=" +
+                encodeURIComponent("ApiKey: " + clubModel.eventor.apiKey),
+              false
+            )
+          : new Promise(resolve => resolve(undefined));
+        const resultPromise = raceWizardModel.selectedEventorId
+          ? GetJsonData(
+              clubModel.corsProxy +
+                encodeURIComponent(
+                  clubModel.eventor.resultUrl +
+                    "?eventId=" +
+                    raceWizardModel.selectedEventorId +
+                    "&organisationIds=" +
+                    clubModel.raceClubs.selectedClub.eventorOrganisationId +
+                    "&top=2&includeSplitTimes=false"
+                ) +
+                "&headers=" +
+                encodeURIComponent("ApiKey: " + clubModel.eventor.apiKey),
+              false
+            )
+          : new Promise(resolve => resolve(undefined));
+        const lengthPromise = raceWizardModel.selectedEventorId
+          ? GetJsonData(
+              clubModel.corsProxy +
+                encodeURIComponent(
+                  clubModel.eventor.lengthUrl +
+                    "?eventId=" +
+                    raceWizardModel.selectedEventorId +
+                    "&eventRaceId=" +
+                    raceWizardModel.selectedEventorRaceId +
+                    "&groupBy=EventClass"
+                ) +
+                "&noJsonConvert=true&headers=" +
+                encodeURIComponent("ApiKey: " + self.props.clubModel.eventor.apiKey),
+              false
+            )
+          : new Promise(resolve => resolve(undefined));
+        const entryFeePromise = raceWizardModel.selectedEventorId
+          ? GetJsonData(
+              clubModel.corsProxy +
+                encodeURIComponent(clubModel.eventor.entryFeeUrl + raceWizardModel.selectedEventorId) +
+                "&headers=" +
+                encodeURIComponent("ApiKey: " + clubModel.eventor.apiKey),
+              true
+            )
+          : new Promise(resolve => resolve(undefined));
 
         Promise.all([editResultPromise, entriesPromise, classPromise, resultPromise, entryFeePromise, lengthPromise])
           .then(async ([editResultJson, entriesJson, classJson, resultJson, entryFeeJson, lengthHtmlJson]) => {
@@ -453,6 +466,8 @@ const ResultWizardStep2EditRace = inject(
                 CalculateCompetitorsFee(raceWizardModel.raceEvent);
                 CalculateAllAwards(clubModel.raceClubs, raceWizardModel.raceEvent);
               }
+            } else {
+              raceWizardModel.setValue("raceEvent", editResultJson);
             }
             onValidate(raceWizardModel.raceEvent.valid);
             self.setState(

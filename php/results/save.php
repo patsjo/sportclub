@@ -245,7 +245,7 @@ elseif ($iType == "EVENT")
                     ")" .
                     " VALUES " .
                     "(" .
-                    "  %d, %d, '%s', %s, %d, %s, %s, %s, %s, %s, %s, %s, %s, %f, %f, %f, %s, %d, %d, %d, %f" .
+                    "  %d, %d, '%s', %s, %d, %s, %s, %s, %s, %s, %s, %s, %s, %f, %f, %f, %s, %s, %s, %s, %s" .
                     ")",
                     $x->eventId, $result->competitorId, $result->className,
                     is_null($result->deviantEventClassificationId) ? "NULL" : "'" . $result->deviantEventClassificationId . "'",
@@ -278,7 +278,7 @@ elseif ($iType == "EVENT")
       ")" .
       " VALUES " .
       "(" .
-      "  %d, %d, %s, %d, %d, %d, %s, %s, %s, %d" .
+      "  %d, %d, %s, %d, %d, %d, %s, %s, %s, %s" .
       ")",
       $result->resultId,
       is_null($result->resultMultiDay->totalLengthInMeter) ? "NULL" : $result->resultMultiDay->totalLengthInMeter,
@@ -311,7 +311,7 @@ elseif ($iType == "EVENT")
                     ")" .
                     " VALUES " .
                     "(" .
-                    "  %d, '%s', %d, %s, %d, %s, %d, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %d, %f" .
+                    "  %d, '%s', %d, %s, %d, %s, %d, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s" .
                     ")",
                     $x->eventId,
                     $result->className,

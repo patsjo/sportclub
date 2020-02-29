@@ -58,7 +58,11 @@ const ResultWizardStep3Ranking = inject(
           if (["OL", "SKIO", "MTBO"].includes(raceWizardModel.raceEvent.sportCode)) {
             raceWizardModel.raceEvent.setValue("rankingBasetimePerKilometer", undefined);
             raceWizardModel.raceEvent.setValue("rankingBasepoint", undefined);
-            raceWizardModel.raceEvent.setValue("rankingBaseDescription", undefined);
+            if (!raceWizardModel.existInEventor) {
+              raceWizardModel.raceEvent.setValue("rankingBaseDescription", raceWizardModel.raceEvent.sportCode);
+            } else {
+              raceWizardModel.raceEvent.setValue("rankingBaseDescription", undefined);
+            }
           } else {
             let timePerKilometer = "3:00";
             let description = clubModel.raceClubs.sportOptions.find(
@@ -110,42 +114,44 @@ const ResultWizardStep3Ranking = inject(
                   </Col>
                 </Row>
                 <Row gutter={8}>
-                  <Col span={12}>
-                    <FormItem label={t("results.WinnerTime")}>
-                      {getFieldDecorator("iWinnerTime", {
-                        initialValue: undefined
-                      })(
-                        <FormSelect
-                          dropdownMatchSelectWidth={false}
-                          allowClear={true}
-                          options={raceWizardModel.raceWinnerResultOptions}
-                          onChange={code => {
-                            const raceWinnerResult = JSON.parse(code);
-                            raceWizardModel.raceEvent.setValue(
-                              "rankingBasetimePerKilometer",
-                              raceWinnerResult.timePerKilometer
-                            );
-                            raceWizardModel.raceEvent.setValue("rankingBasepoint", undefined);
-                            raceWizardModel.raceEvent.setValue(
-                              "rankingBaseDescription",
-                              `${raceWinnerResult.timePerKilometer}, ${raceWinnerResult.className}, ${raceWinnerResult.personName}`
-                            );
-                            setFieldsValue({
-                              iAreaTime: undefined,
-                              iRankingBasetimePerKilometer: moment(
-                                raceWinnerResult.timePerKilometer.length <= 5
-                                  ? `0:${raceWinnerResult.timePerKilometer}`
-                                  : raceWinnerResult.timePerKilometer,
-                                timeFormat
-                              ),
-                              iRankingBasepoint: undefined
-                            });
-                            onValidate(raceWizardModel.raceEvent.validRanking);
-                          }}
-                        />
-                      )}
-                    </FormItem>
-                  </Col>
+                  {raceWizardModel.existInEventor ? (
+                    <Col span={12}>
+                      <FormItem label={t("results.WinnerTime")}>
+                        {getFieldDecorator("iWinnerTime", {
+                          initialValue: undefined
+                        })(
+                          <FormSelect
+                            dropdownMatchSelectWidth={false}
+                            allowClear={true}
+                            options={raceWizardModel.raceWinnerResultOptions}
+                            onChange={code => {
+                              const raceWinnerResult = JSON.parse(code);
+                              raceWizardModel.raceEvent.setValue(
+                                "rankingBasetimePerKilometer",
+                                raceWinnerResult.timePerKilometer
+                              );
+                              raceWizardModel.raceEvent.setValue("rankingBasepoint", undefined);
+                              raceWizardModel.raceEvent.setValue(
+                                "rankingBaseDescription",
+                                `${raceWinnerResult.timePerKilometer}, ${raceWinnerResult.className}, ${raceWinnerResult.personName}`
+                              );
+                              setFieldsValue({
+                                iAreaTime: undefined,
+                                iRankingBasetimePerKilometer: moment(
+                                  raceWinnerResult.timePerKilometer.length <= 5
+                                    ? `0:${raceWinnerResult.timePerKilometer}`
+                                    : raceWinnerResult.timePerKilometer,
+                                  timeFormat
+                                ),
+                                iRankingBasepoint: undefined
+                              });
+                              onValidate(raceWizardModel.raceEvent.validRanking);
+                            }}
+                          />
+                        )}
+                      </FormItem>
+                    </Col>
+                  ) : null}
                   {raceWizardModel.raceEvent.sportCode === "OL" ? (
                     <Col span={12}>
                       <FormItem label={t("results.Area")}>

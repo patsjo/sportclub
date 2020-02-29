@@ -201,8 +201,14 @@ const ResultWizardStep1ChooseRace = inject(
         const selected = JSON.parse(selectedRowKeys);
 
         raceWizardModel.setValue("selectedEventId", parseInt(selected.selectedEventId));
-        raceWizardModel.setValue("selectedEventorId", parseInt(selected.selectedEventorId));
-        raceWizardModel.setValue("selectedEventorRaceId", parseInt(selected.selectedEventorRaceId));
+        raceWizardModel.setValue(
+          "selectedEventorId",
+          selected.selectedEventorId ? parseInt(selected.selectedEventorId) : null
+        );
+        raceWizardModel.setValue(
+          "selectedEventorRaceId",
+          selected.selectedEventorRaceId ? parseInt(selected.selectedEventorRaceId) : null
+        );
         raceWizardModel.setValue("overwrite", selected.existInEventor);
         this.setState({ selectedRowKeys });
         onValidate(true);

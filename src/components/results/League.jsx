@@ -232,7 +232,8 @@ const League = inject("clubModel")(
                   p1: pos2,
                   p2: pos3,
                   p3: pos4,
-                  total: positions.reduce((a, b) => a + b, 0)
+                  total: positions.reduce((a, b) => a + b, 0),
+                  positions: positions
                 };
               })
               .sort((a, b) => (a.total > b.total ? 1 : -1))

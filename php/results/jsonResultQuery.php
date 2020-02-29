@@ -439,10 +439,10 @@ elseif ($iType == "POINTS")
       $x = new stdClass();
       $x->competitorId          = intval($row['COMPETITOR_ID']);
       $x->name                  = $row['FIRST_NAME'] . " " . $row['LAST_NAME'];
-      $x->points                = array_map('intval', explode(",", $row['POINTS']));
-      $x->pointsOld             = array_map('intval', explode(",", $row['POINTS_OLD']));
-      $x->points1000            = array_map('intval', explode(",", $row['POINTS_1000']));
-      $x->ranking               = array_map('floatval', explode(",", $row['RANKING']));
+      $x->points                = is_null($row['POINTS']) ? array() : array_map('intval', explode(",", $row['POINTS']));
+      $x->pointsOld             = is_null($row['POINTS_OLD']) ? array() : array_map('intval', explode(",", $row['POINTS_OLD']));
+      $x->points1000            = is_null($row['POINTS_1000']) ? array() : array_map('intval', explode(",", $row['POINTS_1000']));
+      $x->ranking               = is_null($row['RANKING']) ? array() : array_map('floatval', explode(",", $row['RANKING']));
       rsort($x->points);
       rsort($x->pointsOld);
       rsort($x->points1000);
