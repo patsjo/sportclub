@@ -14,6 +14,7 @@ import ResultWizardStep2EditRace from "./ResultsWizardStep2EditRace";
 import ResultWizardStep3Ranking from "./ResultsWizardStep3Ranking";
 import { SpinnerDiv, StyledIcon } from "../styled/styled";
 import EditResultIndividual from "./EditResultIndividual";
+import EditResultRelay from "./EditResultRelay";
 import { GetRanking, GetRacePoint, GetRaceOldPoint, GetPointRunTo1000 } from "../../utils/resultHelper";
 import { ConfirmOverwriteOrEdit } from "./ConfirmOverwriteOrEditPromise";
 
@@ -144,6 +145,24 @@ const ResultsWizardModal = inject(
           result.setValue("points1000", GetPointRunTo1000(raceEventClassification, raceClassClassification, result));
         });
 
+        raceEvent.teamResults.forEach(result => {
+          const raceClassClassification = raceEventClassification.classClassifications.find(
+            cc => cc.classClassificationId === result.classClassificationId
+          );
+
+          result.setValue(
+            "ranking",
+            GetRanking(
+              raceEvent.rankingBasetimePerKilometer,
+              raceEvent.rankingBasepoint,
+              result,
+              raceEvent.raceDistance === distances.sprint,
+              raceEvent.sportCode
+            )
+          );
+          result.setValue("points1000", GetPointRunTo1000(raceEventClassification, raceClassClassification, result));
+        });
+
         const snapshot = getSnapshot(raceEvent);
         const data = {
           ...snapshot,
@@ -197,17 +216,35 @@ const ResultsWizardModal = inject(
                   variant="contained"
                   style={wizardStep === 2 ? {} : { display: "none" }}
                   onClick={() => {
-                    const resultObject = { resultId: -1 - self.raceWizardModel.raceEvent.results.length };
+                    const resultObject = self.raceWizardModel.raceEvent.isRelay
+                      ? { teamResultId: -1000 - Math.floor(Math.random() * 100000000) }
+                      : { resultId: -1000 - Math.floor(Math.random() * 100000000) };
                     let confirmModal;
                     confirmModal = confirm({
                       width: 800,
                       icon: <StyledIcon type="plus" theme="twoTone" />,
                       title: t("results.AddCompetitor"),
-                      content: (
+                      content: !self.raceWizardModel.raceEvent.isRelay ? (
                         <EditResultIndividual
                           clubModel={clubModel}
                           paymentModel={self.raceWizardModel.raceEvent.paymentModel}
                           eventClassificationId={self.raceWizardModel.raceEvent.eventClassificationId}
+                          result={resultObject}
+                          competitorsOptions={clubModel.raceClubs.selectedClub.competitorsOptions}
+                          onValidate={valid =>
+                            confirmModal.update({
+                              okButtonProps: {
+                                disabled: !valid
+                              }
+                            })
+                          }
+                        />
+                      ) : (
+                        <EditResultRelay
+                          clubModel={clubModel}
+                          raceDate={self.raceWizardModel.raceEvent.raceDate}
+                          eventClassificationId={self.raceWizardModel.raceEvent.eventClassificationId}
+                          raceLightCondition={self.raceWizardModel.raceEvent.raceLightCondition}
                           result={resultObject}
                           competitorsOptions={clubModel.raceClubs.selectedClub.competitorsOptions}
                           onValidate={valid =>
@@ -225,7 +262,11 @@ const ResultsWizardModal = inject(
                       },
                       cancelText: t("common.Cancel"),
                       onOk() {
-                        self.raceWizardModel.raceEvent.addResult(resultObject);
+                        if (self.raceWizardModel.raceEvent.isRelay) {
+                          self.raceWizardModel.raceEvent.addTeamResult(resultObject);
+                        } else {
+                          self.raceWizardModel.raceEvent.addResult(resultObject);
+                        }
                       }
                     });
                   }}

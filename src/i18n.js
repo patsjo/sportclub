@@ -48,7 +48,8 @@ i18next
             Yes: "Yes",
             No: "No",
             Previous: "Previous",
-            Next: "Next"
+            Next: "Next",
+            Of: "of"
           },
           calendar: {
             Calendar: "Calendar",
@@ -132,6 +133,7 @@ i18next
             Step3Ranking: "Ranking",
             DefaultFee0And100IfNotStarted: "Fee 0%, and 100% if not started the race",
             DefaultFee0And100IfNotFinished: "Fee 0%, and 100% if not finished the race",
+            DefaultFee50And100IfNotStarted: "Fee 50%, and 100% if not started the race",
             DefaultFee50And100IfNotFinished: "Fee 50%, and 100% if not finished the race",
             DefaultFeePaidByCompetitor: "Fee already paid by competitor",
             QueryDateRange: "Query date range",
@@ -176,11 +178,13 @@ i18next
             Long: "Long",
             UltraLong: "Ultra long",
             Relay: " relay",
+            IsRelay: "Relay",
             PaymentModel: "Payment model",
             Difficulty: "Difficulty",
-            WinnerTimeLessOrEqualThanTime: "Winner time <= time",
-            SecondTimeGreaterOrEqualThanWinnerTime: "Second time >= winner time",
+            WinnerTimeLessOrEqualThanTime: "Winner time < time",
+            SecondTimeGreaterOrEqualThanWinnerTime: "Second time < winner time",
             PositionGreaterThanStarts: "Position > starts",
+            StageGreaterThanTotalStages: "Stage > total stages",
             MeetsAwardRequirements: "Meets SOFT requirements for award",
             Award: "Award",
             Area: "Area",
@@ -197,7 +201,19 @@ i18next
             Overwrite: "Fetch new data from eventor",
             Longitude: "Longitude",
             Latitude: "Latitude",
-            DistanceKm: "Distance [km]"
+            DistanceKm: "Distance [km]",
+            Stage: "Stage",
+            TotalStages: "Total stages",
+            DeltaPositions: "Delta positions",
+            DeltaTimeBehind: "Delta time behind",
+            DeviantRaceLightCondition: "Deviant light condition",
+            TotalStagePosition: "Total stage position",
+            TotalStageTimeBehind: "Total stage time behind",
+            TotalPosition: "Team position",
+            TotalNofStartsInClass: "Starts in class",
+            TotalTimeBehind: "Team time behind",
+            TeamFailedReason: "Team failed reason",
+            TeamName: "Team name"
           },
           eventor: {
             Participant: "Participant"
@@ -224,7 +240,8 @@ i18next
             Yes: "Ja",
             No: "Nej",
             Previous: "Tillbaka",
-            Next: "Nästa"
+            Next: "Nästa",
+            Of: "av"
           },
           calendar: {
             Calendar: "Kalender",
@@ -308,6 +325,7 @@ i18next
             Step3Ranking: "Ranking",
             DefaultFee0And100IfNotStarted: "Avgift 0%, och 100% vid ej start",
             DefaultFee0And100IfNotFinished: "Avgift 0%, och 100% vid ej fullföljt",
+            DefaultFee50And100IfNotStarted: "Avgift 50%, och 100% vid ej start",
             DefaultFee50And100IfNotFinished: "Avgift 50%, och 100% vid ej fullföljt",
             DefaultFeePaidByCompetitor: "Avgifter redan betald av löparen",
             QueryDateRange: "Sökperiod",
@@ -352,11 +370,13 @@ i18next
             Long: "Lång",
             UltraLong: "Ultra lång",
             Relay: "stafett",
+            IsRelay: "Stafett",
             PaymentModel: "Betalningsmodell",
             Difficulty: "Nivå",
-            WinnerTimeLessOrEqualThanTime: "Segratid <= tid",
-            SecondTimeGreaterOrEqualThanWinnerTime: "Tvåans tid >= segratid",
+            WinnerTimeLessOrEqualThanTime: "Segratid < tid",
+            SecondTimeGreaterOrEqualThanWinnerTime: "Tvåans tid < segratid",
             PositionGreaterThanStarts: "Placering > startande",
+            StageGreaterThanTotalStages: "Sträcka > antal sträckor",
             MeetsAwardRequirements: "SOFT märkesgrundande",
             Award: "Märke",
             Area: "Terrängtyp",
@@ -373,7 +393,19 @@ i18next
             Overwrite: "Hämta ny data från eventor",
             Longitude: "Longitud",
             Latitude: "Latitud",
-            DistanceKm: "Avstånd [km]"
+            DistanceKm: "Avstånd [km]",
+            Stage: "Sträcka",
+            TotalStages: "Antal sträckor",
+            DeltaPositions: "Tappade placeringar",
+            DeltaTimeBehind: "Tappad tid",
+            DeviantRaceLightCondition: "Avvikande ljusförhållanden",
+            TotalStagePosition: "Placering vid växling",
+            TotalStageTimeBehind: "Tid efter vid växling",
+            TotalPosition: "Lagets placering totalt",
+            TotalNofStartsInClass: "Startande lag",
+            TotalTimeBehind: "Lagets tid efter",
+            TeamFailedReason: "Lag orsak utan tid",
+            TeamName: "Lagnamn"
           },
           eventor: {
             Participant: "Anmäld"

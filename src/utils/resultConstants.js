@@ -26,12 +26,14 @@ export const payments = {
   defaultFee0And100IfNotStarted: 0,
   defaultFee0And100IfNotFinished: 1,
   defaultFee50And100IfNotFinished: 2,
-  defaultFeePaidByCompetitor: 3
+  defaultFeePaidByCompetitor: 3,
+  defaultFee50And100IfNotStarted: 4
 };
 
 export const paymentOptions = t => [
   { code: payments.defaultFee0And100IfNotStarted, description: t("results.DefaultFee0And100IfNotStarted") },
   { code: payments.defaultFee0And100IfNotFinished, description: t("results.DefaultFee0And100IfNotFinished") },
+  { code: payments.defaultFee50And100IfNotStarted, description: t("results.DefaultFee50And100IfNotStarted") },
   { code: payments.defaultFee50And100IfNotFinished, description: t("results.DefaultFee50And100IfNotFinished") },
   { code: payments.defaultFeePaidByCompetitor, description: t("results.DefaultFeePaidByCompetitor") }
 ];
@@ -59,9 +61,3 @@ export const raceDistanceOptions = t => [
   { code: distances.long, description: t("results.Long") },
   { code: distances.ultraLong, description: t("results.UltraLong") }
 ];
-
-export const raceRelayDistanceOptions = t =>
-  raceDistanceOptions(t).map(option => ({
-    code: `Relay${option.code}`,
-    description: `${option.description}${t("results.Relay")}`
-  }));

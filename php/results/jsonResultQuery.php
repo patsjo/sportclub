@@ -104,6 +104,7 @@ if ($iType == "EVENT")
       $rows->raceDate                    = date2String(strtotime($row['RACEDATE']));
       $rows->raceTime                    = is_null($row['RACETIME']) ? NULL : time2StringWithSeconds(strtotime($row['RACETIME']));
       $rows->sportCode                   = $row['SPORT_CODE'];
+      $rows->isRelay                     = boolval($row['IS_RELAY']);
       $rows->eventClassificationId       = $row['EVENT_CLASSIFICATION_ID'];
       $rows->raceLightCondition          = $row['RACE_LIGHT_CONDITION'];
       $rows->raceDistance                = $row['RACE_DISTANCE'];
@@ -201,10 +202,11 @@ if ($iType == "EVENT")
       $x->deviantEventClassificationId = $row['DEVIANT_EVENT_CLASSIFICATION_ID'];
       $x->classClassificationId        = intval($row['CLASS_CLASSIFICATION_ID']);
       $x->difficulty                   = $row['DIFFICULTY'];
-      $x->clubTeamNumber               = intval($row['CLUB_TEAM_NUMBER']);
+      $x->teamName                     = $row['TEAM_NAME'];
       $x->competitorId                 = intval($row['COMPETITOR_ID']);
       $x->lengthInMeter                = is_null($row['LENGTH_IN_METER']) ? NULL : intval($row['LENGTH_IN_METER']);
       $x->failedReason                 = $row['FAILED_REASON'];
+      $x->teamFailedReason             = $row['TEAM_FAILED_REASON'];
       $x->competitorTime               = is_null($row['COMPETITOR_TIME']) ? NULL : time2StringWithSeconds(strtotime($row['COMPETITOR_TIME']));
       $x->winnerTime                   = is_null($row['WINNER_TIME']) ? NULL : time2StringWithSeconds(strtotime($row['WINNER_TIME']));
       $x->secondTime                   = is_null($row['SECOND_TIME']) ? NULL : time2StringWithSeconds(strtotime($row['SECOND_TIME']));
@@ -213,10 +215,13 @@ if ($iType == "EVENT")
       $x->stage                        = is_null($row['STAGE']) ? NULL : intval($row['STAGE']);
       $x->totalStages                  = is_null($row['TOTAL_STAGES']) ? NULL : intval($row['TOTAL_STAGES']);
       $x->deviantRaceLightCondition    = $row['DEVIANT_RACE_LIGHT_CONDITION'];
-      $x->totalTime                    = is_null($row['TOTAL_TIME']) ? NULL : time2StringWithSeconds(strtotime($row['TOTAL_TIME']));
-      $x->totalWinnerTime              = is_null($row['TOTAL_WINNER_TIME']) ? NULL : time2StringWithSeconds(strtotime($row['TOTAL_WINNER_TIME']));
-      $x->totalSecondTime              = is_null($row['TOTAL_SECOND_TIME']) ? NULL : time2StringWithSeconds(strtotime($row['TOTAL_SECOND_TIME']));
+      $x->deltaPositions               = is_null($row['DELTA_POSITIONS']) ? NULL : intval($row['DELTA_POSITIONS']);
+      $x->deltaTimeBehind              = is_null($row['DELTA_TIME_BEHIND']) ? NULL : time2StringWithSeconds(strtotime($row['DELTA_TIME_BEHIND']));
+      $x->totalStagePosition           = is_null($row['TOTAL_STAGE_POSITION']) ? NULL : intval($row['TOTAL_STAGE_POSITION']);
+      $x->totalStageTimeBehind         = is_null($row['TOTAL_STAGE_TIME_BEHIND']) ? NULL : time2StringWithSeconds(strtotime($row['TOTAL_STAGE_TIME_BEHIND']));
       $x->totalPosition                = is_null($row['TOTAL_POSITION']) ? NULL : intval($row['TOTAL_POSITION']);
+      $x->totalNofStartsInClass        = is_null($row['TOTAL_NOF_STARTS_IN_CLASS']) ? NULL : intval($row['TOTAL_NOF_STARTS_IN_CLASS']);
+      $x->totalTimeBehind              = is_null($row['TOTAL_TIME_BEHIND']) ? NULL : time2StringWithSeconds(strtotime($row['TOTAL_TIME_BEHIND']));
       $x->points1000                   = is_null($row['POINTS_1000']) ? NULL : intval($row['POINTS_1000']);
       $x->ranking                      = is_null($row['RANKING']) ? NULL : floatval($row['RANKING']);
       array_push($rows->teamResults, $x);
@@ -420,10 +425,14 @@ elseif ($iType == "POINTS")
     "   GROUP_CONCAT(POINTS_OLD SEPARATOR ',') AS POINTS_OLD," .
     "   GROUP_CONCAT(POINTS_1000 SEPARATOR ',') AS POINTS_1000," .
     "   GROUP_CONCAT(RANKING SEPARATOR ',') AS RANKING " .
-    "FROM RACE_EVENT " .
-    "INNER JOIN RACE_EVENT_RESULTS ON (RACE_EVENT.EVENT_ID = RACE_EVENT_RESULTS.EVENT_ID) ".
+    "FROM (SELECT COMPETITOR_ID, POINTS, POINTS_OLD, POINTS_1000, RANKING FROM RACE_EVENT " .
+    "      INNER JOIN RACE_EVENT_RESULTS ON (RACE_EVENT.EVENT_ID = RACE_EVENT_RESULTS.EVENT_ID) ".
+    "      WHERE 1=1" . $whereStartDate . $whereEndDate . " " .
+    "      UNION ALL " .
+    "      SELECT COMPETITOR_ID, NULL AS POINTS, NULL AS POINTS_OLD, POINTS_1000, RANKING FROM RACE_EVENT " .
+    "      INNER JOIN RACE_EVENT_RESULTS_TEAM ON (RACE_EVENT.EVENT_ID = RACE_EVENT_RESULTS_TEAM.EVENT_ID) ".
+    "      WHERE 1=1" . $whereStartDate . $whereEndDate . ") RACE_EVENT_RESULTS " .
     "INNER JOIN RACE_COMPETITORS ON (RACE_EVENT_RESULTS.COMPETITOR_ID = RACE_COMPETITORS.COMPETITOR_ID) ".
-    "WHERE 1=1" . $whereStartDate . $whereEndDate . " " .
     "GROUP BY RACE_EVENT_RESULTS.COMPETITOR_ID, FIRST_NAME, LAST_NAME";
 
   $result = \db\mysql_query($sql);

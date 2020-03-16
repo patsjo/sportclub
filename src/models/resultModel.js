@@ -163,31 +163,64 @@ export const RaceClubs = types
     }
   }));
 
-const RaceTeamResult = types.model({
-  teamResultId: types.identifierNumber,
-  className: types.string,
-  deviantEventClassificationId: types.maybeNull(types.string),
-  classClassificationId: types.maybeNull(types.integer),
-  difficulty: types.maybeNull(types.string),
-  clubTeamNumber: types.integer,
-  competitorId: types.integer,
-  lengthInMeter: types.maybeNull(types.integer),
-  failedReason: types.maybeNull(types.string),
-  competitorTime: types.maybeNull(types.string),
-  winnerTime: types.maybeNull(types.string),
-  secondTime: types.maybeNull(types.string),
-  position: types.maybeNull(types.integer),
-  nofStartsInClass: types.maybeNull(types.integer),
-  stage: types.integer,
-  totalStages: types.integer,
-  deviantRaceLightCondition: types.maybeNull(types.string),
-  totalTime: types.maybeNull(types.string),
-  totalWinnerTime: types.maybeNull(types.string),
-  totalSecondTime: types.maybeNull(types.string),
-  totalPosition: types.maybeNull(types.integer),
-  points1000: types.maybeNull(types.integer),
-  ranking: types.maybeNull(types.number)
-});
+const RaceTeamResult = types
+  .model({
+    teamResultId: types.identifierNumber,
+    className: types.string,
+    deviantEventClassificationId: types.maybeNull(types.string),
+    classClassificationId: types.maybeNull(types.integer),
+    difficulty: types.maybeNull(types.string),
+    teamName: types.maybeNull(types.string),
+    competitorId: types.integer,
+    lengthInMeter: types.maybeNull(types.integer),
+    failedReason: types.maybeNull(types.string),
+    teamFailedReason: types.maybeNull(types.string),
+    competitorTime: types.maybeNull(types.string),
+    winnerTime: types.maybeNull(types.string),
+    secondTime: types.maybeNull(types.string),
+    position: types.maybeNull(types.integer),
+    nofStartsInClass: types.maybeNull(types.integer),
+    stage: types.integer,
+    totalStages: types.integer,
+    deviantRaceLightCondition: types.maybeNull(types.string),
+    deltaPositions: types.maybeNull(types.integer),
+    deltaTimeBehind: types.maybeNull(types.string),
+    totalStagePosition: types.maybeNull(types.integer),
+    totalStageTimeBehind: types.maybeNull(types.string),
+    totalPosition: types.maybeNull(types.integer),
+    totalNofStartsInClass: types.maybeNull(types.integer),
+    totalTimeBehind: types.maybeNull(types.string),
+    points1000: types.maybeNull(types.integer),
+    ranking: types.maybeNull(types.number)
+  })
+  .actions(self => {
+    return {
+      setValue(key, value) {
+        self[key] = value;
+      }
+    };
+  })
+  .views(self => ({
+    get valid() {
+      return (
+        self.competitorId != null &&
+        self.teamName != null &&
+        self.className != null &&
+        self.classClassificationId != null &&
+        self.difficulty != null &&
+        self.stage != null &&
+        self.totalStages != null &&
+        (self.failedReason != null ||
+          (self.lengthInMeter != null &&
+            self.competitorTime != null &&
+            self.winnerTime != null &&
+            self.position != null &&
+            self.nofStartsInClass != null)) &&
+        (self.teamFailedReason != null ||
+          (self.totalTimeBehind != null && self.totalPosition != null && self.totalNofStartsInClass != null))
+      );
+    }
+  }));
 
 const RaceResultMultiDay = types.model({
   multiDayResultId: types.identifierNumber,
@@ -293,6 +326,7 @@ export const RaceEvent = types
     raceDate: types.maybeNull(types.string),
     raceTime: types.maybeNull(types.string),
     sportCode: types.string,
+    isRelay: types.boolean,
     eventClassificationId: types.string,
     raceLightCondition: types.maybeNull(types.string),
     raceDistance: types.maybeNull(types.string),
@@ -316,6 +350,12 @@ export const RaceEvent = types
       },
       removeResult(result) {
         self.results = self.results.filter(item => item.resultId !== result.resultId);
+      },
+      addTeamResult(result) {
+        self.teamResults.push(result);
+      },
+      removeTeamResult(result) {
+        self.teamResults = self.teamResults.filter(item => item.resultId !== result.resultId);
       }
     };
   })
@@ -330,8 +370,9 @@ export const RaceEvent = types
         self.paymentModel != null &&
         self.raceLightCondition != null &&
         self.raceDistance != null &&
-        self.results.length > 0 &&
-        !self.results.some(result => !result.valid)
+        (self.results.length > 0 || self.teamResults.length > 0) &&
+        !self.results.some(result => !result.valid) &&
+        !self.teamResults.some(result => !result.valid)
       );
     },
     get validRanking() {

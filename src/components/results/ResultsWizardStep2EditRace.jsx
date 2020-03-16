@@ -8,7 +8,6 @@ import {
   payments,
   paymentOptions,
   raceDistanceOptions,
-  raceRelayDistanceOptions,
   raceLightConditionOptions,
   failedReasons,
   distances
@@ -17,6 +16,7 @@ import FormItem from "../formItems/FormItem";
 import { errorRequiredField, FormSelect, dateFormat, shortTimeFormat } from "../../utils/formHelper";
 import {
   ConvertSecondsToTime,
+  TimeDiff,
   WinnerTime,
   FormatTime,
   GetLength,
@@ -33,18 +33,9 @@ import {
 import PropTypes from "prop-types";
 import { AddMapCompetitorConfirmModal } from "./AddMapCompetitorConfirmModal";
 import EditResultIndividual from "./EditResultIndividual";
+import EditResultRelay from "./EditResultRelay";
 import { withTranslation } from "react-i18next";
 import moment from "moment";
-import styled from "styled-components";
-
-const StyledImg = styled.img`
-  &&& {
-    margin-top: 10px;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-  }
-`;
 
 const { confirm } = Modal;
 
@@ -86,6 +77,7 @@ const ResultWizardStep2EditRace = inject(
             paymentModel: raceWizardModel.paymentModel,
             meetsAwardRequirements: true,
             sportCode: "OL",
+            isRelay: false,
             eventClassificationId: "F",
             results: [],
             teamResults: []
@@ -223,6 +215,7 @@ const ResultWizardStep2EditRace = inject(
                 raceTime:
                   resultJson.EventRace.RaceDate.Clock === "00:00:00" ? null : resultJson.EventRace.RaceDate.Clock,
                 sportCode: "OL",
+                isRelay: isRelay,
                 eventClassificationId: "F",
                 raceLightCondition: resultJson.EventRace["@attributes"].raceLightCondition,
                 raceDistance: resultJson.EventRace["@attributes"].raceDistance,
@@ -342,7 +335,6 @@ const ResultWizardStep2EditRace = inject(
                         }
                       }
                       if (!competitor) {
-                        // TODO popup to select competitor or create new one
                         competitor = await AddMapCompetitorConfirmModal(
                           t,
                           undefined,
@@ -402,7 +394,6 @@ const ResultWizardStep2EditRace = inject(
                         resultId: -1 - raceEvent.results.length,
                         competitorId: competitor.competitorId,
                         resultMultiDay: null,
-                        teamResult: null,
                         className: shortClassName,
                         deviantEventClassificationId: null,
                         classClassificationId: GetClassClassificationId(
@@ -444,20 +435,240 @@ const ResultWizardStep2EditRace = inject(
                   }
                 }
               } else {
-                // if (classResult.TeamStart != undefined) {
-                //   const TeamStarts = Array.isArray(classResult.TeamStart)
-                //     ? classResult.TeamStart
-                //     : [classResult.TeamStart];
-                //   TeamStarts.forEach(teamStart => {
-                //     eventObject.Competitors.push({
-                //       Person: {
-                //         PersonName: { Given: teamStart.TeamName, Family: "" }
-                //       },
-                //       EntryClass: currentClass,
-                //       Start: { StartTime: teamStart.StartTime }
-                //     });
-                //   });
-                // }
+                for (let i = 0; i < ClassResults.length; i++) {
+                  const classResult = ClassResults[i];
+                  let currentClass = {
+                    EventClassId: classResult.EventClass.EventClassId
+                  };
+                  // eslint-disable-next-line eqeqeq
+                  if (classJson != undefined) {
+                    currentClass = classJson.EventClass.find(
+                      evtClass => evtClass.EventClassId === classResult.EventClass.EventClassId
+                    );
+                    if (!Array.isArray(currentClass.ClassRaceInfo)) {
+                      currentClass.ClassRaceInfo = [currentClass.ClassRaceInfo];
+                    }
+                    currentClass.ClassRaceInfo = currentClass.ClassRaceInfo.map(classRaceInfo => ({
+                      ClassRaceInfoId: classRaceInfo.ClassRaceInfoId,
+                      leg: parseInt(classRaceInfo["@attributes"].relayLeg),
+                      numberOfStarts: parseInt(classRaceInfo["@attributes"].noOfStarts)
+                    }));
+                  }
+                  currentClass.numberOfStarts = parseInt(
+                    classResult.EventClass.ClassRaceInfo["@attributes"].noOfStarts
+                  );
+
+                  // eslint-disable-next-line eqeqeq
+                  if (classResult.TeamResult != undefined) {
+                    const teamResults = Array.isArray(classResult.TeamResult)
+                      ? classResult.TeamResult.filter(
+                          teamResult =>
+                            // eslint-disable-next-line eqeqeq
+                            teamResult.RaceResult == undefined ||
+                            teamResult.RaceResult.EventRaceId === raceWizardModel.selectedEventorRaceId.toString()
+                        )
+                      : // eslint-disable-next-line eqeqeq
+                      classResult.TeamResult.RaceResult == undefined ||
+                        classResult.TeamResult.RaceResult.EventRaceId ===
+                          raceWizardModel.selectedEventorRaceId.toString()
+                      ? [classResult.TeamResult]
+                      : [];
+
+                    teamResults.forEach(teamResult => {
+                      if (
+                        // eslint-disable-next-line eqeqeq
+                        teamResult.TeamMemberResult == undefined &&
+                        // eslint-disable-next-line eqeqeq
+                        teamResult.RaceResult.TeamMemberResult != undefined
+                      ) {
+                        teamResult.TeamMemberResult = teamResult.RaceResult.TeamMemberResult;
+                      }
+                    });
+                    const numberOfLegs = parseInt(currentClass["@attributes"].numberOfLegs);
+                    const shortClassName = GetClassShortName(currentClass.ClassShortName);
+                    const classLevel = clubModel.raceClubs.classLevels
+                      .filter(cl => shortClassName.indexOf(cl.classShortName) >= 0)
+                      .sort((a, b) => (a.classShortName.length < b.classShortName.length ? 1 : -1))
+                      .find(() => true);
+
+                    const clubTeamMemberResults = [];
+                    teamResults.forEach(teamResult => {
+                      const members = Array.isArray(teamResult.TeamMemberResult)
+                        ? teamResult.TeamMemberResult
+                        : teamResult.TeamMemberResult
+                        ? [teamResult.TeamMemberResult]
+                        : [];
+                      members.forEach(member => {
+                        if (
+                          member.Organisation &&
+                          member.Organisation.OrganisationId ===
+                            clubModel.raceClubs.selectedClub.eventorOrganisationId.toString()
+                        ) {
+                          clubTeamMemberResults.push({
+                            ...member,
+                            TeamName: teamResult.TeamName,
+                            TeamTime: teamResult.Time,
+                            TeamTimeDiff: teamResult.TimeDiff,
+                            TeamPosition: teamResult.ResultPosition,
+                            TeamStatus: teamResult.TeamStatus,
+                            BibNumber: teamResult.BibNumber
+                          });
+                        }
+                      });
+                    });
+
+                    for (let j = 0; j < clubTeamMemberResults.length; j++) {
+                      const teamMemberResult = clubTeamMemberResults[j];
+                      let competitor;
+                      if (
+                        typeof teamMemberResult.Person.PersonId === "string" &&
+                        teamMemberResult.Person.PersonId.length > 0
+                      ) {
+                        if (!competitor) {
+                          competitor = clubModel.raceClubs.selectedClub.competitorByEventorId(
+                            parseInt(teamMemberResult.Person.PersonId)
+                          );
+                        }
+
+                        if (!competitor) {
+                          competitor = clubModel.raceClubs.selectedClub.competitors.find(
+                            c =>
+                              c.firstName === teamMemberResult.Person.PersonName.Given &&
+                              c.lastName === teamMemberResult.Person.PersonName.Family &&
+                              c.birthDay === teamMemberResult.Person.BirthDate.Date
+                          );
+                          if (competitor) {
+                            await competitor.addEventorId(
+                              clubModel.modules.find(module => module.name === "Results").addUrl,
+                              teamMemberResult.Person.PersonId
+                            );
+                          }
+                        }
+                      }
+                      if (!competitor) {
+                        competitor = await AddMapCompetitorConfirmModal(
+                          t,
+                          undefined,
+                          teamMemberResult.Person.PersonId,
+                          {
+                            iType: "COMPETITOR",
+                            iFirstName: teamMemberResult.Person.PersonName.Given,
+                            iLastName: teamMemberResult.Person.PersonName.Family,
+                            iBirthDay:
+                              // eslint-disable-next-line eqeqeq
+                              teamMemberResult.Person.BirthDate == undefined
+                                ? null
+                                : teamMemberResult.Person.BirthDate.Date,
+                            iClubId: clubModel.raceClubs.selectedClub.clubId,
+                            iStartDate: "1930-01-01",
+                            iEndDate: null,
+                            iEventorCompetitorId:
+                              typeof teamMemberResult.Person.PersonId !== "string" ||
+                              teamMemberResult.Person.PersonId.length === 0
+                                ? null
+                                : teamMemberResult.Person.PersonId
+                          },
+                          currentClass.ClassShortName,
+                          clubModel
+                        );
+                      }
+
+                      const didNotStart = teamMemberResult.CompetitorStatus["@attributes"].value === "DidNotStart";
+                      const misPunch = teamMemberResult.CompetitorStatus["@attributes"].value === "MisPunch";
+                      const ok = teamMemberResult.CompetitorStatus["@attributes"].value === "OK";
+                      const valid = ok && !didNotStart && !misPunch;
+                      const position = valid ? parseInt(teamMemberResult.Position) : null;
+                      const leg = parseInt(teamMemberResult.Leg);
+                      const nofStartsInClass = valid
+                        ? parseInt(
+                            currentClass.ClassRaceInfo.find(classRaceInfo => classRaceInfo.leg === leg).numberOfStarts
+                          )
+                        : null;
+                      //const secondTime =
+                      //  valid && nofStartsInClass > 1
+                      //    ? personResults.find(pr => pr.Result.ResultPosition === "2").Result.Time
+                      //    : null;
+
+                      const stageOk = teamMemberResult.OverallResult.TeamStatus["@attributes"].value === "OK";
+                      const teamDidNotStart = teamMemberResult.TeamStatus["@attributes"].value === "DidNotStart";
+                      const teamMisPunch = teamMemberResult.TeamStatus["@attributes"].value === "MisPunch";
+                      const teamOk = teamMemberResult.TeamStatus["@attributes"].value === "OK";
+                      const teamValid = teamOk && !teamDidNotStart && !teamMisPunch;
+                      const teamPosition = teamValid ? parseInt(teamMemberResult.TeamPosition) : null;
+                      const totalStagePosition = stageOk
+                        ? parseInt(teamMemberResult.OverallResult.ResultPosition)
+                        : null;
+                      const totalStageTimeBehind = stageOk
+                        ? GetTimeWithHour(teamMemberResult.OverallResult.TimeDiff)
+                        : null;
+                      let deltaPositions;
+                      let deltaTimeBehind;
+                      if (leg > 1 && stageOk) {
+                        const prevLeg = (leg - 1).toString();
+                        const prevOverallResult = teamResults
+                          .find(teamResult => teamResult.BibNumber === teamMemberResult.BibNumber)
+                          .TeamMemberResult.find(tmr => tmr.Leg === prevLeg).OverallResult;
+                        const prevStagePosition = parseInt(prevOverallResult.ResultPosition);
+                        const prevStageTimeBehind = GetTimeWithHour(prevOverallResult.TimeDiff);
+                        deltaPositions = totalStagePosition - prevStagePosition;
+                        deltaTimeBehind = TimeDiff(prevStageTimeBehind, totalStageTimeBehind);
+                      }
+
+                      const raceTeamResult = {
+                        teamResultId: -1 - raceEvent.teamResults.length,
+                        competitorId: competitor.competitorId,
+                        className: shortClassName,
+                        deviantEventClassificationId: null,
+                        classClassificationId: GetClassClassificationId(
+                          raceEvent.eventClassificationId,
+                          classLevel,
+                          clubModel.raceClubs.eventClassifications
+                        ),
+                        difficulty: classLevel ? classLevel.difficulty : null,
+                        teamName: teamMemberResult.TeamName,
+                        lengthInMeter: null,
+                        failedReason: didNotStart
+                          ? failedReasons.NotStarted
+                          : !ok
+                          ? failedReasons.NotFinished
+                          : // eslint-disable-next-line eqeqeq
+                          teamMemberResult.Time == undefined
+                          ? failedReasons.Finished
+                          : null,
+                        teamFailedReason: teamDidNotStart
+                          ? failedReasons.NotStarted
+                          : !teamOk
+                          ? failedReasons.NotFinished
+                          : // eslint-disable-next-line eqeqeq
+                          teamMemberResult.TeamTime == undefined
+                          ? failedReasons.Finished
+                          : null,
+                        competitorTime: valid ? GetTimeWithHour(teamMemberResult.Time) : null,
+                        winnerTime: valid
+                          ? WinnerTime(
+                              teamMemberResult.Time,
+                              ConvertSecondsToTime(teamMemberResult.TimeBehind),
+                              parseInt(teamMemberResult.Position)
+                            )
+                          : null,
+                        secondTime: null, //TODO GetTimeWithHour(secondTime),
+                        position: position,
+                        nofStartsInClass: nofStartsInClass,
+                        stage: leg,
+                        totalStages: numberOfLegs,
+                        deltaPositions: deltaPositions,
+                        deltaTimeBehind: deltaTimeBehind,
+                        totalStagePosition: totalStagePosition,
+                        totalStageTimeBehind: totalStageTimeBehind,
+                        totalPosition: teamPosition,
+                        totalNofStartsInClass: currentClass.numberOfStarts,
+                        totalTimeBehind: teamValid ? GetTimeWithHour(teamMemberResult.TeamTimeDiff) : null,
+                        points1000: 0
+                      };
+                      raceEvent.teamResults.push(raceTeamResult);
+                    }
+                  }
+                }
               }
               raceWizardModel.setValue("raceEvent", editResultJson ? editResultJson : raceEvent);
               raceWizardModel.setValue("raceWinnerResults", raceWinnerResults);
@@ -491,10 +702,11 @@ const ResultWizardStep2EditRace = inject(
       }
 
       render() {
+        const self = this;
         const { t, raceWizardModel, clubModel, form, onValidate, visible } = this.props;
         const { formId, isRelay, loaded } = this.state;
         const { getFieldDecorator, getFieldError } = form;
-        const columns = [
+        let columns = [
           {
             title: t("results.Edit"),
             dataIndex: "edit",
@@ -513,7 +725,7 @@ const ResultWizardStep2EditRace = inject(
                       title: `${t("results.Edit")} (${
                         clubModel.raceClubs.selectedClub.competitorById(record.competitorId).fullName
                       }, ${record.className})`,
-                      content: (
+                      content: !isRelay ? (
                         <EditResultIndividual
                           clubModel={clubModel}
                           paymentModel={raceWizardModel.raceEvent.paymentModel}
@@ -531,6 +743,22 @@ const ResultWizardStep2EditRace = inject(
                             })
                           }
                         />
+                      ) : (
+                        <EditResultRelay
+                          clubModel={clubModel}
+                          raceDate={raceWizardModel.raceEvent.raceDate}
+                          eventClassificationId={raceWizardModel.raceEvent.eventClassificationId}
+                          raceLightCondition={raceWizardModel.raceEvent.raceLightCondition}
+                          result={resultObject}
+                          competitorsOptions={clubModel.raceClubs.selectedClub.competitorsOptions}
+                          onValidate={valid =>
+                            confirmModal.update({
+                              okButtonProps: {
+                                disabled: !valid
+                              }
+                            })
+                          }
+                        />
                       ),
                       okText: t("common.Save"),
                       okButtonProps: {
@@ -538,11 +766,18 @@ const ResultWizardStep2EditRace = inject(
                       },
                       cancelText: t("common.Cancel"),
                       onOk() {
-                        const mobxResult = raceWizardModel.raceEvent.results.find(
-                          r => r.resultId === resultObject.resultId
-                        );
-                        applySnapshot(mobxResult, resultObject);
-                        mobxResult.setIsAwardTouched(clubModel.raceClubs, raceWizardModel.raceEvent);
+                        if (isRelay) {
+                          const mobxResult = raceWizardModel.raceEvent.teamResults.find(
+                            r => r.teamResultId === resultObject.teamResultId
+                          );
+                          applySnapshot(mobxResult, resultObject);
+                        } else {
+                          const mobxResult = raceWizardModel.raceEvent.results.find(
+                            r => r.resultId === resultObject.resultId
+                          );
+                          applySnapshot(mobxResult, resultObject);
+                          mobxResult.setIsAwardTouched(clubModel.raceClubs, raceWizardModel.raceEvent);
+                        }
                         onValidate(raceWizardModel.raceEvent.valid);
                       }
                     });
@@ -554,7 +789,11 @@ const ResultWizardStep2EditRace = inject(
                   okText={t("common.Yes")}
                   cancelText={t("common.No")}
                   onConfirm={() => {
-                    raceWizardModel.raceEvent.removeResult(record);
+                    if (isRelay) {
+                      raceWizardModel.raceEvent.removeTeamResult(record);
+                    } else {
+                      raceWizardModel.raceEvent.removeResult(record);
+                    }
                     onValidate(raceWizardModel.raceEvent.valid);
                   }}
                 >
@@ -641,30 +880,72 @@ const ResultWizardStep2EditRace = inject(
             dataIndex: "nofStartsInClass",
             key: "nofStartsInClass",
             render: (value, record) => (record.failedReason == null && value == null ? <MissingTag t={t} /> : value)
-          },
-          {
-            title: t("results.Award"),
-            dataIndex: "award",
-            key: "award"
-          },
-          {
-            title: t("results.EventFee"),
-            dataIndex: "fee",
-            key: "fee",
-            render: value => (value == null ? <MissingTag t={t} /> : value)
-          },
-          {
-            title: t("results.FeeToClub"),
-            dataIndex: "feeToClub",
-            key: "feeToClub",
-            render: value => (value == null ? <MissingTag t={t} /> : value)
-          },
-          {
-            title: t("results.DeviantEventClassification"),
-            dataIndex: "deviantEventClassificationId",
-            key: "deviantEventClassificationId"
           }
         ];
+
+        if (isRelay) {
+          columns = [
+            ...columns,
+            ...[
+              {
+                title: t("results.Stage"),
+                dataIndex: "stageText",
+                key: "stageText",
+                render: (value, record) =>
+                  record.stage == null || record.totalStages == null ? <MissingTag t={t} /> : value
+              },
+              {
+                title: t("results.DeltaPositions"),
+                dataIndex: "deltaPositions",
+                key: "deltaPositions"
+              },
+              {
+                title: t("results.DeltaTimeBehind"),
+                dataIndex: "deltaTimeBehind",
+                key: "deltaTimeBehind",
+                render: value => FormatTime(value)
+              },
+              {
+                title: t("results.DeviantRaceLightCondition"),
+                dataIndex: "deviantRaceLightCondition",
+                key: "deviantRaceLightCondition"
+              },
+              {
+                title: t("results.DeviantEventClassification"),
+                dataIndex: "deviantEventClassificationId",
+                key: "deviantEventClassificationId"
+              }
+            ]
+          ];
+        } else {
+          columns = [
+            ...columns,
+            ...[
+              {
+                title: t("results.Award"),
+                dataIndex: "award",
+                key: "award"
+              },
+              {
+                title: t("results.EventFee"),
+                dataIndex: "fee",
+                key: "fee",
+                render: value => (value == null ? <MissingTag t={t} /> : value)
+              },
+              {
+                title: t("results.FeeToClub"),
+                dataIndex: "feeToClub",
+                key: "feeToClub",
+                render: value => (value == null ? <MissingTag t={t} /> : value)
+              },
+              {
+                title: t("results.DeviantEventClassification"),
+                dataIndex: "deviantEventClassificationId",
+                key: "deviantEventClassificationId"
+              }
+            ]
+          ];
+        }
 
         const nameError = getFieldError("iName");
         const organiserNameError = getFieldError("iOrganiserName");
@@ -854,7 +1135,7 @@ const ResultWizardStep2EditRace = inject(
                   )}
                 </FormItem>
               </Col>
-              <Col span={4}>
+              <Col span={3}>
                 <FormItem
                   label={t("results.Sport")}
                   validateStatus={sportCodeError ? "error" : ""}
@@ -886,7 +1167,27 @@ const ResultWizardStep2EditRace = inject(
                   )}
                 </FormItem>
               </Col>
-              <Col span={4}>
+              <Col span={3}>
+                <FormItem label={t("results.IsRelay")}>
+                  {getFieldDecorator("iIsRelay", {
+                    valuePropName: "checked",
+                    initialValue: raceWizardModel.raceEvent.isRelay
+                  })(
+                    <Switch
+                      disabled={
+                        raceWizardModel.raceEvent.results.length > 0 || raceWizardModel.raceEvent.teamResults.length > 0
+                      }
+                      onChange={checked => {
+                        raceWizardModel.raceEvent.setValue("isRelay", checked);
+                        self.setState({
+                          isRelay: checked
+                        });
+                      }}
+                    />
+                  )}
+                </FormItem>
+              </Col>
+              <Col span={3}>
                 <FormItem
                   label={t("results.RaceDistance")}
                   validateStatus={raceDistanceError ? "error" : ""}
@@ -907,7 +1208,7 @@ const ResultWizardStep2EditRace = inject(
                   })(
                     <FormSelect
                       allowClear={true}
-                      options={isRelay ? raceRelayDistanceOptions(t) : raceDistanceOptions(t)}
+                      options={raceDistanceOptions(t)}
                       onChange={code => {
                         raceWizardModel.raceEvent.setValue("raceDistance", code);
                         onValidate(raceWizardModel.raceEvent.valid);
@@ -916,7 +1217,7 @@ const ResultWizardStep2EditRace = inject(
                   )}
                 </FormItem>
               </Col>
-              <Col span={4}>
+              <Col span={3}>
                 <FormItem
                   label={t("results.RaceLightCondition")}
                   validateStatus={raceLightConditionError ? "error" : ""}
@@ -948,11 +1249,14 @@ const ResultWizardStep2EditRace = inject(
               </Col>
             </Row>
             {isRelay ? (
-              <StyledImg
-                alt="Under construction"
-                src="http://clipart-library.com/img/1011925.jpg"
-                height={160}
-                width={332}
+              <StyledTable
+                columns={columns}
+                dataSource={raceWizardModel.raceEvent.teamResults.map(result => ({
+                  ...getSnapshot(result),
+                  stageText: `${result.stage} ${t("common.Of")} ${result.totalStages}`
+                }))}
+                pagination={{ pageSize: 5 }}
+                size="middle"
               />
             ) : (
               <StyledTable
