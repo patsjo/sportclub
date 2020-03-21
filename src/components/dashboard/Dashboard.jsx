@@ -2,6 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import useNews from "../news/useNews";
 import League from "../results/League";
+import ViewResults from "../results/ViewResults";
 import useEventorEntries from "../eventor/useEventorEntries";
 import EsriOSMOrienteeringMap from "../map/EsriOSMOrienteeringMap";
 import WeeklyCalendar from "../calendar/weekly/WeeklyCalendar";
@@ -87,6 +88,10 @@ const Dashboard = inject(
         </>
       ) : globalStateModel.dashboardContentId === dashboardContents.scoringBoard ? (
         <League />
+      ) : globalStateModel.dashboardContentId === dashboardContents.results ? (
+        <ViewResults key="clubViewResult" />
+      ) : globalStateModel.dashboardContentId === dashboardContents.individualResults ? (
+        <ViewResults key="individualViewResult" isIndividual />
       ) : null;
 
     return <ContentArea>{Content}</ContentArea>;

@@ -1,6 +1,6 @@
 import React from "react";
 import { getFileType } from "./fileHelper";
-import { Select, Form, Input } from "antd";
+import { Select } from "antd";
 
 const Option = Select.Option;
 

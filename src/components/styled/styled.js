@@ -26,6 +26,9 @@ export const StyledTable = styled(Table)`
     margin-top: 8px;
     min-width: ${props => (props.minWidth ? `${props.minWidth}px` : "unset")};
   }
+  &&& .ant-table-scroll > .ant-table-body {
+    overflow-x: auto !important;
+  }
   &&& .ant-table-pagination.ant-pagination {
     margin-top: 8px;
     margin-bottom: 0;

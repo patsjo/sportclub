@@ -15,26 +15,38 @@ const StyledSelect = styled(Select)`
   }
 `;
 
-const getColumns = (t, nofPoints) => [
+const getColumns = (t, nofPoints, isTotal = false) => [
   {
     title: t("results.Position"),
     dataIndex: "position",
-    key: "position"
+    key: "position",
+    fixed: "left",
+    width: 80
   },
   {
     title: t("results.Competitor"),
     dataIndex: "name",
-    key: "name"
+    key: "name",
+    fixed: "left",
+    width: 200
   },
   ...[...Array(nofPoints).keys()].map(i => ({
-    title: (i + 1).toString(),
+    title: isTotal
+      ? t(
+          `results.${
+            i === 0 ? "RankingLeague" : i === 1 ? "Points1000League" : i === 2 ? "PointsLeague" : "PointsOldLeague"
+          }`
+        )
+      : (i + 1).toString(),
     dataIndex: `p${i}`,
     key: `p${i}`
   })),
   {
     title: t("results.Total"),
     dataIndex: "total",
-    key: "total"
+    key: "total",
+    fixed: "right",
+    width: 80
   }
 ];
 
@@ -60,17 +72,16 @@ const League = inject("clubModel")(
       update(year) {
         const self = this;
         const { clubModel } = this.props;
-        const currentYear = new Date().getFullYear();
         const fromDate = moment(year, "YYYY").format("YYYY-MM-DD");
         const toDate =
-          year === currentYear
+          year === -1
             ? moment().format("YYYY-MM-DD")
             : moment(fromDate, "YYYY-MM-DD")
                 .add(1, "years")
                 .subtract(1, "days")
                 .format("YYYY-MM-DD");
         const rankingFromDate =
-          year === currentYear
+          year === -1
             ? moment(toDate, "YYYY-MM-DD")
                 .add(1, "days")
                 .subtract(1, "years")
@@ -83,7 +94,7 @@ const League = inject("clubModel")(
 
         const url = clubModel.modules.find(module => module.name === "Results").queryUrl;
         const rankingPromise =
-          year === currentYear
+          year === -1
             ? PostJsonData(
                 url,
                 {
@@ -279,9 +290,10 @@ const League = inject("clubModel")(
         const fromYear = 1994;
         const currentYear = new Date().getFullYear();
         const YearOptions = (
-          <StyledSelect defaultValue={currentYear} onChange={year => self.update(year)}>
+          <StyledSelect defaultValue={-1} onChange={year => self.update(year)}>
+            <Option value={-1}>{t("results.CurrentSeason")}</Option>
             {[...Array(1 + currentYear - fromYear).keys()].map(i => (
-              <Option value={currentYear - i}>{i === 0 ? t("results.CurrentSeason") : currentYear - i}</Option>
+              <Option value={currentYear - i}>{currentYear - i}</Option>
             ))}
           </StyledSelect>
         );
@@ -289,45 +301,76 @@ const League = inject("clubModel")(
         return (
           <Tabs defaultActiveKey="grandSlam" tabBarExtraContent={YearOptions}>
             <TabPane tab={t("results.GrandSlam")} key="grandSlam">
+              Sammanlagd placering i de fyra ligorna.
               {!loading ? (
-                <StyledTable columns={getColumns(t, 4)} dataSource={grandSlam} size="middle" pagination={false} />
+                <StyledTable
+                  columns={getColumns(t, 4, true)}
+                  dataSource={grandSlam}
+                  size="middle"
+                  pagination={false}
+                  scroll={{ x: true }}
+                />
               ) : (
                 Spinner
               )}
             </TabPane>
             <TabPane tab={t("results.RankingLeague")} key="rankingLeague">
+              Antal minuter efter sveriges bästa herrsenior på en 75 minuters bana. Samma grundprincip som ranking och
+              sverigelistan, fast utan konstiga överankingar i gubbaklasser. Även samma rankinglista för damer och
+              herrar. Man får ranking på alla tävlingar, både individuellt, jaktstart och stafetter.
               {!loading ? (
-                <StyledTable columns={getColumns(t, 6)} dataSource={rankingLeague} size="middle" pagination={false} />
+                <StyledTable
+                  columns={getColumns(t, 6)}
+                  dataSource={rankingLeague}
+                  size="middle"
+                  pagination={false}
+                  scroll={{ x: true }}
+                />
               ) : (
                 Spinner
               )}
             </TabPane>
             <TabPane tab={t("results.Points1000League")} key="points1000League">
+              OK Orions spring till 1000. Placering i förhållande till antal startande. 100 poäng för seger i en
+              nationell tävling vid minst två startande. 30 är lägsta poäng vid fullföljt.
               {!loading ? (
                 <StyledTable
                   columns={getColumns(t, 10)}
                   dataSource={points1000League.map(p => ({ ...p, total: `${p.total} (${p.numberOf100})` }))}
                   size="middle"
                   pagination={false}
+                  scroll={{ x: true }}
                 />
               ) : (
                 Spinner
               )}
             </TabPane>
             <TabPane tab={t("results.PointsLeague")} key="pointsLeague">
+              Värend GN poängliga från 2003. Grundpoäng baserat på typ av tävling och klass + Logaritmen av antal
+              startande i förhållande till placering. Allt sedan i förhållande till hur många procent efter täten man
+              är.
               {!loading ? (
-                <StyledTable columns={getColumns(t, 10)} dataSource={pointsLeague} size="middle" pagination={false} />
+                <StyledTable
+                  columns={getColumns(t, 10)}
+                  dataSource={pointsLeague}
+                  size="middle"
+                  pagination={false}
+                  scroll={{ x: true }}
+                />
               ) : (
                 Spinner
               )}
             </TabPane>
             <TabPane tab={t("results.PointsOldLeague")} key="pointsOldLeague">
+              Gårdsby IK poängliga fram till 2002. Grundpoäng baserat på typ av tävling och klass + Placeringspoäng +
+              Poäng för antal startande - Poäng för minuter efter täten per 100m.
               {!loading ? (
                 <StyledTable
                   columns={getColumns(t, 10)}
                   dataSource={pointsOldLeague}
                   size="middle"
                   pagination={false}
+                  scroll={{ x: true }}
                 />
               ) : (
                 Spinner

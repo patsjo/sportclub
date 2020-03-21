@@ -40,12 +40,16 @@ export const paymentOptions = t => [
 
 export const lightConditions = {
   day: "Day",
-  night: "Night"
+  night: "Night",
+  dusk: "Dusk",
+  dawn: "Dawn"
 };
 
 export const raceLightConditionOptions = t => [
   { code: lightConditions.day, description: t("results.Day") },
-  { code: lightConditions.night, description: t("results.Night") }
+  { code: lightConditions.night, description: t("results.Night") },
+  { code: lightConditions.dusk, description: t("results.Dusk") },
+  { code: lightConditions.dawn, description: t("results.Dawn") }
 ];
 
 export const distances = {

@@ -10,7 +10,8 @@ export const dashboardContents = {
   address: 4,
   photo: 5,
   info: 6,
-  results: 7
+  results: 7,
+  individualResults: 8
 };
 
 export const GlobalStateModel = types

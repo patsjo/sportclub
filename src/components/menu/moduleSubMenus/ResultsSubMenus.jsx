@@ -31,20 +31,22 @@ const ResultsSubMenus = inject(
           key={"menuItem#results"}
           icon={moduleName + "Icon"}
           name={t("results.Latest")}
-          disabled={true || !sessionModel.loggedIn}
+          disabled={!sessionModel.loggedIn}
           isSubMenu
           onClick={() => {
-            globalStateModel.setDashboard(dashboardContents.results, "1990-01-01", "2099-12-31", 1);
+            globalStateModel.setValue("rightMenuVisible", false);
+            globalStateModel.setDashboard(dashboardContents.results);
           }}
         />
         <MenuItem
           key={"menuItem#resultsIndividual"}
           icon="user"
           name={t("results.Individual")}
-          disabled={true || !sessionModel.loggedIn}
+          disabled={!sessionModel.loggedIn}
           isSubMenu
           onClick={() => {
-            globalStateModel.setDashboard(dashboardContents.news, "1990-01-01", "2099-12-31", 2);
+            globalStateModel.setValue("rightMenuVisible", false);
+            globalStateModel.setDashboard(dashboardContents.individualResults);
           }}
         />
         <MenuItem
