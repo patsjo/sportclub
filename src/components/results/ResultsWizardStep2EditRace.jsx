@@ -193,6 +193,13 @@ const ResultWizardStep2EditRace = inject(
             } else if (!Array.isArray(entriesJson.Entry)) {
               entriesJson.Entry = [entriesJson.Entry];
             }
+
+            if (!entryFeeJson) {
+              entryFeeJson = { EntryFee: [] };
+            } else if (!Array.isArray(entryFeeJson.EntryFee)) {
+              entryFeeJson.EntryFee = entryFeeJson.EntryFee ? [entryFeeJson.EntryFee] : [];
+            }
+
             // eslint-disable-next-line eqeqeq
             if (resultJson != undefined && resultJson.ClassResult != undefined) {
               if (Array.isArray(resultJson.Event.EventRace)) {
@@ -380,7 +387,7 @@ const ResultWizardStep2EditRace = inject(
                       const position = valid ? parseInt(personResult.Result.ResultPosition) : null;
                       const nofStartsInClass = valid ? parseInt(currentClass.numberOfStarts) : null;
                       const secondTime =
-                        valid && nofStartsInClass > 1
+                        valid && nofStartsInClass > 1 && personResults.some(pr => pr.Result.ResultPosition === "2")
                           ? personResults.find(pr => pr.Result.ResultPosition === "2").Result.Time
                           : null;
                       const fees = GetFees(

@@ -298,7 +298,7 @@ const ResultsWizardModal = inject(
                 {wizardStep === 0 ? (
                   <ResultWizardStep0Input onMount={form => self.setState({ inputForm: form })} />
                 ) : null}
-                {wizardStep >= 1 ? (
+                {wizardStep >= 1 && this.raceWizardModel.existInEventor ? (
                   <ResultWizardStep1ChooseRace
                     onValidate={self.onValidate.bind(self)}
                     visible={wizardStep === 1}

@@ -7,8 +7,6 @@ import { errorRequiredField, dateFormat, FormSelect } from "../../utils/formHelp
 import moment from "moment";
 import FormItem from "../formItems/FormItem";
 
-const { RangePicker } = DatePicker;
-
 // @inject("raceWizardModel")
 // @observer
 const ResultWizardStep0Input = inject(
@@ -43,7 +41,8 @@ const ResultWizardStep0Input = inject(
         const { formId } = self.state;
         const { getFieldDecorator, getFieldError } = form;
         // Only show error after a field is touched.
-        const queryDateRangeError = getFieldError("iQueryDateRange");
+        const queryStartDateError = getFieldError("iQueryStartDate");
+        const queryEndDateError = getFieldError("iQueryEndDate");
 
         return (
           <Form id={formId} onSubmit={self.onSave}>
@@ -61,30 +60,46 @@ const ResultWizardStep0Input = inject(
             {raceWizardModel.existInEventor ? (
               <>
                 <FormItem
-                  label={t("results.QueryDateRange")}
-                  validateStatus={queryDateRangeError ? "error" : ""}
-                  help={queryDateRangeError || ""}
+                  label={t("results.QueryStartDate")}
+                  validateStatus={queryStartDateError ? "error" : ""}
+                  help={queryStartDateError || ""}
                 >
-                  {getFieldDecorator("QueryDateRange", {
-                    initialValue: [
-                      moment(raceWizardModel.queryStartDate, dateFormat),
-                      moment(raceWizardModel.queryEndDate, dateFormat)
-                    ],
+                  {getFieldDecorator("QueryStartDate", {
+                    initialValue: moment(raceWizardModel.queryStartDate, dateFormat),
                     rules: [
                       {
                         required: true,
                         type: "object",
-                        message: errorRequiredField(t, "results.QueryDateRange")
+                        message: errorRequiredField(t, "results.QueryStartDate")
                       }
                     ]
                   })(
-                    <RangePicker
+                    <DatePicker
                       format={dateFormat}
                       allowClear={false}
-                      onChange={dates => {
-                        raceWizardModel.setValue("queryStartDate", dates[0].format(dateFormat));
-                        raceWizardModel.setValue("queryEndDate", dates[1].format(dateFormat));
-                      }}
+                      onChange={date => raceWizardModel.setValue("queryStartDate", date.format(dateFormat))}
+                    />
+                  )}
+                </FormItem>
+                <FormItem
+                  label={t("results.QueryEndDate")}
+                  validateStatus={queryEndDateError ? "error" : ""}
+                  help={queryEndDateError || ""}
+                >
+                  {getFieldDecorator("QueryEndDate", {
+                    initialValue: moment(raceWizardModel.queryEndDate, dateFormat),
+                    rules: [
+                      {
+                        required: true,
+                        type: "object",
+                        message: errorRequiredField(t, "results.QueryEndDate")
+                      }
+                    ]
+                  })(
+                    <DatePicker
+                      format={dateFormat}
+                      allowClear={false}
+                      onChange={date => raceWizardModel.setValue("queryEndDate", date.format(dateFormat))}
                     />
                   )}
                 </FormItem>
@@ -93,6 +108,12 @@ const ResultWizardStep0Input = inject(
                     valuePropName: "checked",
                     initialValue: raceWizardModel.queryIncludeExisting
                   })(<Switch onChange={checked => raceWizardModel.setValue("queryIncludeExisting", checked)} />)}
+                </FormItem>
+                <FormItem label={t("results.QueryForEventWithNoEntry")}>
+                  {getFieldDecorator("QueryForEventWithNoEntry", {
+                    valuePropName: "checked",
+                    initialValue: raceWizardModel.queryForEventWithNoEntry
+                  })(<Switch onChange={checked => raceWizardModel.setValue("queryForEventWithNoEntry", checked)} />)}
                 </FormItem>
               </>
             ) : null}

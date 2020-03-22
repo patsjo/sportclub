@@ -53,6 +53,86 @@ const ResultWizardStep1ChooseRace = inject(
             encodeURIComponent("ApiKey: " + clubModel.eventor.apiKey),
           true
         );
+        const noEntriesPromise = raceWizardModel.queryForEventWithNoEntry
+          ? new Promise((resolve, reject) => {
+              GetJsonData(
+                clubModel.corsProxy +
+                  encodeURIComponent(
+                    clubModel.eventor.competitorsUrl +
+                      "?organisationId=" +
+                      clubModel.raceClubs.selectedClub.eventorOrganisationId
+                  ) +
+                  "&headers=" +
+                  encodeURIComponent("ApiKey: " + clubModel.eventor.apiKey),
+                true
+              )
+                .then(competitorsJson => {
+                  if (!competitorsJson || !Array.isArray(competitorsJson.Competitor)) {
+                    resolve({ Event: [] });
+                    return;
+                  }
+                  const competitorsPromiseis = competitorsJson.Competitor.map(c =>
+                    GetJsonData(
+                      clubModel.corsProxy +
+                        encodeURIComponent(
+                          clubModel.eventor.personResultUrl +
+                            "?personId=" +
+                            c.Person.PersonId +
+                            "&fromDate=" +
+                            raceWizardModel.queryStartDate +
+                            "&toDate=" +
+                            raceWizardModel.queryEndDate
+                        ) +
+                        "&headers=" +
+                        encodeURIComponent("ApiKey: " + clubModel.eventor.apiKey),
+                      true
+                    )
+                  );
+                  Promise.all(competitorsPromiseis)
+                    .then(competitorsJsons => {
+                      if (!competitorsJsons) {
+                        resolve({ Event: [] });
+                        return;
+                      }
+                      const events = { Event: [] };
+                      if (!Array.isArray(competitorsJsons)) {
+                        competitorsJsons = [competitorsJsons];
+                      }
+                      competitorsJsons.forEach(c => {
+                        if (c.ResultList) {
+                          if (!Array.isArray(c.ResultList)) {
+                            c.ResultList = [c.ResultList];
+                          }
+                          c.ResultList.forEach(r => {
+                            if (!Array.isArray(r.ClassResult)) {
+                              r.ClassResult = [r.ClassResult];
+                            }
+                            let isCurrentClub = false;
+                            r.ClassResult.forEach(cr => {
+                              if (Array.isArray(cr.PersonResult)) {
+                                cr.PersonResult = cr.PersonResult[0];
+                              }
+                              if (
+                                cr.PersonResult.Organisation.OrganisationId ===
+                                clubModel.raceClubs.selectedClub.eventorOrganisationId.toString()
+                              ) {
+                                isCurrentClub = true;
+                              }
+                            });
+                            if (isCurrentClub && !events.Event.some(e => e.EventId === r.Event.EventId)) {
+                              events.Event.push(r.Event);
+                            }
+                          });
+                        }
+                      });
+                      resolve(events);
+                    })
+                    .catch(e => reject(e));
+                })
+                .catch(e => reject(e));
+            })
+          : new Promise(resolve => resolve(undefined));
+
         const oringenEventsPromise = GetJsonData(
           clubModel.corsProxy +
             encodeURIComponent(
@@ -70,8 +150,8 @@ const ResultWizardStep1ChooseRace = inject(
           true
         );
 
-        Promise.all([alreadySavedEventsPromise, entriesPromise, oringenEventsPromise])
-          .then(([alreadySavedEventsJson, entriesJson, oringenEventsJson]) => {
+        Promise.all([alreadySavedEventsPromise, entriesPromise, noEntriesPromise, oringenEventsPromise])
+          .then(([alreadySavedEventsJson, entriesJson, noEntriesJson, oringenEventsJson]) => {
             // eslint-disable-next-line eqeqeq
             if (entriesJson == undefined || entriesJson.Entry == undefined) {
               entriesJson = { Entry: [] };
@@ -84,6 +164,13 @@ const ResultWizardStep1ChooseRace = inject(
             } else if (!Array.isArray(oringenEventsJson.Event)) {
               oringenEventsJson.Event = [oringenEventsJson.Event];
             }
+            // eslint-disable-next-line eqeqeq
+            if (noEntriesJson == undefined || noEntriesJson.Event == undefined) {
+              noEntriesJson = { Event: [] };
+            } else if (!Array.isArray(noEntriesJson.Event)) {
+              noEntriesJson.Event = [noEntriesJson.Event];
+            }
+            oringenEventsJson.Event = [...oringenEventsJson.Event, ...noEntriesJson.Event];
             entriesJson.Entry.forEach(entry => {
               if (Array.isArray(entry.Event.EventRace)) {
                 entry.EventRaceId = entry.Event.EventRace.map(eventRace => eventRace.EventRaceId);
@@ -160,6 +247,7 @@ const ResultWizardStep1ChooseRace = inject(
               )
               .map(e => ({
                 ...e,
+                alreadySavedEventId: e.eventId,
                 alreadySavedEventsNotInEventor: true,
                 Event: {
                   EventId: e.eventorId,
@@ -175,8 +263,9 @@ const ResultWizardStep1ChooseRace = inject(
               }));
             if (!raceWizardModel.queryIncludeExisting) {
               events = events.filter(event => event.alreadySavedEventId === -1);
+            } else {
+              events = [...events, ...alreadySavedEventsNotInEventor];
             }
-            events = [...events, ...alreadySavedEventsNotInEventor];
             events = events.sort((a, b) =>
               a.Event.EventRace.RaceDate.Date > b.Event.EventRace.RaceDate.Date
                 ? 1

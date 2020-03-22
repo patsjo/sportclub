@@ -195,7 +195,8 @@ export const GetRacePoint = (raceEventClassification, raceClassClassification, r
   const winnerTime = ConvertTimeToSeconds(result.winnerTime);
   const timeDivisor = winnerTime > 0 ? Math.pow(competitorTime / winnerTime, 1.5) : 0;
 
-  return timeDivisor > 0 ? Math.round((basePoint + positionPoint) / timeDivisor) : 0;
+  const point = timeDivisor > 0 ? Math.round((basePoint + positionPoint) / timeDivisor) : 0;
+  return point > 0 ? point : null;
 };
 
 export const GetRaceOldPoint = (raceEventClassification, raceClassClassification, result) => {
@@ -226,7 +227,8 @@ export const GetRaceOldPoint = (raceEventClassification, raceClassClassification
   const timePoint =
     result.lengthInMeter > 0 ? Math.round(((competitorTime - winnerTime) / 60) * (10000 / result.lengthInMeter)) : 1000;
 
-  return Math.max(basePoint + positionPoint + nofStartsPoint - timePoint, 0);
+  const point = Math.max(basePoint + positionPoint + nofStartsPoint - timePoint, 0);
+  return point > 0 ? point : null;
 };
 
 export const GetPointRunTo1000 = (raceEventClassification, raceClassClassification, result) => {

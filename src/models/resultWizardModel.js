@@ -6,6 +6,7 @@ import { payments, difficulties } from "../utils/resultConstants";
 const setLocalStorage = raceWizard => {
   const obj = {
     queryStartDate: raceWizard.queryStartDate,
+    queryEndDate: raceWizard.queryEndDate,
     paymentModel: raceWizard.paymentModel
   };
 
@@ -30,7 +31,7 @@ export const getLocalStorage = () => {
       };
     }
 
-    return { ...JSON.parse(raceWizardData), queryEndDate: endDate, queryIncludeExisting: false, existInEventor: true };
+    return { queryEndDate: endDate, ...JSON.parse(raceWizardData), queryIncludeExisting: false, existInEventor: true };
   } catch (error) {
     return {
       queryStartDate: startDate,
@@ -59,6 +60,7 @@ export const RaceWizard = types
     queryIncludeExisting: types.boolean,
     existInEventor: types.boolean,
     overwrite: types.optional(types.boolean, false),
+    queryForEventWithNoEntry: types.optional(types.boolean, false),
     paymentModel: types.integer,
     selectedEventId: types.maybeNull(types.integer),
     selectedEventorId: types.maybeNull(types.integer),
