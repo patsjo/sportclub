@@ -66,13 +66,18 @@ const League = inject("clubModel")(
       }
 
       componentDidMount() {
-        this.update(new Date().getFullYear());
+        this.update(-1);
       }
 
       update(year) {
         const self = this;
         const { clubModel } = this.props;
-        const fromDate = moment(year, "YYYY").format("YYYY-MM-DD");
+        const fromDate =
+          year === -1
+            ? moment()
+                .startOf("year")
+                .format("YYYY-MM-DD")
+            : moment(year, "YYYY").format("YYYY-MM-DD");
         const toDate =
           year === -1
             ? moment().format("YYYY-MM-DD")

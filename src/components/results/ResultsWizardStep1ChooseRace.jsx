@@ -351,7 +351,7 @@ const ResultWizardStep1ChooseRace = inject(
                   alreadySavedEventId: -1,
                   existInEventor: false
                 }),
-                alreadySavedEventId: -1,
+                alreadySavedEventId: event.alreadySavedEventId,
                 existInEventor: false
               }
             : {

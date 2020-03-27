@@ -248,9 +248,11 @@ const ResultWizardStep2EditRace = inject(
                   };
                   // eslint-disable-next-line eqeqeq
                   if (classJson != undefined) {
-                    currentClass = classJson.EventClass.find(
-                      evtClass => evtClass.EventClassId === classResult.EventClass.EventClassId
-                    );
+                    currentClass = Array.isArray(classJson.EventClass)
+                      ? classJson.EventClass.find(
+                          evtClass => evtClass.EventClassId === classResult.EventClass.EventClassId
+                        )
+                      : classJson.EventClass;
                     if (Array.isArray(currentClass.ClassRaceInfo)) {
                       currentClass.ClassRaceInfo = currentClass.ClassRaceInfo.find(
                         raceInfo => raceInfo.EventRaceId === raceWizardModel.selectedEventorRaceId.toString()

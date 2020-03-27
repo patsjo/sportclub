@@ -472,8 +472,7 @@ export const GetAward = (raceEventClassification, classLevels, result, competito
   } else if (
     classLevel.classTypeShortName !== "E" &&
     classLevel.classTypeShortName !== "T" &&
-    classLevel.classTypeShortName !== "S" &&
-    classLevel.classTypeShortName !== "M"
+    classLevel.classTypeShortName !== "S"
   ) {
     if (timeInMinutes <= maxMinutes(50)) {
       award = "B";
