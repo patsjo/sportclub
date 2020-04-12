@@ -125,7 +125,7 @@ if ($iType == "EVENT" || $iType == "COMPETITOR")
         $rows->raceDistance                = $row['RACE_DISTANCE'];
         $rows->paymentModel                = intval($row['PAYMENT_MODEL']);
         $rows->meetsAwardRequirements      = boolval($row['MEETS_AWARD_REQUIREMENTS']);
-        $rows->rankingBasetimePerKilometer = time2StringWithSeconds(strtotime($row['RANKING_BASE_TIME_PER_KILOMETER']));
+        $rows->rankingBasetimePerKilometer = $row['RANKING_BASE_TIME_PER_KILOMETER'];
         $rows->rankingBasepoint            = floatval($row['RANKING_BASE_POINT']);
         $rows->rankingBaseDescription      = $row['RANKING_BASE_DESCRIPTION'];
         $rows->longitude                   = is_null($row['LONGITUDE']) ? NULL : floatval($row['LONGITUDE']);

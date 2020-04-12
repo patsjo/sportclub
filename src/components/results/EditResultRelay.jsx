@@ -803,7 +803,7 @@ class EditResultRelay extends Component {
                   allowClear={true}
                   options={raceLightConditionOptions(t)}
                   onChange={code => {
-                    result.raceLightCondition = code;
+                    result.deviantRaceLightCondition = code;
                   }}
                 />
               )}

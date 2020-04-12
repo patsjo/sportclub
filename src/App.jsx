@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import clubJson from "./models/varendgn";
+import clubJson from "./models/okorion";
 import { MobxClubModel } from "./models/mobxClubModel";
 import { SessionModel, getLocalStorage } from "./models/sessionModel";
 import { GlobalStateModel } from "./models/globalStateModel";
@@ -127,7 +127,7 @@ class App extends Component {
       )
         .then(json => {
           if (json) {
-            this.sessionModel.setSuccessfullyLogin(json.id, json.name, json.isAdmin);
+            this.sessionModel.setSuccessfullyLogin(json.id, json.name, json.isAdmin, json.eventorPersonId);
           }
         })
         .catch(() => {});

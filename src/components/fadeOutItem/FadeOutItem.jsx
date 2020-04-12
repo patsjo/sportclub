@@ -7,14 +7,14 @@ import { observer, inject } from "mobx-react";
 import withForwardedRef from "../../utils/withForwardedRef";
 
 const ItemHolder = styled.div`
-  max-height: 300px;
+  max-height: ${props => (props.maxHeight ? props.maxHeight : 300)}px;
   overflow: hidden;
 `;
 const ItemFadeOut = styled.div`
   -webkit-column-break-inside: avoid;
   page-break-inside: avoid;
   break-inside: avoid-column;
-  max-height: 300px;
+  max-height: ${props => (props.maxHeight ? props.maxHeight : 300)}px;
   overflow-y: hidden;
   padding-left: 2px;
   padding-right: 2px;
@@ -23,7 +23,7 @@ const ItemFadeOut = styled.div`
   :after {
     content: "";
     position: absolute;
-    top: 250px;
+    top: ${props => (props.maxHeight ? props.maxHeight - 50 : 250)}px;
     right: 0;
     width: 100%;
     height: 50px;
@@ -67,7 +67,8 @@ const FadeOutItem = inject("sessionModel")(
         modalColumns: PropTypes.number.isRequired,
         editFormContent: PropTypes.object,
         deletePromise: PropTypes.func,
-        onDelete: PropTypes.func
+        onDelete: PropTypes.func,
+        maxHeight: PropTypes.number
       };
       constructor(props) {
         super(props);
@@ -101,7 +102,8 @@ const FadeOutItem = inject("sessionModel")(
           module,
           deletePromise,
           onDelete,
-          forwardedRef
+          forwardedRef,
+          maxHeight
         } = this.props;
         const self = this;
 
@@ -151,8 +153,8 @@ const FadeOutItem = inject("sessionModel")(
           : null;
 
         return (
-          <ItemHolder ref={forwardedRef}>
-            <ItemFadeOut onClick={this.openModal}>{this.props.content}</ItemFadeOut>
+          <ItemHolder ref={forwardedRef} maxHeight={maxHeight}>
+            <ItemFadeOut onClick={this.openModal} maxHeight={maxHeight}>{this.props.content}</ItemFadeOut>
             <Modal
               closable={false}
               visible={this.state.showModalItem}

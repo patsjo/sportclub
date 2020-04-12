@@ -64,6 +64,7 @@ const Eventor = types.model({
   lengthUrl: types.optional(types.string, "https://eventor.orientering.se/Events/StartList"),
   competitorsUrl: types.optional(types.string, "https://eventor.orientering.se/api/competitors"),
   personResultUrl: types.optional(types.string, "https://eventor.orientering.se/api/results/person"),
+  externalLoginUrl: types.optional(types.string, "https://eventor.orientering.se/api/externalLoginUrl"),
   headers: types.maybe(types.string),
   apiKey: types.maybe(types.string),
   organisationId: types.integer,

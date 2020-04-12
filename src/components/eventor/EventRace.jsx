@@ -6,6 +6,8 @@ import { GetJsonData } from "../../utils/api";
 import PropTypes from "prop-types";
 import FadeOutItem from "../fadeOutItem/FadeOutItem";
 import { withTranslation } from "react-i18next";
+import withForwardedRef from "../../utils/withForwardedRef";
+import moment from "moment";
 
 const ContentHolder = styled.div``;
 
@@ -303,11 +305,14 @@ const EventRace = inject("clubModel")(
                 : 0
             );
           }
+          const currentDate = moment().format("YYYY-MM-DD");
           self.setState({
             loaded: true,
             eventObject: eventObject,
             // eslint-disable-next-line eqeqeq
-            showStart: startJson != undefined && startJson.ClassStart != undefined,
+            showEntries: startJson != undefined && self.props.date >= currentDate,
+            // eslint-disable-next-line eqeqeq
+            showStart: startJson != undefined && startJson.ClassStart != undefined && self.props.date >= currentDate,
             // eslint-disable-next-line eqeqeq
             showResult: resultJson != undefined && resultJson.ClassResult != undefined
           });
@@ -315,7 +320,7 @@ const EventRace = inject("clubModel")(
       }
 
       render() {
-        const { t } = this.props;
+        const { t, forwardedRef } = this.props;
         const moduleInfo = this.props.clubModel.module("Eventor");
 
         const EventItem =
@@ -370,7 +375,7 @@ const EventRace = inject("clubModel")(
                 ))}
               </StyledTableBody>
             </StyledTable>
-          ) : this.state.loaded ? (
+          ) : this.state.loaded && this.state.showEntries ? (
             <StyledTable>
               <StyledTableBody>
                 {this.state.eventObject.Competitors.map(competitor => (
@@ -399,6 +404,8 @@ const EventRace = inject("clubModel")(
           // eslint-disable-next-line eqeqeq
           EventItem != null ? (
             <FadeOutItem
+              ref={forwardedRef}
+              maxHeight={100}
               module={moduleInfo}
               content={
                 <ContentHolder>
@@ -425,4 +432,4 @@ const EventRace = inject("clubModel")(
 
 const EventRaceWithI18n = withTranslation()(EventRace); // pass `t` function to App
 
-export default EventRaceWithI18n;
+export default withForwardedRef(EventRaceWithI18n);

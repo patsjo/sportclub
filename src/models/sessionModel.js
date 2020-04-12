@@ -63,6 +63,7 @@ export const SessionModel = types
     id: types.maybe(types.string),
     name: types.maybe(types.string),
     isAdmin: types.boolean,
+    eventorPersonId: types.maybe(types.string),
     canReadLocalStorage: types.optional(types.boolean, false)
   })
   .volatile(self => ({
@@ -88,23 +89,26 @@ export const SessionModel = types
           self.canReadLocalStorage = false;
         }
       },
-      setSuccessfullyLogin(id, name, isAdmin) {
+      setSuccessfullyLogin(id, name, isAdmin, eventorPersonId) {
         self.id = id;
         self.name = name;
         self.loggedIn = true;
         self.isAdmin = isAdmin;
+        self.eventorPersonId = eventorPersonId;
       },
       setFailedLogin() {
         self.id = undefined;
         self.name = undefined;
         self.loggedIn = false;
         self.isAdmin = false;
+        self.eventorPersonId = undefined;
       },
       setLogout() {
         self.id = undefined;
         self.name = undefined;
         self.loggedIn = false;
         self.isAdmin = false;
+        self.eventorPersonId = undefined;
       }
     };
   });

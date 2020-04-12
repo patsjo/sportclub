@@ -3,30 +3,33 @@ import { withTranslation } from "react-i18next";
 import { Row, Col, Form, TimePicker, InputNumber } from "antd";
 import { observer, inject } from "mobx-react";
 import FormItem from "../formItems/FormItem";
-import { errorRequiredField, FormSelect, timeFormat, timeFormatWithoutHour } from "../../utils/formHelper";
+import { errorRequiredField, FormSelect } from "../../utils/formHelper";
 import { lightConditions } from "../../utils/resultConstants";
 import moment from "moment";
 
 const areaResultOptions = [
-  { timePerKilometer: "00:03:45", description: "Sprint" },
-  { timePerKilometer: "00:04:30", description: "Snabblöpt flack tallskog (Åhus)" },
-  { timePerKilometer: "00:04:45", description: "Snabblöpt tallskog (Kalmar)" },
-  { timePerKilometer: "00:05:00", description: "Östkust terräng (Oskarshamn)" },
-  { timePerKilometer: "00:05:15", description: "Inlandet (Blekinge, Småland, Närke, Värmland, Dalarna, Fjäll)" },
-  { timePerKilometer: "00:05:30", description: "Kuperad inlandsterräng (Jönköping, Örebro)" },
-  { timePerKilometer: "00:05:45", description: "Lite tuffare terräng" },
-  { timePerKilometer: "00:06:00", description: "Kuperad och tuff terräng" }
+  { timePerKilometer: "00:03:45.000", description: "Sprint" },
+  { timePerKilometer: "00:04:30.000", description: "Snabblöpt flack tallskog (Åhus)" },
+  { timePerKilometer: "00:04:45.000", description: "Snabblöpt tallskog (Kalmar)" },
+  { timePerKilometer: "00:05:00.000", description: "Östkust terräng (Oskarshamn)" },
+  { timePerKilometer: "00:05:15.000", description: "Inlandet (Blekinge, Småland, Närke, Värmland, Dalarna, Fjäll)" },
+  { timePerKilometer: "00:05:30.000", description: "Kuperad inlandsterräng (Jönköping, Örebro)" },
+  { timePerKilometer: "00:05:45.000", description: "Lite tuffare terräng" },
+  { timePerKilometer: "00:06:00.000", description: "Kuperad och tuff terräng" }
 ].map(option => ({ code: JSON.stringify(option), description: `${option.timePerKilometer}, ${option.description}` }));
 
 const areaNightResultOptions = [
-  { timePerKilometer: "00:03:45", description: "Natt - sprint" },
-  { timePerKilometer: "00:04:45", description: "Natt - Snabblöpt flack tallskog (Åhus)" },
-  { timePerKilometer: "00:05:15", description: "Natt - Snabblöpt tallskog (Kalmar)" },
-  { timePerKilometer: "00:05:30", description: "Natt - Östkust terräng (Oskarshamn)" },
-  { timePerKilometer: "00:05:45", description: "Natt - Inlandet (Blekinge, Småland, Närke, Värmland, Dalarna, Fjäll)" },
-  { timePerKilometer: "00:06:00", description: "Natt - Kuperad inlandsterräng (Jönköping, Örebro)" },
-  { timePerKilometer: "00:06:15", description: "Natt - Lite tuffare terräng" },
-  { timePerKilometer: "00:06:30", description: "Natt - Kuperad och tuff terräng" }
+  { timePerKilometer: "00:03:45.000", description: "Natt - sprint" },
+  { timePerKilometer: "00:04:45.000", description: "Natt - Snabblöpt flack tallskog (Åhus)" },
+  { timePerKilometer: "00:05:15.000", description: "Natt - Snabblöpt tallskog (Kalmar)" },
+  { timePerKilometer: "00:05:30.000", description: "Natt - Östkust terräng (Oskarshamn)" },
+  {
+    timePerKilometer: "00:05:45.000",
+    description: "Natt - Inlandet (Blekinge, Småland, Närke, Värmland, Dalarna, Fjäll)"
+  },
+  { timePerKilometer: "00:06:00.000", description: "Natt - Kuperad inlandsterräng (Jönköping, Örebro)" },
+  { timePerKilometer: "00:06:15.000", description: "Natt - Lite tuffare terräng" },
+  { timePerKilometer: "00:06:30.000", description: "Natt - Kuperad och tuff terräng" }
 ].map(option => ({ code: JSON.stringify(option), description: `${option.timePerKilometer}, ${option.description}` }));
 
 // @inject("clubModel")
@@ -64,17 +67,17 @@ const ResultWizardStep3Ranking = inject(
               raceWizardModel.raceEvent.setValue("rankingBaseDescription", undefined);
             }
           } else {
-            let timePerKilometer = "00:03:00";
+            let timePerKilometer = "00:03:00.000";
             let description = clubModel.raceClubs.sportOptions.find(
               option => option.code === raceWizardModel.raceEvent.sportCode
             ).description;
 
             if (raceWizardModel.raceEvent.sportCode === "RUN") {
-              timePerKilometer = "00:02:50";
+              timePerKilometer = "00:02:50.000";
             } else if (raceWizardModel.raceEvent.sportCode === "SKI") {
-              timePerKilometer = "00:02:20";
+              timePerKilometer = "00:02:20.000";
             } else if (raceWizardModel.raceEvent.sportCode === "MTB") {
-              timePerKilometer = "00:01:45";
+              timePerKilometer = "00:01:45.000";
             }
             raceWizardModel.raceEvent.setValue("rankingBasetimePerKilometer", timePerKilometer);
             raceWizardModel.raceEvent.setValue("rankingBasepoint", 0);
@@ -137,12 +140,7 @@ const ResultWizardStep3Ranking = inject(
                               );
                               setFieldsValue({
                                 iAreaTime: undefined,
-                                iRankingBasetimePerKilometer: moment(
-                                  raceWinnerResult.timePerKilometer.length <= 5
-                                    ? `0:${raceWinnerResult.timePerKilometer}`
-                                    : raceWinnerResult.timePerKilometer,
-                                  timeFormat
-                                ),
+                                iRankingBasetimePerKilometer: moment(raceWinnerResult.timePerKilometer, "HH:mm:ss.SSS"),
                                 iRankingBasepoint: undefined
                               });
                               onValidate(raceWizardModel.raceEvent.validRanking);
@@ -179,12 +177,7 @@ const ResultWizardStep3Ranking = inject(
                               );
                               setFieldsValue({
                                 iWinnerTime: undefined,
-                                iRankingBasetimePerKilometer: moment(
-                                  areaResult.timePerKilometer.length <= 5
-                                    ? `0:${areaResult.timePerKilometer}`
-                                    : areaResult.timePerKilometer,
-                                  timeFormat
-                                ),
+                                iRankingBasetimePerKilometer: moment(areaResult.timePerKilometer, "HH:mm:ss.SSS"),
                                 iRankingBasepoint: 0
                               });
                               onValidate(raceWizardModel.raceEvent.validRanking);
@@ -207,12 +200,7 @@ const ResultWizardStep3Ranking = inject(
                   {getFieldDecorator("iRankingBasetimePerKilometer", {
                     initialValue: !raceWizardModel.raceEvent.rankingBasetimePerKilometer
                       ? null
-                      : moment(
-                          raceWizardModel.raceEvent.rankingBasetimePerKilometer.length <= 5
-                            ? `0:${raceWizardModel.raceEvent.rankingBasetimePerKilometer}`
-                            : raceWizardModel.raceEvent.rankingBasetimePerKilometer,
-                          timeFormat
-                        ),
+                      : moment(raceWizardModel.raceEvent.rankingBasetimePerKilometer, "HH:mm:ss.SSS"),
                     rules: [
                       {
                         required: true,
@@ -221,14 +209,14 @@ const ResultWizardStep3Ranking = inject(
                     ]
                   })(
                     <TimePicker
-                      format={timeFormatWithoutHour}
+                      format={"mm:ss.SSS"}
                       disabled={!["OL", "SKIO", "MTBO"].includes(raceWizardModel.raceEvent.sportCode)}
                       allowClear={false}
                       style={{ width: "100%" }}
                       onChange={time => {
                         raceWizardModel.raceEvent.setValue(
                           "rankingBasetimePerKilometer",
-                          !time ? null : time.format(timeFormat)
+                          !time ? null : time.format("HH:mm:ss.SSS")
                         );
                         onValidate(raceWizardModel.raceEvent.validRanking);
                       }}

@@ -25,3 +25,4 @@ yarn-error.log*
 /src/models/okorion.jsx
 /src/models/varendgn.jsx
 package-lock.json
+public/favicon*.ico

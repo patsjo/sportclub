@@ -49,7 +49,7 @@ const WinnerResult = types.model({
   difficulty: types.maybeNull(types.string),
   lengthInMeter: types.maybeNull(types.integer),
   winnerTime: types.maybeNull(types.string),
-  secondsPerKilometer: types.maybeNull(types.integer),
+  secondsPerKilometer: types.maybeNull(types.number),
   timePerKilometer: types.maybeNull(types.string)
 });
 

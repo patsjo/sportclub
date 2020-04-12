@@ -1,6 +1,6 @@
 import moment from "moment";
 import { timeFormat } from "./formHelper";
-import { payments, failedReasons, difficulties, distances } from "../utils/resultConstants";
+import { payments, failedReasons, difficulties, distances, lightConditions } from "../utils/resultConstants";
 
 export const GetTimeWithHour = timeString => {
   if (!timeString || timeString.length < 4) {
@@ -44,20 +44,47 @@ const ConvertTimeToSeconds = timeString => {
   }
 };
 
+const ConvertTimeWithFractionsToSeconds = timeString => {
+  try {
+    if (!timeString || timeString.length < 8) {
+      return 0;
+    }
+    const momentTime = moment(timeString, "HH:mm:ss.SSS");
+    if (!moment.isMoment(momentTime)) {
+      return 0;
+    }
+    const hh = momentTime.get("hour");
+    const mm = momentTime.get("minute");
+    const ss = momentTime.get("second");
+    const SSS = momentTime.get("millisecond");
+    return hh * 3600 + mm * 60 + ss + SSS / 1000;
+  } catch (e) {
+    return 0;
+  }
+};
+
 export const ConvertSecondsToTime = timeInSeconds => {
-  var hours = Math.floor(timeInSeconds / 3600);
-  var minutes = Math.floor((timeInSeconds - hours * 3600) / 60);
-  var seconds = timeInSeconds - hours * 3600 - minutes * 60;
-  var time = hours + ":";
-  minutes = minutes < 10 ? "0" + minutes : String(minutes);
-  time += minutes + ":";
-  time += seconds < 10 ? "0" + seconds : String(seconds);
-  return time;
+  const hours = Math.floor(timeInSeconds / 3600);
+  const minutes = Math.floor((timeInSeconds - hours * 3600) / 60);
+  const seconds = Math.floor(timeInSeconds - hours * 3600 - minutes * 60);
+  const time = moment({ hours: hours, minutes: minutes, seconds: seconds });
+  return time.format("HH:mm:ss.SSS");
+};
+
+export const ConvertSecondsWithFractionsToTime = timeInSeconds => {
+  const hours = Math.floor(timeInSeconds / 3600);
+  const minutes = Math.floor((timeInSeconds - hours * 3600) / 60);
+  const seconds = Math.floor(timeInSeconds - hours * 3600 - minutes * 60);
+  const milliseconds = Math.floor(1000 * (timeInSeconds - hours * 3600 - minutes * 60 - seconds));
+  const time = moment({ hours: hours, minutes: minutes, seconds: seconds, milliseconds: milliseconds });
+  return time.format("HH:mm:ss.SSS");
 };
 
 export const WinnerTime = (timeStr, timeDiffStr, position) => {
   if (position === 1) {
     return GetTimeWithHour(timeStr);
+  } else if (!timeDiffStr) {
+    return null;
   }
   const time = timeStr.length > 5 ? moment(timeStr, "HH:mm:ss") : moment(`00:${timeStr}`, "HH:mm:ss");
   const timeDiff = timeDiffStr.length > 5 ? moment(timeDiffStr, "HH:mm:ss") : moment(`00:${timeDiffStr}`, "HH:mm:ss");
@@ -149,23 +176,22 @@ export const GetLength = (lengthHtmlJson, fullClassName) => {
   }
   classIndex += searchText.length;
   const meterIndex = lengthHtmlJson.indexOf("m,", classIndex);
+  if (meterIndex < 0) {
+    return null;
+  }
   const lengthString = lengthHtmlJson.substr(classIndex, meterIndex - classIndex).replace(" ", "");
-  if (lengthString.length > 10) {
+  if (lengthString.length > 10 || isNaN(lengthString)) {
     return null;
   }
-  try {
-    return parseInt(lengthString);
-  } catch (e) {
-    return null;
-  }
+  return parseInt(lengthString);
 };
 
-export const GetSecondsPerKiloMeter = (timeString, length) => {
+export const GetSecondsWithFractionsPerKiloMeter = (timeString, length) => {
   if (!length || length === 0) {
     return undefined;
   }
   const seconds = ConvertTimeToSeconds(timeString);
-  const secondsPerKilometer = Math.round((1000 * seconds) / length);
+  const secondsPerKilometer = Math.round((1000000 * seconds) / length) / 1000;
 
   return secondsPerKilometer;
 };
@@ -190,7 +216,8 @@ export const GetRacePoint = (raceEventClassification, raceClassClassification, r
     }
   }
 
-  const positionPoint = 20 * Math.log10(result.nofStartsInClass / result.position);
+  const positionPoint =
+    result.position && result.position > 0 ? 20 * Math.log10(result.nofStartsInClass / result.position) : 0;
   const competitorTime = ConvertTimeToSeconds(result.competitorTime);
   const winnerTime = ConvertTimeToSeconds(result.winnerTime);
   const timeDivisor = winnerTime > 0 ? Math.pow(competitorTime / winnerTime, 1.5) : 0;
@@ -257,22 +284,26 @@ export const GetPointRunTo1000 = (raceEventClassification, raceClassClassificati
 };
 
 export const ResetClassClassifications = (raceEvent, eventClassifications, classLevels) => {
+  let results = [];
   if (raceEvent.results && raceEvent.results.length > 0) {
-    raceEvent.results.forEach(result => {
-      if (!result.deviantEventClassificationId) {
-        const classLevel = classLevels
-          .filter(cl => result.className.indexOf(cl.classShortName) >= 0)
-          .sort((a, b) => (a.classShortName.length < b.classShortName.length ? 1 : -1))
-          .find(() => true);
-        const classClassificationId = GetClassClassificationId(
-          raceEvent.eventClassificationId,
-          classLevel,
-          eventClassifications
-        );
-        result.setValue("classClassificationId", classClassificationId);
-      }
-    });
+    results = raceEvent.results;
+  } else if (raceEvent.teamResults && raceEvent.teamResults.length > 0) {
+    results = raceEvent.teamResults;
   }
+  results.forEach(result => {
+    if (!result.deviantEventClassificationId) {
+      const classLevel = classLevels
+        .filter(cl => result.className.indexOf(cl.classShortName) >= 0)
+        .sort((a, b) => (a.classShortName.length < b.classShortName.length ? 1 : -1))
+        .find(() => true);
+      const classClassificationId = GetClassClassificationId(
+        raceEvent.eventClassificationId,
+        classLevel,
+        eventClassifications
+      );
+      result.setValue("classClassificationId", classClassificationId);
+    }
+  });
 };
 
 export const GetCompetitorFee = (paymentModel, result) => {
@@ -523,33 +554,62 @@ export const CalculateAllAwards = (raceClubs, raceEvent) => {
   });
 };
 
-export const GetRanking = (rankingBasetimePerKilometer, rankingBasepoint, result, isSprint, sportCode) => {
+export const GetRanking = (rankingBasetimePerKilometer, rankingBasepoint, result, sportCode, raceLightCondition) => {
   if (result.failedReason != null || !result.lengthInMeter || result.lengthInMeter < 500) {
     return null;
   }
   const secondsPerMeter = ConvertTimeToSeconds(result.competitorTime) / result.lengthInMeter;
-  const baseSecondsPerKilometer = ConvertTimeToSeconds(rankingBasetimePerKilometer);
+  const baseSecondsPerKilometer = ConvertTimeWithFractionsToSeconds(rankingBasetimePerKilometer);
   let baseLengthInMeter = (1000 * (4500 + rankingBasepoint * 60)) / baseSecondsPerKilometer;
 
   if (sportCode === "OL") {
-    const length330 = 4500000 / ConvertTimeToSeconds("3:30");
-    const length345 = 4500000 / ConvertTimeToSeconds("3:45");
-    const length400 = 4500000 / ConvertTimeToSeconds("4:00");
+    const length315 = 4500000 / ConvertTimeToSeconds("00:03:15");
+    const length330 = 4500000 / ConvertTimeToSeconds("00:03:30");
+    const length345 = 4500000 / ConvertTimeToSeconds("00:03:45");
 
-    if (result.difficulty === difficulties.green && baseLengthInMeter < length330) {
-      baseLengthInMeter = length330;
-    } else if (result.difficulty === difficulties.white && baseLengthInMeter < length345) {
-      baseLengthInMeter = length345;
-    } else if ((result.difficulty === difficulties.yellow || isSprint) && baseLengthInMeter < length400) {
-      baseLengthInMeter = length400;
+    switch (result.difficulty) {
+      case difficulties.green:
+        baseLengthInMeter = length315;
+        break;
+      case difficulties.white:
+        baseLengthInMeter = length330;
+        break;
+      case difficulties.yellow:
+        baseLengthInMeter = length345;
+        break;
+      case difficulties.orange:
+        baseLengthInMeter *= 1.3;
+        break;
+      case difficulties.red:
+        baseLengthInMeter *= 1.2;
+        break;
+      case difficulties.purple:
+        baseLengthInMeter *= 1.1;
+        break;
+      case difficulties.blue:
+        baseLengthInMeter *= 1.1;
+        break;
+      default:
+    }
+
+    if (result.deviantRaceLightCondition && result.deviantRaceLightCondition !== raceLightCondition) {
+      const lengthFactor =
+        1 +
+        (raceLightCondition === lightConditions.day ? 0 : raceLightCondition === lightConditions.night ? 0.03 : 0.02) -
+        (result.deviantRaceLightCondition === lightConditions.day
+          ? 0
+          : result.deviantRaceLightCondition === lightConditions.night
+          ? 0.03
+          : 0.02);
+      baseLengthInMeter *= lengthFactor;
     }
   } else if (sportCode === "SKIO") {
-    const length430 = 4500000 / ConvertTimeToSeconds("4:30");
+    const length430 = 4500000 / ConvertTimeToSeconds("00:04:30");
     if (baseLengthInMeter < length430) {
       baseLengthInMeter = length430;
     }
   } else if (sportCode === "MTBO") {
-    const length430 = 4500000 / ConvertTimeToSeconds("4:30");
+    const length430 = 4500000 / ConvertTimeToSeconds("00:04:30");
     if (baseLengthInMeter < length430) {
       baseLengthInMeter = length430;
     }

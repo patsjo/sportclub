@@ -6,7 +6,6 @@ import { getSnapshot } from "mobx-state-tree";
 import { withTranslation } from "react-i18next";
 import styled from "styled-components";
 import { RaceWizard, getLocalStorage } from "../../models/resultWizardModel";
-import { distances } from "../../utils/resultConstants";
 import { PostJsonData } from "../../utils/api";
 import ResultWizardStep0Input from "./ResultsWizardStep0Input";
 import ResultWizardStep1ChooseRace from "./ResultsWizardStep1ChooseRace";
@@ -126,7 +125,12 @@ const ResultsWizardModal = inject(
         const saveUrl = raceEvent.eventId === -1 ? resultsModule.addUrl : resultsModule.updateUrl;
 
         raceEvent.results.forEach(result => {
-          const raceClassClassification = raceEventClassification.classClassifications.find(
+          const eventClassification = !result.deviantEventClassificationId
+            ? raceEventClassification
+            : clubModel.raceClubs.eventClassifications.find(
+                ec => ec.eventClassificationId === result.deviantEventClassificationId
+              );
+          const raceClassClassification = eventClassification.classClassifications.find(
             cc => cc.classClassificationId === result.classClassificationId
           );
 
@@ -136,17 +140,22 @@ const ResultsWizardModal = inject(
               raceEvent.rankingBasetimePerKilometer,
               raceEvent.rankingBasepoint,
               result,
-              raceEvent.raceDistance === distances.sprint,
-              raceEvent.sportCode
+              raceEvent.sportCode,
+              raceEvent.raceLightCondition
             )
           );
-          result.setValue("points", GetRacePoint(raceEventClassification, raceClassClassification, result));
-          result.setValue("pointsOld", GetRaceOldPoint(raceEventClassification, raceClassClassification, result));
-          result.setValue("points1000", GetPointRunTo1000(raceEventClassification, raceClassClassification, result));
+          result.setValue("points", GetRacePoint(eventClassification, raceClassClassification, result));
+          result.setValue("pointsOld", GetRaceOldPoint(eventClassification, raceClassClassification, result));
+          result.setValue("points1000", GetPointRunTo1000(eventClassification, raceClassClassification, result));
         });
 
         raceEvent.teamResults.forEach(result => {
-          const raceClassClassification = raceEventClassification.classClassifications.find(
+          const eventClassification = !result.deviantEventClassificationId
+            ? raceEventClassification
+            : clubModel.raceClubs.eventClassifications.find(
+                ec => ec.eventClassificationId === result.deviantEventClassificationId
+              );
+          const raceClassClassification = eventClassification.classClassifications.find(
             cc => cc.classClassificationId === result.classClassificationId
           );
 
@@ -156,11 +165,11 @@ const ResultsWizardModal = inject(
               raceEvent.rankingBasetimePerKilometer,
               raceEvent.rankingBasepoint,
               result,
-              raceEvent.raceDistance === distances.sprint,
-              raceEvent.sportCode
+              raceEvent.sportCode,
+              raceEvent.raceLightCondition
             )
           );
-          result.setValue("points1000", GetPointRunTo1000(raceEventClassification, raceClassClassification, result));
+          result.setValue("points1000", GetPointRunTo1000(eventClassification, raceClassClassification, result));
         });
 
         const snapshot = getSnapshot(raceEvent);

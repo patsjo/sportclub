@@ -131,9 +131,10 @@ export const RaceClubs = types
   })
   .views(self => ({
     classClassification(eventClassificationId, classClassificationId) {
-      return self.eventClassifications
+      const classClassification = self.eventClassifications
         .find(ec => ec.eventClassificationId === eventClassificationId)
-        .classClassifications.find(cc => cc.classClassificationId === classClassificationId).description;
+        .classClassifications.find(cc => cc.classClassificationId === classClassificationId);
+      return classClassification ? classClassification.description : null;
     },
     classClassificationOptions(eventClassificationId) {
       return self.eventClassifications
@@ -355,7 +356,7 @@ export const RaceEvent = types
         self.teamResults.push(result);
       },
       removeTeamResult(result) {
-        self.teamResults = self.teamResults.filter(item => item.resultId !== result.resultId);
+        self.teamResults = self.teamResults.filter(item => item.teamResultId !== result.teamResultId);
       }
     };
   })

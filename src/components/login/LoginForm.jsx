@@ -58,7 +58,7 @@ const Login = inject(
                 if (json == undefined) {
                   json = { id: undefined, name: values.username, isAdmin: false };
                 }
-                sessionModel.setSuccessfullyLogin(json.id, json.name, json.isAdmin);
+                sessionModel.setSuccessfullyLogin(json.id, json.name, json.isAdmin, json.eventorPersonId);
                 self.setState({
                   loggingIn: false
                 });

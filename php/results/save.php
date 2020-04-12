@@ -197,7 +197,7 @@ elseif ($iType == "EVENT")
   $x->raceDistance = getRequestString("raceDistance");
   $x->paymentModel = getRequestInt("paymentModel");
   $x->meetsAwardRequirements = getRequestBool("meetsAwardRequirements");
-  $x->rankingBasetimePerKilometer = getRequestTime("rankingBasetimePerKilometer");
+  $x->rankingBasetimePerKilometer = getRequestString("rankingBasetimePerKilometer");
   $x->rankingBasepoint = getRequestDecimal("rankingBasepoint");
   $x->rankingBaseDescription = getRequestString("rankingBaseDescription");
   $x->longitude = getRequestDecimal("longitude");
