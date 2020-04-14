@@ -8,9 +8,7 @@ import NewsEdit from "../../news/NewsEdit";
 
 const moduleName = "News";
 const defaultNewsObject = {
-  expireDate: new Date(new Date().getTime() + 86400000 * 14)
-    .toISOString()
-    .substr(0, 10),
+  expireDate: new Date(new Date().getTime() + 86400000 * 14).toISOString().substr(0, 10),
   fileId: 0,
   header: "",
   id: 0,
@@ -29,17 +27,15 @@ const NewsSubMenus = inject(
     const { t } = useTranslation();
     const { clubModel, globalStateModel, sessionModel } = props;
     const moduleInfo = clubModel.module("News");
-    const [addNewsModalIsOpen, setAddNewsModalIsOpen] = useState(false);
+    const [addNewsModalIsOpen, setAddNewsModalIsOpen] = useState(null);
 
     return (
       <>
-        {addNewsModalIsOpen ? (
+        {addNewsModalIsOpen !== null ? (
           <NewsEdit
             newsObject={defaultNewsObject}
             open={addNewsModalIsOpen}
-            onChange={insertedNewsObject =>
-              globalStateModel.news.addNewsItemToTop(insertedNewsObject)
-            }
+            onChange={insertedNewsObject => globalStateModel.news.addNewsItemToTop(insertedNewsObject)}
             onClose={() => setAddNewsModalIsOpen(false)}
           />
         ) : null}
@@ -51,7 +47,7 @@ const NewsSubMenus = inject(
           isSubMenu
           onClick={() => {
             globalStateModel.setValue("rightMenuVisible", false);
-            setAddNewsModalIsOpen(true);
+            setTimeout(() => setAddNewsModalIsOpen(true), 0);
           }}
         />
         <MenuItem
@@ -60,11 +56,7 @@ const NewsSubMenus = inject(
           name={t("modules." + moduleName)}
           isSubMenu
           onClick={() => {
-            globalStateModel.setDashboard(
-              dashboardContents.news,
-              "1990-01-01",
-              "2099-12-31"
-            );
+            globalStateModel.setDashboard(dashboardContents.news, "1990-01-01", "2099-12-31");
           }}
         />
         <MenuItem
@@ -73,12 +65,7 @@ const NewsSubMenus = inject(
           name={t("news.LongTimeNews")}
           isSubMenu
           onClick={() => {
-            globalStateModel.setDashboard(
-              dashboardContents.news,
-              "1990-01-01",
-              "2099-12-31",
-              2
-            );
+            globalStateModel.setDashboard(dashboardContents.news, "1990-01-01", "2099-12-31", 2);
           }}
         />
         <MenuItem
@@ -87,12 +74,7 @@ const NewsSubMenus = inject(
           name={t("news.Educations")}
           isSubMenu
           onClick={() => {
-            globalStateModel.setDashboard(
-              dashboardContents.news,
-              "1990-01-01",
-              "2099-12-31",
-              3
-            );
+            globalStateModel.setDashboard(dashboardContents.news, "1990-01-01", "2099-12-31", 3);
           }}
         />
       </>

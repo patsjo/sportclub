@@ -39,9 +39,9 @@ const columns = (t, clubModel, isIndividual) =>
         }
       : null,
     {
-      title: isIndividual ? t("results.Club") : t("results.Competitor"),
-      dataIndex: isIndividual ? "organiserName" : "competitorId",
-      key: isIndividual ? "organiserName" : "competitorId",
+      title: isIndividual ? t("results.Name") : t("results.Competitor"),
+      dataIndex: isIndividual ? "name" : "competitorId",
+      key: isIndividual ? "name" : "competitorId",
       fixed: "left",
       width: 180,
       render: id =>

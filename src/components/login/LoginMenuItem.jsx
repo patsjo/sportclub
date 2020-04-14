@@ -29,9 +29,13 @@ const LoginMenuItem = inject(
           return;
         }
         globalStateModel.setValue("rightMenuVisible", false);
-        this.setState({
-          showLoginModal: true
-        });
+        setTimeout(
+          () =>
+            this.setState({
+              showLoginModal: true
+            }),
+          0
+        );
       };
 
       closeModal = () => {
@@ -70,11 +74,7 @@ const LoginMenuItem = inject(
             <MenuItem
               key={"menuItem#login"}
               icon={sessionModel.loggedIn ? "LogoutIcon" : "LoginIcon"}
-              name={
-                sessionModel.loggedIn
-                  ? t("common.Logout") + " " + sessionModel.name
-                  : t("common.Login")
-              }
+              name={sessionModel.loggedIn ? t("common.Logout") + " " + sessionModel.name : t("common.Login")}
               onClick={this.openModal}
             />
             <LoginForm open={showLoginModal} onClose={this.closeModal} />

@@ -473,12 +473,13 @@ elseif ($iType == "POINTS")
     "   GROUP_CONCAT(POINTS SEPARATOR ',') AS POINTS," .
     "   GROUP_CONCAT(POINTS_OLD SEPARATOR ',') AS POINTS_OLD," .
     "   GROUP_CONCAT(POINTS_1000 SEPARATOR ',') AS POINTS_1000," .
-    "   GROUP_CONCAT(RANKING SEPARATOR ',') AS RANKING " .
-    "FROM (SELECT COMPETITOR_ID, POINTS, POINTS_OLD, POINTS_1000, RANKING FROM RACE_EVENT " .
+    "   GROUP_CONCAT(RANKING SEPARATOR ',') AS RANKING," .
+    "   GROUP_CONCAT(RANKING_RELAY SEPARATOR ',') AS RANKING_RELAY " .
+    "FROM (SELECT COMPETITOR_ID, POINTS, POINTS_OLD, POINTS_1000, RANKING, NULL AS RANKING_RELAY FROM RACE_EVENT " .
     "      INNER JOIN RACE_EVENT_RESULTS ON (RACE_EVENT.EVENT_ID = RACE_EVENT_RESULTS.EVENT_ID) ".
     "      WHERE (POINTS IS NOT NULL OR POINTS_OLD IS NOT NULL OR POINTS_1000 IS NOT NULL OR RANKING IS NOT NULL)" . $whereStartDate . $whereEndDate . " " .
     "      UNION ALL " .
-    "      SELECT COMPETITOR_ID, NULL AS POINTS, NULL AS POINTS_OLD, POINTS_1000, RANKING FROM RACE_EVENT " .
+    "      SELECT COMPETITOR_ID, NULL AS POINTS, NULL AS POINTS_OLD, POINTS_1000, RANKING, RANKING AS RANKING_RELAY FROM RACE_EVENT " .
     "      INNER JOIN RACE_EVENT_RESULTS_TEAM ON (RACE_EVENT.EVENT_ID = RACE_EVENT_RESULTS_TEAM.EVENT_ID) ".
     "      WHERE (POINTS_1000 IS NOT NULL OR RANKING IS NOT NULL)" . $whereStartDate . $whereEndDate . ") RACE_EVENT_RESULTS " .
     "INNER JOIN RACE_COMPETITORS ON (RACE_EVENT_RESULTS.COMPETITOR_ID = RACE_COMPETITORS.COMPETITOR_ID) ".
@@ -501,10 +502,12 @@ elseif ($iType == "POINTS")
       $x->pointsOld             = is_null($row['POINTS_OLD']) ? array() : array_map('intval', explode(",", $row['POINTS_OLD']));
       $x->points1000            = is_null($row['POINTS_1000']) ? array() : array_map('intval', explode(",", $row['POINTS_1000']));
       $x->ranking               = is_null($row['RANKING']) ? array() : array_map('floatval', explode(",", $row['RANKING']));
+      $x->rankingRelay          = is_null($row['RANKING_RELAY']) ? array() : array_map('floatval', explode(",", $row['RANKING_RELAY']));
       rsort($x->points);
       rsort($x->pointsOld);
       rsort($x->points1000);
       sort($x->ranking);
+      sort($x->rankingRelay);
       array_push($rows, $x);
     }
   }

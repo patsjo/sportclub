@@ -34,7 +34,7 @@ const getColumns = (t, nofPoints, isTotal = false) => [
     title: isTotal
       ? t(
           `results.${
-            i === 0 ? "RankingLeague" : i === 1 ? "Points1000League" : i === 2 ? "PointsLeague" : "PointsOldLeague"
+            i === 0 ? "RankingLeague" : i === 1 ? "RankingRelayLeague" : i === 2 ? "Points1000League" : "PointsLeague"
           }`
         )
       : (i + 1).toString(),
@@ -56,8 +56,10 @@ const League = inject("clubModel")(
       constructor(props) {
         super(props);
         this.state = {
+          year: -1,
           grandSlam: [],
           rankingLeague: [],
+          rankingRelayLeague: [],
           points1000League: [],
           pointsLeague: [],
           pointsOldLeague: [],
@@ -132,6 +134,28 @@ const League = inject("clubModel")(
               .filter(c => c.ranking.length > 0)
               .map(c => {
                 const ranking = c.ranking.slice(0, 6);
+                return {
+                  competitorId: c.competitorId,
+                  name: c.name,
+                  ranking: ranking,
+                  total: Math.round((100 * ranking.reduce((a, b) => a + b, 0)) / ranking.length) / 100
+                };
+              })
+              .sort((a, b) => (a.total > b.total ? 1 : -1))
+              .map((c, i) => {
+                if (JSON.stringify(prevRanking) !== JSON.stringify(c.ranking)) {
+                  prevPos = i + 1;
+                }
+                prevRanking = c.ranking;
+                return { ...c, position: prevPos, ...c.ranking.reduce((ac, a, i) => ({ ...ac, [`p${i}`]: a }), {}) };
+              });
+
+            prevRanking = [];
+            prevPos = 1;
+            const rankingRelayLeague = rankingJson
+              .filter(c => c.rankingRelay.length > 0)
+              .map(c => {
+                const ranking = c.rankingRelay.slice(0, 3);
                 return {
                   competitorId: c.competitorId,
                   name: c.name,
@@ -233,12 +257,18 @@ const League = inject("clubModel")(
               .map(c => {
                 const c1 = rankingLeague.find(cc => cc.competitorId === c.competitorId);
                 const pos1 = c1 !== undefined ? c1.position : rankingLeague.length + 1;
-                const c2 = points1000League.find(cc => cc.competitorId === c.competitorId);
-                const pos2 = c2 !== undefined ? c2.position : points1000League.length + 1;
-                const c3 = pointsLeague.find(cc => cc.competitorId === c.competitorId);
-                const pos3 = c3 !== undefined ? c3.position : pointsLeague.length + 1;
-                const c4 = pointsOldLeague.find(cc => cc.competitorId === c.competitorId);
-                const pos4 = c4 !== undefined ? c4.position : pointsOldLeague.length + 1;
+                const c2 = rankingRelayLeague.find(cc => cc.competitorId === c.competitorId);
+                const pos2 = c2 !== undefined ? c2.position : rankingRelayLeague.length + 1;
+                const c3 = points1000League.find(cc => cc.competitorId === c.competitorId);
+                const pos3 = c3 !== undefined ? c3.position : points1000League.length + 1;
+                let pos4;
+                if (year < 2003) {
+                  const c4 = pointsOldLeague.find(cc => cc.competitorId === c.competitorId);
+                  pos4 = c4 !== undefined ? c4.position : pointsOldLeague.length + 1;
+                } else {
+                  const c4 = pointsLeague.find(cc => cc.competitorId === c.competitorId);
+                  pos4 = c4 !== undefined ? c4.position : pointsLeague.length + 1;
+                }
                 const positions = [pos1, pos2, pos3, pos4];
 
                 return {
@@ -262,8 +292,10 @@ const League = inject("clubModel")(
               });
 
             self.setState({
+              year: year,
               grandSlam: grandSlam,
               rankingLeague: rankingLeague,
+              rankingRelayLeague: rankingRelayLeague,
               points1000League: points1000League,
               pointsLeague: pointsLeague,
               pointsOldLeague: pointsOldLeague,
@@ -275,7 +307,9 @@ const League = inject("clubModel")(
               message.error(e.message);
             }
             self.setState({
+              year: -1,
               rankingLeague: [],
+              rankingRelayLeague: [],
               points1000League: [],
               pointsLeague: [],
               pointsOldLeague: [],
@@ -286,7 +320,16 @@ const League = inject("clubModel")(
       render() {
         const self = this;
         const { t } = self.props;
-        const { loading, grandSlam, rankingLeague, points1000League, pointsLeague, pointsOldLeague } = self.state;
+        const {
+          loading,
+          year,
+          grandSlam,
+          rankingLeague,
+          rankingRelayLeague,
+          points1000League,
+          pointsLeague,
+          pointsOldLeague
+        } = self.state;
         const Spinner = (
           <SpinnerDiv>
             <Spin size="large" />
@@ -335,6 +378,22 @@ const League = inject("clubModel")(
                 Spinner
               )}
             </TabPane>
+            <TabPane tab={t("results.RankingRelayLeague")} key="rankingRelayLeague">
+              Antal minuter efter sveriges bästa herrsenior på en 75 minuters bana. Samma grundprincip som ranking och
+              sverigelistan, fast utan konstiga överankingar i gubbaklasser. Även samma rankinglista för damer och
+              herrar. En ren stafett ranking.
+              {!loading ? (
+                <StyledTable
+                  columns={getColumns(t, 3)}
+                  dataSource={rankingRelayLeague}
+                  size="middle"
+                  pagination={false}
+                  scroll={{ x: true }}
+                />
+              ) : (
+                Spinner
+              )}
+            </TabPane>
             <TabPane tab={t("results.Points1000League")} key="points1000League">
               OK Orions spring till 1000. Placering i förhållande till antal startande. 100 poäng för seger i en
               nationell tävling vid minst två startande. 30 är lägsta poäng vid fullföljt.
@@ -350,29 +409,17 @@ const League = inject("clubModel")(
                 Spinner
               )}
             </TabPane>
-            <TabPane tab={t("results.PointsLeague")} key="pointsLeague">
-              Värend GN poängliga från 2003. Grundpoäng baserat på typ av tävling och klass + Logaritmen av antal
-              startande i förhållande till placering. Allt sedan i förhållande till hur många procent efter täten man
-              är.
+            <TabPane
+              tab={t(year > 1900 && year < 2003 ? "results.PointsOldLeague" : "results.PointsLeague")}
+              key="pointsLeague"
+            >
+              {year > 1900 && year < 2003
+                ? "Gårdsby IK poängliga fram till 2002. Grundpoäng baserat på typ av tävling och klass + Placeringspoäng + Poäng för antal startande - Poäng för minuter efter täten per 100m."
+                : "Värend GN poängliga från 2003. Grundpoäng baserat på typ av tävling och klass + Logaritmen av antal startande i förhållande till placering. Allt sedan i förhållande till hur många procent efter täten man är."}
               {!loading ? (
                 <StyledTable
                   columns={getColumns(t, 10)}
-                  dataSource={pointsLeague}
-                  size="middle"
-                  pagination={false}
-                  scroll={{ x: true }}
-                />
-              ) : (
-                Spinner
-              )}
-            </TabPane>
-            <TabPane tab={t("results.PointsOldLeague")} key="pointsOldLeague">
-              Gårdsby IK poängliga fram till 2002. Grundpoäng baserat på typ av tävling och klass + Placeringspoäng +
-              Poäng för antal startande - Poäng för minuter efter täten per 100m.
-              {!loading ? (
-                <StyledTable
-                  columns={getColumns(t, 10)}
-                  dataSource={pointsOldLeague}
+                  dataSource={year > 1900 && year < 2003 ? pointsOldLeague : pointsLeague}
                   size="middle"
                   pagination={false}
                   scroll={{ x: true }}

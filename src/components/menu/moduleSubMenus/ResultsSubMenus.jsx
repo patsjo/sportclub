@@ -16,12 +16,12 @@ const ResultsSubMenus = inject(
     const { t } = useTranslation();
     const { clubModel, globalStateModel, sessionModel } = props;
     const moduleInfo = clubModel.module("Results");
-    const [addResultsWizardModalIsOpen, setAddResultsWizardModalIsOpen] = useState(false);
-    const [addOldResultsWizardModalIsOpen, setAddOldResultsWizardModalIsOpen] = useState(false);
+    const [addResultsWizardModalIsOpen, setAddResultsWizardModalIsOpen] = useState(null);
+    const [addOldResultsWizardModalIsOpen, setAddOldResultsWizardModalIsOpen] = useState(null);
 
     return (
       <>
-        {addResultsWizardModalIsOpen ? (
+        {addResultsWizardModalIsOpen !== null ? (
           <ResultsWizardModal
             open={addResultsWizardModalIsOpen}
             onClose={() => setAddResultsWizardModalIsOpen(false)}
@@ -67,7 +67,7 @@ const ResultsSubMenus = inject(
           isSubMenu
           onClick={() => {
             globalStateModel.setValue("rightMenuVisible", false);
-            setAddResultsWizardModalIsOpen(true);
+            setTimeout(() => setAddResultsWizardModalIsOpen(true), 0);
           }}
         />
         <MenuItem
@@ -78,7 +78,7 @@ const ResultsSubMenus = inject(
           isSubMenu
           onClick={() => {
             globalStateModel.setValue("rightMenuVisible", false);
-            setAddOldResultsWizardModalIsOpen(true);
+            setTimeout(() => setAddOldResultsWizardModalIsOpen(true), 0);
           }}
         />
       </>

@@ -35,8 +35,8 @@ const CalendarSubMenus = inject(
     const { clubModel, globalStateModel, sessionModel } = props;
     const moduleInfo = clubModel.module("Calendar");
     const resultsInfo = clubModel.module("Results");
-    const [addCalendarModalIsOpen, setAddCalendarModalIsOpen] = useState(false);
-    const [eventSelectorWizardModalIsOpen, setEventSelectorWizardModalIsOpen] = useState(false);
+    const [addCalendarModalIsOpen, setAddCalendarModalIsOpen] = useState(null);
+    const [eventSelectorWizardModalIsOpen, setEventSelectorWizardModalIsOpen] = useState(null);
     const [domains, setDomains] = useState();
 
     useEffect(() => {
@@ -58,7 +58,7 @@ const CalendarSubMenus = inject(
 
     return (
       <>
-        {addCalendarModalIsOpen ? (
+        {addCalendarModalIsOpen !== null ? (
           <CalendarEdit
             title={t("calendar.Add")}
             calendarObject={defaultCalendarObject(parseInt(sessionModel.id))}
@@ -67,7 +67,7 @@ const CalendarSubMenus = inject(
             onClose={() => setAddCalendarModalIsOpen(false)}
           />
         ) : null}
-        {eventSelectorWizardModalIsOpen ? (
+        {eventSelectorWizardModalIsOpen !== null ? (
           <EventSelectorWizardModal
             open={eventSelectorWizardModalIsOpen}
             onClose={() => setEventSelectorWizardModalIsOpen(false)}
@@ -100,7 +100,7 @@ const CalendarSubMenus = inject(
           isSubMenu
           onClick={() => {
             globalStateModel.setValue("rightMenuVisible", false);
-            setAddCalendarModalIsOpen(true);
+            setTimeout(() => setAddCalendarModalIsOpen(true), 0);
           }}
         />
         <MenuItem
@@ -111,7 +111,7 @@ const CalendarSubMenus = inject(
           isSubMenu
           onClick={() => {
             globalStateModel.setValue("rightMenuVisible", false);
-            setEventSelectorWizardModalIsOpen(true);
+            setTimeout(() => setEventSelectorWizardModalIsOpen(true), 0);
           }}
         />
       </>
