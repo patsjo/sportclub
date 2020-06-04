@@ -1,7 +1,8 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { inject, observer } from "mobx-react";
 import styled from "styled-components";
-import { Row, Col, Icon, Skeleton, message } from "antd";
+import { Row, Col, Skeleton, message } from "antd";
+import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import { GetDates } from "../calendarHelper";
 import moment from "moment";
@@ -26,7 +27,7 @@ const DayContainer = styled.div`
 `;
 
 const DateContainer = styled.div`
-  color: ${props => props.color};
+  color: ${(props) => props.color};
   text-align: left;
   padding-right: 6px;
 `;
@@ -59,14 +60,10 @@ const WeeklyCalendar = inject(
   "globalStateModel",
   "clubModel"
 )(
-  observer(props => {
+  observer((props) => {
     const { clubModel, globalStateModel } = props;
     const { t } = useTranslation();
-    const [firstDateInWeek, setFirstDateInWeek] = useState(
-      moment()
-        .startOf("day")
-        .isoWeekday(1)
-    );
+    const [firstDateInWeek, setFirstDateInWeek] = useState(moment().startOf("day").isoWeekday(1));
     const [loaded, setLoaded] = useState(false);
     const [activities, setActivities] = useState([]);
     const [domains, setDomains] = useState({});
@@ -74,14 +71,11 @@ const WeeklyCalendar = inject(
     useEffect(() => {
       setLoaded(false);
       setActivities([]);
-      const url = clubModel.modules.find(module => module.name === "Calendar").queryUrl;
+      const url = clubModel.modules.find((module) => module.name === "Calendar").queryUrl;
       const data = {
         iType: "ACTIVITIES",
         iFromDate: firstDateInWeek.format("YYYY-MM-DD"),
-        iToDate: firstDateInWeek
-          .clone()
-          .add(7, "days")
-          .format("YYYY-MM-DD")
+        iToDate: firstDateInWeek.clone().add(7, "days").format("YYYY-MM-DD")
       };
       const eventsData = {
         ...data,
@@ -99,8 +93,8 @@ const WeeklyCalendar = inject(
       Promise.all([activitesPromise, eventsPromise, domainsPromise])
         .then(([activitiesJson, eventsJson, domainsJson]) => {
           const activityGraphics = activitiesJson
-            .filter(act => act.longitude && act.latitude)
-            .map(act => ({
+            .filter((act) => act.longitude && act.latitude)
+            .map((act) => ({
               geometry: {
                 longitude: parseFloat(act.longitude),
                 latitude: parseFloat(act.latitude)
@@ -112,8 +106,8 @@ const WeeklyCalendar = inject(
               }
             }));
           const eventGraphics = eventsJson
-            .filter(event => event.longitude && event.latitude)
-            .map(event => ({
+            .filter((event) => event.longitude && event.latitude)
+            .map((event) => ({
               geometry: {
                 longitude: parseFloat(event.longitude),
                 latitude: parseFloat(event.latitude)
@@ -129,7 +123,7 @@ const WeeklyCalendar = inject(
           setDomains(domainsJson);
           setActivities([
             ...activitiesJson,
-            ...eventsJson.map(event => ({
+            ...eventsJson.map((event) => ({
               isEvent: true,
               activityId: `event#${event.calendarEventId}`,
               date: event.date,
@@ -141,30 +135,30 @@ const WeeklyCalendar = inject(
           ]);
           setLoaded(true);
         })
-        .catch(e => {
+        .catch((e) => {
           message.error(e.message);
         });
     }, [firstDateInWeek]);
 
-    const onPrevious = useCallback(() => setFirstDateInWeek(date => date.clone().add(-7, "days")), []);
-    const onNext = useCallback(() => setFirstDateInWeek(date => date.clone().add(7, "days")), []);
+    const onPrevious = useCallback(() => setFirstDateInWeek((date) => date.clone().add(-7, "days")), []);
+    const onNext = useCallback(() => setFirstDateInWeek((date) => date.clone().add(7, "days")), []);
 
     return (
       <WeeklyContainer>
         <WeeklyHeader>
           <Row>
             <Col span={4}>
-              <Icon type="left" onClick={onPrevious} />
+              <LeftOutlined onClick={onPrevious} />
             </Col>
             <Col span={16} style={{ textAlign: "center" }}>{`${t("calendar.Week")} ${firstDateInWeek.format(
               "W - GGGG"
             )}`}</Col>
             <Col span={4} style={{ textAlign: "right" }}>
-              <Icon type="right" onClick={onNext} />
+              <RightOutlined onClick={onNext} />
             </Col>
           </Row>
         </WeeklyHeader>
-        {GetDates(firstDateInWeek, 7, t).map(dateObj => (
+        {GetDates(firstDateInWeek, 7, t).map((dateObj) => (
           <DayContainer key={`WeeklyCalendar${dateObj.date.format("YYYYMMDD")}`}>
             <Row>
               <Col span={4}>
@@ -177,8 +171,8 @@ const WeeklyCalendar = inject(
               <Col span={20}>
                 <Skeleton loading={!loaded} active paragraph={false}>
                   {activities
-                    .filter(act => act.date === dateObj.date.format("YYYY-MM-DD"))
-                    .map(act =>
+                    .filter((act) => act.date === dateObj.date.format("YYYY-MM-DD"))
+                    .map((act) =>
                       act.isEvent ? (
                         <Activity key={`activity#${act.activityId}`}>
                           <ActivityUrl href={act.url} target="_blank">{`${act.time}${act.time ? ", " : ""}${

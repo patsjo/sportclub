@@ -13,21 +13,21 @@ export const maxByteSize = 10485760;
 export const FormSelect = ({ options, ...props }) => {
   return (
     <Select {...props}>
-      {options.map(option => (
+      {options.map((option) => (
         <Option value={option.code}>{option.description}</Option>
       ))}
     </Select>
   );
 };
 
-export const normFile = file => {
+const normFile = (file) => {
   // eslint-disable-next-line eqeqeq
   if (FileReader.prototype.readAsBinaryString == undefined) {
-    FileReader.prototype.readAsBinaryString = function(fileData) {
+    FileReader.prototype.readAsBinaryString = function (fileData) {
       let binary = "";
       let pt = this;
       let reader = new FileReader();
-      reader.onload = function() {
+      reader.onload = function () {
         let bytes = new Uint8Array(reader.result);
         let length = bytes.byteLength;
         for (let i = 0; i < length; i++) {
@@ -44,7 +44,7 @@ export const normFile = file => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onerror = reject;
-    reader.onload = e => {
+    reader.onload = (e) => {
       let data;
       if (!e) {
         data = reader.content;
@@ -61,14 +61,36 @@ export const normFile = file => {
         originFileObj: file.originFileObj
       });
     };
-    reader.readAsBinaryString(file.originFileObj);
+    if (file.originFileObj) {
+      reader.readAsBinaryString(file.originFileObj);
+    } else {
+      resolve(file);
+    }
   });
 };
 
-export const hasErrors = fieldsError => {
-  return Object.keys(fieldsError).some(field => fieldsError[field]);
+export const normFiles = ({ fileList }) => {
+  const promises = fileList.map(normFile);
+
+  return new Promise((resolve, reject) => {
+    Promise.all(promises)
+      .then((files) => resolve(files))
+      .catch((e) => reject(e));
+  });
 };
 
-export const errorRequiredField = (t, i18nField) => {
-  return `${t("error.RequiredField")} ${t(i18nField).toLowerCase()}`;
-};
+export const hasErrors = (form) =>
+  new Promise((resolve) => {
+    if (!form) {
+      resolve(true);
+      return;
+    }
+    form
+      .validateFields(undefined, {
+        force: true
+      })
+      .then(() => resolve(false))
+      .catch((e) => resolve(e.errorFields.length > 0));
+  });
+
+export const errorRequiredField = (t, i18nField) => `${t("error.RequiredField")} ${t(i18nField).toLowerCase()}`;

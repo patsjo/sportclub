@@ -44,7 +44,7 @@ const columns = (t, clubModel, isIndividual) =>
       key: isIndividual ? "name" : "competitorId",
       fixed: "left",
       width: 180,
-      render: id =>
+      render: (id) =>
         id == null ? null : isIndividual ? id : clubModel.raceClubs.selectedClub.competitorById(id).fullName
     },
     {
@@ -74,7 +74,7 @@ const columns = (t, clubModel, isIndividual) =>
       title: t("results.WinnerTime"),
       dataIndex: "winnerTime",
       key: "winnerTime",
-      render: value => FormatTime(value)
+      render: (value) => FormatTime(value)
     },
     {
       title: t("results.Position"),
@@ -96,7 +96,7 @@ const columns = (t, clubModel, isIndividual) =>
       dataIndex: "points1000",
       key: "points1000"
     }
-  ].filter(col => col);
+  ].filter((col) => col);
 
 const resultsColumns = (t, clubModel, isIndividual) => [
   ...columns(t, clubModel, isIndividual),
@@ -145,7 +145,7 @@ const teamResultsColumns = (t, clubModel, isIndividual) => [
       title: t("results.DeltaTimeBehind"),
       dataIndex: "deltaTimeBehind",
       key: "deltaTimeBehind",
-      render: value => FormatTime(value)
+      render: (value) => FormatTime(value)
     },
     {
       title: t("results.DeviantRaceLightCondition"),
@@ -177,7 +177,7 @@ const ViewResults = inject(
         const self = this;
         const { clubModel, sessionModel, isIndividual } = this.props;
         const { year } = this.state;
-        const url = clubModel.modules.find(module => module.name === "Results").queryUrl;
+        const url = clubModel.modules.find((module) => module.name === "Results").queryUrl;
 
         PostJsonData(
           url,
@@ -187,7 +187,7 @@ const ViewResults = inject(
           true,
           sessionModel.authorizationHeader
         )
-          .then(clubsJson => {
+          .then((clubsJson) => {
             clubModel.setRaceClubs(clubsJson);
             if (isIndividual) {
               self.setState({
@@ -197,7 +197,7 @@ const ViewResults = inject(
               self.updateEventYear(year);
             }
           })
-          .catch(e => {
+          .catch((e) => {
             message.error(e.message);
           });
       }
@@ -206,16 +206,13 @@ const ViewResults = inject(
         const self = this;
         const { clubModel } = this.props;
         const fromDate = moment(year, "YYYY").format("YYYY-MM-DD");
-        const toDate = moment(fromDate, "YYYY-MM-DD")
-          .add(1, "years")
-          .subtract(1, "days")
-          .format("YYYY-MM-DD");
+        const toDate = moment(fromDate, "YYYY-MM-DD").add(1, "years").subtract(1, "days").format("YYYY-MM-DD");
 
         self.setState({
           loading: true
         });
 
-        const url = clubModel.modules.find(module => module.name === "Results").queryUrl;
+        const url = clubModel.modules.find((module) => module.name === "Results").queryUrl;
         PostJsonData(
           url,
           {
@@ -225,14 +222,14 @@ const ViewResults = inject(
           },
           true
         )
-          .then(eventsJson => {
+          .then((eventsJson) => {
             self.setState({
               events: eventsJson.reverse(),
               result: undefined,
               loading: false
             });
           })
-          .catch(e => {
+          .catch((e) => {
             if (e && e.message) {
               message.error(e.message);
             }
@@ -247,19 +244,19 @@ const ViewResults = inject(
       updateEvent(eventId) {
         const self = this;
         const { clubModel, sessionModel } = this.props;
-        const url = clubModel.modules.find(module => module.name === "Results").queryUrl;
+        const url = clubModel.modules.find((module) => module.name === "Results").queryUrl;
         self.setState({
           loading: true
         });
 
         PostJsonData(url, { iType: "EVENT", iEventId: eventId }, true, sessionModel.authorizationHeader)
-          .then(eventJson => {
+          .then((eventJson) => {
             self.setState({
               result: eventJson,
               loading: false
             });
           })
-          .catch(e => {
+          .catch((e) => {
             if (e && e.message) {
               message.error(e.message);
             }
@@ -278,12 +275,9 @@ const ViewResults = inject(
         });
         if (year && competitorId) {
           const { clubModel, sessionModel } = this.props;
-          const url = clubModel.modules.find(module => module.name === "Results").queryUrl;
+          const url = clubModel.modules.find((module) => module.name === "Results").queryUrl;
           const fromDate = moment(year, "YYYY").format("YYYY-MM-DD");
-          const toDate = moment(fromDate, "YYYY-MM-DD")
-            .add(1, "years")
-            .subtract(1, "days")
-            .format("YYYY-MM-DD");
+          const toDate = moment(fromDate, "YYYY-MM-DD").add(1, "years").subtract(1, "days").format("YYYY-MM-DD");
           self.setState({
             loading: true
           });
@@ -294,13 +288,13 @@ const ViewResults = inject(
             true,
             sessionModel.authorizationHeader
           )
-            .then(competitorJson => {
+            .then((competitorJson) => {
               self.setState({
                 result: competitorJson,
                 loading: false
               });
             })
-            .catch(e => {
+            .catch((e) => {
               if (e && e.message) {
                 message.error(e.message);
               }
@@ -314,8 +308,7 @@ const ViewResults = inject(
 
       render() {
         const self = this;
-        const { t, form, clubModel, isIndividual } = self.props;
-        const { getFieldDecorator } = form;
+        const { t, clubModel, isIndividual } = self.props;
         const { loading, year, competitorId, result, events } = self.state;
         const Spinner = (
           <SpinnerDiv>
@@ -324,72 +317,65 @@ const ViewResults = inject(
         );
         const fromYear = 1994;
         const currentYear = new Date().getFullYear();
-        const yearOptions = [...Array(1 + currentYear - fromYear).keys()].map(i => ({
+        const yearOptions = [...Array(1 + currentYear - fromYear).keys()].map((i) => ({
           code: currentYear - i,
           description: currentYear - i
         }));
-        const eventOptions = events.map(result => ({
+        const eventOptions = events.map((result) => ({
           code: result.eventId,
           description: `${result.date}, ${result.name}`
         }));
 
         return (
-          <>
+          <Form
+            layout="vertical"
+            initialValues={{
+              Year: year
+            }}
+          >
             <StyledRow gutter={8}>
               <Col span={4}>
-                <FormItem label={t("calendar.SelectYear")}>
-                  {getFieldDecorator("Year", {
-                    initialValue: year
-                  })(
-                    <FormSelect
-                      disabled={loading}
-                      style={{ minWidth: 70, maxWidth: 300, width: "100%" }}
-                      options={yearOptions}
-                      onChange={value =>
-                        isIndividual ? self.updateCompetitor(value, competitorId) : self.updateEventYear(value)
-                      }
-                    />
-                  )}
+                <FormItem name="Year" label={t("calendar.SelectYear")}>
+                  <FormSelect
+                    disabled={loading}
+                    style={{ minWidth: 70, maxWidth: 300, width: "100%" }}
+                    options={yearOptions}
+                    onChange={(value) =>
+                      isIndividual ? self.updateCompetitor(value, competitorId) : self.updateEventYear(value)
+                    }
+                  />
                 </FormItem>
               </Col>
               <Col span={20}>
                 {isIndividual ? (
-                  <FormItem label={t("results.Competitor")}>
-                    {getFieldDecorator("Competitor", {
-                      initialValue: undefined
-                    })(
-                      <FormSelect
-                        disabled={loading}
-                        style={{ minWidth: 300, maxWidth: 600, width: "100%" }}
-                        dropdownMatchSelectWidth={false}
-                        options={loading ? [] : clubModel.raceClubs.selectedClub.competitorsOptions}
-                        showSearch
-                        optionFilterProp="children"
-                        filterOption={(input, option) =>
-                          option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                        }
-                        onChange={competitorId => self.updateCompetitor(year, competitorId)}
-                      />
-                    )}
+                  <FormItem name="Competitor" label={t("results.Competitor")}>
+                    <FormSelect
+                      disabled={loading}
+                      style={{ minWidth: 300, maxWidth: 600, width: "100%" }}
+                      dropdownMatchSelectWidth={false}
+                      options={loading ? [] : clubModel.raceClubs.selectedClub.competitorsOptions}
+                      showSearch
+                      optionFilterProp="children"
+                      filterOption={(input, option) =>
+                        option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                      }
+                      onChange={(competitorId) => self.updateCompetitor(year, competitorId)}
+                    />
                   </FormItem>
                 ) : (
-                  <FormItem label={t("results.Step1ChooseRace")}>
-                    {getFieldDecorator("Club", {
-                      initialValue: undefined
-                    })(
-                      <FormSelect
-                        disabled={loading}
-                        style={{ minWidth: 300, maxWidth: 600, width: "100%" }}
-                        dropdownMatchSelectWidth={false}
-                        options={eventOptions}
-                        showSearch
-                        optionFilterProp="children"
-                        filterOption={(input, option) =>
-                          option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                        }
-                        onChange={eventId => self.updateEvent(eventId)}
-                      />
-                    )}
+                  <FormItem name="Club" label={t("results.Step1ChooseRace")}>
+                    <FormSelect
+                      disabled={loading}
+                      style={{ minWidth: 300, maxWidth: 600, width: "100%" }}
+                      dropdownMatchSelectWidth={false}
+                      options={eventOptions}
+                      showSearch
+                      optionFilterProp="children"
+                      filterOption={(input, option) =>
+                        option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                      }
+                      onChange={(eventId) => self.updateEvent(eventId)}
+                    />
                   </FormItem>
                 )}
               </Col>
@@ -402,7 +388,7 @@ const ViewResults = inject(
                   </td>
                   <td>
                     {
-                      clubModel.raceClubs.selectedClub.competitorsOptions.find(opt => opt.code === competitorId)
+                      clubModel.raceClubs.selectedClub.competitorsOptions.find((opt) => opt.code === competitorId)
                         .description
                     }
                   </td>
@@ -440,21 +426,21 @@ const ViewResults = inject(
                     <b>{t("results.RaceLightCondition")}:</b>
                   </td>
                   <td>
-                    {raceLightConditionOptions(t).find(opt => opt.code === result.raceLightCondition).description}
+                    {raceLightConditionOptions(t).find((opt) => opt.code === result.raceLightCondition).description}
                   </td>
                 </tr>
                 <tr>
                   <td>
                     <b>{t("results.RaceDistance")}:</b>
                   </td>
-                  <td>{raceDistanceOptions(t).find(opt => opt.code === result.raceDistance).description}</td>
+                  <td>{raceDistanceOptions(t).find((opt) => opt.code === result.raceDistance).description}</td>
                   <td>
                     <b>{t("results.EventClassification")}:</b>
                   </td>
                   <td>
                     {
                       clubModel.raceClubs.eventClassificationOptions.find(
-                        opt => opt.code === result.eventClassificationId
+                        (opt) => opt.code === result.eventClassificationId
                       ).description
                     }
                   </td>
@@ -463,7 +449,7 @@ const ViewResults = inject(
                   <td>
                     <b>{t("results.Sport")}:</b>
                   </td>
-                  <td>{clubModel.raceClubs.sportOptions.find(opt => opt.code === result.sportCode).description}</td>
+                  <td>{clubModel.raceClubs.sportOptions.find((opt) => opt.code === result.sportCode).description}</td>
                 </tr>
               </StyledTable2>
             ) : null}
@@ -487,14 +473,13 @@ const ViewResults = inject(
                 scroll={{ x: true }}
               />
             ) : null}
-          </>
+          </Form>
         );
       }
     }
   )
 );
 
-const ViewResultsForm = Form.create()(ViewResults);
-const ViewResultsWithI18n = withTranslation()(ViewResultsForm); // pass `t` function to App
+const ViewResultsWithI18n = withTranslation()(ViewResults); // pass `t` function to App
 
 export default ViewResultsWithI18n;

@@ -20,6 +20,7 @@ const ResultWizardStep0Input = inject(
         raceWizardModel: PropTypes.object.isRequired,
         onMount: PropTypes.func.isRequired
       };
+      formRef = React.createRef();
 
       constructor(props) {
         super(props);
@@ -31,104 +32,91 @@ const ResultWizardStep0Input = inject(
 
       componentDidMount() {
         // To disable next button at the beginning.
-        this.props.form.validateFields();
-        this.props.onMount && this.props.onMount(this.props.form);
+        this.formRef.current.validateFields();
+        this.props.onMount && this.props.onMount(this.formRef.current);
       }
 
       render() {
         const self = this;
-        const { t, form, clubModel, raceWizardModel } = self.props;
+        const { t, clubModel, raceWizardModel } = self.props;
         const { formId } = self.state;
-        const { getFieldDecorator, getFieldError } = form;
-        // Only show error after a field is touched.
-        const queryStartDateError = getFieldError("iQueryStartDate");
-        const queryEndDateError = getFieldError("iQueryEndDate");
 
         return (
-          <Form id={formId} onSubmit={self.onSave}>
-            <FormItem label={t("results.Club")}>
-              {getFieldDecorator("Club", {
-                initialValue: clubModel.raceClubs.selectedClub.clubId.toString()
-              })(
-                <FormSelect
-                  style={{ minWidth: 174, maxWidth: 334 }}
-                  options={clubModel.raceClubs.clubOptions}
-                  onChange={code => clubModel.raceClubs.setSelectedClub(code)}
-                />
-              )}
+          <Form
+            id={formId}
+            ref={self.formRef}
+            layout="vertical"
+            initialValues={{
+              Club: clubModel.raceClubs.selectedClub.clubId.toString(),
+              QueryStartDate: moment(raceWizardModel.queryStartDate, dateFormat),
+              QueryEndDate: moment(raceWizardModel.queryEndDate, dateFormat),
+              QueryIncludeExisting: raceWizardModel.queryIncludeExisting,
+              QueryForEventWithNoEntry: raceWizardModel.queryForEventWithNoEntry,
+              ExistInEventor: raceWizardModel.existInEventor
+            }}
+          >
+            <FormItem name="Club" label={t("results.Club")}>
+              <FormSelect
+                style={{ minWidth: 174, maxWidth: 334 }}
+                options={clubModel.raceClubs.clubOptions}
+                onChange={(code) => clubModel.raceClubs.setSelectedClub(code)}
+              />
             </FormItem>
             {raceWizardModel.existInEventor ? (
               <>
                 <FormItem
+                  name="QueryStartDate"
                   label={t("results.QueryStartDate")}
-                  validateStatus={queryStartDateError ? "error" : ""}
-                  help={queryStartDateError || ""}
+                  rules={[
+                    {
+                      required: true,
+                      type: "object",
+                      message: errorRequiredField(t, "results.QueryStartDate")
+                    }
+                  ]}
                 >
-                  {getFieldDecorator("QueryStartDate", {
-                    initialValue: moment(raceWizardModel.queryStartDate, dateFormat),
-                    rules: [
-                      {
-                        required: true,
-                        type: "object",
-                        message: errorRequiredField(t, "results.QueryStartDate")
-                      }
-                    ]
-                  })(
-                    <DatePicker
-                      format={dateFormat}
-                      allowClear={false}
-                      onChange={date => raceWizardModel.setValue("queryStartDate", date.format(dateFormat))}
-                    />
-                  )}
+                  <DatePicker
+                    format={dateFormat}
+                    allowClear={false}
+                    onChange={(date) => raceWizardModel.setValue("queryStartDate", date.format(dateFormat))}
+                  />
                 </FormItem>
                 <FormItem
+                  name="QueryEndDate"
                   label={t("results.QueryEndDate")}
-                  validateStatus={queryEndDateError ? "error" : ""}
-                  help={queryEndDateError || ""}
+                  rules={[
+                    {
+                      required: true,
+                      type: "object",
+                      message: errorRequiredField(t, "results.QueryEndDate")
+                    }
+                  ]}
                 >
-                  {getFieldDecorator("QueryEndDate", {
-                    initialValue: moment(raceWizardModel.queryEndDate, dateFormat),
-                    rules: [
-                      {
-                        required: true,
-                        type: "object",
-                        message: errorRequiredField(t, "results.QueryEndDate")
-                      }
-                    ]
-                  })(
-                    <DatePicker
-                      format={dateFormat}
-                      allowClear={false}
-                      onChange={date => raceWizardModel.setValue("queryEndDate", date.format(dateFormat))}
-                    />
-                  )}
+                  <DatePicker
+                    format={dateFormat}
+                    allowClear={false}
+                    onChange={(date) => raceWizardModel.setValue("queryEndDate", date.format(dateFormat))}
+                  />
                 </FormItem>
-                <FormItem label={t("results.QueryIncludeExisting")}>
-                  {getFieldDecorator("QueryIncludeExisting", {
-                    valuePropName: "checked",
-                    initialValue: raceWizardModel.queryIncludeExisting
-                  })(<Switch onChange={checked => raceWizardModel.setValue("queryIncludeExisting", checked)} />)}
+                <FormItem name="QueryIncludeExisting" label={t("results.QueryIncludeExisting")} valuePropName="checked">
+                  <Switch onChange={(checked) => raceWizardModel.setValue("queryIncludeExisting", checked)} />
                 </FormItem>
-                <FormItem label={t("results.QueryForEventWithNoEntry")}>
-                  {getFieldDecorator("QueryForEventWithNoEntry", {
-                    valuePropName: "checked",
-                    initialValue: raceWizardModel.queryForEventWithNoEntry
-                  })(<Switch onChange={checked => raceWizardModel.setValue("queryForEventWithNoEntry", checked)} />)}
+                <FormItem
+                  name="QueryForEventWithNoEntry"
+                  label={t("results.QueryForEventWithNoEntry")}
+                  valuePropName="checked"
+                >
+                  <Switch onChange={(checked) => raceWizardModel.setValue("queryForEventWithNoEntry", checked)} />
                 </FormItem>
               </>
             ) : null}
-            <FormItem label={t("results.ImportEventExistInEventor")}>
-              {getFieldDecorator("ExistInEventor", {
-                valuePropName: "checked",
-                initialValue: raceWizardModel.existInEventor
-              })(
-                <Switch
-                  onChange={checked => {
-                    raceWizardModel.setValue("existInEventor", checked);
-                    raceWizardModel.setValue("selectedEventId", -1);
-                  }}
-                />
-              )}
+            <FormItem name="ExistInEventor" label={t("results.ImportEventExistInEventor")} valuePropName="checked">
+              <Switch
+                onChange={(checked) => {
+                  raceWizardModel.setValue("existInEventor", checked);
+                  raceWizardModel.setValue("selectedEventId", -1);
+                }}
+              />
             </FormItem>
           </Form>
         );
@@ -137,7 +125,6 @@ const ResultWizardStep0Input = inject(
   )
 );
 
-const ResultWizardStep0InputForm = Form.create()(ResultWizardStep0Input);
-const ResultWizardStep0InputWithI18n = withTranslation()(ResultWizardStep0InputForm); // pass `t` function to App
+const ResultWizardStep0InputWithI18n = withTranslation()(ResultWizardStep0Input); // pass `t` function to App
 
 export default ResultWizardStep0InputWithI18n;

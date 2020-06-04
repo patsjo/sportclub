@@ -3,7 +3,7 @@ import { Form, DatePicker } from "antd";
 import PropTypes from "prop-types";
 import { observer, inject } from "mobx-react";
 import { withTranslation } from "react-i18next";
-import { errorRequiredField, dateFormat, FormSelect } from "../../../utils/formHelper";
+import { errorRequiredField, dateFormat } from "../../../utils/formHelper";
 import moment from "moment";
 import FormItem from "../../formItems/FormItem";
 
@@ -18,6 +18,7 @@ const EventSelectorWizardStep0Input = inject("eventSelectorWizardModel")(
         eventSelectorWizardModel: PropTypes.object.isRequired,
         onMount: PropTypes.func.isRequired
       };
+      formRef = React.createRef();
 
       constructor(props) {
         super(props);
@@ -29,47 +30,46 @@ const EventSelectorWizardStep0Input = inject("eventSelectorWizardModel")(
 
       componentDidMount() {
         // To disable next button at the beginning.
-        this.props.form.validateFields();
-        this.props.onMount && this.props.onMount(this.props.form);
+        this.formRef.current.validateFields();
+        this.props.onMount && this.props.onMount(this.formRef.current);
       }
 
       render() {
         const self = this;
-        const { t, form, eventSelectorWizardModel } = self.props;
+        const { t, eventSelectorWizardModel } = self.props;
         const { formId } = self.state;
-        const { getFieldDecorator, getFieldError } = form;
-        // Only show error after a field is touched.
-        const queryDateRangeError = getFieldError("iQueryDateRange");
 
         return (
-          <Form id={formId} onSubmit={self.onSave}>
+          <Form
+            id={formId}
+            ref={self.formRef}
+            layout="vertical"
+            initialValues={{
+              QueryDateRange: [
+                moment(eventSelectorWizardModel.queryStartDate, dateFormat),
+                moment(eventSelectorWizardModel.queryEndDate, dateFormat)
+              ]
+            }}
+          >
             <FormItem
+              name="QueryDateRange"
               label={t("results.QueryDateRange")}
-              validateStatus={queryDateRangeError ? "error" : ""}
-              help={queryDateRangeError || ""}
+              rules={[
+                {
+                  required: true,
+                  type: "array",
+                  message: errorRequiredField(t, "results.QueryDateRange")
+                }
+              ]}
             >
-              {getFieldDecorator("QueryDateRange", {
-                initialValue: [
-                  moment(eventSelectorWizardModel.queryStartDate, dateFormat),
-                  moment(eventSelectorWizardModel.queryEndDate, dateFormat)
-                ],
-                rules: [
-                  {
-                    required: true,
-                    type: "object",
-                    message: errorRequiredField(t, "results.QueryDateRange")
-                  }
-                ]
-              })(
-                <RangePicker
-                  format={dateFormat}
-                  allowClear={false}
-                  onChange={dates => {
-                    eventSelectorWizardModel.setValue("queryStartDate", dates[0].format(dateFormat));
-                    eventSelectorWizardModel.setValue("queryEndDate", dates[1].format(dateFormat));
-                  }}
-                />
-              )}
+              <RangePicker
+                format={dateFormat}
+                allowClear={false}
+                onChange={(dates) => {
+                  eventSelectorWizardModel.setValue("queryStartDate", dates[0].format(dateFormat));
+                  eventSelectorWizardModel.setValue("queryEndDate", dates[1].format(dateFormat));
+                }}
+              />
             </FormItem>
             <p>Alla Nationella kan väljas. Övriga närtävlingar är endast valbara om de är inom en radie på 80km.</p>
           </Form>
@@ -79,7 +79,6 @@ const EventSelectorWizardStep0Input = inject("eventSelectorWizardModel")(
   )
 );
 
-const EventSelectorWizardStep0InputForm = Form.create()(EventSelectorWizardStep0Input);
-const EventSelectorWizardStep0InputWithI18n = withTranslation()(EventSelectorWizardStep0InputForm); // pass `t` function to App
+const EventSelectorWizardStep0InputWithI18n = withTranslation()(EventSelectorWizardStep0Input); // pass `t` function to App
 
 export default EventSelectorWizardStep0InputWithI18n;

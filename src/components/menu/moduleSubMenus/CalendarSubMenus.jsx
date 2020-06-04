@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { inject, observer } from "mobx-react";
-import PropTypes from "prop-types";
 import MenuItem from "../MenuItem";
 import { useTranslation } from "react-i18next";
 import { dashboardContents } from "../../../models/globalStateModel";
@@ -12,7 +11,7 @@ import moment from "moment";
 import { dateFormat } from "../../../utils/formHelper";
 
 const moduleName = "Calendar";
-const defaultCalendarObject = userId => ({
+const defaultCalendarObject = (userId) => ({
   activityId: 0,
   activityTypeId: undefined,
   groupId: 0,
@@ -30,17 +29,17 @@ const CalendarSubMenus = inject(
   "globalStateModel",
   "sessionModel"
 )(
-  observer(props => {
+  observer((props) => {
     const { t } = useTranslation();
     const { clubModel, globalStateModel, sessionModel } = props;
     const moduleInfo = clubModel.module("Calendar");
     const resultsInfo = clubModel.module("Results");
-    const [addCalendarModalIsOpen, setAddCalendarModalIsOpen] = useState(null);
-    const [eventSelectorWizardModalIsOpen, setEventSelectorWizardModalIsOpen] = useState(null);
+    const [addCalendarModalIsOpen, setAddCalendarModalIsOpen] = useState(false);
+    const [eventSelectorWizardModalIsOpen, setEventSelectorWizardModalIsOpen] = useState(false);
     const [domains, setDomains] = useState();
 
     useEffect(() => {
-      const url = clubModel.modules.find(module => module.name === "Calendar").queryUrl;
+      const url = clubModel.modules.find((module) => module.name === "Calendar").queryUrl;
       PostJsonData(
         url,
         {
@@ -48,17 +47,17 @@ const CalendarSubMenus = inject(
         },
         true
       )
-        .then(domainsJson => {
+        .then((domainsJson) => {
           setDomains(domainsJson);
         })
-        .catch(e => {
+        .catch((e) => {
           message.error(e.message);
         });
     }, []);
 
     return (
       <>
-        {addCalendarModalIsOpen !== null ? (
+        {addCalendarModalIsOpen ? (
           <CalendarEdit
             title={t("calendar.Add")}
             calendarObject={defaultCalendarObject(parseInt(sessionModel.id))}
@@ -67,7 +66,7 @@ const CalendarSubMenus = inject(
             onClose={() => setAddCalendarModalIsOpen(false)}
           />
         ) : null}
-        {eventSelectorWizardModalIsOpen !== null ? (
+        {eventSelectorWizardModalIsOpen ? (
           <EventSelectorWizardModal
             open={eventSelectorWizardModalIsOpen}
             onClose={() => setEventSelectorWizardModalIsOpen(false)}
@@ -82,12 +81,8 @@ const CalendarSubMenus = inject(
           onClick={() => {
             globalStateModel.setDashboard(
               dashboardContents.calendar,
-              moment()
-                .startOf("month")
-                .format(dateFormat),
-              moment()
-                .endOf("month")
-                .format(dateFormat),
+              moment().startOf("month").format(dateFormat),
+              moment().endOf("month").format(dateFormat),
               1
             );
           }}
@@ -118,9 +113,5 @@ const CalendarSubMenus = inject(
     );
   })
 );
-
-CalendarSubMenus.propTypes = {
-  moduleName: PropTypes.string.isRequired
-};
 
 export default CalendarSubMenus;

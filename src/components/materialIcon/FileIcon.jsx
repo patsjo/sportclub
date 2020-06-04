@@ -1,33 +1,37 @@
 import React from "react";
-import { Icon } from "antd";
-import styled from "styled-components";
-
-const StyledIcon = styled(Icon)`
-  vertical-align: middle;
-`;
+import {
+  FileImageOutlined,
+  FilePdfOutlined,
+  FilePptOutlined,
+  FileTextOutlined,
+  FileZipOutlined,
+  FileWordOutlined,
+  FileExcelOutlined,
+  FileUnknownOutlined
+} from "@ant-design/icons";
 
 const FileIcon = ({ fileType, fontSize }) => {
   if (fileType.match(/^image\/.*$/)) {
-    return <StyledIcon type="file-image" style={{ fontSize: fontSize }} />;
+    return <FileImageOutlined style={{ verticalAlign: "middle", fontSize: fontSize }} />;
   }
   switch (fileType) {
     case "application/pdf":
-      return <StyledIcon type="file-pdf" style={{ fontSize: fontSize }} />;
+      return <FilePdfOutlined style={{ verticalAlign: "middle", fontSize: fontSize }} />;
     case "application/vnd.ms-powerpoint":
     case "application/vnd.openxmlformats-officedocument.presentationml.presentation":
-      return <StyledIcon type="file-ppt" style={{ fontSize: fontSize }} />;
+      return <FilePptOutlined style={{ verticalAlign: "middle", fontSize: fontSize }} />;
     case "text/plain":
-      return <StyledIcon type="file-text" style={{ fontSize: fontSize }} />;
+      return <FileTextOutlined style={{ verticalAlign: "middle", fontSize: fontSize }} />;
     case "application/zip":
-      return <StyledIcon type="file-zip" style={{ fontSize: fontSize }} />;
+      return <FileZipOutlined style={{ verticalAlign: "middle", fontSize: fontSize }} />;
     case "application/msword":
     case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-      return <StyledIcon type="file-word" style={{ fontSize: fontSize }} />;
+      return <FileWordOutlined style={{ verticalAlign: "middle", fontSize: fontSize }} />;
     case "application/vnd.ms-excel":
     case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
-      return <StyledIcon type="file-excel" style={{ fontSize: fontSize }} />;
+      return <FileExcelOutlined style={{ verticalAlign: "middle", fontSize: fontSize }} />;
     default:
-      return <StyledIcon type="file-unknown" style={{ fontSize: fontSize }} />;
+      return <FileUnknownOutlined style={{ verticalAlign: "middle", fontSize: fontSize }} />;
   }
 };
 

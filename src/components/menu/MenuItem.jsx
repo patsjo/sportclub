@@ -9,8 +9,8 @@ const MenuItem = styled(Menu.Item)`
     line-height: 22px !important;
     height: 22px !important;
     padding: 0 !important;
-    margin-left: ${props => (props.isSubMenu ? "24px" : "0")};
-    width: ${props => (props.isSubMenu ? "calc(100% - 24px)" : "100%")};
+    margin-left: ${(props) => (props.isSubMenu ? "24px" : "0")};
+    width: ${(props) => (props.isSubMenu ? "calc(100% - 24px)" : "100%")};
   }
 `;
 
@@ -38,13 +38,13 @@ export default class StyledMenuItem extends Component {
   render() {
     return (
       <MenuItem
-        className={`ant-menu-item${
-          this.props.disabled ? " ant-menu-item-disabled" : ""
-        }`}
+        className={`ant-menu-item${this.props.disabled ? " ant-menu-item-disabled" : ""}`}
         onClick={this.props.onClick}
         key={this.props.key}
         isSubMenu={this.props.isSubMenu}
         disabled={this.props.disabled}
+        onItemHover={() => {}}
+        onMouseEnter={() => {}}
       >
         <MaterialIcon icon={this.props.icon} fontSize={18} marginRight={10} />
         <MenuText>{this.props.name}</MenuText>

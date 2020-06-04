@@ -1,5 +1,6 @@
 import React, { Component } from "react";
-import { Button, Icon, Modal, Spin, Steps, message } from "antd";
+import { Button, Modal, Spin, Steps, message } from "antd";
+import { LeftOutlined, RightOutlined, PlusOutlined } from "@ant-design/icons";
 import PropTypes from "prop-types";
 import { observer, inject, Provider } from "mobx-react";
 import { getSnapshot } from "mobx-state-tree";
@@ -54,7 +55,7 @@ const ResultsWizardModal = inject(
       componentDidMount() {
         const self = this;
         const { clubModel, sessionModel, onClose } = this.props;
-        const url = clubModel.modules.find(module => module.name === "Results").queryUrl;
+        const url = clubModel.modules.find((module) => module.name === "Results").queryUrl;
 
         const clubsPromise = PostJsonData(
           url,
@@ -73,7 +74,7 @@ const ResultsWizardModal = inject(
               loaded: true
             });
           })
-          .catch(e => {
+          .catch((e) => {
             message.error(e.message);
             onClose && onClose();
           });
@@ -86,7 +87,7 @@ const ResultsWizardModal = inject(
           wizardStep++;
         }
         if (wizardStep === 2 && this.raceWizardModel.overwrite && this.raceWizardModel.selectedEventId > 0) {
-          ConfirmOverwriteOrEdit(this.props.t).then(overwrite => {
+          ConfirmOverwriteOrEdit(this.props.t).then((overwrite) => {
             self.raceWizardModel.setValue("overwrite", overwrite);
             self.setState({ wizardStep, nextStepValid: false });
           });
@@ -119,19 +120,19 @@ const ResultsWizardModal = inject(
         const { clubModel, sessionModel } = this.props;
         const { raceEvent } = this.raceWizardModel;
         const raceEventClassification = clubModel.raceClubs.eventClassifications.find(
-          ec => ec.eventClassificationId === raceEvent.eventClassificationId
+          (ec) => ec.eventClassificationId === raceEvent.eventClassificationId
         );
-        const resultsModule = clubModel.modules.find(module => module.name === "Results");
+        const resultsModule = clubModel.modules.find((module) => module.name === "Results");
         const saveUrl = raceEvent.eventId === -1 ? resultsModule.addUrl : resultsModule.updateUrl;
 
-        raceEvent.results.forEach(result => {
+        raceEvent.results.forEach((result) => {
           const eventClassification = !result.deviantEventClassificationId
             ? raceEventClassification
             : clubModel.raceClubs.eventClassifications.find(
-                ec => ec.eventClassificationId === result.deviantEventClassificationId
+                (ec) => ec.eventClassificationId === result.deviantEventClassificationId
               );
           const raceClassClassification = eventClassification.classClassifications.find(
-            cc => cc.classClassificationId === result.classClassificationId
+            (cc) => cc.classClassificationId === result.classClassificationId
           );
 
           result.setValue(
@@ -149,14 +150,14 @@ const ResultsWizardModal = inject(
           result.setValue("points1000", GetPointRunTo1000(eventClassification, raceClassClassification, result));
         });
 
-        raceEvent.teamResults.forEach(result => {
+        raceEvent.teamResults.forEach((result) => {
           const eventClassification = !result.deviantEventClassificationId
             ? raceEventClassification
             : clubModel.raceClubs.eventClassifications.find(
-                ec => ec.eventClassificationId === result.deviantEventClassificationId
+                (ec) => ec.eventClassificationId === result.deviantEventClassificationId
               );
           const raceClassClassification = eventClassification.classClassifications.find(
-            cc => cc.classClassificationId === result.classClassificationId
+            (cc) => cc.classClassificationId === result.classClassificationId
           );
 
           result.setValue(
@@ -194,7 +195,7 @@ const ResultsWizardModal = inject(
           .then(() => {
             self.props.onClose();
           })
-          .catch(e => {
+          .catch((e) => {
             message.error(e.message);
             self.setState({
               saving: false
@@ -218,7 +219,7 @@ const ResultsWizardModal = inject(
               style={{ minWidth: 1250 }}
               footer={[
                 <Button variant="contained" disabled={wizardStep < 1} onClick={() => self.prev()}>
-                  <Icon type="left" />
+                  <LeftOutlined />
                   {t("common.Previous")}
                 </Button>,
                 <Button
@@ -231,7 +232,7 @@ const ResultsWizardModal = inject(
                     let confirmModal;
                     confirmModal = confirm({
                       width: 800,
-                      icon: <StyledIcon type="plus" theme="twoTone" />,
+                      icon: <StyledIcon type="plus" />,
                       title: t("results.AddCompetitor"),
                       content: !self.raceWizardModel.raceEvent.isRelay ? (
                         <EditResultIndividual
@@ -239,8 +240,9 @@ const ResultsWizardModal = inject(
                           paymentModel={self.raceWizardModel.raceEvent.paymentModel}
                           eventClassificationId={self.raceWizardModel.raceEvent.eventClassificationId}
                           result={resultObject}
+                          results={self.raceWizardModel.raceEvent.results}
                           competitorsOptions={clubModel.raceClubs.selectedClub.competitorsOptions}
-                          onValidate={valid =>
+                          onValidate={(valid) =>
                             confirmModal.update({
                               okButtonProps: {
                                 disabled: !valid
@@ -255,8 +257,9 @@ const ResultsWizardModal = inject(
                           eventClassificationId={self.raceWizardModel.raceEvent.eventClassificationId}
                           raceLightCondition={self.raceWizardModel.raceEvent.raceLightCondition}
                           result={resultObject}
+                          results={self.raceWizardModel.raceEvent.teamResults}
                           competitorsOptions={clubModel.raceClubs.selectedClub.competitorsOptions}
-                          onValidate={valid =>
+                          onValidate={(valid) =>
                             confirmModal.update({
                               okButtonProps: {
                                 disabled: !valid
@@ -280,7 +283,7 @@ const ResultsWizardModal = inject(
                     });
                   }}
                 >
-                  <Icon type="plus" />
+                  <PlusOutlined />
                   {t("results.AddCompetitor")}
                 </Button>,
                 <Button
@@ -290,7 +293,7 @@ const ResultsWizardModal = inject(
                   onClick={() => (wizardStep === 3 ? self.save() : self.next())}
                 >
                   {wizardStep === 3 ? t("common.Save") : t("common.Next")}
-                  {wizardStep === 3 ? null : <Icon type="right" />}
+                  {wizardStep === 3 ? null : <RightOutlined />}
                 </Button>,
                 <Button variant="contained" onClick={self.props.onClose} loading={false}>
                   {t("common.Cancel")}
@@ -305,7 +308,7 @@ const ResultsWizardModal = inject(
                   <Step key="ResultsWizardModalStep3" title={t("results.Step3Ranking")} />
                 </StyledSteps>
                 {wizardStep === 0 ? (
-                  <ResultWizardStep0Input onMount={form => self.setState({ inputForm: form })} />
+                  <ResultWizardStep0Input onMount={(form) => self.setState({ inputForm: form })} />
                 ) : null}
                 {wizardStep >= 1 && this.raceWizardModel.existInEventor ? (
                   <ResultWizardStep1ChooseRace

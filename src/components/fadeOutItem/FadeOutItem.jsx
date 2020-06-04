@@ -7,14 +7,14 @@ import { observer, inject } from "mobx-react";
 import withForwardedRef from "../../utils/withForwardedRef";
 
 const ItemHolder = styled.div`
-  max-height: ${props => (props.maxHeight ? props.maxHeight : 300)}px;
+  max-height: ${(props) => (props.maxHeight ? props.maxHeight : 300)}px;
   overflow: hidden;
 `;
 const ItemFadeOut = styled.div`
   -webkit-column-break-inside: avoid;
   page-break-inside: avoid;
   break-inside: avoid-column;
-  max-height: ${props => (props.maxHeight ? props.maxHeight : 300)}px;
+  max-height: ${(props) => (props.maxHeight ? props.maxHeight : 300)}px;
   overflow-y: hidden;
   padding-left: 2px;
   padding-right: 2px;
@@ -23,7 +23,7 @@ const ItemFadeOut = styled.div`
   :after {
     content: "";
     position: absolute;
-    top: ${props => (props.maxHeight ? props.maxHeight - 50 : 250)}px;
+    top: ${(props) => (props.maxHeight ? props.maxHeight - 50 : 250)}px;
     right: 0;
     width: 100%;
     height: 50px;
@@ -44,9 +44,9 @@ const ItemFadeOut = styled.div`
   }
 `;
 const StyledModalContent = styled.div`
-  -webkit-columns: ${props => props.columns} 200px;
-  -moz-columns: ${props => props.columns} 200px;
-  columns: ${props => props.columns} 200px;
+  -webkit-columns: ${(props) => props.columns} 200px;
+  -moz-columns: ${(props) => props.columns} 200px;
+  columns: ${(props) => props.columns} 200px;
   -webkit-column-gap: 1em;
   -moz-column-gap: 1em;
   column-gap: 1em;
@@ -131,7 +131,7 @@ const FadeOutItem = inject("sessionModel")(
                     onDelete && onDelete();
                     self.closeModal();
                   })
-                  .catch(e => {
+                  .catch((e) => {
                     message.error(e.message);
                     self.setState({
                       saving: false
@@ -145,7 +145,7 @@ const FadeOutItem = inject("sessionModel")(
             </Popconfirm>
           ) : null;
 
-        const EditFormContent = ShowEditButton
+        const EditFormContent = this.state.showEdit
           ? React.cloneElement(editFormContent, {
               open: this.state.showEdit,
               onClose: this.closeModal
@@ -154,7 +154,9 @@ const FadeOutItem = inject("sessionModel")(
 
         return (
           <ItemHolder ref={forwardedRef} maxHeight={maxHeight}>
-            <ItemFadeOut onClick={this.openModal} maxHeight={maxHeight}>{this.props.content}</ItemFadeOut>
+            <ItemFadeOut onClick={this.openModal} maxHeight={maxHeight}>
+              {this.props.content}
+            </ItemFadeOut>
             <Modal
               closable={false}
               visible={this.state.showModalItem}

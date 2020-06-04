@@ -1,5 +1,6 @@
 import React, { Component } from "react";
-import { Button, Icon, Modal, Spin, Steps, message } from "antd";
+import { Button, Modal, Spin, Steps, message } from "antd";
+import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import PropTypes from "prop-types";
 import { observer, inject, Provider } from "mobx-react";
 import { getSnapshot } from "mobx-state-tree";
@@ -47,7 +48,7 @@ const EventSelectorWizardModal = inject(
       componentDidMount() {
         const self = this;
         const { clubModel, sessionModel, onClose } = this.props;
-        const url = clubModel.modules.find(module => module.name === "Results").queryUrl;
+        const url = clubModel.modules.find((module) => module.name === "Results").queryUrl;
 
         const clubsPromise = PostJsonData(
           url,
@@ -66,7 +67,7 @@ const EventSelectorWizardModal = inject(
               loaded: true
             });
           })
-          .catch(e => {
+          .catch((e) => {
             message.error(e.message);
             onClose && onClose();
           });
@@ -94,7 +95,7 @@ const EventSelectorWizardModal = inject(
         this.setState({ saving: true });
         const { sessionModel, clubModel } = this.props;
 
-        const calendarModule = clubModel.modules.find(module => module.name === "Calendar");
+        const calendarModule = clubModel.modules.find((module) => module.name === "Calendar");
         const saveUrl = calendarModule.addUrl;
         const snapshot = getSnapshot(this.eventSelectorWizardModel);
         const data = {
@@ -118,7 +119,7 @@ const EventSelectorWizardModal = inject(
           .then(() => {
             self.props.onClose();
           })
-          .catch(e => {
+          .catch((e) => {
             message.error(e.message);
             self.setState({
               saving: false
@@ -142,7 +143,7 @@ const EventSelectorWizardModal = inject(
               style={{ minWidth: 560 }}
               footer={[
                 <Button variant="contained" disabled={wizardStep < 1} onClick={() => self.prev()}>
-                  <Icon type="left" />
+                  <LeftOutlined />
                   {t("common.Previous")}
                 </Button>,
                 <Button
@@ -152,7 +153,7 @@ const EventSelectorWizardModal = inject(
                   onClick={() => (wizardStep === 1 ? self.save() : self.next())}
                 >
                   {wizardStep === 1 ? t("common.Save") : t("common.Next")}
-                  {wizardStep === 1 ? null : <Icon type="right" />}
+                  {wizardStep === 1 ? null : <RightOutlined />}
                 </Button>,
                 <Button variant="contained" onClick={self.props.onClose} loading={false}>
                   {t("common.Cancel")}
@@ -165,7 +166,7 @@ const EventSelectorWizardModal = inject(
                   <Step key="EventSelectorWizardModalStep1" title={t("results.Step1ChooseRace")} />
                 </StyledSteps>
                 {wizardStep === 0 ? (
-                  <EventSelectorWizardStep0Input onMount={form => self.setState({ inputForm: form })} />
+                  <EventSelectorWizardStep0Input onMount={(form) => self.setState({ inputForm: form })} />
                 ) : null}
                 {wizardStep >= 1 ? (
                   <EventSelectorWizardStep1ChooseRace

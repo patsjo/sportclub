@@ -1,7 +1,8 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { withTranslation } from "react-i18next";
-import { Form, Upload, Icon, message } from "antd";
+import { Upload, message } from "antd";
+import { UploadOutlined } from "@ant-design/icons";
 import styled from "styled-components";
 import FileIcon from "../materialIcon/FileIcon";
 import MaterialIcon from "../materialIcon/MaterialIcon";
@@ -9,9 +10,9 @@ import { getFileType } from "../../utils/fileHelper";
 import FormItem from "./FormItem";
 
 const StyledUploadDragger = styled(Upload.Dragger)`
-  &&& .ant-upload.ant-upload-drag {
+  &&&.ant-upload.ant-upload-drag {
     margin-top: 5px;
-    display: ${props => (props.visible ? "block" : "none")};
+    display: ${(props) => (props.visible ? "block" : "none")};
   }
   &.upload-list-inline .ant-upload-list-item {
     float: left;
@@ -31,7 +32,7 @@ const StyledP = styled.p`
     margin: 0;
   }
 `;
-const StyledIcon = styled(Icon)`
+const StyledUploadIcon = styled(UploadOutlined)`
   &&&&& {
     margin: 0;
   }
@@ -59,34 +60,19 @@ class UploadDragger extends Component {
     fieldName: PropTypes.string.isRequired,
     maxByteSize: PropTypes.number.isRequired,
     multiple: PropTypes.bool.isRequired,
-    initialValue: PropTypes.arrayOf(PropTypes.object),
     t: PropTypes.func
   };
 
   constructor(props) {
     super(props);
-    const files = props.form.getFieldsValue()[props.fieldName] || props.initialValue || [];
-    const nofFiles = files ? files.length : 0;
+
+    const { fieldName, form } = props;
+    const { getFieldValue } = form;
+    const files = getFieldValue(fieldName) || [];
 
     this.state = {
-      numberOfFiles: nofFiles
+      files: files
     };
-  }
-
-  shouldComponentUpdate(nextProps) {
-    const files = nextProps.form.getFieldValue(nextProps.fieldName);
-    if (Array.isArray(files) && files.filter(attachment => attachment.status === "uploading").length > 0) {
-      return true;
-    }
-    // eslint-disable-next-line eqeqeq
-    const numberOfFiles = files == undefined ? 0 : files.length;
-    if (numberOfFiles === this.state.numberOfFiles) {
-      return false;
-    }
-    this.setState({
-      numberOfFiles: numberOfFiles
-    });
-    return true;
   }
 
   addFile = ({ onSuccess }) => {
@@ -95,7 +81,7 @@ class UploadDragger extends Component {
     }, 0);
   };
 
-  normFiles = e => {
+  onNormFiles = (e) => {
     const { maxByteSize } = this.props;
     let fileList;
     if (Array.isArray(e)) {
@@ -106,27 +92,30 @@ class UploadDragger extends Component {
     } else {
       fileList = [];
     }
-    fileList = fileList.filter(file => this.validFile(file) && file.size <= maxByteSize);
+    fileList = fileList.filter((file) => this.validFile(file) && file.size <= maxByteSize);
     return fileList;
   };
 
-  beforeUpload = file => {
+  beforeUpload = (file) => {
     const { maxByteSize } = this.props;
     const validFile = this.validFile(file);
     const validSize = file.size <= maxByteSize;
     return validFile && validSize;
   };
 
-  onDelete = file => {
-    const { fieldName, form, initialValue } = this.props;
-    const { setFieldsValue, getFieldsValue } = form;
-    const files = getFieldsValue()[fieldName] || initialValue || [];
+  onDelete = (file) => {
+    const { fieldName, form } = this.props;
+    const { setFieldsValue, getFieldValue } = form;
+    let files = getFieldValue(fieldName) || [];
+    files = files.filter((f) => f.uid !== file.uid);
 
-    setFieldsValue({ [fieldName]: files.filter(f => f !== file) });
+    setFieldsValue({ [fieldName]: files });
+    this.setState({ files: files });
   };
 
   onChange = ({ file, fileList }) => {
-    const { t, maxByteSize } = this.props;
+    const { t, maxByteSize, fieldName, form } = this.props;
+    const { setFieldsValue } = form;
     const validFile = this.validFile(file);
     const validSize = file.size <= maxByteSize;
     if (!validFile) {
@@ -141,9 +130,13 @@ class UploadDragger extends Component {
         fileList.pop();
       }
     }
+    if (!fileList.some((f) => f.status === "uploading")) {
+      setFieldsValue({ [fieldName]: fileList });
+      this.setState({ files: fileList });
+    }
   };
 
-  validFile = file => {
+  validFile = (file) => {
     const fileType = getFileType(file);
     // eslint-disable-next-line eqeqeq
     const isImage = fileType.match(/^image\/.*$/) != null;
@@ -163,9 +156,8 @@ class UploadDragger extends Component {
 
   render() {
     const self = this;
-    const { t, form, fieldName, initialValue, multiple } = this.props;
-    const { getFieldDecorator, getFieldsValue } = form;
-    const files = getFieldsValue()[fieldName] || initialValue || [];
+    const { t, fieldName, multiple } = this.props;
+    const { files } = this.state;
     const nofFiles = files ? files.length : 0;
 
     const FormDeleteFile =
@@ -182,32 +174,27 @@ class UploadDragger extends Component {
       ) : null;
 
     return (
-      <FormItem>
-        {getFieldDecorator(fieldName, {
-          initialValue: initialValue,
-          valuePropName: "fileList",
-          getValueFromEvent: self.normFiles
-        })(
-          <StyledUploadDragger
-            type="drag"
-            customRequest={self.addFile}
-            listType="picture"
-            className="upload-list-inline"
-            multiple={multiple}
-            visible={multiple || nofFiles === 0}
-            accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.pps,.ppsx,.ppt,.pptx"
-            beforeUpload={this.beforeUpload}
-            showUploadList={multiple ? { showPreviewIcon: false } : false}
-            onChange={this.onChange}
-            data-testid="attachmentsInput"
-          >
-            <StyledP className="ant-upload-drag-icon">
-              <StyledIcon type="upload" />
-            </StyledP>
-            <p className="ant-upload-text">{t("common.Upload")}</p>
-          </StyledUploadDragger>
-        )}
-        {FormDeleteFile}
+      <FormItem name={fieldName} valuePropName="fileList" getValueFromEvent={self.onNormFiles}>
+        <StyledUploadDragger
+          type="drag"
+          customRequest={self.addFile}
+          listType="picture"
+          className="upload-list-inline"
+          multiple={multiple}
+          visible={multiple || nofFiles === 0}
+          accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.pps,.ppsx,.ppt,.pptx"
+          beforeUpload={self.beforeUpload}
+          showUploadList={multiple ? { showPreviewIcon: false } : false}
+          onChange={self.onChange}
+          onRemove={self.onDelete}
+          data-testid="attachmentsInput"
+        >
+          <StyledP className="ant-upload-drag-icon">
+            <StyledUploadIcon />
+          </StyledP>
+          <p className="ant-upload-text">{t("common.Upload")}</p>
+        </StyledUploadDragger>
+        {FormDeleteFile}{" "}
       </FormItem>
     );
   }
@@ -215,4 +202,4 @@ class UploadDragger extends Component {
 
 const UploadDraggerWithI18n = withTranslation()(UploadDragger);
 
-export default Form.create()(UploadDraggerWithI18n);
+export default UploadDraggerWithI18n;

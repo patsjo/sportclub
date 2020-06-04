@@ -16,7 +16,7 @@ const areaResultOptions = [
   { timePerKilometer: "00:05:30.000", description: "Kuperad inlandsterräng (Jönköping, Örebro)" },
   { timePerKilometer: "00:05:45.000", description: "Lite tuffare terräng" },
   { timePerKilometer: "00:06:00.000", description: "Kuperad och tuff terräng" }
-].map(option => ({ code: JSON.stringify(option), description: `${option.timePerKilometer}, ${option.description}` }));
+].map((option) => ({ code: JSON.stringify(option), description: `${option.timePerKilometer}, ${option.description}` }));
 
 const areaNightResultOptions = [
   { timePerKilometer: "00:03:45.000", description: "Natt - sprint" },
@@ -30,7 +30,7 @@ const areaNightResultOptions = [
   { timePerKilometer: "00:06:00.000", description: "Natt - Kuperad inlandsterräng (Jönköping, Örebro)" },
   { timePerKilometer: "00:06:15.000", description: "Natt - Lite tuffare terräng" },
   { timePerKilometer: "00:06:30.000", description: "Natt - Kuperad och tuff terräng" }
-].map(option => ({ code: JSON.stringify(option), description: `${option.timePerKilometer}, ${option.description}` }));
+].map((option) => ({ code: JSON.stringify(option), description: `${option.timePerKilometer}, ${option.description}` }));
 
 // @inject("clubModel")
 // @observer
@@ -41,6 +41,8 @@ const ResultWizardStep3Ranking = inject(
 )(
   observer(
     class ResultWizardStep3Ranking extends Component {
+      formRef = React.createRef();
+
       constructor(props) {
         super(props);
         this.state = {
@@ -69,7 +71,7 @@ const ResultWizardStep3Ranking = inject(
           } else {
             let timePerKilometer = "00:03:00.000";
             let description = clubModel.raceClubs.sportOptions.find(
-              option => option.code === raceWizardModel.raceEvent.sportCode
+              (option) => option.code === raceWizardModel.raceEvent.sportCode
             ).description;
 
             if (raceWizardModel.raceEvent.sportCode === "RUN") {
@@ -88,15 +90,22 @@ const ResultWizardStep3Ranking = inject(
       }
 
       render() {
-        const { t, saving, raceWizardModel, onValidate, form } = this.props;
+        const self = this;
+        const { t, saving, raceWizardModel, onValidate } = this.props;
         const { formId } = this.state;
-        const { getFieldDecorator, getFieldError, setFieldsValue } = form;
-
-        const timePerKilometerError = getFieldError("iRankingBasetimePerKilometer");
-        const rankingBasepointError = getFieldError("iRankingBasepoint");
 
         return !saving ? (
-          <Form id={formId}>
+          <Form
+            id={formId}
+            ref={self.formRef}
+            layout="vertical"
+            initialValues={{
+              iRankingBasetimePerKilometer: !raceWizardModel.raceEvent.rankingBasetimePerKilometer
+                ? null
+                : moment(raceWizardModel.raceEvent.rankingBasetimePerKilometer, "HH:mm:ss.SSS"),
+              iRankingBasepoint: raceWizardModel.raceEvent.rankingBasepoint
+            }}
+          >
             {["OL", "SKIO", "MTBO"].includes(raceWizardModel.raceEvent.sportCode) ? (
               <>
                 <Row gutter={8}>
@@ -119,71 +128,63 @@ const ResultWizardStep3Ranking = inject(
                 <Row gutter={8}>
                   {raceWizardModel.existInEventor && !raceWizardModel.raceEvent.isRelay ? (
                     <Col span={12}>
-                      <FormItem label={t("results.WinnerTime")}>
-                        {getFieldDecorator("iWinnerTime", {
-                          initialValue: undefined
-                        })(
-                          <FormSelect
-                            dropdownMatchSelectWidth={false}
-                            allowClear={true}
-                            options={raceWizardModel.raceWinnerResultOptions}
-                            onChange={code => {
-                              const raceWinnerResult = JSON.parse(code);
-                              raceWizardModel.raceEvent.setValue(
-                                "rankingBasetimePerKilometer",
-                                raceWinnerResult.timePerKilometer
-                              );
-                              raceWizardModel.raceEvent.setValue("rankingBasepoint", undefined);
-                              raceWizardModel.raceEvent.setValue(
-                                "rankingBaseDescription",
-                                `${raceWinnerResult.timePerKilometer}, ${raceWinnerResult.className}, ${raceWinnerResult.personName}`
-                              );
-                              setFieldsValue({
-                                iAreaTime: undefined,
-                                iRankingBasetimePerKilometer: moment(raceWinnerResult.timePerKilometer, "HH:mm:ss.SSS"),
-                                iRankingBasepoint: undefined
-                              });
-                              onValidate(raceWizardModel.raceEvent.validRanking);
-                            }}
-                          />
-                        )}
+                      <FormItem name="iWinnerTime" label={t("results.WinnerTime")}>
+                        <FormSelect
+                          dropdownMatchSelectWidth={false}
+                          allowClear={true}
+                          options={raceWizardModel.raceWinnerResultOptions}
+                          onChange={(code) => {
+                            const raceWinnerResult = JSON.parse(code);
+                            raceWizardModel.raceEvent.setValue(
+                              "rankingBasetimePerKilometer",
+                              raceWinnerResult.timePerKilometer
+                            );
+                            raceWizardModel.raceEvent.setValue("rankingBasepoint", undefined);
+                            raceWizardModel.raceEvent.setValue(
+                              "rankingBaseDescription",
+                              `${raceWinnerResult.timePerKilometer}, ${raceWinnerResult.className}, ${raceWinnerResult.personName}`
+                            );
+                            self.formRef.current.setFieldsValue({
+                              iAreaTime: undefined,
+                              iRankingBasetimePerKilometer: moment(raceWinnerResult.timePerKilometer, "HH:mm:ss.SSS"),
+                              iRankingBasepoint: undefined
+                            });
+                            onValidate(raceWizardModel.raceEvent.validRanking);
+                          }}
+                        />
                       </FormItem>
                     </Col>
                   ) : null}
                   {raceWizardModel.raceEvent.sportCode === "OL" ? (
                     <Col span={12}>
-                      <FormItem label={t("results.Area")}>
-                        {getFieldDecorator("iAreaTime", {
-                          initialValue: undefined
-                        })(
-                          <FormSelect
-                            dropdownMatchSelectWidth={false}
-                            allowClear={true}
-                            options={
-                              raceWizardModel.raceEvent.raceLightCondition === lightConditions.night
-                                ? areaNightResultOptions
-                                : areaResultOptions
-                            }
-                            onChange={code => {
-                              const areaResult = JSON.parse(code);
-                              raceWizardModel.raceEvent.setValue(
-                                "rankingBasetimePerKilometer",
-                                areaResult.timePerKilometer
-                              );
-                              raceWizardModel.raceEvent.setValue("rankingBasepoint", 0);
-                              raceWizardModel.raceEvent.setValue(
-                                "rankingBaseDescription",
-                                `${areaResult.timePerKilometer}, ${areaResult.description}`
-                              );
-                              setFieldsValue({
-                                iWinnerTime: undefined,
-                                iRankingBasetimePerKilometer: moment(areaResult.timePerKilometer, "HH:mm:ss.SSS"),
-                                iRankingBasepoint: 0
-                              });
-                              onValidate(raceWizardModel.raceEvent.validRanking);
-                            }}
-                          />
-                        )}
+                      <FormItem name="iAreaTime" label={t("results.Area")}>
+                        <FormSelect
+                          dropdownMatchSelectWidth={false}
+                          allowClear={true}
+                          options={
+                            raceWizardModel.raceEvent.raceLightCondition === lightConditions.night
+                              ? areaNightResultOptions
+                              : areaResultOptions
+                          }
+                          onChange={(code) => {
+                            const areaResult = JSON.parse(code);
+                            raceWizardModel.raceEvent.setValue(
+                              "rankingBasetimePerKilometer",
+                              areaResult.timePerKilometer
+                            );
+                            raceWizardModel.raceEvent.setValue("rankingBasepoint", 0);
+                            raceWizardModel.raceEvent.setValue(
+                              "rankingBaseDescription",
+                              `${areaResult.timePerKilometer}, ${areaResult.description}`
+                            );
+                            self.formRef.current.setFieldsValue({
+                              iWinnerTime: undefined,
+                              iRankingBasetimePerKilometer: moment(areaResult.timePerKilometer, "HH:mm:ss.SSS"),
+                              iRankingBasepoint: 0
+                            });
+                            onValidate(raceWizardModel.raceEvent.validRanking);
+                          }}
+                        />
                       </FormItem>
                     </Col>
                   ) : null}
@@ -193,68 +194,57 @@ const ResultWizardStep3Ranking = inject(
             <Row gutter={8}>
               <Col span={6}>
                 <FormItem
+                  name="iRankingBasetimePerKilometer"
                   label={t("results.TimePerKilometer")}
-                  validateStatus={timePerKilometerError ? "error" : ""}
-                  help={timePerKilometerError || ""}
+                  rules={[
+                    {
+                      type: "object",
+                      required: true,
+                      message: errorRequiredField(t, "results.TimePerKilometer")
+                    }
+                  ]}
                 >
-                  {getFieldDecorator("iRankingBasetimePerKilometer", {
-                    initialValue: !raceWizardModel.raceEvent.rankingBasetimePerKilometer
-                      ? null
-                      : moment(raceWizardModel.raceEvent.rankingBasetimePerKilometer, "HH:mm:ss.SSS"),
-                    rules: [
-                      {
-                        required: true,
-                        message: errorRequiredField(t, "results.TimePerKilometer")
-                      }
-                    ]
-                  })(
-                    <TimePicker
-                      format={"mm:ss.SSS"}
-                      disabled={!["OL", "SKIO", "MTBO"].includes(raceWizardModel.raceEvent.sportCode)}
-                      allowClear={false}
-                      style={{ width: "100%" }}
-                      onChange={time => {
-                        raceWizardModel.raceEvent.setValue(
-                          "rankingBasetimePerKilometer",
-                          !time ? null : time.format("HH:mm:ss.SSS")
-                        );
-                        onValidate(raceWizardModel.raceEvent.validRanking);
-                      }}
-                    />
-                  )}
+                  <TimePicker
+                    format={"mm:ss.SSS"}
+                    disabled={!["OL", "SKIO", "MTBO"].includes(raceWizardModel.raceEvent.sportCode)}
+                    allowClear={false}
+                    style={{ width: "100%" }}
+                    onChange={(time) => {
+                      raceWizardModel.raceEvent.setValue(
+                        "rankingBasetimePerKilometer",
+                        !time ? null : time.format("HH:mm:ss.SSS")
+                      );
+                      onValidate(raceWizardModel.raceEvent.validRanking);
+                    }}
+                  />
                 </FormItem>
               </Col>
               <Col span={6}>
                 <FormItem
+                  name="iRankingBasepoint"
                   label={t("results.Ranking")}
-                  validateStatus={rankingBasepointError ? "error" : ""}
-                  help={rankingBasepointError || ""}
+                  rules={[
+                    {
+                      required: true,
+                      message: errorRequiredField(t, "results.Ranking")
+                    }
+                  ]}
                 >
-                  {getFieldDecorator("iRankingBasepoint", {
-                    initialValue: raceWizardModel.raceEvent.rankingBasepoint,
-                    rules: [
-                      {
-                        required: true,
-                        message: errorRequiredField(t, "results.Ranking")
-                      }
-                    ]
-                  })(
-                    <InputNumber
-                      disabled={!["OL", "SKIO", "MTBO"].includes(raceWizardModel.raceEvent.sportCode)}
-                      min={-5}
-                      max={100}
-                      step={0.01}
-                      decimalSeparator=","
-                      style={{ width: "100%" }}
-                      onChange={value => {
-                        try {
-                          const val = value.indexOf && value.indexOf(".") === value.length - 1 ? `${value}0` : value;
-                          raceWizardModel.raceEvent.setValue("rankingBasepoint", val);
-                        } catch (error) {}
-                        onValidate(raceWizardModel.raceEvent.validRanking);
-                      }}
-                    />
-                  )}
+                  <InputNumber
+                    disabled={!["OL", "SKIO", "MTBO"].includes(raceWizardModel.raceEvent.sportCode)}
+                    min={-5}
+                    max={100}
+                    step={0.01}
+                    decimalSeparator=","
+                    style={{ width: "100%" }}
+                    onChange={(value) => {
+                      try {
+                        const val = value.indexOf && value.indexOf(".") === value.length - 1 ? `${value}0` : value;
+                        raceWizardModel.raceEvent.setValue("rankingBasepoint", val);
+                      } catch (error) {}
+                      onValidate(raceWizardModel.raceEvent.validRanking);
+                    }}
+                  />
                 </FormItem>
               </Col>
             </Row>
@@ -265,7 +255,6 @@ const ResultWizardStep3Ranking = inject(
   )
 );
 
-const ResultWizardStep3RankingForm = Form.create()(ResultWizardStep3Ranking);
-const ResultWizardStep3RankingWithI18n = withTranslation()(ResultWizardStep3RankingForm); // pass `t` function to App
+const ResultWizardStep3RankingWithI18n = withTranslation()(ResultWizardStep3Ranking); // pass `t` function to App
 
 export default ResultWizardStep3RankingWithI18n;

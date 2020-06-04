@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { inject, observer } from "mobx-react";
-import PropTypes from "prop-types";
 import MenuItem from "../MenuItem";
 import { useTranslation } from "react-i18next";
 import { dashboardContents } from "../../../models/globalStateModel";
@@ -23,19 +22,19 @@ const NewsSubMenus = inject(
   "globalStateModel",
   "sessionModel"
 )(
-  observer(props => {
+  observer((props) => {
     const { t } = useTranslation();
     const { clubModel, globalStateModel, sessionModel } = props;
     const moduleInfo = clubModel.module("News");
-    const [addNewsModalIsOpen, setAddNewsModalIsOpen] = useState(null);
+    const [addNewsModalIsOpen, setAddNewsModalIsOpen] = useState(false);
 
     return (
       <>
-        {addNewsModalIsOpen !== null ? (
+        {addNewsModalIsOpen ? (
           <NewsEdit
-            newsObject={defaultNewsObject}
+            newsObject={{ ...defaultNewsObject }}
             open={addNewsModalIsOpen}
-            onChange={insertedNewsObject => globalStateModel.news.addNewsItemToTop(insertedNewsObject)}
+            onChange={(insertedNewsObject) => globalStateModel.news.addNewsItemToTop(insertedNewsObject)}
             onClose={() => setAddNewsModalIsOpen(false)}
           />
         ) : null}
@@ -81,9 +80,5 @@ const NewsSubMenus = inject(
     );
   })
 );
-
-NewsSubMenus.propTypes = {
-  moduleName: PropTypes.string.isRequired
-};
 
 export default NewsSubMenus;

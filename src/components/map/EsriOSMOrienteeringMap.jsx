@@ -29,7 +29,7 @@ const EsriOSMOrienteeringMap = ({ containerId, mapCenter, graphics = [], onClick
   const [mapView, setMapView] = React.useState();
 
   React.useEffect(() => {
-    setDefaultOptions({ css: true });
+    setDefaultOptions({ version: "4.14", css: true });
     loadModules([
       "esri/layers/OpenStreetMapLayer",
       "esri/layers/GraphicsLayer",
@@ -64,7 +64,7 @@ const EsriOSMOrienteeringMap = ({ containerId, mapCenter, graphics = [], onClick
           urlTemplates: []
         },
 
-        getTileUrl: function(level, row, col) {
+        getTileUrl: function (level, row, col) {
           return this.urlTemplates[Math.floor(Math.random() * Math.floor(this.urlTemplates.length))]
             .replace("{z}", level)
             .replace("{x}", col)
@@ -90,7 +90,7 @@ const EsriOSMOrienteeringMap = ({ containerId, mapCenter, graphics = [], onClick
 
       map.add(newGraphicsLayer);
 
-      const onClickEvent = view.on("click", event => {
+      const onClickEvent = view.on("click", (event) => {
         onClick(
           newGraphicsLayer,
           new Graphic({
@@ -101,21 +101,21 @@ const EsriOSMOrienteeringMap = ({ containerId, mapCenter, graphics = [], onClick
       });
 
       view.when(() => {
-        view.whenLayerView(newGraphicsLayer).then(layerView => {
+        view.whenLayerView(newGraphicsLayer).then((layerView) => {
           let highlight, currentUids;
 
-          const highlightGraphics = event => {
-            const highlighted = newGraphicsLayer.graphics.items.filter(g => {
+          const highlightGraphics = (event) => {
+            const highlighted = newGraphicsLayer.graphics.items.filter((g) => {
               const p = view.toScreen(g.geometry);
               return g.attributes && Math.abs(p.x - event.x) < 8 && Math.abs(p.y - event.y) < 8;
             });
 
             if (highlighted.length) {
               const text = highlighted
-                .map(g => g.attributes)
-                .map(a => `${a.time ? a.time : ""} ${a.name}`)
+                .map((g) => g.attributes)
+                .map((a) => `${a.time ? a.time : ""} ${a.name}`)
                 .join("<br/>");
-              const highlightedUids = highlighted.map(g => g.uid);
+              const highlightedUids = highlighted.map((g) => g.uid);
 
               if (highlight && currentUids !== JSON.stringify(highlightedUids)) {
                 highlight.remove();
@@ -161,7 +161,7 @@ const EsriOSMOrienteeringMap = ({ containerId, mapCenter, graphics = [], onClick
       graphicsLayer.removeAll();
       graphicsLayer.addMany(
         graphics.map(
-          graphic =>
+          (graphic) =>
             new GraphicRef.current({
               geometry: {
                 type: "point", // autocasts as new Point()

@@ -7,11 +7,15 @@ const FormItem = styled(Form.Item)`
   }
   &&& .ant-form-item-label {
     font-size: 11px;
-    margin-bottom: -5px;
-    line-height: 26px;
+    line-height: 20px;
+    padding-bottom: 0px;
+    padding-top: 4px;
   }
   &&& .ant-form-item-control {
     line-height: unset;
+  }
+  &&& .ant-form-item-control-input {
+    min-height: unset;
   }
 `;
 

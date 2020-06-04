@@ -6,7 +6,8 @@ import { observer, inject } from "mobx-react";
 import { GetJsonData, PostJsonData } from "../../../utils/api";
 import organisationJson from "./eventorOrganisations2020";
 
-const flatten = list => list.reduce((a, b) => a.concat(Array.isArray(b) ? flatten(b) : b), []);
+const flatten = (list) => list.reduce((a, b) => a.concat(Array.isArray(b) ? flatten(b) : b), []);
+const MakeArray = (object) => (!object ? [] : Array.isArray(object) ? object : [object]);
 const maxDistanceKm = 80;
 const distanceKm = (lat1, lon1, lat2, lon2) => {
   var R = 6371; // km (change this constant to get miles)
@@ -41,7 +42,7 @@ const EventSelectorWizardStep1ChooseRace = inject(
       componentDidMount() {
         const self = this;
         const { eventSelectorWizardModel, clubModel, sessionModel, onFailed, onValidate } = this.props;
-        const url = clubModel.modules.find(module => module.name === "Calendar").queryUrl;
+        const url = clubModel.modules.find((module) => module.name === "Calendar").queryUrl;
         const data = {
           iType: "EVENTS",
           iFromDate: eventSelectorWizardModel.queryStartDate,
@@ -74,20 +75,20 @@ const EventSelectorWizardStep1ChooseRace = inject(
             }
             let events = [
               ...new Set([
-                ...flatten(eventsJson.Event.map(event => event.EventRace)).map(eventRace => eventRace.EventRaceId)
+                ...flatten(eventsJson.Event.map((event) => event.EventRace)).map((eventRace) => eventRace.EventRaceId)
               ])
             ]
               // eslint-disable-next-line eqeqeq
-              .filter(eventRaceId => eventRaceId != undefined)
-              .map(eventRaceId => {
+              .filter((eventRaceId) => eventRaceId != undefined)
+              .map((eventRaceId) => {
                 return { EventRaceId: eventRaceId };
               });
             let calendarEventId = -1;
-            events.forEach(event => {
+            events.forEach((event) => {
               let entry = {
-                Event: eventsJson.Event.find(e =>
+                Event: eventsJson.Event.find((e) =>
                   Array.isArray(e.EventRace)
-                    ? e.EventRace.map(er => er.EventRaceId).includes(event.EventRaceId)
+                    ? e.EventRace.map((er) => er.EventRaceId).includes(event.EventRaceId)
                     : e.EventRace.EventRaceId === event.EventRaceId
                 )
               };
@@ -96,24 +97,22 @@ const EventSelectorWizardStep1ChooseRace = inject(
               };
               if (Array.isArray(event.Event.EventRace)) {
                 event.Event.EventRace = event.Event.EventRace.find(
-                  eventRace => eventRace.EventRaceId === event.EventRaceId
+                  (eventRace) => eventRace.EventRaceId === event.EventRaceId
                 );
                 event.Event.Name = event.Event.Name + ", " + event.Event.EventRace.Name;
               }
               const alreadySaved = alreadySavedEventsJson.find(
-                saved =>
+                (saved) =>
                   saved.eventorId.toString() === event.Event.EventId &&
                   saved.eventorRaceId.toString() === event.EventRaceId
               );
               let orgId = event.Event.Organiser ? event.Event.Organiser.OrganisationId : undefined;
               if (orgId && Array.isArray(orgId)) {
-                orgId = orgId.find(id => true);
+                orgId = orgId.find((id) => true);
               }
-              const org = orgId ? organisationJson.find(o => o.id === orgId) : undefined;
+              const org = orgId ? organisationJson.find((o) => o.id === orgId) : undefined;
               event.organisationName = org ? org.name : "";
               event.calendarEventId = alreadySaved ? alreadySaved.calendarEventId : calendarEventId--;
-              // 1 = championchip, 2 = National, 3 = District, 4 = Nearby, 5 = Club, 6 = International
-              const eventClassificationId = event.Event.EventClassificationId;
               event.longitude = event.Event.EventRace.EventCenterPosition
                 ? parseFloat(event.Event.EventRace.EventCenterPosition["@attributes"].x)
                 : null;
@@ -125,9 +124,10 @@ const EventSelectorWizardStep1ChooseRace = inject(
                   ? distanceKm(clubModel.mapCenter[1], clubModel.mapCenter[0], event.latitude, event.longitude)
                   : null;
             });
+            // 1 = championchip, 2 = National, 3 = District, 4 = Nearby, 5 = Club, 6 = International
             events = events
               .filter(
-                event =>
+                (event) =>
                   ["1", "2", "6"].includes(event.Event.EventClassificationId) ||
                   (event.distanceKm !== null && event.distanceKm <= maxDistanceKm)
               )
@@ -138,7 +138,7 @@ const EventSelectorWizardStep1ChooseRace = inject(
                   ? -1
                   : 0
               );
-            events = events.map(event => ({
+            events = events.map((event) => ({
               calendarEventId: event.calendarEventId,
               eventorId: event.Event.EventId ? parseInt(event.Event.EventId) : undefined,
               eventorRaceId: event.EventRaceId ? parseInt(event.EventRaceId) : undefined,
@@ -156,39 +156,46 @@ const EventSelectorWizardStep1ChooseRace = inject(
             self.setState({
               loaded: true,
               events: events,
-              selectedRowKeys: events.map(event => event.calendarEventId).filter(id => id > 0)
+              selectedRowKeys: events.map((event) => event.calendarEventId).filter((id) => id > 0)
             });
             eventSelectorWizardModel.setValue(
               "selectedEvents",
-              events.filter(event => event.calendarEventId > 0)
+              events.filter((event) => event.calendarEventId > 0)
             );
             onValidate(true);
           })
-          .catch(e => {
+          .catch((e) => {
             message.error(e.message);
             onFailed && onFailed();
           });
       }
 
-      onSelectChange = selectedRowKeys => {
+      onRowClick = (key) => {
+        const { selectedRowKeys } = this.state;
+        let newSelectedRowKeys = MakeArray(selectedRowKeys);
+        const exists = newSelectedRowKeys.includes(key);
+
+        newSelectedRowKeys = !exists ? [...newSelectedRowKeys, key] : newSelectedRowKeys.filter((k) => k !== key);
+
+        this.onSelectChange(newSelectedRowKeys);
+      };
+
+      onSelectChange = (selectedRowKeys) => {
         const { eventSelectorWizardModel } = this.props;
         const { events } = this.state;
-        const selected = events.filter(event =>
-          Array.isArray(selectedRowKeys)
-            ? selectedRowKeys.includes(event.calendarEventId)
-            : selectedRowKeys === event.calendarEventId
-        );
+        const selected = events.filter((event) => MakeArray(selectedRowKeys).includes(event.calendarEventId));
 
         eventSelectorWizardModel.setValue("selectedEvents", selected);
         this.setState({ selectedRowKeys });
       };
 
       render() {
+        const self = this;
         const { visible, t } = this.props;
         const { loaded, selectedRowKeys, events } = this.state;
         const rowSelection = {
           selectedRowKeys,
-          onChange: this.onSelectChange
+          onChange: self.onSelectChange
         };
         const columns = [
           {
@@ -221,13 +228,13 @@ const EventSelectorWizardStep1ChooseRace = inject(
         return loaded && visible ? (
           <StyledTable
             rowSelection={rowSelection}
-            onRow={(record, rowIndex) => {
+            onRow={(record) => {
               return {
-                onClick: event => this.onSelectChange(record.key)
+                onClick: () => self.onRowClick(record.key)
               };
             }}
             columns={columns}
-            dataSource={events.map(event => ({ ...event, key: event.calendarEventId }))}
+            dataSource={events.map((event) => ({ ...event, key: event.calendarEventId }))}
             pagination={{ pageSize: 8 }}
             size="middle"
           />

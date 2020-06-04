@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { inject, observer } from "mobx-react";
-import PropTypes from "prop-types";
 import MenuItem from "../MenuItem";
 import { useTranslation } from "react-i18next";
 import { dashboardContents } from "../../../models/globalStateModel";
@@ -12,16 +11,16 @@ const ResultsSubMenus = inject(
   "globalStateModel",
   "sessionModel"
 )(
-  observer(props => {
+  observer((props) => {
     const { t } = useTranslation();
     const { clubModel, globalStateModel, sessionModel } = props;
     const moduleInfo = clubModel.module("Results");
-    const [addResultsWizardModalIsOpen, setAddResultsWizardModalIsOpen] = useState(null);
-    const [addOldResultsWizardModalIsOpen, setAddOldResultsWizardModalIsOpen] = useState(null);
+    const [addResultsWizardModalIsOpen, setAddResultsWizardModalIsOpen] = useState(false);
+    const [addOldResultsWizardModalIsOpen, setAddOldResultsWizardModalIsOpen] = useState(false);
 
     return (
       <>
-        {addResultsWizardModalIsOpen !== null ? (
+        {addResultsWizardModalIsOpen ? (
           <ResultsWizardModal
             open={addResultsWizardModalIsOpen}
             onClose={() => setAddResultsWizardModalIsOpen(false)}
@@ -85,9 +84,5 @@ const ResultsSubMenus = inject(
     );
   })
 );
-
-ResultsSubMenus.propTypes = {
-  moduleName: PropTypes.string.isRequired
-};
 
 export default ResultsSubMenus;
