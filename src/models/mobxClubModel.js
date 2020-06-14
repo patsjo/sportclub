@@ -52,6 +52,12 @@ const Module = types
     }
   }));
 
+const Sponsor = types.model({
+  name: types.string,
+  logo: Logo,
+  url: types.maybe(types.string)
+});
+
 const Eventor = types.model({
   url: types.optional(types.string, "https://eventor.orientering.se/Events"),
   eventsUrl: types.optional(types.string, "https://eventor.orientering.se/api/events"),
@@ -88,7 +94,8 @@ export const MobxClubModel = types
     eventor: types.maybe(Eventor),
     raceClubs: types.maybe(RaceClubs),
     corsProxy: types.maybe(types.string),
-    oldUrl: types.maybe(types.string)
+    oldUrl: types.maybe(types.string),
+    sponsors: types.array(Sponsor)
   })
   .actions(self => ({
     setRaceClubs(raceClubs) {

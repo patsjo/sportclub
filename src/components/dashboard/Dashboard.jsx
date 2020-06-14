@@ -1,18 +1,19 @@
-import React from "react";
+import React, { lazy } from "react";
 import styled from "styled-components";
 import useNews from "../news/useNews";
-import League from "../results/League";
-import ViewResults from "../results/ViewResults";
 import useEventorEntries from "../eventor/useEventorEntries";
 import EsriOSMOrienteeringMap from "../map/EsriOSMOrienteeringMap";
 import WeeklyCalendar from "../calendar/weekly/WeeklyCalendar";
-import MonthlyCalendar from "../calendar/monthly/MonthlyCalendar";
+import SponsorsSlideshow from "../sponsors/SponsorsSlideshow";
 import { observer, inject } from "mobx-react";
 import { getSnapshot } from "mobx-state-tree";
 import { dashboardContents } from "../../models/globalStateModel";
 import Columns from "./Columns";
 import InfiniteScroll from "react-infinite-scroller";
 import { Spin } from "antd";
+const League = lazy(() => import("../results/League"));
+const ViewResults = lazy(() => import("../results/ViewResults"));
+const MonthlyCalendar = lazy(() => import("../calendar/monthly/MonthlyCalendar"));
 
 export const ContentArea = styled.div`
   & {
@@ -59,6 +60,9 @@ const Dashboard = inject(
                 nofGraphics={globalStateModel.graphics.length}
               />
             ) : null}
+          </div>
+          <div column={-1}>
+            <SponsorsSlideshow />
           </div>
           <div column={-2} key="weeklyCalendar">
             <WeeklyCalendar />

@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, lazy, Suspense } from "react";
 import { inject, observer } from "mobx-react";
 import MenuItem from "../MenuItem";
 import { useTranslation } from "react-i18next";
 import { dashboardContents } from "../../../models/globalStateModel";
-import ResultsWizardModal from "../../results/ResultsWizardModal";
+const ResultsWizardModal = lazy(() => import("../../results/ResultsWizardModal"));
 
 const moduleName = "Results";
 const ResultsSubMenus = inject(
@@ -21,10 +21,12 @@ const ResultsSubMenus = inject(
     return (
       <>
         {addResultsWizardModalIsOpen ? (
-          <ResultsWizardModal
-            open={addResultsWizardModalIsOpen}
-            onClose={() => setAddResultsWizardModalIsOpen(false)}
-          />
+          <Suspense fallback={null}>
+            <ResultsWizardModal
+              open={addResultsWizardModalIsOpen}
+              onClose={() => setAddResultsWizardModalIsOpen(false)}
+            />
+          </Suspense>
         ) : null}
         <MenuItem
           key={"menuItem#results"}

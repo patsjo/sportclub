@@ -1,23 +1,28 @@
-import React, { Component } from "react";
+import React, { Component, Suspense, lazy } from "react";
 import clubJson from "./models/okorion";
 import { MobxClubModel } from "./models/mobxClubModel";
 import { SessionModel, getLocalStorage } from "./models/sessionModel";
 import { GlobalStateModel } from "./models/globalStateModel";
-import { Layout } from "antd";
+import { Layout, Spin } from "antd";
 import styled, { ThemeProvider } from "styled-components";
-import Dashboard from "./components/dashboard/Dashboard";
 import Toolbar from "./components/toolbar/Toolbar";
 import { Provider } from "mobx-react";
 import { PostJsonData } from "./utils/api";
+const Dashboard = lazy(() => import("./components/dashboard/Dashboard"));
 
 const StyledLayout = styled(Layout)`
   background-color: #ffffff;
 `;
 
+const SpinnerDiv = styled.div`
+  text-align: center;
+  width: 100%;
+`;
+
 const LayoutHeader = styled(Layout.Header)`
   &&& {
-    color: ${props => props.theme.palette.primary.contrastText};
-    background-color: ${props => props.theme.palette.primary.main};
+    color: ${(props) => props.theme.palette.primary.contrastText};
+    background-color: ${(props) => props.theme.palette.primary.main};
     padding-left: 10px;
     padding-right: 10px;
     display: flex;
@@ -47,7 +52,7 @@ const StyledTitleLogo = styled.img`
     margin-bottom: 10px;
     display: inline-flex;
   }
-  @media screen and (max-width: ${props => props.maxWidth}px) {
+  @media screen and (max-width: ${(props) => props.maxWidth}px) {
     display: none !important;
   }
 `;
@@ -125,7 +130,7 @@ class App extends Component {
         { "X-Requested-With": "XMLHttpRequest" },
         1
       )
-        .then(json => {
+        .then((json) => {
           if (json) {
             this.sessionModel.setSuccessfullyLogin(json.id, json.name, json.isAdmin, json.eventorPersonId);
           }
@@ -158,7 +163,15 @@ class App extends Component {
               <Toolbar />
             </LayoutHeader>
             <LayoutContent>
-              <Dashboard />
+              <Suspense
+                fallback={
+                  <SpinnerDiv>
+                    <Spin size="large" />
+                  </SpinnerDiv>
+                }
+              >
+                <Dashboard />
+              </Suspense>
             </LayoutContent>
           </StyledLayout>
         </ThemeProvider>
