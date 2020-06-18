@@ -49,7 +49,8 @@ i18next
             No: "No",
             Previous: "Previous",
             Next: "Next",
-            Of: "of"
+            Of: "of",
+            OurSponsors: "Our sponsors"
           },
           calendar: {
             Calendar: "Calendar",
@@ -249,7 +250,8 @@ i18next
             No: "Nej",
             Previous: "Tillbaka",
             Next: "Nästa",
-            Of: "av"
+            Of: "av",
+            OurSponsors: "Våra sponsorer"
           },
           calendar: {
             Calendar: "Kalender",

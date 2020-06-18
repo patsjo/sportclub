@@ -11,7 +11,8 @@ export const dashboardContents = {
   photo: 5,
   info: 6,
   results: 7,
-  individualResults: 8
+  individualResults: 8,
+  ourSponsors: 9
 };
 
 export const GlobalStateModel = types
@@ -24,7 +25,7 @@ export const GlobalStateModel = types
     news: types.compose(NewsModel),
     graphics: types.optional(types.array(Graphic), [])
   })
-  .actions(self => {
+  .actions((self) => {
     return {
       setValue(key, value) {
         self[key] = value;
@@ -37,7 +38,7 @@ export const GlobalStateModel = types
         self.rightMenuVisible = false;
       },
       setGraphics(type, graphics) {
-        self.graphics = self.graphics.filter(gr => gr.attributes.type !== type);
+        self.graphics = self.graphics.filter((gr) => gr.attributes.type !== type);
         self.graphics = self.graphics.concat(graphics);
       }
     };

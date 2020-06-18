@@ -14,6 +14,7 @@ import { Spin } from "antd";
 const League = lazy(() => import("../results/League"));
 const ViewResults = lazy(() => import("../results/ViewResults"));
 const MonthlyCalendar = lazy(() => import("../calendar/monthly/MonthlyCalendar"));
+const AllSponsors = lazy(() => import("../sponsors/AllSponsors"));
 
 export const ContentArea = styled.div`
   & {
@@ -96,6 +97,8 @@ const Dashboard = inject(
         <ViewResults key="clubViewResult" />
       ) : globalStateModel.dashboardContentId === dashboardContents.individualResults ? (
         <ViewResults key="individualViewResult" isIndividual />
+      ) : globalStateModel.dashboardContentId === dashboardContents.ourSponsors ? (
+        <AllSponsors key="individualViewResult" isIndividual />
       ) : null;
 
     return <ContentArea>{Content}</ContentArea>;

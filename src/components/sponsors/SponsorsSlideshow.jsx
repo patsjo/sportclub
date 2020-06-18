@@ -54,7 +54,7 @@ const SponsorsSlideshow = inject("clubModel")(
 
     return sponsors && sponsors.length > 0 ? (
       <SponsorContainer className="slide-container">
-        <SponsorText>Våra sponsorer</SponsorText>
+        <SponsorText>{t("common.OurSponsors")}</SponsorText>
         <Zoom {...zoomOutProperties}>
           {shuffle(sponsors).map((sponsor, index) =>
             sponsor.url ? (

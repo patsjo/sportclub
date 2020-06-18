@@ -87,6 +87,16 @@ const DrawerRightMenu = inject(
                   <ModuleSubMenu module={module} />
                 )
               )}
+              {clubModel.sponsors && clubModel.sponsors.length > 0 ? (
+                <MenuItem
+                  key={"menuItem#ourSponsors"}
+                  icon={"bank"}
+                  name={t("common.OurSponsors")}
+                  onClick={() => {
+                    globalStateModel.setDashboard(dashboardContents.ourSponsors);
+                  }}
+                />
+              ) : null}
             </StyledMenu>
           </StyledDrawer>
         );

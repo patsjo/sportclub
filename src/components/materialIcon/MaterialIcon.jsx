@@ -1,5 +1,6 @@
 import React from "react";
 import {
+  BankOutlined,
   BookOutlined,
   CloudUploadOutlined,
   DeleteOutlined,
@@ -30,6 +31,8 @@ const StyledImg = styled.img`
 
 const MaterialIcon = ({ icon, fontSize, marginRight }) => {
   switch (icon) {
+    case "bank":
+      return <BankOutlined style={{ verticalAlign: "middle", fontSize: fontSize }} />;
     case "book":
       return <BookOutlined style={{ verticalAlign: "middle", fontSize: fontSize }} />;
     case "cloud-upload":
