@@ -347,6 +347,15 @@ class EditResultRelay extends Component {
                 onChange={(code) => {
                   // eslint-disable-next-line eqeqeq
                   result.classClassificationId = code == undefined ? undefined : parseInt(code);
+                  const resultsWithSameClass = results.filter(
+                    (r) =>
+                      r.className === result.className &&
+                      r.stage === result.stage &&
+                      r.teamResultId !== result.teamResultId
+                  );
+                  resultsWithSameClass.forEach((r) =>
+                    r.setValue("classClassificationId", result.classClassificationId)
+                  );
                 }}
               />
             </FormItem>
@@ -366,6 +375,13 @@ class EditResultRelay extends Component {
                 allowClear={true}
                 onChange={(code) => {
                   result.difficulty = code;
+                  const resultsWithSameClass = results.filter(
+                    (r) =>
+                      r.className === result.className &&
+                      r.stage === result.stage &&
+                      r.teamResultId !== result.teamResultId
+                  );
+                  resultsWithSameClass.forEach((r) => r.setValue("difficulty", result.difficulty));
                 }}
               >
                 <Option value={difficulties.green}>
@@ -413,6 +429,13 @@ class EditResultRelay extends Component {
                 style={{ width: "100%" }}
                 onChange={(value) => {
                   result.lengthInMeter = value;
+                  const resultsWithSameClass = results.filter(
+                    (r) =>
+                      r.className === result.className &&
+                      r.stage === result.stage &&
+                      r.teamResultId !== result.teamResultId
+                  );
+                  resultsWithSameClass.forEach((r) => r.setValue("lengthInMeter", result.lengthInMeter));
                 }}
               />
             </FormItem>
@@ -501,6 +524,13 @@ class EditResultRelay extends Component {
                   self.setState({}, () => {
                     self.formRef.current.validateFields(["iSecondTime"], { force: true });
                   });
+                  const resultsWithSameClass = results.filter(
+                    (r) =>
+                      r.className === result.className &&
+                      r.stage === result.stage &&
+                      r.teamResultId !== result.teamResultId
+                  );
+                  resultsWithSameClass.forEach((r) => r.setValue("winnerTime", result.winnerTime));
                 }}
               />
             </FormItem>
@@ -528,6 +558,13 @@ class EditResultRelay extends Component {
                 style={{ width: "100%" }}
                 onChange={(time) => {
                   result.secondTime = !time ? null : time.format(timeFormat);
+                  const resultsWithSameClass = results.filter(
+                    (r) =>
+                      r.className === result.className &&
+                      r.stage === result.stage &&
+                      r.teamResultId !== result.teamResultId
+                  );
+                  resultsWithSameClass.forEach((r) => r.setValue("secondTime", result.secondTime));
                 }}
               />
             </FormItem>
@@ -586,6 +623,13 @@ class EditResultRelay extends Component {
                 style={{ width: "100%" }}
                 onChange={(value) => {
                   result.nofStartsInClass = value;
+                  const resultsWithSameClass = results.filter(
+                    (r) =>
+                      r.className === result.className &&
+                      r.stage === result.stage &&
+                      r.teamResultId !== result.teamResultId
+                  );
+                  resultsWithSameClass.forEach((r) => r.setValue("nofStartsInClass", result.nofStartsInClass));
                 }}
               />
             </FormItem>
@@ -617,6 +661,10 @@ class EditResultRelay extends Component {
                 style={{ width: "100%" }}
                 onChange={(value) => {
                   result.totalStages = value;
+                  const resultsWithSameClass = results.filter(
+                    (r) => r.className === result.className && r.teamResultId !== result.teamResultId
+                  );
+                  resultsWithSameClass.forEach((r) => r.setValue("totalStages", result.totalStages));
                 }}
               />
             </FormItem>
@@ -733,6 +781,12 @@ class EditResultRelay extends Component {
                 style={{ width: "100%" }}
                 onChange={(value) => {
                   result.totalNofStartsInClass = value;
+                  const resultsWithSameClass = results.filter(
+                    (r) => r.className === result.className && r.teamResultId !== result.teamResultId
+                  );
+                  resultsWithSameClass.forEach((r) =>
+                    r.setValue("totalNofStartsInClass", result.totalNofStartsInClass)
+                  );
                 }}
               />
             </FormItem>

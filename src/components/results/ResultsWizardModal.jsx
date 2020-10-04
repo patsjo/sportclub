@@ -18,7 +18,7 @@ import EditResultRelay from "./EditResultRelay";
 import { GetRanking, GetRacePoint, GetRaceOldPoint, GetPointRunTo1000 } from "../../utils/resultHelper";
 import { ConfirmOverwriteOrEdit } from "./ConfirmOverwriteOrEditPromise";
 
-const { confirm } = Modal;
+const { info } = Modal;
 const StyledModalContent = styled.div``;
 const StyledSteps = styled(Steps)`
   &&& {
@@ -230,7 +230,7 @@ const ResultsWizardModal = inject(
                       ? { teamResultId: -1000 - Math.floor(Math.random() * 100000000) }
                       : { resultId: -1000 - Math.floor(Math.random() * 100000000) };
                     let confirmModal;
-                    confirmModal = confirm({
+                    confirmModal = info({
                       width: 800,
                       icon: <StyledIcon type="plus" />,
                       title: t("results.AddCompetitor"),

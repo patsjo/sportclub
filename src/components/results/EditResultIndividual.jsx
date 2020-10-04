@@ -285,6 +285,12 @@ class EditResultIndividual extends Component {
                 )}
                 onChange={(code) => {
                   result.classClassificationId = !code ? undefined : parseInt(code);
+                  const resultsWithSameClass = results.filter(
+                    (r) => r.className === result.className && r.resultId !== result.resultId
+                  );
+                  resultsWithSameClass.forEach((r) =>
+                    r.setValue("classClassificationId", result.classClassificationId)
+                  );
                 }}
               />
             </FormItem>
@@ -304,6 +310,10 @@ class EditResultIndividual extends Component {
                 allowClear={true}
                 onChange={(code) => {
                   result.difficulty = code;
+                  const resultsWithSameClass = results.filter(
+                    (r) => r.className === result.className && r.resultId !== result.resultId
+                  );
+                  resultsWithSameClass.forEach((r) => r.setValue("difficulty", result.difficulty));
                 }}
               >
                 <Option value={difficulties.green}>
@@ -351,6 +361,10 @@ class EditResultIndividual extends Component {
                 style={{ width: "100%" }}
                 onChange={(value) => {
                   result.lengthInMeter = value;
+                  const resultsWithSameClass = results.filter(
+                    (r) => r.className === result.className && r.resultId !== result.resultId
+                  );
+                  resultsWithSameClass.forEach((r) => r.setValue("lengthInMeter", result.lengthInMeter));
                 }}
               />
             </FormItem>
@@ -444,6 +458,10 @@ class EditResultIndividual extends Component {
                   self.setState({}, () => {
                     self.formRef.current.validateFields(["iSecondTime"], { force: true });
                   });
+                  const resultsWithSameClass = results.filter(
+                    (r) => r.className === result.className && r.resultId !== result.resultId
+                  );
+                  resultsWithSameClass.forEach((r) => r.setValue("winnerTime", result.winnerTime));
                 }}
               />
             </FormItem>
@@ -471,6 +489,10 @@ class EditResultIndividual extends Component {
                 style={{ width: "100%" }}
                 onChange={(time) => {
                   result.secondTime = !time ? null : time.format(timeFormat);
+                  const resultsWithSameClass = results.filter(
+                    (r) => r.className === result.className && r.resultId !== result.resultId
+                  );
+                  resultsWithSameClass.forEach((r) => r.setValue("secondTime", result.secondTime));
                 }}
               />
             </FormItem>
@@ -529,6 +551,10 @@ class EditResultIndividual extends Component {
                 style={{ width: "100%" }}
                 onChange={(value) => {
                   result.nofStartsInClass = value;
+                  const resultsWithSameClass = results.filter(
+                    (r) => r.className === result.className && r.resultId !== result.resultId
+                  );
+                  resultsWithSameClass.forEach((r) => r.setValue("nofStartsInClass", result.nofStartsInClass));
                 }}
               />
             </FormItem>
@@ -576,6 +602,13 @@ class EditResultIndividual extends Component {
                     self.formRef.current.validateFields(["iFeeToClub"], {
                       force: true
                     });
+                  });
+                  const resultsWithSameClass = results.filter(
+                    (r) => r.className === result.className && r.resultId !== result.resultId
+                  );
+                  resultsWithSameClass.forEach((r) => {
+                    r.setValue("originalFee", result.originalFee);
+                    r.setValue("feeToClub", GetCompetitorFee(paymentModel, r));
                   });
                 }}
               />
@@ -672,6 +705,13 @@ class EditResultIndividual extends Component {
                   });
                   self.setState({ raceEventClassification: raceEventClassification }, () => {
                     self.formRef.current.validateFields(["iClassClassificationId"], { force: true });
+                  });
+                  const resultsWithSameClass = results.filter(
+                    (r) => r.className === result.className && r.resultId !== result.resultId
+                  );
+                  resultsWithSameClass.forEach((r) => {
+                    r.setValue("deviantEventClassificationId", result.deviantEventClassificationId);
+                    r.setValue("classClassificationId", result.classClassificationId);
                   });
                 }}
               />

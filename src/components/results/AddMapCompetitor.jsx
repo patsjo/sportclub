@@ -12,6 +12,7 @@ class AddMapCompetitor extends Component {
   static propTypes = {
     addLinkCompetitor: PropTypes.object.isRequired,
     competitorsOptions: PropTypes.arrayOf(PropTypes.object),
+    defaultActiveKey: PropTypes.number.isRequired,
     onTabChange: PropTypes.func.isRequired,
     onValidate: PropTypes.func.isRequired
   };
@@ -38,7 +39,7 @@ class AddMapCompetitor extends Component {
 
   render() {
     const self = this;
-    const { t, addLinkCompetitor, competitorsOptions, onValidate } = this.props;
+    const { t, addLinkCompetitor, competitorsOptions, defaultActiveKey, onValidate } = this.props;
     const { formId } = this.state;
 
     return (
@@ -57,7 +58,7 @@ class AddMapCompetitor extends Component {
             : moment(addLinkCompetitor.newCompetitor.iStartDate, dateFormat)
         }}
       >
-        <Tabs defaultActiveKey="1" onChange={self.onThisTabChange.bind(self)}>
+        <Tabs defaultActiveKey={defaultActiveKey} onChange={self.onThisTabChange.bind(self)}>
           <TabPane tab={t("results.MapCompetitor")} key="1">
             <FormItem
               name="iCompetitorId"

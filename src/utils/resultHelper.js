@@ -2,7 +2,7 @@ import moment from "moment";
 import { timeFormat } from "./formHelper";
 import { payments, failedReasons, difficulties, distances, lightConditions } from "../utils/resultConstants";
 
-export const GetTimeWithHour = timeString => {
+export const GetTimeWithHour = (timeString) => {
   if (!timeString || timeString.length < 4) {
     return null;
   } else if (timeString.length === 4) {
@@ -14,7 +14,7 @@ export const GetTimeWithHour = timeString => {
   }
 };
 
-export const FormatTime = timeString => {
+export const FormatTime = (timeString) => {
   if (!timeString) {
     return null;
   }
@@ -26,7 +26,7 @@ export const FormatTime = timeString => {
   return time.format("H:mm:ss");
 };
 
-const ConvertTimeToSeconds = timeString => {
+const ConvertTimeToSeconds = (timeString) => {
   try {
     if (!timeString || timeString.length < 4) {
       return 0;
@@ -44,7 +44,7 @@ const ConvertTimeToSeconds = timeString => {
   }
 };
 
-const ConvertTimeWithFractionsToSeconds = timeString => {
+const ConvertTimeWithFractionsToSeconds = (timeString) => {
   try {
     if (!timeString || timeString.length < 8) {
       return 0;
@@ -63,7 +63,7 @@ const ConvertTimeWithFractionsToSeconds = timeString => {
   }
 };
 
-export const ConvertSecondsToTime = timeInSeconds => {
+export const ConvertSecondsToTime = (timeInSeconds) => {
   const hours = Math.floor(timeInSeconds / 3600);
   const minutes = Math.floor((timeInSeconds - hours * 3600) / 60);
   const seconds = Math.floor(timeInSeconds - hours * 3600 - minutes * 60);
@@ -71,7 +71,7 @@ export const ConvertSecondsToTime = timeInSeconds => {
   return time.format("HH:mm:ss.SSS");
 };
 
-export const ConvertSecondsWithFractionsToTime = timeInSeconds => {
+export const ConvertSecondsWithFractionsToTime = (timeInSeconds) => {
   const hours = Math.floor(timeInSeconds / 3600);
   const minutes = Math.floor((timeInSeconds - hours * 3600) / 60);
   const seconds = Math.floor(timeInSeconds - hours * 3600 - minutes * 60);
@@ -125,7 +125,7 @@ export const GetFees = (entryFees, entryFeeIds, age, isOpenClass) => {
     return fees;
   }
   const competitorEntryFees = entryFees
-    .filter(fee => entryFeeIds.includes(fee.EntryFeeId))
+    .filter((fee) => entryFeeIds.includes(fee.EntryFeeId))
     .sort((a, b) =>
       !a.ValidFromDate ? -1 : !b.ValidFromDate ? 1 : a.ValidFromDate.Date < b.ValidFromDate.Date ? -1 : 1
     );
@@ -137,26 +137,26 @@ export const GetFees = (entryFees, entryFeeIds, age, isOpenClass) => {
     ? competitorEntryFees[0].ValidFromDate.Date
     : undefined;
   const originalFees = competitorEntryFees.filter(
-    fee =>
+    (fee) =>
       (!fee.ValidFromDate || fee.ValidFromDate.Date === firstValidFromDate) &&
       fee["@attributes"].valueOperator === "fixed"
   );
   const lateFees = competitorEntryFees.filter(
-    fee =>
-      !originalFees.map(oFee => oFee.EntryFeeId).includes(fee.EntryFeeId) &&
+    (fee) =>
+      !originalFees.map((oFee) => oFee.EntryFeeId).includes(fee.EntryFeeId) &&
       fee["@attributes"].valueOperator === "fixed"
   );
-  const extraPercentage = competitorEntryFees.find(fee => fee["@attributes"].valueOperator === "percent");
+  const extraPercentage = competitorEntryFees.find((fee) => fee["@attributes"].valueOperator === "percent");
 
   if (isOpenClass) {
     if (age <= 16) {
-      fees.originalFee = Math.min(...originalFees.map(fee => parseInt(fee.Amount)));
+      fees.originalFee = Math.min(...originalFees.map((fee) => parseInt(fee.Amount)));
     } else {
-      fees.originalFee = Math.max(...originalFees.map(fee => parseInt(fee.Amount)));
+      fees.originalFee = Math.max(...originalFees.map((fee) => parseInt(fee.Amount)));
     }
   } else {
-    fees.originalFee = originalFees.map(fee => parseInt(fee.Amount)).reduce((a, b) => a + b, 0);
-    fees.lateFee = lateFees.map(fee => parseInt(fee.Amount)).reduce((a, b) => a + b, 0);
+    fees.originalFee = originalFees.map((fee) => parseInt(fee.Amount)).reduce((a, b) => a + b, 0);
+    fees.lateFee = lateFees.map((fee) => parseInt(fee.Amount)).reduce((a, b) => a + b, 0);
     // eslint-disable-next-line eqeqeq
     if (extraPercentage != undefined) {
       fees.lateFee += (fees.originalFee * parseInt(extraPercentage.Amount)) / 100;
@@ -290,10 +290,10 @@ export const ResetClassClassifications = (raceEvent, eventClassifications, class
   } else if (raceEvent.teamResults && raceEvent.teamResults.length > 0) {
     results = raceEvent.teamResults;
   }
-  results.forEach(result => {
+  results.forEach((result) => {
     if (!result.deviantEventClassificationId) {
       const classLevel = classLevels
-        .filter(cl => result.className.indexOf(cl.classShortName) >= 0)
+        .filter((cl) => result.className.indexOf(cl.classShortName) >= 0)
         .sort((a, b) => (a.classShortName.length < b.classShortName.length ? 1 : -1))
         .find(() => true);
       const classClassificationId = GetClassClassificationId(
@@ -333,15 +333,15 @@ export const GetCompetitorFee = (paymentModel, result) => {
   return undefined;
 };
 
-export const CalculateCompetitorsFee = raceEvent => {
+export const CalculateCompetitorsFee = (raceEvent) => {
   if (raceEvent.results && raceEvent.results.length > 0) {
-    raceEvent.results.forEach(result => {
+    raceEvent.results.forEach((result) => {
       result.setValue("feeToClub", GetCompetitorFee(raceEvent.paymentModel, result));
     });
   }
 };
 
-export const GetClassShortName = className => {
+export const GetClassShortName = (className) => {
   if (!className || className.length === 0) {
     return null;
   }
@@ -382,13 +382,13 @@ export const GetClassClassificationId = (eventClassificationId, classLevel, even
   if (!eventClassificationId || !classLevel || !eventClassifications) {
     return null;
   }
-  const eventClassification = eventClassifications.find(ec => ec.eventClassificationId === eventClassificationId);
+  const eventClassification = eventClassifications.find((ec) => ec.eventClassificationId === eventClassificationId);
   if (!eventClassification) {
     return null;
   }
   const classClassification = eventClassification.classClassifications
     .filter(
-      cc =>
+      (cc) =>
         (cc.classTypeShortName && cc.classTypeShortName === classLevel.classTypeShortName) ||
         (cc.ageUpperLimit && cc.ageUpperLimit >= classLevel.age) ||
         (cc.ageLowerLimit && cc.ageLowerLimit <= classLevel.age) ||
@@ -412,7 +412,7 @@ export const GetAward = (raceEventClassification, classLevels, result, competito
   }
 
   let classLevel = classLevels
-    .filter(cl => result.className.indexOf(cl.classShortName) >= 0)
+    .filter((cl) => result.className.indexOf(cl.classShortName) >= 0)
     .sort((a, b) => (a.classShortName.length < b.classShortName.length ? 1 : -1))
     .find(() => true);
   if (!classLevel || result.className.toLowerCase().indexOf("ö") >= 0) {
@@ -442,7 +442,7 @@ export const GetAward = (raceEventClassification, classLevels, result, competito
     return null;
   }
 
-  const maxMinutes = percentage => Math.ceil(((100 + percentage) * winnerTimeInMinutes) / 100);
+  const maxMinutes = (percentage) => Math.ceil(((100 + percentage) * winnerTimeInMinutes) / 100);
   let award = null;
 
   if (classLevel.age <= 16) {
@@ -500,6 +500,21 @@ export const GetAward = (raceEventClassification, classLevels, result, competito
     if (timeInMinutes <= maxMinutes(30)) {
       award = "B";
     }
+  } else if (raceEventClassification.eventClassificationId === "I") {
+    if (timeInMinutes <= maxMinutes(50)) {
+      award = "B";
+    }
+    if (
+      classLevel.classTypeShortName !== "E" &&
+      classLevel.classTypeShortName !== "T" &&
+      classLevel.classTypeShortName !== "S" &&
+      !isSprint &&
+      timeInMinutes <= maxMinutes(20)
+    ) {
+      award = "S";
+    } else if (!isSprint && timeInMinutes <= maxMinutes(40)) {
+      award = "S";
+    }
   } else if (
     classLevel.classTypeShortName !== "E" &&
     classLevel.classTypeShortName !== "T" &&
@@ -534,9 +549,9 @@ export const GetAward = (raceEventClassification, classLevels, result, competito
 
 export const CalculateAllAwards = (raceClubs, raceEvent) => {
   const raceEventClassification = raceClubs.eventClassifications.find(
-    ec => ec.eventClassificationId === raceEvent.eventClassificationId
+    (ec) => ec.eventClassificationId === raceEvent.eventClassificationId
   );
-  raceEvent.results.forEach(result => {
+  raceEvent.results.forEach((result) => {
     const competitor = raceClubs.selectedClub.competitorById(result.competitorId);
     const age = GetAge(competitor.birthDay, raceEvent.raceDate);
 

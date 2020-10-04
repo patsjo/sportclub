@@ -38,7 +38,7 @@ import EditResultRelay from "./EditResultRelay";
 import { withTranslation } from "react-i18next";
 import moment from "moment";
 
-const { confirm } = Modal;
+const { info } = Modal;
 const MakeArray = (object) => (!object ? [] : Array.isArray(object) ? object : [object]);
 
 // @inject("clubModel")
@@ -200,6 +200,8 @@ const ResultWizardStep2EditRace = inject(
                   eventClassificationId = "E";
                   break;
                 case "3":
+                  eventClassificationId = "I";
+                  break;
                 case "4":
                 case "5":
                   eventClassificationId = "G";
@@ -780,7 +782,7 @@ const ResultWizardStep2EditRace = inject(
                   onClick={() => {
                     const resultObject = { ...record };
                     let confirmModal;
-                    confirmModal = confirm({
+                    confirmModal = info({
                       width: 800,
                       icon: <StyledIcon type="edit" />,
                       title: `${t("results.Edit")} (${

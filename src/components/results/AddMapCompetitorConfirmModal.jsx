@@ -10,7 +10,15 @@ export const AddMapCompetitorConfirmModal = (t, competitorId, personId, newCompe
       competitorId: competitorId,
       newCompetitor: newCompetitor
     };
-    let selectedTabKey = "1";
+    const option =
+      !competitorId &&
+      clubModel.raceClubs.selectedClub.competitorsOptions.find((opt) =>
+        opt.description.startsWith(`${newCompetitor.iFirstName} ${newCompetitor.iLastName} (`)
+      );
+    if (option) {
+      confirmObject.competitorId = parseInt(option.code);
+    }
+    let selectedTabKey = confirmObject.competitorId ? "1" : "2";
     let confirmModal;
     confirmModal = confirm({
       title:
@@ -19,10 +27,11 @@ export const AddMapCompetitorConfirmModal = (t, competitorId, personId, newCompe
           : "",
       content: (
         <AddMapCompetitor
+          defaultActiveKey={selectedTabKey}
           addLinkCompetitor={confirmObject}
           competitorsOptions={clubModel.raceClubs.selectedClub.competitorsOptions}
-          onTabChange={key => (selectedTabKey = key)}
-          onValidate={valid =>
+          onTabChange={(key) => (selectedTabKey = key)}
+          onValidate={(valid) =>
             confirmModal.update({
               okButtonProps: {
                 disabled: !valid
@@ -46,7 +55,7 @@ export const AddMapCompetitorConfirmModal = (t, competitorId, personId, newCompe
             !comp.eventorCompetitorIds.includes(personId)
           ) {
             comp
-              .addEventorId(clubModel.modules.find(module => module.name === "Results").addUrl, personId)
+              .addEventorId(clubModel.modules.find((module) => module.name === "Results").addUrl, personId)
               .then(() => resolve(comp));
           } else {
             resolve(comp);
@@ -54,14 +63,21 @@ export const AddMapCompetitorConfirmModal = (t, competitorId, personId, newCompe
         } else {
           clubModel.raceClubs.selectedClub
             .addCompetitor(
-              clubModel.modules.find(module => module.name === "Results").addUrl,
+              clubModel.modules.find((module) => module.name === "Results").addUrl,
               confirmObject.newCompetitor
             )
-            .then(competitorId => resolve(clubModel.raceClubs.selectedClub.competitorById(competitorId)));
+            .then((competitorId) => resolve(clubModel.raceClubs.selectedClub.competitorById(competitorId)));
         }
       },
       onCancel() {
         reject();
       }
     });
+    if (option) {
+      confirmModal.update({
+        okButtonProps: {
+          disabled: false
+        }
+      });
+    }
   });

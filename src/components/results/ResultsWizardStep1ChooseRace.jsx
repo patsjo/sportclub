@@ -113,8 +113,23 @@ const ResultWizardStep1ChooseRace = inject(
                                 cr.PersonResult = cr.PersonResult[0];
                               }
                               if (
+                                cr.PersonResult &&
                                 cr.PersonResult.Organisation.OrganisationId ===
-                                clubModel.raceClubs.selectedClub.eventorOrganisationId.toString()
+                                  clubModel.raceClubs.selectedClub.eventorOrganisationId.toString()
+                              ) {
+                                isCurrentClub = true;
+                              }
+                              if (Array.isArray(cr.TeamResult)) {
+                                cr.TeamResult = cr.TeamResult[0];
+                              }
+                              if (
+                                (cr.TeamResult &&
+                                  cr.TeamResult.Organisation.OrganisationId ===
+                                    clubModel.raceClubs.selectedClub.eventorOrganisationId.toString()) ||
+                                (cr.TeamResult &&
+                                  cr.TeamResult.TeamMemberResult &&
+                                  cr.TeamResult.TeamMemberResult.Organisation.OrganisationId ===
+                                    clubModel.raceClubs.selectedClub.eventorOrganisationId.toString())
                               ) {
                                 isCurrentClub = true;
                               }
