@@ -216,7 +216,7 @@ const ResultsWizardModal = inject(
               visible={self.props.open}
               onCancel={self.props.onClose}
               width="calc(100% - 80px)"
-              style={{ minWidth: 1250 }}
+              style={{ top: 40, minWidth: 1250 }}
               footer={[
                 <Button variant="contained" disabled={wizardStep < 1} onClick={() => self.prev()}>
                   <LeftOutlined />

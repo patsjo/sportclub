@@ -144,6 +144,8 @@ i18next
             QueryDateRange: "Query date range",
             QueryIncludeExisting: "Include already saved races",
             QueryForEventWithNoEntry: "Query for event with no entry (Takes long time because bad API in eventor)",
+            MaxDistanceDistrict: "Only show regional events within [km]",
+            MaxDistanceNearbyAndClub: "Only show local and club events within [km]",
             ImportEventExistInEventor: "Edit existing or import race that exists in eventor",
             ExistInEventor: "Exists in eventor",
             Date: "Date",
@@ -347,6 +349,8 @@ i18next
             QueryForEventWithNoEntry:
               "Sök även efter tävlingar med bara direktanmälningar (Tar lång tid pga dåligt API i eventor)",
             ImportEventExistInEventor: "Redigera eller importera tävling som finns i eventor",
+            MaxDistanceDistrict: "Visa endast distriktstävlingar inom [km]",
+            MaxDistanceNearbyAndClub: "Visa endast när- och klubbtävlingar inom [km]",
             ExistInEventor: "Finns i eventor",
             Date: "Datum",
             Time: "Tid",

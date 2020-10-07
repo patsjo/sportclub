@@ -119,9 +119,9 @@ const EventRace = inject("clubModel")(
                   encodeURIComponent("ApiKey: " + self.props.clubModel.eventor.apiKey),
                 false
               )
-            : new Promise(resolve => resolve(undefined));
+            : new Promise((resolve) => resolve(undefined));
         const resultPromise =
-          eventObject.Event.EventStatusId >= 8
+          eventObject.Event.EventStatusId >= 8 && eventObject.Event.EventStatusId !== 10
             ? GetJsonData(
                 self.props.clubModel.corsProxy +
                   encodeURIComponent(
@@ -136,9 +136,9 @@ const EventRace = inject("clubModel")(
                   encodeURIComponent("ApiKey: " + self.props.clubModel.eventor.apiKey),
                 false
               )
-            : new Promise(resolve => resolve(undefined));
+            : new Promise((resolve) => resolve(undefined));
 
-        Promise.all([classPromise, startPromise, resultPromise]).then(jsons => {
+        Promise.all([classPromise, startPromise, resultPromise]).then((jsons) => {
           const classJson = jsons[0];
           const startJson = jsons[1];
           const resultJson = jsons[2];
@@ -146,14 +146,16 @@ const EventRace = inject("clubModel")(
           if (startJson != undefined && startJson.ClassStart != undefined) {
             eventObject.Competitors = [];
             const ClassStarts = Array.isArray(startJson.ClassStart) ? startJson.ClassStart : [startJson.ClassStart];
-            ClassStarts.forEach(classStart => {
+            ClassStarts.forEach((classStart) => {
               let currentClass = { EventClassId: classStart.EventClassId };
               // eslint-disable-next-line eqeqeq
               if (classJson != undefined) {
-                currentClass = classJson.EventClass.find(evtClass => evtClass.EventClassId === classStart.EventClassId);
+                currentClass = classJson.EventClass.find(
+                  (evtClass) => evtClass.EventClassId === classStart.EventClassId
+                );
                 if (Array.isArray(currentClass.ClassRaceInfo)) {
                   currentClass.numberOfEntries = currentClass.ClassRaceInfo.find(
-                    raceInfo => raceInfo.EventRaceId === eventObject.EventRaceId
+                    (raceInfo) => raceInfo.EventRaceId === eventObject.EventRaceId
                   )["@attributes"].noOfEntries;
                 } else {
                   currentClass.numberOfEntries = currentClass["@attributes"].numberOfEntries;
@@ -164,13 +166,13 @@ const EventRace = inject("clubModel")(
               if (classStart.PersonStart != undefined) {
                 const PersonStarts = Array.isArray(classStart.PersonStart)
                   ? classStart.PersonStart.filter(
-                      personStart =>
+                      (personStart) =>
                         // eslint-disable-next-line eqeqeq
                         personStart.RaceStart == undefined ||
                         personStart.RaceStart.EventRaceId === eventObject.EventRaceId
                     )
                   : [classStart.PersonStart];
-                PersonStarts.forEach(personStart => {
+                PersonStarts.forEach((personStart) => {
                   eventObject.Competitors.push({
                     Person: personStart.Person,
                     EntryClass: currentClass,
@@ -182,7 +184,7 @@ const EventRace = inject("clubModel")(
               // eslint-disable-next-line eqeqeq
               if (classStart.TeamStart != undefined) {
                 const TeamStarts = Array.isArray(classStart.TeamStart) ? classStart.TeamStart : [classStart.TeamStart];
-                TeamStarts.forEach(teamStart => {
+                TeamStarts.forEach((teamStart) => {
                   eventObject.Competitors.push({
                     Person: {
                       PersonName: { Given: teamStart.TeamName, Family: "" }
@@ -200,18 +202,18 @@ const EventRace = inject("clubModel")(
             const ClassResults = Array.isArray(resultJson.ClassResult)
               ? resultJson.ClassResult
               : [resultJson.ClassResult];
-            ClassResults.forEach(classResult => {
+            ClassResults.forEach((classResult) => {
               let currentClass = {
                 EventClassId: classResult.EventClass.EventClassId
               };
               // eslint-disable-next-line eqeqeq
               if (classJson != undefined) {
                 currentClass = classJson.EventClass.find(
-                  evtClass => evtClass.EventClassId === classResult.EventClass.EventClassId
+                  (evtClass) => evtClass.EventClassId === classResult.EventClass.EventClassId
                 );
                 if (Array.isArray(currentClass.ClassRaceInfo)) {
                   currentClass.ClassRaceInfo = currentClass.ClassRaceInfo.find(
-                    raceInfo => raceInfo.EventRaceId === eventObject.EventRaceId
+                    (raceInfo) => raceInfo.EventRaceId === eventObject.EventRaceId
                   );
                 }
                 currentClass.numberOfEntries = currentClass.ClassRaceInfo["@attributes"].noOfEntries;
@@ -222,7 +224,7 @@ const EventRace = inject("clubModel")(
               if (classResult.PersonResult != undefined) {
                 const PersonResults = Array.isArray(classResult.PersonResult)
                   ? classResult.PersonResult.filter(
-                      personResult =>
+                      (personResult) =>
                         // eslint-disable-next-line eqeqeq
                         personResult.RaceResult == undefined ||
                         personResult.RaceResult.EventRaceId === eventObject.EventRaceId
@@ -232,7 +234,7 @@ const EventRace = inject("clubModel")(
                     classResult.PersonResult.RaceResult.EventRaceId === eventObject.EventRaceId
                   ? [classResult.PersonResult]
                   : [];
-                PersonResults.forEach(personResult => {
+                PersonResults.forEach((personResult) => {
                   eventObject.Competitors.push({
                     Person: personResult.Person,
                     EntryClass: currentClass,
@@ -257,7 +259,7 @@ const EventRace = inject("clubModel")(
               // }
             });
           }
-          eventObject.Competitors.forEach(competitor => {
+          eventObject.Competitors.forEach((competitor) => {
             // eslint-disable-next-line eqeqeq
             if (competitor.Start == undefined || competitor.Start.StartTime == undefined) {
               competitor.Start = {
@@ -269,11 +271,11 @@ const EventRace = inject("clubModel")(
             // eslint-disable-next-line eqeqeq
             if (competitor.EntryClass.ClassShortName == undefined && classJson != undefined) {
               const currentClass = classJson.EventClass.find(
-                evtClass => evtClass.EventClassId === competitor.EntryClass.EventClassId
+                (evtClass) => evtClass.EventClassId === competitor.EntryClass.EventClassId
               );
               if (Array.isArray(currentClass.ClassRaceInfo)) {
                 currentClass.ClassRaceInfo = currentClass.ClassRaceInfo.find(
-                  raceInfo => raceInfo.EventRaceId === eventObject.EventRaceId
+                  (raceInfo) => raceInfo.EventRaceId === eventObject.EventRaceId
                 );
               }
               currentClass.numberOfEntries = currentClass.ClassRaceInfo["@attributes"].noOfEntries;
@@ -293,7 +295,7 @@ const EventRace = inject("clubModel")(
             // eslint-disable-next-line eqeqeq
           } else if (resultJson != undefined && resultJson.ClassResult != undefined) {
             eventObject.Competitors = eventObject.Competitors.filter(
-              competitor =>
+              (competitor) =>
                 // eslint-disable-next-line eqeqeq
                 competitor.Result != undefined && competitor.Result.CompetitorStatus["@attributes"].value === "OK"
             );
@@ -327,7 +329,7 @@ const EventRace = inject("clubModel")(
           this.state.loaded && this.state.showStart ? (
             <StyledTable>
               <StyledTableBody>
-                {this.state.eventObject.Competitors.map(competitor => (
+                {this.state.eventObject.Competitors.map((competitor) => (
                   <StyledTableRow key={"entryID#" + (competitor.EntryId || competitor.Start.StartId)}>
                     <StyledTableDataName>
                       {competitor.Person.PersonName.Given + " " + competitor.Person.PersonName.Family}
@@ -340,8 +342,10 @@ const EventRace = inject("clubModel")(
                           : "")}
                     </StyledTableDataClass>
                     <StyledTableDataStart>
-                      {// eslint-disable-next-line eqeqeq
-                      competitor.Start != undefined ? competitor.Start.StartTime.Clock : ""}
+                      {
+                        // eslint-disable-next-line eqeqeq
+                        competitor.Start != undefined ? competitor.Start.StartTime.Clock : ""
+                      }
                     </StyledTableDataStart>
                   </StyledTableRow>
                 ))}
@@ -350,7 +354,7 @@ const EventRace = inject("clubModel")(
           ) : this.state.loaded && this.state.showResult ? (
             <StyledTable>
               <StyledTableBody>
-                {this.state.eventObject.Competitors.map(competitor => (
+                {this.state.eventObject.Competitors.map((competitor) => (
                   <StyledTableRow key={"entryID#" + (competitor.EntryId || competitor.Result.ResultId)}>
                     <StyledTableDataName>
                       {competitor.Result.ResultPosition +
@@ -378,7 +382,7 @@ const EventRace = inject("clubModel")(
           ) : this.state.loaded && this.state.showEntries ? (
             <StyledTable>
               <StyledTableBody>
-                {this.state.eventObject.Competitors.map(competitor => (
+                {this.state.eventObject.Competitors.map((competitor) => (
                   <StyledTableRow key={"entryID#" + (competitor.EntryId || competitor.Start.StartId)}>
                     <StyledTableDataName>
                       {competitor.Person.PersonName.Given + " " + competitor.Person.PersonName.Family}

@@ -17,7 +17,7 @@ export const GetPositionModal = (t, longitude, latitude, exists) =>
             key="confirm#getPositionMap"
             containerId="getPositionMap"
             mapCenter={mapCenter}
-            graphics={exists ? [{ geometry: { longitude: longitude, latitude: latitude } }] : undefined}
+            graphics={exists ? [{ geometry: { type: "point", longitude: longitude, latitude: latitude } }] : undefined}
             onClick={(graphicLayer, graphic) => {
               selectedPosition = graphic.geometry;
               graphicLayer.removeAll();

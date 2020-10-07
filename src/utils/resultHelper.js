@@ -492,9 +492,7 @@ export const GetAward = (raceEventClassification, classLevels, result, competito
         award = "UM";
       }
     }
-  } else if (
-    [difficulties.green, difficulties.white, difficulties.yellow, difficulties.orange].includes(result.difficulty)
-  ) {
+  } else if ([difficulties.green, difficulties.white, difficulties.yellow].includes(result.difficulty)) {
     award = null;
   } else if (raceEventClassification.eventClassificationId === "G") {
     if (timeInMinutes <= maxMinutes(30)) {

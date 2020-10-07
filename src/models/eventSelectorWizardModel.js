@@ -1,37 +1,36 @@
 import { types } from "mobx-state-tree";
 import moment from "moment";
 
-const setLocalStorage = eventSelectorWizard => {
+const setLocalStorage = (eventSelectorWizard) => {
   const obj = {
     queryStartDate: eventSelectorWizard.queryStartDate,
-    queryEndDate: eventSelectorWizard.queryEndDate
+    queryEndDate: eventSelectorWizard.queryEndDate,
+    maxDistanceDistrict: eventSelectorWizard.maxDistanceDistrict,
+    maxDistanceNearbyAndClub: eventSelectorWizard.maxDistanceNearbyAndClub
   };
 
   localStorage.setItem("eventSelectorWizard", JSON.stringify(obj));
 };
 
 export const getLocalStorage = () => {
-  const startDate = moment()
-    .startOf("year")
-    .format("YYYY-MM-DD");
-  const endDate = moment()
-    .endOf("year")
-    .format("YYYY-MM-DD");
+  const startDate = moment().startOf("year").format("YYYY-MM-DD");
+  const endDate = moment().endOf("year").format("YYYY-MM-DD");
   try {
     const eventSelectorWizardData = localStorage.getItem("eventSelectorWizard");
 
-    if (!eventSelectorWizardData) {
-      return {
-        queryStartDate: startDate,
-        queryEndDate: endDate
-      };
-    }
-
-    return JSON.parse(eventSelectorWizardData);
+    return {
+      queryStartDate: startDate,
+      queryEndDate: endDate,
+      maxDistanceDistrict: 140,
+      maxDistanceNearbyAndClub: 80,
+      ...(eventSelectorWizardData ? JSON.parse(eventSelectorWizardData) : {})
+    };
   } catch (error) {
     return {
       queryStartDate: startDate,
-      queryEndDate: endDate
+      queryEndDate: endDate,
+      maxDistanceDistrict: 140,
+      maxDistanceNearbyAndClub: 80
     };
   }
 };
@@ -52,9 +51,11 @@ export const EventSelectorWizard = types
   .model({
     queryStartDate: types.string,
     queryEndDate: types.string,
+    maxDistanceDistrict: types.integer,
+    maxDistanceNearbyAndClub: types.integer,
     selectedEvents: types.array(SelectedEvent)
   })
-  .actions(self => {
+  .actions((self) => {
     return {
       setValue(key, value) {
         self[key] = value;

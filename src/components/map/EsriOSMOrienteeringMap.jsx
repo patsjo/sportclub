@@ -24,6 +24,7 @@ const OrienteeringSymbol = {
 
 const EsriOSMOrienteeringMap = ({ containerId, mapCenter, graphics = [], onClick = () => {} }) => {
   const GraphicRef = React.useRef();
+  const CircleRef = React.useRef();
   const geometryEngineRef = React.useRef();
   const [graphicsLayer, setGraphicsLayer] = React.useState();
   const [mapView, setMapView] = React.useState();
@@ -37,9 +38,11 @@ const EsriOSMOrienteeringMap = ({ containerId, mapCenter, graphics = [], onClick
       "esri/views/MapView",
       "esri/layers/BaseTileLayer",
       "esri/Graphic",
+      "esri/geometry/Circle",
       "esri/geometry/geometryEngine"
-    ]).then(([OpenStreetMapLayer, GraphicsLayer, Map, MapView, BaseTileLayer, Graphic, geometryEngine]) => {
+    ]).then(([OpenStreetMapLayer, GraphicsLayer, Map, MapView, BaseTileLayer, Graphic, Circle, geometryEngine]) => {
       GraphicRef.current = Graphic;
+      CircleRef.current = Circle;
       geometryEngineRef.current = geometryEngine;
       const osmLayer = new OpenStreetMapLayer();
       const map = new Map({
@@ -94,7 +97,7 @@ const EsriOSMOrienteeringMap = ({ containerId, mapCenter, graphics = [], onClick
         onClick(
           newGraphicsLayer,
           new Graphic({
-            geometry: event.mapPoint,
+            geometry: { type: "point", ...event.mapPoint },
             symbol: OrienteeringSymbol
           })
         );
@@ -163,10 +166,12 @@ const EsriOSMOrienteeringMap = ({ containerId, mapCenter, graphics = [], onClick
         graphics.map(
           (graphic) =>
             new GraphicRef.current({
-              geometry: {
-                type: "point", // autocasts as new Point()
-                ...graphic.geometry
-              },
+              geometry:
+                graphic.geometry.type === "circle"
+                  ? new CircleRef.current(graphic.geometry)
+                  : {
+                      ...graphic.geometry
+                    },
               attributes: graphic.attributes,
               symbol: graphic.symbol ? graphic.symbol : OrienteeringSymbol
             })

@@ -30,7 +30,7 @@ const getColumns = (t, nofPoints, isTotal = false) => [
     fixed: "left",
     width: 200
   },
-  ...[...Array(nofPoints).keys()].map(i => ({
+  ...[...Array(nofPoints).keys()].map((i) => ({
     title: isTotal
       ? t(
           `results.${
@@ -75,31 +75,21 @@ const League = inject("clubModel")(
         const self = this;
         const { clubModel } = this.props;
         const fromDate =
-          year === -1
-            ? moment()
-                .startOf("year")
-                .format("YYYY-MM-DD")
-            : moment(year, "YYYY").format("YYYY-MM-DD");
+          year === -1 ? moment().startOf("year").format("YYYY-MM-DD") : moment(year, "YYYY").format("YYYY-MM-DD");
         const toDate =
           year === -1
             ? moment().format("YYYY-MM-DD")
-            : moment(fromDate, "YYYY-MM-DD")
-                .add(1, "years")
-                .subtract(1, "days")
-                .format("YYYY-MM-DD");
+            : moment(fromDate, "YYYY-MM-DD").add(1, "years").subtract(1, "days").format("YYYY-MM-DD");
         const rankingFromDate =
           year === -1
-            ? moment(toDate, "YYYY-MM-DD")
-                .add(1, "days")
-                .subtract(1, "years")
-                .format("YYYY-MM-DD")
+            ? moment(toDate, "YYYY-MM-DD").add(1, "days").subtract(1, "years").format("YYYY-MM-DD")
             : fromDate;
 
         self.setState({
           loading: true
         });
 
-        const url = clubModel.modules.find(module => module.name === "Results").queryUrl;
+        const url = clubModel.modules.find((module) => module.name === "Results").queryUrl;
         const rankingPromise =
           year === -1
             ? PostJsonData(
@@ -111,7 +101,7 @@ const League = inject("clubModel")(
                 },
                 true
               )
-            : new Promise(resolve => resolve(undefined));
+            : new Promise((resolve) => resolve(undefined));
         const pointsPromise = PostJsonData(
           url,
           {
@@ -131,8 +121,8 @@ const League = inject("clubModel")(
             let prevRanking = [];
             let prevPos = 1;
             const rankingLeague = rankingJson
-              .filter(c => c.ranking.length > 0)
-              .map(c => {
+              .filter((c) => c.ranking.length > 0)
+              .map((c) => {
                 const ranking = c.ranking.slice(0, 6);
                 return {
                   competitorId: c.competitorId,
@@ -153,8 +143,8 @@ const League = inject("clubModel")(
             prevRanking = [];
             prevPos = 1;
             const rankingRelayLeague = rankingJson
-              .filter(c => c.rankingRelay.length > 0)
-              .map(c => {
+              .filter((c) => c.rankingRelay.length > 0)
+              .map((c) => {
                 const ranking = c.rankingRelay.slice(0, 3);
                 return {
                   competitorId: c.competitorId,
@@ -176,9 +166,9 @@ const League = inject("clubModel")(
             prevPos = 1;
             let prevNumberOf100 = -1;
             const points1000League = pointsJson
-              .filter(c => c.points1000.length > 0)
-              .map(c => {
-                const numberOf100 = c.points1000.filter(p => p === 100).length;
+              .filter((c) => c.points1000.length > 0)
+              .map((c) => {
+                const numberOf100 = c.points1000.filter((p) => p === 100).length;
                 const points1000 = c.points1000.slice(0, 10);
                 return {
                   competitorId: c.competitorId,
@@ -203,8 +193,8 @@ const League = inject("clubModel")(
             prevPoints = [];
             prevPos = 1;
             const pointsLeague = pointsJson
-              .filter(c => c.points.length > 0)
-              .map(c => {
+              .filter((c) => c.points.length > 0)
+              .map((c) => {
                 const points = c.points.slice(0, 10);
                 return {
                   competitorId: c.competitorId,
@@ -225,8 +215,8 @@ const League = inject("clubModel")(
             prevPoints = [];
             prevPos = 1;
             const pointsOldLeague = pointsJson
-              .filter(c => c.pointsOld.length > 0)
-              .map(c => {
+              .filter((c) => c.pointsOld.length > 0)
+              .map((c) => {
                 const pointsOld = c.pointsOld.slice(0, 10);
                 return {
                   competitorId: c.competitorId,
@@ -244,8 +234,8 @@ const League = inject("clubModel")(
                 return { ...c, position: prevPos, ...c.pointsOld.reduce((ac, a, i) => ({ ...ac, [`p${i}`]: a }), {}) };
               });
 
-            rankingLeague.forEach(c => {
-              const c1 = pointsJson.find(cc => cc.competitorId === c.competitorId);
+            rankingLeague.forEach((c) => {
+              const c1 = pointsJson.find((cc) => cc.competitorId === c.competitorId);
               if (c1 === undefined) {
                 pointsJson.push({ ...c, points1000: [], points: [], pointsOld: [] });
               }
@@ -254,19 +244,19 @@ const League = inject("clubModel")(
             prevPoints = [];
             prevPos = 1;
             const grandSlam = pointsJson
-              .map(c => {
-                const c1 = rankingLeague.find(cc => cc.competitorId === c.competitorId);
+              .map((c) => {
+                const c1 = rankingLeague.find((cc) => cc.competitorId === c.competitorId);
                 const pos1 = c1 !== undefined ? c1.position : rankingLeague.length + 1;
-                const c2 = rankingRelayLeague.find(cc => cc.competitorId === c.competitorId);
+                const c2 = rankingRelayLeague.find((cc) => cc.competitorId === c.competitorId);
                 const pos2 = c2 !== undefined ? c2.position : rankingRelayLeague.length + 1;
-                const c3 = points1000League.find(cc => cc.competitorId === c.competitorId);
+                const c3 = points1000League.find((cc) => cc.competitorId === c.competitorId);
                 const pos3 = c3 !== undefined ? c3.position : points1000League.length + 1;
                 let pos4;
-                if (year < 2003) {
-                  const c4 = pointsOldLeague.find(cc => cc.competitorId === c.competitorId);
+                if (year > 1900 && year < 2003) {
+                  const c4 = pointsOldLeague.find((cc) => cc.competitorId === c.competitorId);
                   pos4 = c4 !== undefined ? c4.position : pointsOldLeague.length + 1;
                 } else {
-                  const c4 = pointsLeague.find(cc => cc.competitorId === c.competitorId);
+                  const c4 = pointsLeague.find((cc) => cc.competitorId === c.competitorId);
                   pos4 = c4 !== undefined ? c4.position : pointsLeague.length + 1;
                 }
                 const positions = [pos1, pos2, pos3, pos4];
@@ -302,7 +292,7 @@ const League = inject("clubModel")(
               loading: false
             });
           })
-          .catch(e => {
+          .catch((e) => {
             if (e && e.message) {
               message.error(e.message);
             }
@@ -338,9 +328,9 @@ const League = inject("clubModel")(
         const fromYear = 1994;
         const currentYear = new Date().getFullYear();
         const YearOptions = (
-          <StyledSelect defaultValue={-1} onChange={year => self.update(year)}>
+          <StyledSelect defaultValue={-1} onChange={(year) => self.update(year)}>
             <Option value={-1}>{t("results.CurrentSeason")}</Option>
-            {[...Array(1 + currentYear - fromYear).keys()].map(i => (
+            {[...Array(1 + currentYear - fromYear).keys()].map((i) => (
               <Option value={currentYear - i}>{currentYear - i}</Option>
             ))}
           </StyledSelect>
@@ -400,7 +390,7 @@ const League = inject("clubModel")(
               {!loading ? (
                 <StyledTable
                   columns={getColumns(t, 10)}
-                  dataSource={points1000League.map(p => ({ ...p, total: `${p.total} (${p.numberOf100})` }))}
+                  dataSource={points1000League.map((p) => ({ ...p, total: `${p.total} (${p.numberOf100})` }))}
                   size="middle"
                   pagination={false}
                   scroll={{ x: true }}

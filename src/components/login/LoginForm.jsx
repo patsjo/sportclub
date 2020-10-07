@@ -73,6 +73,7 @@ const Login = inject(
           });
         }}
         onCancel={onClose}
+        style={{ top: 40, minWidth: 560 }}
         maskClosable={false}
       >
         <StyledModalContent>

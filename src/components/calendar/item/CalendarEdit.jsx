@@ -111,6 +111,7 @@ const CalendarEdit = inject(
         okButtonProps={{ disabled: !valid, loading: saving }}
         cancelText={t("common.Cancel")}
         cancelButtonProps={{ loading: saving }}
+        style={{ top: 40, minWidth: 560 }}
         onOk={() => {
           form.validateFields().then((values) => {
             onSave(values);

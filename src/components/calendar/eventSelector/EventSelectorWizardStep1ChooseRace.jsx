@@ -8,7 +8,6 @@ import organisationJson from "./eventorOrganisations2020";
 
 const flatten = (list) => list.reduce((a, b) => a.concat(Array.isArray(b) ? flatten(b) : b), []);
 const MakeArray = (object) => (!object ? [] : Array.isArray(object) ? object : [object]);
-const maxDistanceKm = 80;
 const distanceKm = (lat1, lon1, lat2, lon2) => {
   var R = 6371; // km (change this constant to get miles)
   var dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -124,12 +123,18 @@ const EventSelectorWizardStep1ChooseRace = inject(
                   ? distanceKm(clubModel.mapCenter[1], clubModel.mapCenter[0], event.latitude, event.longitude)
                   : null;
             });
+            // EventStatusId: 10 Canceled
             // 1 = championchip, 2 = National, 3 = District, 4 = Nearby, 5 = Club, 6 = International
             events = events
               .filter(
                 (event) =>
-                  ["1", "2", "6"].includes(event.Event.EventClassificationId) ||
-                  (event.distanceKm !== null && event.distanceKm <= maxDistanceKm)
+                  event.Event.EventStatusId !== 10 &&
+                  (["1", "2", "6"].includes(event.Event.EventClassificationId) ||
+                    (event.Event.EventClassificationId === "3" &&
+                      event.distanceKm !== null &&
+                      event.distanceKm <= eventSelectorWizardModel.maxDistanceDistrict) ||
+                    (event.distanceKm !== null &&
+                      event.distanceKm <= eventSelectorWizardModel.maxDistanceNearbyAndClub))
               )
               .sort((a, b) =>
                 a.Event.EventRace.RaceDate.Date > b.Event.EventRace.RaceDate.Date

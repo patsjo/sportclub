@@ -1,6 +1,7 @@
 import { types } from "mobx-state-tree";
 
 const Geometry = types.model({
+  type: types.string,
   longitude: types.number,
   latitude: types.number
 });

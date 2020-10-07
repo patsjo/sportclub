@@ -96,6 +96,7 @@ const WeeklyCalendar = inject(
             .filter((act) => act.longitude && act.latitude)
             .map((act) => ({
               geometry: {
+                type: "point",
                 longitude: parseFloat(act.longitude),
                 latitude: parseFloat(act.latitude)
               },
@@ -109,6 +110,7 @@ const WeeklyCalendar = inject(
             .filter((event) => event.longitude && event.latitude)
             .map((event) => ({
               geometry: {
+                type: "point",
                 longitude: parseFloat(event.longitude),
                 latitude: parseFloat(event.latitude)
               },

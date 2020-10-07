@@ -228,8 +228,9 @@ const ResultWizardStep2EditRace = inject(
               classJson.EventClass = MakeArray(classJson.EventClass);
             }
 
+            let raceEvent;
             // eslint-disable-next-line eqeqeq
-            if (resultJson != undefined && resultJson.ClassResult != undefined) {
+            if (resultJson != undefined) {
               if (Array.isArray(resultJson.Event.EventRace)) {
                 resultJson.EventRace = resultJson.Event.EventRace.find(
                   (eventRace) => eventRace.EventRaceId === raceWizardModel.selectedEventorRaceId.toString()
@@ -239,9 +240,8 @@ const ResultWizardStep2EditRace = inject(
                 resultJson.EventRace = resultJson.Event.EventRace;
               }
 
-              const raceWinnerResults = [];
               const raceLightCondition = resultJson.EventRace["@attributes"].raceLightCondition;
-              const raceEvent = {
+              raceEvent = {
                 eventId: raceWizardModel.selectedEventId,
                 eventorId: raceWizardModel.selectedEventorId,
                 eventorRaceId: raceWizardModel.selectedEventorRaceId,
@@ -268,6 +268,11 @@ const ResultWizardStep2EditRace = inject(
                 results: [],
                 teamResults: []
               };
+            }
+
+            // eslint-disable-next-line eqeqeq
+            if (resultJson != undefined && resultJson.ClassResult != undefined) {
+              const raceWinnerResults = [];
               const ClassResults = MakeArray(resultJson.ClassResult);
               if (!isRelay) {
                 for (let i = 0; i < ClassResults.length; i++) {
@@ -742,8 +747,11 @@ const ResultWizardStep2EditRace = inject(
                 CalculateCompetitorsFee(raceWizardModel.raceEvent);
                 CalculateAllAwards(clubModel.raceClubs, raceWizardModel.raceEvent);
               }
-            } else {
+              // eslint-disable-next-line eqeqeq
+            } else if (editResultJson != undefined) {
               raceWizardModel.setValue("raceEvent", editResultJson);
+            } else {
+              raceWizardModel.setValue("raceEvent", raceEvent);
             }
             onValidate(raceWizardModel.raceEvent.valid);
             self.setState(

@@ -87,7 +87,11 @@ class App extends Component {
         this.clubModel.mapCenter && this.clubModel.logo
           ? [
               {
-                geometry: { longitude: this.clubModel.mapCenter[0], latitude: this.clubModel.mapCenter[1] },
+                geometry: {
+                  type: "point",
+                  longitude: this.clubModel.mapCenter[0],
+                  latitude: this.clubModel.mapCenter[1]
+                },
                 attributes: { name: this.clubModel.title, type: "logo" },
                 symbol: {
                   type: "picture-marker", // autocasts as new PictureMarkerSymbol()
