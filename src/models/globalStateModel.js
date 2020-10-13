@@ -12,7 +12,8 @@ export const dashboardContents = {
   info: 6,
   results: 7,
   individualResults: 8,
-  ourSponsors: 9
+  ourSponsors: 9,
+  resultsFees: 10
 };
 
 export const GlobalStateModel = types

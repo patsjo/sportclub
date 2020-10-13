@@ -5,6 +5,7 @@ import {
   CloudUploadOutlined,
   DeleteOutlined,
   DownloadOutlined,
+  EuroOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   PlusOutlined,
@@ -41,6 +42,8 @@ const MaterialIcon = ({ icon, fontSize, marginRight }) => {
       return <DeleteOutlined style={{ verticalAlign: "middle", fontSize: fontSize }} />;
     case "download":
       return <DownloadOutlined style={{ verticalAlign: "middle", fontSize: fontSize }} />;
+    case "euro":
+      return <EuroOutlined style={{ verticalAlign: "middle", fontSize: fontSize }} />;
     case "menu-fold":
       return <MenuFoldOutlined style={{ verticalAlign: "middle", fontSize: fontSize }} />;
     case "menu-unfold":

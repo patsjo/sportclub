@@ -49,7 +49,7 @@ if(isset($_REQUEST['iToDate']) && $_REQUEST['iToDate']!="")
   $iToDate = string2Date($_REQUEST['iToDate']);
 }
 
-if ($iType == "CLUBS")
+if ($iType == "CLUBS" || $iType == "FEES")
 {
   ValidLogin();
 }
@@ -508,6 +508,39 @@ elseif ($iType == "POINTS")
       rsort($x->points1000);
       sort($x->ranking);
       sort($x->rankingRelay);
+      array_push($rows, $x);
+    }
+  }
+}
+elseif ($iType == "FEES")
+{
+  $sql = "SELECT RACE_EVENT_RESULTS.COMPETITOR_ID, FIRST_NAME, LAST_NAME," .
+    "   SUM(ORIGINAL_FEE) AS ORIGINAL_FEE," .
+    "   SUM(LATE_FEE) AS LATE_FEE," .
+    "   SUM(FEE_TO_CLUB) AS FEE_TO_CLUB " .
+    "FROM RACE_EVENT " .
+    "INNER JOIN RACE_EVENT_RESULTS ON (RACE_EVENT.EVENT_ID = RACE_EVENT_RESULTS.EVENT_ID) ".
+    "INNER JOIN RACE_COMPETITORS ON (RACE_EVENT_RESULTS.COMPETITOR_ID = RACE_COMPETITORS.COMPETITOR_ID) ".
+    "WHERE 1=1 " . $whereStartDate . $whereEndDate . " " .
+    "GROUP BY RACE_EVENT_RESULTS.COMPETITOR_ID, FIRST_NAME, LAST_NAME " .
+    "ORDER BY LAST_NAME, FIRST_NAME";
+
+  $result = \db\mysql_query($sql);
+  if (!$result)
+  {
+    die('SQL Error: ' . \db\mysql_error());
+  }
+
+  if (\db\mysql_num_rows($result) > 0)
+  {
+    while($row = \db\mysql_fetch_assoc($result))
+    {
+      $x = new stdClass();
+      $x->competitorId          = intval($row['COMPETITOR_ID']);
+      $x->name                  = $row['FIRST_NAME'] . " " . $row['LAST_NAME'];
+      $x->originalFee           = is_null($row['ORIGINAL_FEE']) ? NULL : floatval($row['ORIGINAL_FEE']);
+      $x->lateFee               = is_null($row['LATE_FEE']) ? NULL : floatval($row['LATE_FEE']);
+      $x->feeToClub             = is_null($row['FEE_TO_CLUB']) ? NULL : floatval($row['FEE_TO_CLUB']);
       array_push($rows, $x);
     }
   }

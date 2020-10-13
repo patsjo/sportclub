@@ -72,6 +72,17 @@ const ResultsSubMenus = inject(
           }}
         />
         <MenuItem
+          key={"menuItem#resultsFees"}
+          icon="euro"
+          name={t("results.FeeToClub")}
+          disabled={!sessionModel.loggedIn}
+          isSubMenu
+          onClick={() => {
+            globalStateModel.setValue("rightMenuVisible", false);
+            globalStateModel.setDashboard(dashboardContents.resultsFees);
+          }}
+        />
+        <MenuItem
           key={"menuItem#resultsConvert"}
           icon="cloud-upload"
           name={t("results.Convert")}

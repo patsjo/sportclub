@@ -13,6 +13,7 @@ import InfiniteScroll from "react-infinite-scroller";
 import { Spin } from "antd";
 const League = lazy(() => import("../results/League"));
 const ViewResults = lazy(() => import("../results/ViewResults"));
+const ResultsFees = lazy(() => import("../results/ResultsFees"));
 const MonthlyCalendar = lazy(() => import("../calendar/monthly/MonthlyCalendar"));
 const AllSponsors = lazy(() => import("../sponsors/AllSponsors"));
 
@@ -97,6 +98,8 @@ const Dashboard = inject(
         <ViewResults key="clubViewResult" />
       ) : globalStateModel.dashboardContentId === dashboardContents.individualResults ? (
         <ViewResults key="individualViewResult" isIndividual />
+      ) : globalStateModel.dashboardContentId === dashboardContents.resultsFees ? (
+        <ResultsFees key="resultsFees" />
       ) : globalStateModel.dashboardContentId === dashboardContents.ourSponsors ? (
         <AllSponsors key="individualViewResult" isIndividual />
       ) : null;
