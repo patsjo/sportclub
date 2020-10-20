@@ -17,34 +17,31 @@ const StyledRow = styled(Row)`
   }
 `;
 
-const columns = (t, clubModel) =>
-  [
-    {
-      title: t("results.Competitor"),
-      dataIndex: "competitorId",
-      key: "competitorId",
-      fixed: "left",
-      width: 180,
-      render: (id) =>
-        id == null ? null : clubModel.raceClubs.selectedClub.competitorById(id).fullName
-    },
-    {
-      title: t("results.OriginalFee"),
-      dataIndex: "originalFee",
-      key: "originalFee"
-    },
-    {
-      title: t("results.LateFee"),
-      dataIndex: "lateFee",
-      key: "lateFee"
-    },
-    {
-      title: t("results.FeeToClub"),
-      dataIndex: "feeToClub",
-      key: "feeToClub"
-    }
-  ];
-
+const columns = (t, clubModel) => [
+  {
+    title: t("results.Competitor"),
+    dataIndex: "competitorId",
+    key: "competitorId",
+    fixed: "left",
+    width: 180,
+    render: (id) => (id == null ? null : clubModel.raceClubs.selectedClub.competitorById(id).fullName)
+  },
+  {
+    title: t("results.OriginalFee"),
+    dataIndex: "originalFee",
+    key: "originalFee"
+  },
+  {
+    title: t("results.LateFee"),
+    dataIndex: "lateFee",
+    key: "lateFee"
+  },
+  {
+    title: t("results.FeeToClub"),
+    dataIndex: "feeToClub",
+    key: "feeToClub"
+  }
+];
 
 const ResultsFees = inject(
   "clubModel",
@@ -89,7 +86,7 @@ const ResultsFees = inject(
 
       updateEventYear(year) {
         const self = this;
-        const { clubModel } = this.props;
+        const { clubModel, sessionModel } = this.props;
         const fromDate = moment(year, "YYYY").format("YYYY-MM-DD");
         const toDate = moment(fromDate, "YYYY-MM-DD").add(1, "years").subtract(1, "days").format("YYYY-MM-DD");
 
@@ -105,7 +102,8 @@ const ResultsFees = inject(
             iFromDate: fromDate,
             iToDate: toDate
           },
-          true
+          true,
+          sessionModel.authorizationHeader
         )
           .then((feesJson) => {
             self.setState({

@@ -1,21 +1,22 @@
-import React, { lazy } from "react";
-import styled from "styled-components";
-import useNews from "../news/useNews";
-import useEventorEntries from "../eventor/useEventorEntries";
-import EsriOSMOrienteeringMap from "../map/EsriOSMOrienteeringMap";
-import WeeklyCalendar from "../calendar/weekly/WeeklyCalendar";
-import SponsorsSlideshow from "../sponsors/SponsorsSlideshow";
-import { observer, inject } from "mobx-react";
-import { getSnapshot } from "mobx-state-tree";
-import { dashboardContents } from "../../models/globalStateModel";
-import Columns from "./Columns";
-import InfiniteScroll from "react-infinite-scroller";
-import { Spin } from "antd";
-const League = lazy(() => import("../results/League"));
-const ViewResults = lazy(() => import("../results/ViewResults"));
-const ResultsFees = lazy(() => import("../results/ResultsFees"));
-const MonthlyCalendar = lazy(() => import("../calendar/monthly/MonthlyCalendar"));
-const AllSponsors = lazy(() => import("../sponsors/AllSponsors"));
+import React, { lazy } from 'react';
+import styled from 'styled-components';
+import useNews from '../news/useNews';
+import useEventorEntries from '../eventor/useEventorEntries';
+import EsriOSMOrienteeringMap from '../map/EsriOSMOrienteeringMap';
+import WeeklyCalendar from '../calendar/weekly/WeeklyCalendar';
+import SponsorsSlideshow from '../sponsors/SponsorsSlideshow';
+import { observer, inject } from 'mobx-react';
+import { getSnapshot } from 'mobx-state-tree';
+import { dashboardContents } from '../../models/globalStateModel';
+import Columns from './Columns';
+import InfiniteScroll from 'react-infinite-scroller';
+import { Spin } from 'antd';
+import HtmlEditor from '../htmlEditor/HtmlEditor';
+const League = lazy(() => import('../results/League'));
+const ViewResults = lazy(() => import('../results/ViewResults'));
+const ResultsFees = lazy(() => import('../results/ResultsFees'));
+const MonthlyCalendar = lazy(() => import('../calendar/monthly/MonthlyCalendar'));
+const AllSponsors = lazy(() => import('../sponsors/AllSponsors'));
 
 export const ContentArea = styled.div`
   & {
@@ -41,8 +42,8 @@ const SpinnerDiv = styled.div`
 // @inject("clubModel")
 // @observer
 const Dashboard = inject(
-  "clubModel",
-  "globalStateModel"
+  'clubModel',
+  'globalStateModel'
 )(
   observer(({ clubModel, globalStateModel }) => {
     const eventorEntries = useEventorEntries(globalStateModel, clubModel, globalStateModel.dashboardContentId);
@@ -100,6 +101,8 @@ const Dashboard = inject(
         <ViewResults key="individualViewResult" isIndividual />
       ) : globalStateModel.dashboardContentId === dashboardContents.resultsFees ? (
         <ResultsFees key="resultsFees" />
+      ) : globalStateModel.dashboardContentId === dashboardContents.htmlEditor ? (
+        <HtmlEditor key="htmlEditor" loadPageId={globalStateModel.pageId} />
       ) : globalStateModel.dashboardContentId === dashboardContents.ourSponsors ? (
         <AllSponsors key="individualViewResult" isIndividual />
       ) : null;

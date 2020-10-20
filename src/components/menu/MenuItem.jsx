@@ -1,22 +1,23 @@
-import React, { Component } from "react";
-import MaterialIcon from "../materialIcon/MaterialIcon";
-import styled from "styled-components";
-import PropTypes from "prop-types";
-import { Menu } from "antd";
+import React, { Component } from 'react';
+import MaterialIcon from '../materialIcon/MaterialIcon';
+import styled from 'styled-components';
+import PropTypes from 'prop-types';
+import { Menu } from 'antd';
 
 const MenuItem = styled(Menu.Item)`
   &&& {
     line-height: 22px !important;
     height: 22px !important;
     padding: 0 !important;
-    margin-left: ${(props) => (props.isSubMenu ? "24px" : "0")};
-    width: ${(props) => (props.isSubMenu ? "calc(100% - 24px)" : "100%")};
+    margin-left: ${(props) => (props.isSubMenu ? '24px' : (props.level - 1) * 24 + 'px')};
+    width: ${(props) => (props.isSubMenu ? 'calc(100% - 24px)' : 'calc(100% - ' + (props.level - 1) * 24 + 'px)')};
   }
 `;
 
 MenuItem.defaultProps = {
   isSubMenu: false,
-  disabled: false
+  level: 1,
+  disabled: false,
 };
 
 const MenuText = styled.span`
@@ -32,16 +33,18 @@ export default class StyledMenuItem extends Component {
     name: PropTypes.string.isRequired,
     onClick: PropTypes.func.isRequired,
     isSubMenu: PropTypes.bool,
-    disabled: PropTypes.bool
+    level: PropTypes.number,
+    disabled: PropTypes.bool,
   };
 
   render() {
     return (
       <MenuItem
-        className={`ant-menu-item${this.props.disabled ? " ant-menu-item-disabled" : ""}`}
+        className={`ant-menu-item${this.props.disabled ? ' ant-menu-item-disabled' : ''}`}
         onClick={this.props.onClick}
         key={this.props.key}
         isSubMenu={this.props.isSubMenu}
+        level={this.props.level}
         disabled={this.props.disabled}
         onItemHover={() => {}}
         onMouseEnter={() => {}}

@@ -4,7 +4,8 @@ import { Spin, message } from "antd";
 import { SpinnerDiv, StyledTable } from "../styled/styled";
 import { observer, inject } from "mobx-react";
 import { GetJsonData, PostJsonData } from "../../utils/api";
-
+import moment from "moment";
+import { dateFormat } from "../../utils/formHelper";
 const flatten = (list) => list.reduce((a, b) => a.concat(Array.isArray(b) ? flatten(b) : b), []);
 
 // @inject("clubModel")
@@ -29,14 +30,14 @@ const ResultWizardStep1ChooseRace = inject(
         const self = this;
         const { raceWizardModel, clubModel, sessionModel, onFailed } = this.props;
         const url = clubModel.modules.find((module) => module.name === "Results").queryUrl;
-        const data = {
+        const queryData = {
           iType: "EVENTS",
           iClubId: clubModel.raceClubs.selectedClub.clubId,
-          iFromDate: raceWizardModel.queryStartDate,
-          iToDate: raceWizardModel.queryEndDate
+          iFromDate: moment(raceWizardModel.queryStartDate, dateFormat).add(-7, "days").format(dateFormat),
+          iToDate: moment(raceWizardModel.queryEndDate, dateFormat).add(7, "days").format(dateFormat)
         };
 
-        const alreadySavedEventsPromise = PostJsonData(url, data, true, sessionModel.authorizationHeader);
+        const alreadySavedEventsPromise = PostJsonData(url, queryData, true, sessionModel.authorizationHeader);
         const entriesPromise = GetJsonData(
           clubModel.corsProxy +
             encodeURIComponent(
@@ -114,8 +115,9 @@ const ResultWizardStep1ChooseRace = inject(
                               }
                               if (
                                 cr.PersonResult &&
-                                cr.PersonResult.Organisation.OrganisationId ===
-                                  clubModel.raceClubs.selectedClub.eventorOrganisationId.toString()
+                                (!cr.PersonResult.Organisation ||
+                                  cr.PersonResult.Organisation.OrganisationId ===
+                                    clubModel.raceClubs.selectedClub.eventorOrganisationId.toString())
                               ) {
                                 isCurrentClub = true;
                               }
@@ -128,8 +130,9 @@ const ResultWizardStep1ChooseRace = inject(
                                     clubModel.raceClubs.selectedClub.eventorOrganisationId.toString()) ||
                                 (cr.TeamResult &&
                                   cr.TeamResult.TeamMemberResult &&
-                                  cr.TeamResult.TeamMemberResult.Organisation.OrganisationId ===
-                                    clubModel.raceClubs.selectedClub.eventorOrganisationId.toString())
+                                  (!cr.TeamResult.TeamMemberResult.Organisation ||
+                                    cr.TeamResult.TeamMemberResult.Organisation.OrganisationId ===
+                                      clubModel.raceClubs.selectedClub.eventorOrganisationId.toString()))
                               ) {
                                 isCurrentClub = true;
                               }
@@ -254,6 +257,10 @@ const ResultWizardStep1ChooseRace = inject(
             const alreadySavedEventsNotInEventor = alreadySavedEventsJson
               .filter(
                 (saved) =>
+                  (moment(raceWizardModel.queryStartDate).isSame(saved.Date) ||
+                    moment(raceWizardModel.queryStartDate).isBefore(saved.Date)) &&
+                  (moment(raceWizardModel.queryEndDate).isSame(saved.Date) ||
+                    moment(raceWizardModel.queryEndDate).isAfter(saved.Date)) &&
                   !events.some(
                     (event) =>
                       saved.eventorId.toString() === event.Event.EventId &&

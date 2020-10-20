@@ -1,14 +1,14 @@
-import React, { Component, Suspense, lazy } from "react";
-import clubJson from "./models/okorion";
-import { MobxClubModel } from "./models/mobxClubModel";
-import { SessionModel, getLocalStorage } from "./models/sessionModel";
-import { GlobalStateModel } from "./models/globalStateModel";
-import { Layout, Spin } from "antd";
-import styled, { ThemeProvider } from "styled-components";
-import Toolbar from "./components/toolbar/Toolbar";
-import { Provider } from "mobx-react";
-import { PostJsonData } from "./utils/api";
-const Dashboard = lazy(() => import("./components/dashboard/Dashboard"));
+import React, { Component, Suspense, lazy } from 'react';
+import clubJson from './models/okorion';
+import { MobxClubModel } from './models/mobxClubModel';
+import { SessionModel, getLocalStorage } from './models/sessionModel';
+import { GlobalStateModel } from './models/globalStateModel';
+import { Layout, Spin, message } from 'antd';
+import styled, { ThemeProvider } from 'styled-components';
+import Toolbar from './components/toolbar/Toolbar';
+import { Provider } from 'mobx-react';
+import { PostJsonData } from './utils/api';
+const Dashboard = lazy(() => import('./components/dashboard/Dashboard'));
 
 const StyledLayout = styled(Layout)`
   background-color: #ffffff;
@@ -81,20 +81,20 @@ class App extends Component {
         newsItems: [],
         limit: 12,
         offset: 0,
-        hasMoreItems: true
+        hasMoreItems: true,
       },
       graphics:
         this.clubModel.mapCenter && this.clubModel.logo
           ? [
               {
                 geometry: {
-                  type: "point",
+                  type: 'point',
                   longitude: this.clubModel.mapCenter[0],
-                  latitude: this.clubModel.mapCenter[1]
+                  latitude: this.clubModel.mapCenter[1],
                 },
-                attributes: { name: this.clubModel.title, type: "logo" },
+                attributes: { name: this.clubModel.title, type: 'logo' },
                 symbol: {
-                  type: "picture-marker", // autocasts as new PictureMarkerSymbol()
+                  type: 'picture-marker', // autocasts as new PictureMarkerSymbol()
                   url: this.clubModel.logo.url,
                   width: `${
                     this.clubModel.logo.width > this.clubModel.logo.height
@@ -105,11 +105,11 @@ class App extends Component {
                     this.clubModel.logo.height > this.clubModel.logo.width
                       ? 20
                       : (20 * this.clubModel.logo.height) / this.clubModel.logo.width
-                  }px`
-                }
-              }
+                  }px`,
+                },
+              },
             ]
-          : []
+          : [],
     });
     document.title = this.clubModel.title;
     // this.theme = createMuiTheme({
@@ -128,10 +128,10 @@ class App extends Component {
         this.clubModel.loginUrl,
         {
           username: this.sessionModel.username,
-          password: this.sessionModel.password
+          password: this.sessionModel.password,
         },
         true,
-        { "X-Requested-With": "XMLHttpRequest" },
+        { 'X-Requested-With': 'XMLHttpRequest' },
         1
       )
         .then((json) => {
@@ -141,6 +141,9 @@ class App extends Component {
         })
         .catch(() => {});
     }
+
+    const htmlEditorModule = this.clubModel.modules.find((module) => module.name === 'HTMLEditor');
+    this.globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, this.sessionModel, message);
   }
 
   render() {

@@ -61,6 +61,7 @@ const Login = inject(
     return (
       <Modal
         closable={false}
+        maskClosable={false}
         title={t("common.Login")}
         visible={open}
         okText={t("common.Login")}
@@ -74,7 +75,6 @@ const Login = inject(
         }}
         onCancel={onClose}
         style={{ top: 40, minWidth: 560 }}
-        maskClosable={false}
       >
         <StyledModalContent>
           <Form

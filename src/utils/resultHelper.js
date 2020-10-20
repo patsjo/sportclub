@@ -306,7 +306,7 @@ export const ResetClassClassifications = (raceEvent, eventClassifications, class
   });
 };
 
-export const GetCompetitorFee = (paymentModel, result) => {
+export const GetCompetitorFee = (paymentModel, result, age, classClassification) => {
   // eslint-disable-next-line eqeqeq
   if (result.originalFee == undefined || result.lateFee == undefined) {
     return undefined;
@@ -321,11 +321,11 @@ export const GetCompetitorFee = (paymentModel, result) => {
     case payments.defaultFee50And100IfNotStarted:
       return result.failedReason === failedReasons.NotStarted
         ? result.originalFee + result.lateFee
-        : result.originalFee / 2 + result.lateFee;
+        : age > 20 || (classClassification && classClassification.classTypeShortName !== 'E') ? result.originalFee / 2 + result.lateFee : result.lateFee;
     case payments.defaultFee50And100IfNotFinished:
       return result.failedReason === failedReasons.NotStarted || result.failedReason === failedReasons.NotFinished
         ? result.originalFee + result.lateFee
-        : result.originalFee / 2 + result.lateFee;
+        : age > 20 || (classClassification && classClassification.classTypeShortName !== 'E') ? result.originalFee / 2 + result.lateFee: result.lateFee;
     case payments.defaultFeePaidByCompetitor:
       return 0;
     default:
@@ -333,10 +333,16 @@ export const GetCompetitorFee = (paymentModel, result) => {
   return undefined;
 };
 
-export const CalculateCompetitorsFee = (raceEvent) => {
+export const CalculateCompetitorsFee = (raceEvent, selectedClub, eventClassifications) => {
   if (raceEvent.results && raceEvent.results.length > 0) {
     raceEvent.results.forEach((result) => {
-      result.setValue("feeToClub", GetCompetitorFee(raceEvent.paymentModel, result));
+      const competitor = selectedClub.competitorById(result.competitorId);
+      const age = competitor ? GetAge(competitor.birthDay, raceEvent.raceDate) : null;
+      const classClassification = eventClassifications
+        .find(ec => ec.eventClassificationId === raceEvent.eventClassificationId)
+        .classClassifications.find(cc => cc.classClassificationId === result.classClassificationId);
+      
+      result.setValue("feeToClub", GetCompetitorFee(raceEvent.paymentModel, result, age, classClassification));
     });
   }
 };

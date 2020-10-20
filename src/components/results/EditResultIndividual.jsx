@@ -46,13 +46,17 @@ class EditResultIndividual extends Component {
     );
     const competitor = props.clubModel.raceClubs.selectedClub.competitorById(props.result.competitorId);
     const age = competitor ? GetAge(competitor.birthDay, props.raceDate) : null;
+    const classClassification = raceEventClassification.classClassifications.find(
+      (cc) => cc.classClassificationId === props.result.classClassificationId
+    );
 
     this.state = {
       formId: "editResultIndividual" + Math.floor(Math.random() * 10000000000000000),
       failedReason: props.result.failedReason,
       age: age,
       raceEventClassification: raceEventClassification,
-      isAwardTouched: props.result.isAwardTouched
+      isAwardTouched: props.result.isAwardTouched,
+      classClassification: classClassification
     };
   }
 
@@ -73,6 +77,7 @@ class EditResultIndividual extends Component {
       clubModel,
       paymentModel,
       eventClassificationId,
+      classClassification,
       result,
       results,
       competitorsOptions,
@@ -172,12 +177,14 @@ class EditResultIndividual extends Component {
                 )
                   .then((competitor) => {
                     result.competitorId = competitor ? competitor.competitorId : undefined;
+                    result.feeToClub = GetCompetitorFee(paymentModel, result, age, classClassification);
                     self.formRef.current.setFieldsValue({
                       // eslint-disable-next-line eqeqeq
-                      iCompetitorId: result.competitorId == undefined ? undefined : result.competitorId.toString()
+                      iCompetitorId: result.competitorId == undefined ? undefined : result.competitorId.toString(),
+                      iFeeToClub: result.feeToClub
                     });
                     self.setState({ age: competitor ? GetAge(competitor.birthDay, raceDate) : null }, () => {
-                      self.formRef.current.validateFields(["iCompetitorId"], { force: true });
+                      self.formRef.current.validateFields(["iCompetitorId", "iFeeToClub"], { force: true });
                     });
                   })
                   .catch(() => {});
@@ -285,12 +292,24 @@ class EditResultIndividual extends Component {
                 )}
                 onChange={(code) => {
                   result.classClassificationId = !code ? undefined : parseInt(code);
+                  const tempClassClassification = raceEventClassification.classClassifications.find(
+                    (cc) => cc.classClassificationId === result.classClassificationId
+                  );
+                  result.feeToClub = GetCompetitorFee(paymentModel, result, age, tempClassClassification);
                   const resultsWithSameClass = results.filter(
                     (r) => r.className === result.className && r.resultId !== result.resultId
                   );
                   resultsWithSameClass.forEach((r) =>
                     r.setValue("classClassificationId", result.classClassificationId)
                   );
+                  self.formRef.current.setFieldsValue({
+                    iFeeToClub: result.feeToClub
+                  });
+                  self.setState({ classClassification: tempClassClassification }, () => {
+                    self.formRef.current.validateFields(["iFeeToClub"], {
+                      force: true
+                    });
+                  });
                 }}
               />
             </FormItem>
@@ -378,7 +397,7 @@ class EditResultIndividual extends Component {
                 options={failedReasonOptions(t)}
                 onChange={(code) => {
                   result.failedReason = code;
-                  result.feeToClub = GetCompetitorFee(paymentModel, result);
+                  result.feeToClub = GetCompetitorFee(paymentModel, result, age, classClassification);
                   self.formRef.current.setFieldsValue({
                     iFeeToClub: result.feeToClub
                   });
@@ -594,7 +613,7 @@ class EditResultIndividual extends Component {
                 style={{ width: "100%" }}
                 onChange={(value) => {
                   result.originalFee = value;
-                  result.feeToClub = GetCompetitorFee(paymentModel, result);
+                  result.feeToClub = GetCompetitorFee(paymentModel, result, age, classClassification);
                   self.formRef.current.setFieldsValue({
                     iFeeToClub: result.feeToClub
                   });
@@ -608,7 +627,7 @@ class EditResultIndividual extends Component {
                   );
                   resultsWithSameClass.forEach((r) => {
                     r.setValue("originalFee", result.originalFee);
-                    r.setValue("feeToClub", GetCompetitorFee(paymentModel, r));
+                    r.setValue("feeToClub", GetCompetitorFee(paymentModel, r, age, classClassification));
                   });
                 }}
               />
@@ -634,7 +653,7 @@ class EditResultIndividual extends Component {
                 style={{ width: "100%" }}
                 onChange={(value) => {
                   result.lateFee = value;
-                  result.feeToClub = GetCompetitorFee(paymentModel, result);
+                  result.feeToClub = GetCompetitorFee(paymentModel, result, age, classClassification);
                   self.formRef.current.setFieldsValue({
                     iFeeToClub: result.feeToClub
                   });

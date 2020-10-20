@@ -159,6 +159,7 @@ const FadeOutItem = inject("sessionModel")(
             </ItemFadeOut>
             <Modal
               closable={false}
+              maskClosable={false}
               visible={this.state.showModalItem}
               onCancel={this.closeModal}
               style={{ top: 40, minWidth: 560 }}

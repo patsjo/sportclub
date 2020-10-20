@@ -1,13 +1,13 @@
-import React, { Component } from "react";
-import styled from "styled-components";
-import { observer, inject } from "mobx-react";
-import { withTranslation } from "react-i18next";
-import { Drawer, Menu } from "antd";
-import MenuItem from "./MenuItem";
-import LoginMenuItem from "../login/LoginMenuItem";
-import ModuleSubMenu from "./moduleSubMenus/ModuleSubMenu";
-import MaterialIcon from "../materialIcon/MaterialIcon";
-import { dashboardContents } from "../../models/globalStateModel";
+import React, { Component } from 'react';
+import styled from 'styled-components';
+import { observer, inject } from 'mobx-react';
+import { withTranslation } from 'react-i18next';
+import { Drawer, Menu } from 'antd';
+import MenuItem from './MenuItem';
+import LoginMenuItem from '../login/LoginMenuItem';
+import ModuleSubMenu from './moduleSubMenus/ModuleSubMenu';
+import MaterialIcon from '../materialIcon/MaterialIcon';
+import { dashboardContents } from '../../models/globalStateModel';
 
 const StyledDrawer = styled(Drawer)`
   &&& {
@@ -37,8 +37,8 @@ const StyledSubMenu = styled(Menu.SubMenu)`
 // @inject("clubModel", "globalStateModel")
 // @observer
 const DrawerRightMenu = inject(
-  "clubModel",
-  "globalStateModel"
+  'clubModel',
+  'globalStateModel'
 )(
   observer(
     class DrawerRightMenu extends Component {
@@ -47,18 +47,18 @@ const DrawerRightMenu = inject(
 
         return (
           <StyledDrawer
-            title={t("common.Menu")}
+            title={t('common.Menu')}
             placement="right"
             closable={false}
             width={360}
             visible={globalStateModel.rightMenuVisible}
-            onClose={() => globalStateModel.setValue("rightMenuVisible", false)}
+            onClose={() => globalStateModel.setValue('rightMenuVisible', false)}
           >
-            <StyledMenu mode="inline" onClick={() => globalStateModel.setValue("rightMenuVisible", false)}>
+            <StyledMenu mode="inline" onClick={() => globalStateModel.setValue('rightMenuVisible', false)}>
               <MenuItem
-                key={"menuItem#home0"}
-                icon={"HomeIcon"}
-                name={t("modules.Home")}
+                key={'menuItem#home0'}
+                icon={'HomeIcon'}
+                name={t('modules.Home')}
                 onClick={() => {
                   globalStateModel.setDashboard(dashboardContents.home);
                 }}
@@ -67,18 +67,18 @@ const DrawerRightMenu = inject(
               {clubModel.modules.map((module, index) =>
                 module.hasSubMenus ? (
                   <StyledSubMenu
-                    key={"subMenu#" + module.name + index}
+                    key={'subMenu#' + module.name + index}
                     title={
                       <span>
-                        <MaterialIcon icon={module.name + "Icon"} fontSize={18} marginRight={10} />
-                        <span>{t("modules." + module.name)}</span>
+                        <MaterialIcon icon={module.name + 'Icon'} fontSize={18} marginRight={10} />
+                        <span>{t('modules.' + module.name)}</span>
                       </span>
                     }
                     disabled={
-                      module.name !== "Calendar" &&
-                      module.name !== "News" &&
-                      module.name !== "Eventor" &&
-                      module.name !== "Results"
+                      module.name !== 'Calendar' &&
+                      module.name !== 'News' &&
+                      module.name !== 'Eventor' &&
+                      module.name !== 'Results'
                     }
                   >
                     <ModuleSubMenu module={module} />
@@ -89,9 +89,9 @@ const DrawerRightMenu = inject(
               )}
               {clubModel.sponsors && clubModel.sponsors.length > 0 ? (
                 <MenuItem
-                  key={"menuItem#ourSponsors"}
-                  icon={"bank"}
-                  name={t("common.OurSponsors")}
+                  key={'menuItem#ourSponsors'}
+                  icon={'bank'}
+                  name={t('common.OurSponsors')}
                   onClick={() => {
                     globalStateModel.setDashboard(dashboardContents.ourSponsors);
                   }}

@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { Modal, Form, Input, DatePicker, Select, message } from "antd";
-import { observer, inject } from "mobx-react";
-import { useTranslation } from "react-i18next";
-import styled from "styled-components";
-import { hasErrors, errorRequiredField, dateFormat, maxByteSize } from "../../utils/formHelper";
-import { PostJsonData } from "../../utils/api";
-import moment from "moment";
-import UploadDragger from "../formItems/UploadDragger";
-import FormItem from "../formItems/FormItem";
+import React, { useState, useEffect, useCallback } from 'react';
+import { Modal, Form, Input, DatePicker, Select, message } from 'antd';
+import { observer, inject } from 'mobx-react';
+import { useTranslation } from 'react-i18next';
+import styled from 'styled-components';
+import { hasErrors, errorRequiredField, dateFormat, maxByteSize } from '../../utils/formHelper';
+import { PostJsonData } from '../../utils/api';
+import moment from 'moment';
+import UploadDragger from '../formItems/UploadDragger';
+import FormItem from '../formItems/FormItem';
 
 const { TextArea } = Input;
 const Option = Select.Option;
@@ -16,8 +16,8 @@ const StyledModalContent = styled.div``;
 // @inject("clubModel")
 // @observer
 const NewsEdit = inject(
-  "clubModel",
-  "sessionModel"
+  'clubModel',
+  'sessionModel'
 )(
   observer((props) => {
     const { clubModel, sessionModel, newsObject, open, onClose, onChange } = props;
@@ -25,7 +25,7 @@ const NewsEdit = inject(
     const [form] = Form.useForm();
     const [valid, setValid] = useState(false);
     const [saving, setSaving] = useState(false);
-    const formId = "newsEditForm" + Math.floor(Math.random() * 10000000000000000);
+    const formId = 'newsEditForm' + Math.floor(Math.random() * 10000000000000000);
 
     useEffect(() => {
       setTimeout(() => {
@@ -35,15 +35,15 @@ const NewsEdit = inject(
           hasErrors(form).then((notValid) => setValid(!notValid));
         }
       }, 0);
-    }, [open]);
+    }, [form, open]);
 
     const onSave = useCallback((values) => {
-      const newsModule = clubModel.modules.find((module) => module.name === "News");
+      const newsModule = clubModel.modules.find((module) => module.name === 'News');
       const saveUrl = values.iNewsID === -1 ? newsModule.addUrl : newsModule.updateUrl;
 
       setSaving(true);
       values.iExpireDate =
-        values.iExpireDate && typeof values.iExpireDate.format === "function"
+        values.iExpireDate && typeof values.iExpireDate.format === 'function'
           ? values.iExpireDate.format(dateFormat)
           : values.iExpireDate;
       if (!Array.isArray(values.iFiles)) {
@@ -64,7 +64,7 @@ const NewsEdit = inject(
           ...values,
           username: sessionModel.username,
           password: sessionModel.password,
-          jsonResponse: true
+          jsonResponse: true,
         },
         true,
         sessionModel.authorizationHeader
@@ -83,11 +83,12 @@ const NewsEdit = inject(
     return (
       <Modal
         closable={false}
-        title={t("news.Edit")}
+        maskClosable={false}
+        title={t('news.Edit')}
         visible={open}
-        okText={t("common.Save")}
+        okText={t('common.Save')}
         okButtonProps={{ disabled: !valid, loading: saving }}
-        cancelText={t("common.Cancel")}
+        cancelText={t('common.Cancel')}
         cancelButtonProps={{ loading: saving }}
         onOk={() => {
           form.validateFields().then((values) => {
@@ -96,7 +97,6 @@ const NewsEdit = inject(
         }}
         onCancel={onClose}
         style={{ top: 40, minWidth: 560 }}
-        maskClosable={false}
       >
         <StyledModalContent>
           <Form
@@ -121,11 +121,11 @@ const NewsEdit = inject(
                         name: newsObject.fileName,
                         type: newsObject.fileType,
                         size: newsObject.fileSize,
-                        status: "done",
-                        originalFile: true
-                      }
+                        status: 'done',
+                        originalFile: true,
+                      },
                     ]
-                  : []
+                  : [],
             }}
             onValuesChange={() => hasErrors(form).then((notValid) => setValid(!notValid))}
           >
@@ -134,50 +134,50 @@ const NewsEdit = inject(
             </FormItem>
             <FormItem name="iNewsTypeID">
               <Select style={{ minWidth: 174 }}>
-                <Option value="1">{t("modules.News")}</Option>
-                <Option value="2">{t("news.LongTimeNews")}</Option>
-                <Option value="3">{t("news.Educations")}</Option>
+                <Option value="1">{t('modules.News')}</Option>
+                <Option value="2">{t('news.LongTimeNews')}</Option>
+                <Option value="3">{t('news.Educations')}</Option>
               </Select>
             </FormItem>
             <FormItem
               name="iRubrik"
-              label={t("news.Header")}
+              label={t('news.Header')}
               rules={[
                 {
                   required: true,
-                  message: errorRequiredField(t, "news.Header")
-                }
+                  message: errorRequiredField(t, 'news.Header'),
+                },
               ]}
             >
               <Input />
             </FormItem>
-            <FormItem name="iLank" label={t("news.Link")}>
+            <FormItem name="iLank" label={t('news.Link')}>
               <Input />
             </FormItem>
             <FormItem
               name="iInledning"
-              label={t("news.Introduction")}
+              label={t('news.Introduction')}
               rules={[
                 {
                   required: true,
-                  message: errorRequiredField(t, "news.Introduction")
-                }
+                  message: errorRequiredField(t, 'news.Introduction'),
+                },
               ]}
             >
               <TextArea autosize={{ minRows: 1, maxRows: 4 }} />
             </FormItem>
-            <FormItem name="iTexten" label={t("news.Text")}>
+            <FormItem name="iTexten" label={t('news.Text')}>
               <TextArea autosize={{ minRows: 2, maxRows: 6 }} />
             </FormItem>
             <FormItem
               name="iExpireDate"
-              label={t("news.ExpireDate")}
+              label={t('news.ExpireDate')}
               rules={[
                 {
                   required: true,
-                  type: "object",
-                  message: errorRequiredField(t, "news.ExpireDate")
-                }
+                  type: 'object',
+                  message: errorRequiredField(t, 'news.ExpireDate'),
+                },
               ]}
             >
               <DatePicker format={dateFormat} />

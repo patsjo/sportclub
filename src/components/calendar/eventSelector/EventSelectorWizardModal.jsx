@@ -136,6 +136,7 @@ const EventSelectorWizardModal = inject(
           <Provider eventSelectorWizardModel={self.eventSelectorWizardModel}>
             <Modal
               closable={false}
+              maskClosable={false}
               title={t("calendar.EventSelector")}
               visible={self.props.open}
               onCancel={self.props.onClose}

@@ -212,6 +212,7 @@ const ResultsWizardModal = inject(
           <Provider raceWizardModel={self.raceWizardModel}>
             <Modal
               closable={false}
+              maskClosable={false}
               title={t("results.Add")}
               visible={self.props.open}
               onCancel={self.props.onClose}

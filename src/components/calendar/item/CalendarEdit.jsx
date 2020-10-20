@@ -105,6 +105,7 @@ const CalendarEdit = inject(
     return (
       <Modal
         closable={false}
+        maskClosable={false}
         title={title}
         visible={open}
         okText={t("common.Save")}
@@ -118,7 +119,6 @@ const CalendarEdit = inject(
           });
         }}
         onCancel={onClose}
-        maskClosable={false}
       >
         <StyledModalContent>
           <Form

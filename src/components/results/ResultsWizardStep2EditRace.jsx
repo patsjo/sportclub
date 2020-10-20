@@ -744,7 +744,11 @@ const ResultWizardStep2EditRace = inject(
               raceWizardModel.setValue("raceWinnerResults", raceWinnerResults);
 
               if (!isRelay && !editResultJson) {
-                CalculateCompetitorsFee(raceWizardModel.raceEvent);
+                CalculateCompetitorsFee(
+                  raceWizardModel.raceEvent,
+                  clubModel.raceClubs.selectedClub,
+                  clubModel.raceClubs.eventClassifications
+                );
                 CalculateAllAwards(clubModel.raceClubs, raceWizardModel.raceEvent);
               }
               // eslint-disable-next-line eqeqeq
@@ -1186,7 +1190,11 @@ const ResultWizardStep2EditRace = inject(
                       if (code !== payments.defaultFeePaidByCompetitor) {
                         raceWizardModel.setValue("paymentModel", code);
                       }
-                      CalculateCompetitorsFee(raceWizardModel.raceEvent);
+                      CalculateCompetitorsFee(
+                        raceWizardModel.raceEvent,
+                        clubModel.raceClubs.selectedClub,
+                        clubModel.raceClubs.eventClassifications
+                      );
                       onValidate(raceWizardModel.raceEvent.valid);
                     }}
                   />

@@ -109,7 +109,8 @@ i18next
             Eventor: "Eventor",
             Results: "Results",
             Address: "Address",
-            Photo: "Photo"
+            Photo: "Photo",
+            HtmlEditor: "Make new page"
           },
           news: {
             Add: "Add",
@@ -136,8 +137,8 @@ i18next
             Step3Ranking: "Ranking",
             DefaultFee0And100IfNotStarted: "Fee 0%, and 100% if not started the race",
             DefaultFee0And100IfNotFinished: "Fee 0%, and 100% if not finished the race",
-            DefaultFee50And100IfNotStarted: "Fee 50%, and 100% if not started the race",
-            DefaultFee50And100IfNotFinished: "Fee 50%, and 100% if not finished the race",
+            DefaultFee50And100IfNotStarted: "Fee 50%, and 100% if not started the race (Free elite and up to 20)",
+            DefaultFee50And100IfNotFinished: "Fee 50%, and 100% if not finished the race (Free elite and up to 20)",
             DefaultFeePaidByCompetitor: "Fee already paid by competitor",
             QueryStartDate: "Query from date",
             QueryEndDate: "Query to date",
@@ -228,6 +229,10 @@ i18next
           },
           eventor: {
             Participant: "Participant"
+          },
+          htmlEditor: {
+            Path: "Menu path",
+            Groups: "Authority groups needed to view the page"
           }
         }
       },
@@ -312,7 +317,8 @@ i18next
             Eventor: "Eventor",
             Results: "Resultat",
             Address: "Adress",
-            Photo: "Foto"
+            Photo: "Foto",
+            HtmlEditor: "Skapa ny sida"
           },
           news: {
             Add: "Lägg till",
@@ -339,8 +345,8 @@ i18next
             Step3Ranking: "Ranking",
             DefaultFee0And100IfNotStarted: "Avgift 0%, och 100% vid ej start",
             DefaultFee0And100IfNotFinished: "Avgift 0%, och 100% vid ej fullföljt",
-            DefaultFee50And100IfNotStarted: "Avgift 50%, och 100% vid ej start",
-            DefaultFee50And100IfNotFinished: "Avgift 50%, och 100% vid ej fullföljt",
+            DefaultFee50And100IfNotStarted: "Avgift 50%, och 100% vid ej start (Fri elitklass och upp till 20)",
+            DefaultFee50And100IfNotFinished: "Avgift 50%, och 100% vid ej fullföljt (Fri elitklass och upp till 20)",
             DefaultFeePaidByCompetitor: "Avgifter redan betald av löparen",
             QueryDateRange: "Datumintervall",
             QueryStartDate: "Sök från datum",
@@ -432,6 +438,10 @@ i18next
           },
           eventor: {
             Participant: "Anmäld"
+          },
+          htmlEditor: {
+            Path: "Meny",
+            Groups: "Behörighetsgrupper för att kunna visa sidan"
           }
         }
       }

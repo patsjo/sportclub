@@ -1,11 +1,11 @@
-import React, { Component } from "react";
-import MaterialIcon from "../materialIcon/MaterialIcon";
-import styled from "styled-components";
-import PropTypes from "prop-types";
+import React, { Component } from 'react';
+import MaterialIcon from '../materialIcon/MaterialIcon';
+import styled from 'styled-components';
+import PropTypes from 'prop-types';
 
 const ToolbarItemHolder = styled.div`
   & {
-    display: ${props => (props.disabled ? "none" : "inline-block")};
+    display: ${(props) => (props.disabled ? 'none' : 'inline-block')};
     cursor: pointer;
     min-width: 46px;
     height: 46px;
@@ -35,22 +35,19 @@ export default class ToolbarItem extends Component {
     icon: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
     onClick: PropTypes.func.isRequired,
-    disabled: PropTypes.bool
+    disabled: PropTypes.bool,
   };
 
   constructor(props) {
     super(props);
     this.state = {
-      rightMenu: false
+      rightMenu: false,
     };
   }
 
   render() {
     return (
-      <ToolbarItemHolder
-        onClick={this.props.onClick}
-        disabled={this.props.disabled}
-      >
+      <ToolbarItemHolder onClick={this.props.onClick} disabled={this.props.disabled}>
         <MaterialIcon icon={this.props.icon} fontSize={20} />
         <MaterialIconText>{this.props.name}</MaterialIconText>
       </ToolbarItemHolder>

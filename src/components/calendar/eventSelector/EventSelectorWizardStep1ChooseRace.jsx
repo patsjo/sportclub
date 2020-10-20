@@ -128,7 +128,7 @@ const EventSelectorWizardStep1ChooseRace = inject(
             events = events
               .filter(
                 (event) =>
-                  event.Event.EventStatusId !== 10 &&
+                  event.Event.EventStatusId !== "10" &&
                   (["1", "2", "6"].includes(event.Event.EventClassificationId) ||
                     (event.Event.EventClassificationId === "3" &&
                       event.distanceKm !== null &&
