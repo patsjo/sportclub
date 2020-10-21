@@ -12,6 +12,8 @@ import { hasErrors, errorRequiredField } from '../../utils/formHelper';
 import { dashboardContents } from '../../models/globalStateModel';
 import './ckeditor5.css';
 
+const DefaultData = '<p>Här lägger man in all text och bilder</p>';
+const DefaultMenuPath = '/Exempel/Sida1';
 const Option = Select.Option;
 
 const StyledButton = styled(Button)`
@@ -42,8 +44,8 @@ const HtmlEditor = inject(
     const [isReadOnly, setIsReadOnly] = useState(loadPageId > 0);
     const [isEditable, setEditable] = useState(false);
     const [form] = Form.useForm();
-    const [data, setData] = useState('<p>Här lägger man in all text och bilder</p>');
-    const [menuPath, setMenuPath] = useState('/exempel/sida1');
+    const [data, setData] = useState(DefaultData);
+    const [menuPath, setMenuPath] = useState(DefaultMenuPath);
     const [groups, setGroups] = useState([]);
     const [valid, setValid] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -77,12 +79,15 @@ const HtmlEditor = inject(
           if (loadPageId > 0) {
             setData(pageResponse.data);
             setMenuPath(pageResponse.menuPath);
+          } else {
+            setData(DefaultData);
+            setMenuPath(DefaultMenuPath);
           }
           setGroups(pageResponse.groups);
           setEditable(!pageResponse.isEditable);
           form.setFieldsValue({
             iPageID: loadPageId,
-            iMenuPath: pageResponse.menuPath,
+            iMenuPath: loadPageId > 0 ? pageResponse.menuPath : DefaultMenuPath,
             iGroupIds: pageResponse.groups.filter((group) => group.selected).map((group) => group.groupId),
           });
           setLoading(false);

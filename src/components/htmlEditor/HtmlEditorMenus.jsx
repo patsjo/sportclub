@@ -1,7 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { observer, inject } from 'mobx-react';
-import { Menu, Spin } from 'antd';
+import { Menu } from 'antd';
 import MenuItem from '../menu/MenuItem';
 import { CaretRightOutlined, FileOutlined } from '@ant-design/icons';
 import MaterialIcon from '../materialIcon/MaterialIcon';
@@ -20,7 +19,7 @@ const StyledSubMenu = styled(Menu.SubMenu)`
   }
 `;
 
-const MenuItems = ({ items, setHtmlEditor }) =>
+const getMenuItems = (items, setHtmlEditor) =>
   items.map((item) => (
     <MenuItem
       key={`menuItem#htmlEditor#${item.pageId}`}
@@ -33,9 +32,9 @@ const MenuItems = ({ items, setHtmlEditor }) =>
     />
   ));
 
-const SubMenus = ({ menu, setHtmlEditor, path, ...other }) => (
+export const getHtmlEditorMenus = (menu, setHtmlEditor, path) => (
   <>
-    <MenuItems items={menu.menuItems} setHtmlEditor={setHtmlEditor} />
+    {getMenuItems(menu.menuItems, setHtmlEditor)}
     {menu.subMenus.map((subMenu) => (
       <StyledSubMenu
         key={'subMenu#htmlEditor' + path + '#' + subMenu.description}
@@ -46,27 +45,9 @@ const SubMenus = ({ menu, setHtmlEditor, path, ...other }) => (
             <span>{subMenu.description}</span>
           </span>
         }
-        {...other}
       >
-        <SubMenus
-          menu={subMenu.subMenus}
-          setHtmlEditor={setHtmlEditor}
-          path={path + '#' + subMenu.description}
-          {...other}
-        />
+        {getHtmlEditorMenus(subMenu.subMenus, setHtmlEditor, path + '#' + subMenu.description)}
       </StyledSubMenu>
     ))}
   </>
 );
-
-const HtmlEditorMenus = inject('globalStateModel')(
-  observer(({ globalStateModel, ...other }) =>
-    globalStateModel.htmlEditorMenu ? (
-      <SubMenus menu={globalStateModel.htmlEditorMenu} setHtmlEditor={globalStateModel.setHtmlEditor} {...other} />
-    ) : (
-      <Spin size="small" />
-    )
-  )
-);
-
-export default HtmlEditorMenus;

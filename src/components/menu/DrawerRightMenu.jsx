@@ -2,12 +2,13 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import { observer, inject } from 'mobx-react';
 import { withTranslation } from 'react-i18next';
-import { Drawer, Menu } from 'antd';
+import { Drawer, Menu, Spin } from 'antd';
 import MenuItem from './MenuItem';
 import LoginMenuItem from '../login/LoginMenuItem';
 import ModuleSubMenu from './moduleSubMenus/ModuleSubMenu';
 import MaterialIcon from '../materialIcon/MaterialIcon';
 import { dashboardContents } from '../../models/globalStateModel';
+import { getHtmlEditorMenus } from '../htmlEditor/HtmlEditorMenus';
 
 const StyledDrawer = styled(Drawer)`
   &&& {
@@ -38,12 +39,13 @@ const StyledSubMenu = styled(Menu.SubMenu)`
 // @observer
 const DrawerRightMenu = inject(
   'clubModel',
-  'globalStateModel'
+  'globalStateModel',
+  'sessionModel'
 )(
   observer(
     class DrawerRightMenu extends Component {
       render() {
-        const { t, clubModel, globalStateModel } = this.props;
+        const { t, clubModel, globalStateModel, sessionModel } = this.props;
 
         return (
           <StyledDrawer
@@ -64,29 +66,49 @@ const DrawerRightMenu = inject(
                 }}
               />
               <LoginMenuItem />
-              {clubModel.modules.map((module, index) =>
-                module.hasSubMenus ? (
-                  <StyledSubMenu
-                    key={'subMenu#' + module.name + index}
-                    title={
-                      <span>
-                        <MaterialIcon icon={module.name + 'Icon'} fontSize={18} marginRight={10} />
-                        <span>{t('modules.' + module.name)}</span>
-                      </span>
-                    }
-                    disabled={
-                      module.name !== 'Calendar' &&
-                      module.name !== 'News' &&
-                      module.name !== 'Eventor' &&
-                      module.name !== 'Results'
-                    }
-                  >
+              {clubModel.modules
+                .filter((module) => module.name !== 'HTMLEditor')
+                .map((module, index) =>
+                  module.hasSubMenus ? (
+                    <StyledSubMenu
+                      key={'subMenu#' + module.name + index}
+                      title={
+                        <span>
+                          <MaterialIcon icon={module.name + 'Icon'} fontSize={18} marginRight={10} />
+                          <span>{t('modules.' + module.name)}</span>
+                        </span>
+                      }
+                      disabled={
+                        module.name !== 'Calendar' &&
+                        module.name !== 'News' &&
+                        module.name !== 'Eventor' &&
+                        module.name !== 'Results'
+                      }
+                    >
+                      <ModuleSubMenu module={module} />
+                    </StyledSubMenu>
+                  ) : (
                     <ModuleSubMenu module={module} />
-                  </StyledSubMenu>
-                ) : (
-                  <ModuleSubMenu module={module} />
-                )
-              )}
+                  )
+                )}
+              {clubModel.modules.some((module) => module.name === 'HTMLEditor') ? (
+                <>
+                  {globalStateModel.htmlEditorMenu ? (
+                    getHtmlEditorMenus(globalStateModel.htmlEditorMenu, globalStateModel.setHtmlEditor, '')
+                  ) : (
+                    <Spin size="small" />
+                  )}{' '}
+                  <MenuItem
+                    key={'menuItem#htmlEditor'}
+                    icon={'edit'}
+                    name={t('modules.HtmlEditor')}
+                    disabled={!sessionModel.loggedIn || !sessionModel.isAdmin}
+                    onClick={() => {
+                      globalStateModel.setHtmlEditor(-1);
+                    }}
+                  />
+                </>
+              ) : null}
               {clubModel.sponsors && clubModel.sponsors.length > 0 ? (
                 <MenuItem
                   key={'menuItem#ourSponsors'}
