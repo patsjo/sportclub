@@ -321,11 +321,11 @@ export const GetCompetitorFee = (paymentModel, result, age, classClassification)
     case payments.defaultFee50And100IfNotStarted:
       return result.failedReason === failedReasons.NotStarted
         ? result.originalFee + result.lateFee
-        : age > 20 || (classClassification && classClassification.classTypeShortName !== 'E') ? result.originalFee / 2 + result.lateFee : result.lateFee;
+        : age > 20 && (!classClassification || classClassification.classTypeShortName !== 'E') ? result.originalFee / 2 + result.lateFee : result.lateFee;
     case payments.defaultFee50And100IfNotFinished:
       return result.failedReason === failedReasons.NotStarted || result.failedReason === failedReasons.NotFinished
         ? result.originalFee + result.lateFee
-        : age > 20 || (classClassification && classClassification.classTypeShortName !== 'E') ? result.originalFee / 2 + result.lateFee: result.lateFee;
+        : age > 20 && (!classClassification || classClassification.classTypeShortName !== 'E') ? result.originalFee / 2 + result.lateFee: result.lateFee;
     case payments.defaultFeePaidByCompetitor:
       return 0;
     default:
@@ -417,14 +417,36 @@ export const GetAward = (raceEventClassification, classLevels, result, competito
     return null;
   }
 
+  const classClassification = raceEventClassification.classClassifications
+    .filter(cc => cc.classClassificationId === result.classClassificationId);
   let classLevel = classLevels
-    .filter((cl) => result.className.indexOf(cl.classShortName) >= 0)
-    .sort((a, b) => (a.classShortName.length < b.classShortName.length ? 1 : -1))
-    .find(() => true);
-  if (!classLevel || result.className.toLowerCase().indexOf("ö") >= 0) {
+  .filter((cl) => result.className.indexOf(cl.classShortName) >= 0)
+  .sort((a, b) => (a.classShortName.length < b.classShortName.length ? 1 : -1))
+  .find(() => true);
+
+  if (classClassification) {
+    let age = classLevel ? classLevel.age : 21;
+    if (!classLevel && classClassification.ageUpperLimit) {
+      age = classClassification.ageUpperLimit;
+    } else if (!classLevel && classClassification.ageLowerLimit) {
+      age = classClassification.ageLowerLimit;
+    }
+
     classLevel = {
-      age: competitorAge
+      age: age,
+      classShortName: result.className,
+      classTypeShortName: classClassification.classClassificationId ? classClassification.classClassificationId : 'T',
+      difficulty: result.difficulty
     };
+  } else if (!classLevel) {
+    classLevel = {
+      age: competitorAge,
+      classShortName: result.className,
+      classTypeShortName: "T"
+    };
+  }
+  if (classLevel.classTypeShortName === 'Ö')  {
+    classLevel.age = competitorAge;
   }
 
   if (
