@@ -5,6 +5,10 @@ import "./index.css";
 import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 import "./i18n";
+import './fonts/Arvo-Regular.ttf';
+import './fonts/Arvo-Italic.ttf';
+import './fonts/Arvo-Bold.ttf';
+import './fonts/Arvo-BoldItalic.ttf';
 
 ReactDOM.render(<App />, document.getElementById("root"));
 

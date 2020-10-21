@@ -10,3 +10,65 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
+
+@font-face {
+  font-family: 'Arvo';
+  src: url('fonts/Arvo-Regular.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Arvo';
+  src: url('fonts/Arvo-Italic.ttf') format('truetype');
+  font-style: italic;
+  font-weight: normal;
+}
+
+@font-face {
+  font-family: 'Arvo';
+  src: url('fonts/Arvo-Bold.ttf') format('truetype');
+  font-style: normal;
+  font-weight: bold;
+}
+
+@font-face {
+  font-family: 'Arvo';
+  src: url('fonts/Arvo-BoldItalic.ttf') format('truetype');
+  font-style: italic;
+  font-weight: bold;
+}
+
+h1 {
+  font-family: 'Arvo';
+  font-weight: bold;
+  font-size: 24px;
+}
+
+h2 {
+  font-family: 'Arvo';
+  font-weight: bold;
+  font-size: 18px;
+}
+
+h3 {
+  font-family: 'Arvo';
+  font-weight: bold;
+  font-size: 14px;
+}
+
+h4 {
+  font-family: 'Arvo';
+  font-weight: bold;
+  font-size: 12px;
+}
+
+h5 {
+  font-family: 'Arvo';
+  font-weight: bold;
+  font-size: 11px;
+}
+
+h6 {
+  font-family: 'Arvo';
+  font-weight: bold;
+  font-size: 11px;
+}
