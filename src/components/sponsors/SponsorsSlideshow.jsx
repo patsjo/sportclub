@@ -1,8 +1,9 @@
-import React from "react";
-import { observer, inject } from "mobx-react";
-import { useTranslation } from "react-i18next";
-import { Zoom } from "react-slideshow-image";
-import styled from "styled-components";
+import React from 'react';
+import { observer, inject } from 'mobx-react';
+import { useTranslation } from 'react-i18next';
+import { Zoom } from 'react-slideshow-image';
+import styled from 'styled-components';
+import 'react-slideshow-image/dist/styles.css';
 
 const zoomOutProperties = {
   duration: 3000,
@@ -11,7 +12,7 @@ const zoomOutProperties = {
   indicators: true,
   scale: 0.4,
   arrows: false,
-  pauseOnHover: true
+  pauseOnHover: true,
 };
 
 const SponsorContainer = styled.div`
@@ -46,7 +47,7 @@ const shuffle = (array) => {
   return a;
 };
 
-const SponsorsSlideshow = inject("clubModel")(
+const SponsorsSlideshow = inject('clubModel')(
   observer((props) => {
     const { clubModel } = props;
     const { sponsors } = clubModel;
@@ -54,7 +55,7 @@ const SponsorsSlideshow = inject("clubModel")(
 
     return sponsors && sponsors.length > 0 ? (
       <SponsorContainer className="slide-container">
-        <SponsorText>{t("common.OurSponsors")}</SponsorText>
+        <SponsorText>{t('common.OurSponsors')}</SponsorText>
         <Zoom {...zoomOutProperties}>
           {shuffle(sponsors).map((sponsor, index) =>
             sponsor.url ? (
