@@ -66,7 +66,17 @@ const StyledHeader = styled.div`
     white-space: nowrap;
     display: inline-flex;
     overflow: hidden;
-    max-width: 300px;
+    width: calc(100% - 190px - ${(props) => props.maxWidth}px);
+  }
+  @media screen and (max-width: 719px) {
+    width: calc(100% - ${(props) => props.maxWidth}px);
+  }
+`;
+
+const StyledEllipsis = styled.div`
+  & {
+    white-space: nowrap;
+    overflow: hidden;
     text-overflow: ellipsis;
   }
 `;
@@ -147,17 +157,22 @@ class App extends Component {
   }
 
   render() {
-    const LogoHeight = 80;
-    const LogoWidth = this.clubModel.logo.width * (80 / this.clubModel.logo.height);
+    const logoHeight = 80;
+    const logoWidth = this.clubModel.logo.width * (80 / this.clubModel.logo.height);
+    const titleWidth = this.clubModel.titleLogo
+      ? this.clubModel.titleLogo.width * (24 / this.clubModel.titleLogo.height)
+      : 0;
     const Header = this.clubModel.titleLogo ? (
       <StyledTitleLogo
         src={this.clubModel.titleLogo.url}
-        width={this.clubModel.titleLogo.width * (24 / this.clubModel.titleLogo.height)}
+        width={titleWidth}
         height={24}
-        maxWidth={260 + this.clubModel.titleLogo.width * (24 / this.clubModel.titleLogo.height)}
+        maxWidth={76 + logoWidth + titleWidth}
       />
     ) : (
-      <StyledHeader>{this.clubModel.title}</StyledHeader>
+      <StyledHeader maxWidth={76 + logoWidth}>
+        <StyledEllipsis>{this.clubModel.title}</StyledEllipsis>
+      </StyledHeader>
     );
 
     return (
@@ -165,7 +180,7 @@ class App extends Component {
         <ThemeProvider theme={this.clubModel.theme}>
           <StyledLayout>
             <LayoutHeader>
-              <StyledLogo src={this.clubModel.logo.url} width={LogoWidth} height={LogoHeight} />
+              <StyledLogo src={this.clubModel.logo.url} width={logoWidth} height={logoHeight} />
               {Header}
               <Toolbar />
             </LayoutHeader>
