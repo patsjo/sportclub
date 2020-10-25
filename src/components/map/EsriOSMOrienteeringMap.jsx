@@ -22,7 +22,13 @@ const OrienteeringSymbol = {
   height: '15px',
 };
 
-const EsriOSMOrienteeringMap = ({ containerId, mapCenter, graphics = [], onClick = () => {} }) => {
+const EsriOSMOrienteeringMap = ({
+  containerId,
+  mapCenter,
+  graphics = [],
+  onClick = () => {},
+  onHighlightClick = () => {},
+}) => {
   const GraphicRef = React.useRef();
   const CircleRef = React.useRef();
   const WebMercatorUtilsRef = React.useRef();
@@ -120,10 +126,10 @@ const EsriOSMOrienteeringMap = ({ containerId, mapCenter, graphics = [], onClick
 
         view.when(() => {
           view.whenLayerView(newGraphicsLayer).then((layerView) => {
-            let highlight, currentUids;
+            let highlight, currentUids, highlighted;
 
             const highlightGraphics = (event) => {
-              const highlighted = newGraphicsLayer.graphics.items.filter((g) => {
+              highlighted = newGraphicsLayer.graphics.items.filter((g) => {
                 const p = view.toScreen(g.geometry);
                 return g.attributes && Math.abs(p.x - event.x) < 8 && Math.abs(p.y - event.y) < 8;
               });
@@ -161,8 +167,14 @@ const EsriOSMOrienteeringMap = ({ containerId, mapCenter, graphics = [], onClick
                   (document.getElementById(`${containerId}#orienteeringMapInfo`).style.visibility = 'hidden');
               }
             };
+            const highlightGraphicsClick = (event) => {
+              highlightGraphics(event);
+              if (highlighted.length && event.native && event.native.ctrlKey) {
+                onHighlightClick(newGraphicsLayer, highlighted[0]);
+              }
+            };
             view.on('pointer-move', highlightGraphics);
-            view.on('pointer-down', highlightGraphics);
+            view.on('pointer-up', highlightGraphicsClick);
             setMapView(view);
             setGraphicsLayer(newGraphicsLayer);
           });

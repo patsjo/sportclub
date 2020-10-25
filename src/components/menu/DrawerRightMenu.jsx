@@ -119,6 +119,17 @@ const DrawerRightMenu = inject(
                   }}
                 />
               ) : null}
+              {clubModel.oldUrl ? (
+                <MenuItem
+                  key={'menuItem#oldHomePage'}
+                  icon="rollback"
+                  name={t('common.OldHomePage')}
+                  onClick={() => {
+                    const win = window.open(clubModel.oldUrl, '_blank');
+                    win.focus();
+                  }}
+                />
+              ) : null}
             </StyledMenu>
           </StyledDrawer>
         );

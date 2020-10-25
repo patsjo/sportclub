@@ -228,7 +228,9 @@ i18next
             TeamName: "Team name"
           },
           eventor: {
-            Participant: "Participant"
+            Participant: "Participant",
+            Startlist: 'Startlist',
+            Result: 'Result'
           },
           htmlEditor: {
             Path: "Menu path",
@@ -437,7 +439,9 @@ i18next
             TeamName: "Lagnamn"
           },
           eventor: {
-            Participant: "Anmäld"
+            Participant: "Anmäld",
+            Startlist: 'Startlista',
+            Result: 'Resultat'
           },
           htmlEditor: {
             Path: "Meny",

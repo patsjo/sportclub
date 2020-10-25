@@ -14,7 +14,7 @@ const ToolbarHolder = styled.div`
 
 const WideToolbarHolder = styled.div`
   & {
-    display: block;
+    display: inline-flex;
   }
   @media screen and (max-width: 719px) {
     display: none !important;

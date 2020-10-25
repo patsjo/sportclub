@@ -19,6 +19,13 @@ const SpinnerDiv = styled.div`
   width: 100%;
 `;
 
+const StickyHolder = styled.div`
+  position: -webkit-sticky;
+  position: sticky;
+  top: ${(props) => props.top}px;
+  transition: top 0.3s;
+  z-index: 1000;
+`;
 const LayoutHeader = styled(Layout.Header)`
   &&& {
     color: ${(props) => props.theme.palette.primary.contrastText};
@@ -84,6 +91,11 @@ const StyledEllipsis = styled.div`
 class App extends Component {
   constructor(props) {
     super(props);
+    this.scrollRef = React.createRef();
+    this.state = {
+      scrollTop: 0,
+      stickyPos: 0,
+    };
     this.sessionModel = SessionModel.create(getLocalStorage());
     this.clubModel = MobxClubModel.create(clubJson);
     this.globalStateModel = GlobalStateModel.create({
@@ -156,6 +168,29 @@ class App extends Component {
     this.globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, this.sessionModel, message);
   }
 
+  componentDidMount() {
+    window.addEventListener('scroll', this.onScroll);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this.onScroll);
+  }
+
+  onScroll = () => {
+    const oldScrollTop = this.state.scrollTop;
+    const newScrollTop = window.scrollY;
+    let stickyPos = 0;
+
+    if (newScrollTop > oldScrollTop && newScrollTop > 56) {
+      stickyPos = -56;
+    }
+
+    this.setState({
+      scrollTop: newScrollTop,
+      stickyPos: stickyPos,
+    });
+  };
+
   render() {
     const logoHeight = 80;
     const logoWidth = this.clubModel.logo.width * (80 / this.clubModel.logo.height);
@@ -178,12 +213,14 @@ class App extends Component {
     return (
       <Provider clubModel={this.clubModel} sessionModel={this.sessionModel} globalStateModel={this.globalStateModel}>
         <ThemeProvider theme={this.clubModel.theme}>
-          <StyledLayout>
-            <LayoutHeader>
-              <StyledLogo src={this.clubModel.logo.url} width={logoWidth} height={logoHeight} />
-              {Header}
-              <Toolbar />
-            </LayoutHeader>
+          <StyledLayout onScroll={this.onScroll} ref={this.scrollRef}>
+            <StickyHolder top={this.state.stickyPos}>
+              <LayoutHeader>
+                <StyledLogo src={this.clubModel.logo.url} width={logoWidth} height={logoHeight} />
+                {Header}
+                <Toolbar />
+              </LayoutHeader>
+            </StickyHolder>
             <LayoutContent>
               <Suspense
                 fallback={

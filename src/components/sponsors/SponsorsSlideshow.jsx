@@ -16,7 +16,7 @@ const zoomOutProperties = {
 };
 
 const SponsorContainer = styled.div`
-  margin-top: 8px;
+  margin-bottom: 12px;
 `;
 
 const SponsorText = styled.div`

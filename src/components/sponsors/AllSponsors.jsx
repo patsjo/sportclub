@@ -1,7 +1,7 @@
-import React from "react";
-import { observer, inject } from "mobx-react";
-import styled from "styled-components";
-import Columns from "../dashboard/Columns";
+import React from 'react';
+import { observer, inject } from 'mobx-react';
+import styled from 'styled-components';
+import Columns from '../dashboard/Columns';
 
 const SponsorLink = styled.a`
   width: 100%;
@@ -13,10 +13,10 @@ const SponsorImage = styled.img`
   width: 100%;
   object-fit: contain;
   height: 108px;
-  padding-bottom: 8px;
+  padding-bottom: 12px;
 `;
 
-const AllSponsors = inject("clubModel")(
+const AllSponsors = inject('clubModel')(
   observer((props) => {
     const { clubModel } = props;
     const { sponsors } = clubModel;

@@ -20,9 +20,9 @@ const AllSponsors = lazy(() => import('../sponsors/AllSponsors'));
 
 export const ContentArea = styled.div`
   & {
-    margin-top: 20px;
-    margin-left: 8px;
-    margin-right: 8px;
+    margin-top: 24px;
+    margin-left: 12px;
+    margin-right: 12px;
   }
 `;
 const NoMonthlyContainer = styled.div`
@@ -53,7 +53,10 @@ const Dashboard = inject(
       globalStateModel.dashboardContentId === dashboardContents.home ? (
         <Columns>
           {newsItems.slice(0, 2)}
-          <div column={-1} style={{ height: 400 }}>
+          <div column={-2} key="weeklyCalendar" style={{ marginBottom: 12 }}>
+            <WeeklyCalendar />
+          </div>
+          <div column={-1} style={{ height: 400, marginBottom: 12 }}>
             {clubModel.mapCenter ? (
               <EsriOSMOrienteeringMap
                 key="dashboard#homeMap"
@@ -61,14 +64,22 @@ const Dashboard = inject(
                 mapCenter={clubModel.mapCenter}
                 graphics={getSnapshot(globalStateModel.graphics)}
                 nofGraphics={globalStateModel.graphics.length}
+                onHighlightClick={(graphicLayer, graphic) => {
+                  const longitude = graphic.geometry.longitude;
+                  const latitude = graphic.geometry.latitude;
+                  const win = window.open(
+                    `http://maps.google.com/maps?saddr=&daddr=N${latitude},E${longitude}`,
+                    '_blank'
+                  );
+                  if (win) {
+                    win.focus();
+                  }
+                }}
               />
             ) : null}
           </div>
           <div column={-1}>
             <SponsorsSlideshow />
-          </div>
-          <div column={-2} key="weeklyCalendar">
-            <WeeklyCalendar />
           </div>
           {newsItems.slice(2)}
           {eventorEntries}

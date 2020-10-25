@@ -1,6 +1,6 @@
-import React, { Component } from "react";
-import Columns from "./columns/Columns";
-import styled from "styled-components";
+import React, { Component } from 'react';
+import Columns from './columns/Columns';
+import styled from 'styled-components';
 
 const StyledColumns = styled(Columns)`
   &&& + div {
@@ -17,7 +17,7 @@ class ExportColumns extends Component {
     super(props);
 
     this.state = {
-      dimensions: []
+      dimensions: [],
     };
     this.refsArray = [];
   }
@@ -27,9 +27,9 @@ class ExportColumns extends Component {
       const refs = this.refsArray;
 
       if (refs.length > 0 && refs[refs.length - 1].current.clientHeight) {
-        const dims = refs.map(ref => ({
+        const dims = refs.map((ref) => ({
           width: ref.current.clientWidth,
-          height: ref.current.clientHeight
+          height: ref.current.clientHeight,
         }));
 
         this.setState({ dimensions: dims });
@@ -50,26 +50,26 @@ class ExportColumns extends Component {
         queries={[
           {
             columns: 1,
-            query: "min-width: 0px"
+            query: 'min-width: 0px',
           },
           {
             columns: 2,
-            query: "min-width: 700px"
+            query: 'min-width: 700px',
           },
           {
             columns: 3,
-            query: "min-width: 1000px"
+            query: 'min-width: 1000px',
           },
           {
             columns: 4,
-            query: "min-width: 1400px"
+            query: 'min-width: 1400px',
           },
           {
             columns: 5,
-            query: "min-width: 1900px"
-          }
+            query: 'min-width: 1900px',
+          },
         ]}
-        gap={8}
+        gap={12}
       >
         {this.props.children}
       </StyledColumns>

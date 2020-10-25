@@ -1,14 +1,15 @@
-import React, { Component } from "react";
-import styled from "styled-components";
-import { Button, Modal, Popconfirm, message } from "antd";
-import PropTypes from "prop-types";
-import { withTranslation } from "react-i18next";
-import { observer, inject } from "mobx-react";
-import withForwardedRef from "../../utils/withForwardedRef";
+import React, { Component } from 'react';
+import styled from 'styled-components';
+import { Button, Modal, Popconfirm, message } from 'antd';
+import PropTypes from 'prop-types';
+import { withTranslation } from 'react-i18next';
+import { observer, inject } from 'mobx-react';
+import withForwardedRef from '../../utils/withForwardedRef';
 
 const ItemHolder = styled.div`
   max-height: ${(props) => (props.maxHeight ? props.maxHeight : 300)}px;
   overflow: hidden;
+  margin-bottom: 12px;
 `;
 const ItemFadeOut = styled.div`
   -webkit-column-break-inside: avoid;
@@ -21,7 +22,7 @@ const ItemFadeOut = styled.div`
   position: relative;
   cursor: pointer;
   :after {
-    content: "";
+    content: '';
     position: absolute;
     top: ${(props) => (props.maxHeight ? props.maxHeight - 50 : 250)}px;
     right: 0;
@@ -57,7 +58,7 @@ const StyledModalContent = styled.div`
 
 // @inject("sessionModel")
 // @observer
-const FadeOutItem = inject("sessionModel")(
+const FadeOutItem = inject('sessionModel')(
   observer(
     class FadeOutItem extends Component {
       static propTypes = {
@@ -68,20 +69,20 @@ const FadeOutItem = inject("sessionModel")(
         editFormContent: PropTypes.object,
         deletePromise: PropTypes.func,
         onDelete: PropTypes.func,
-        maxHeight: PropTypes.number
+        maxHeight: PropTypes.number,
       };
       constructor(props) {
         super(props);
         this.state = {
           saving: false,
           showModalItem: false,
-          showEdit: false
+          showEdit: false,
         };
       }
 
       openModal = () => {
         this.setState({
-          showModalItem: true
+          showModalItem: true,
         });
       };
 
@@ -89,7 +90,7 @@ const FadeOutItem = inject("sessionModel")(
         this.setState({
           saving: false,
           showModalItem: false,
-          showEdit: false
+          showEdit: false,
         });
       };
 
@@ -103,7 +104,7 @@ const FadeOutItem = inject("sessionModel")(
           deletePromise,
           onDelete,
           forwardedRef,
-          maxHeight
+          maxHeight,
         } = this.props;
         const self = this;
 
@@ -111,7 +112,7 @@ const FadeOutItem = inject("sessionModel")(
           // eslint-disable-next-line eqeqeq
           editFormContent != undefined && module.updateUrl != undefined && sessionModel.loggedIn ? (
             <Button loading={this.state.saving} onClick={() => this.setState({ showEdit: true, showModalItem: false })}>
-              {t("common.Edit")}
+              {t('common.Edit')}
             </Button>
           ) : null;
 
@@ -119,12 +120,12 @@ const FadeOutItem = inject("sessionModel")(
           // eslint-disable-next-line eqeqeq
           module.deleteUrl != undefined && deletePromise && sessionModel.loggedIn ? (
             <Popconfirm
-              title={t("common.Confirm")}
-              okText={t("common.Yes")}
-              cancelText={t("common.No")}
+              title={t('common.Confirm')}
+              okText={t('common.Yes')}
+              cancelText={t('common.No')}
               onConfirm={() => {
                 this.setState({
-                  saving: true
+                  saving: true,
                 });
                 deletePromise()
                   .then(() => {
@@ -134,13 +135,13 @@ const FadeOutItem = inject("sessionModel")(
                   .catch((e) => {
                     message.error(e.message);
                     self.setState({
-                      saving: false
+                      saving: false,
                     });
                   });
               }}
             >
               <Button type="danger" loading={this.state.saving}>
-                {t("common.Delete")}
+                {t('common.Delete')}
               </Button>
             </Popconfirm>
           ) : null;
@@ -148,7 +149,7 @@ const FadeOutItem = inject("sessionModel")(
         const EditFormContent = this.state.showEdit
           ? React.cloneElement(editFormContent, {
               open: this.state.showEdit,
-              onClose: this.closeModal
+              onClose: this.closeModal,
             })
           : null;
 
@@ -167,8 +168,8 @@ const FadeOutItem = inject("sessionModel")(
                 ShowDeleteButton,
                 ShowEditButton,
                 <Button type="primary" onClick={this.closeModal} loading={this.state.saving}>
-                  {t("common.Close")}
-                </Button>
+                  {t('common.Close')}
+                </Button>,
               ]}
             >
               <StyledModalContent columns={modalColumns}>{this.props.modalContent}</StyledModalContent>

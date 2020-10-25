@@ -15,8 +15,8 @@ const ToolbarItemHolder = styled.div`
     border-radius: 10px;
     padding: 5px;
     margin-left: 10px;
-    margin-top: 15px;
-    margin-bottom: 10px;
+    margin-top: 9px;
+    margin-bottom: 9px;
   }
   &:hover {
     background-color: rgba(0, 0, 0, 0.4);
