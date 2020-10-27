@@ -8,6 +8,8 @@ import styled, { ThemeProvider } from 'styled-components';
 import Toolbar from './components/toolbar/Toolbar';
 import { Provider } from 'mobx-react';
 import { PostJsonData } from './utils/api';
+import { dashboardContents } from './models/globalStateModel';
+
 const Dashboard = lazy(() => import('./components/dashboard/Dashboard'));
 
 const StyledLayout = styled(Layout)`
@@ -50,6 +52,7 @@ const StyledLogo = styled.img`
     margin-bottom: -20px;
     margin-right: 10px;
     display: inline-flex;
+    cursor: pointer;
   }
 `;
 
@@ -58,6 +61,7 @@ const StyledTitleLogo = styled.img`
     margin-top: 10px;
     margin-bottom: 10px;
     display: inline-flex;
+    cursor: pointer;
   }
   @media screen and (max-width: ${(props) => props.maxWidth}px) {
     display: none !important;
@@ -66,6 +70,7 @@ const StyledTitleLogo = styled.img`
 
 const StyledHeader = styled.div`
   & {
+    cursor: pointer;
     margin-top: 20px;
     margin-bottom: 20px;
     font-size: 20px;
@@ -203,9 +208,17 @@ class App extends Component {
         width={titleWidth}
         height={24}
         maxWidth={76 + logoWidth + titleWidth}
+        onClick={() => {
+          this.globalStateModel.setDashboard(dashboardContents.home);
+        }}
       />
     ) : (
-      <StyledHeader maxWidth={76 + logoWidth}>
+      <StyledHeader
+        maxWidth={76 + logoWidth}
+        onClick={() => {
+          this.globalStateModel.setDashboard(dashboardContents.home);
+        }}
+      >
         <StyledEllipsis>{this.clubModel.title}</StyledEllipsis>
       </StyledHeader>
     );
@@ -216,7 +229,14 @@ class App extends Component {
           <StyledLayout onScroll={this.onScroll} ref={this.scrollRef}>
             <StickyHolder top={this.state.stickyPos}>
               <LayoutHeader>
-                <StyledLogo src={this.clubModel.logo.url} width={logoWidth} height={logoHeight} />
+                <StyledLogo
+                  src={this.clubModel.logo.url}
+                  width={logoWidth}
+                  height={logoHeight}
+                  onClick={() => {
+                    this.globalStateModel.setDashboard(dashboardContents.home);
+                  }}
+                />
                 {Header}
                 <Toolbar />
               </LayoutHeader>
