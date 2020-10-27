@@ -69,6 +69,28 @@ if ($iType == "MENUS")
     }
   }
   \db\mysql_free_result($result);
+
+  $sql = "SELECT LINK_ID, MENU_PATH, URL " .
+    "FROM HTMLEDITOR_LINKS ";
+
+  $result = \db\mysql_query($sql);
+  if (!$result)
+  {
+    die('SQL Error: ' . \db\mysql_error());
+  }
+
+  if (\db\mysql_num_rows($result) > 0)
+  {
+    while($row = \db\mysql_fetch_assoc($result))
+    {
+      $x = new stdClass();
+      $x->linkId     = intval($row['LINK_ID']);
+      $x->menuPath   = utf8_encode($row['MENU_PATH']);
+      $x->url        = utf8_encode($row['URL']);
+      array_push($rows, $x);
+    }
+  }
+  \db\mysql_free_result($result);
 }
 elseif ($iType == "PAGE")
 {

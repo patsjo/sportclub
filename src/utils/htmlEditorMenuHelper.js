@@ -1,7 +1,7 @@
 const getMenuLevels = (splittedMenus, level = 1, prevMenus = '') => ({
     menuItems: splittedMenus
       .filter((m) => m.menuPaths.length === level && m.menuPaths.slice(0, level - 1).join('/') === prevMenus)
-      .map((m) => ({ pageId: m.pageId, description: m.menuPaths.slice(level - 1).join(''), level: level })),
+      .map((m) => ({ pageId: m.pageId, linkId: m.linkId, menuPath: m.menuPath, description: m.menuPaths.slice(level - 1).join(''), url: m.url, level: level })),
     subMenus: splittedMenus
       .filter(
         (m, index, self) =>
@@ -29,8 +29,11 @@ const getMenuLevels = (splittedMenus, level = 1, prevMenus = '') => ({
           : 0
       )
       .map((menu) => ({
+        menuPath: menu.menuPath,
         menuPaths: menu.menuPath.replace(/^[\s/]+|[\s/]+$/g, '').split('/'),
         pageId: menu.pageId,
+        linkId: menu.linkId,
+        url: menu.url
       }));
     const menuLevels = getMenuLevels(splittedMenus);
 

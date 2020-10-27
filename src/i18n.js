@@ -233,7 +233,9 @@ i18next
             Result: 'Result'
           },
           htmlEditor: {
+            MenuLink: "Create meny link",
             Path: "Menu path",
+            Url: "Url",
             Groups: "Authority groups needed to view the page"
           }
         }
@@ -444,7 +446,9 @@ i18next
             Result: 'Resultat'
           },
           htmlEditor: {
+            MenuLink: "Skapa menylänk",
             Path: "Meny",
+            Url: "Url",
             Groups: "Behörighetsgrupper för att kunna visa sidan"
           }
         }

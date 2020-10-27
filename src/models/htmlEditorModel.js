@@ -1,8 +1,11 @@
 import { types } from "mobx-state-tree";
 
 const MenuItem = types.model({
-  pageId: types.number,
+  pageId: types.maybeNull(types.number),
+  linkId: types.maybeNull(types.number),
   description: types.string,
+  menuPath: types.string,
+  url: types.maybeNull(types.string),
   level: types.number
 });
 

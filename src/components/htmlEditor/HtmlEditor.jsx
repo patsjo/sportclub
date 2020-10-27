@@ -13,7 +13,7 @@ import { dashboardContents } from '../../models/globalStateModel';
 import './ckeditor5.css';
 
 const DefaultData = '<p>Här lägger man in all text och bilder</p>';
-const DefaultMenuPath = '/Exempel/Sida1';
+export const DefaultMenuPath = '/Exempel/Sida1';
 const Option = Select.Option;
 
 const StyledButton = styled(Button)`
@@ -62,7 +62,7 @@ const HtmlEditor = inject(
 
     useEffect(() => {
       setLoading(true);
-      setIsReadOnly(loadPageId > 0);
+      setIsReadOnly(loadPageId >= 0);
       PostJsonData(
         htmlEditorModule.queryUrl,
         {
@@ -122,7 +122,7 @@ const HtmlEditor = inject(
         return;
       }
       const htmlData = currentEditor.getData();
-      const saveUrl = pageId === undefined ? htmlEditorModule.addUrl : htmlEditorModule.updateUrl;
+      const saveUrl = pageId < 0 ? htmlEditorModule.addUrl : htmlEditorModule.updateUrl;
 
       setSaving(true);
       form.validateFields().then((values) => {

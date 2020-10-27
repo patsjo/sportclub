@@ -33,13 +33,13 @@ $errCode                = 0;
 $errText                = Null;
 $x = new stdClass();
 
-if (is_numeric($_REQUEST['iPageID']))
+if (isset($_REQUEST['iPageID']) && is_numeric($_REQUEST['iPageID']))
 {
   $x->pageId = intval($_REQUEST['iPageID']);
 }
-else
+if (isset($_REQUEST['iLinkID']) && is_numeric($_REQUEST['iLinkID']))
 {
-  trigger_error('Felaktig parameter "iPageID"', E_USER_ERROR);
+  $x->linkId = intval($_REQUEST['iLinkID']);
 }
 if ($_REQUEST['iMenuPath'])
 {
@@ -49,82 +49,131 @@ else
 {
   trigger_error('Felaktig parameter "iMenuPath"', E_USER_ERROR);
 }
-$x->groupIds = json_decode($_REQUEST['iGroupIds']);
-
-if (file_exists($_FILES['iData']['tmp_name']))
-{
-  $x->data = \db\mysql_real_escape_string(fread(fopen($_FILES['iData']['tmp_name'], "r"),$_FILES['iData']['size']));
-  if (!strlen($x->data))
-  {
-    trigger_error('Kunde ej läsa den uppladdade filen.', E_USER_ERROR);
-  }
-}
-else
-{
-  trigger_error('Ingen fil skickad.', E_USER_ERROR);
-}
 
 OpenDatabase();
 $now = date("Y-m-d G:i:s"); // MySQL DATETIME
 
-if ($x->pageId > 0)
+if (isset($x->pageId))
 {
-  $sql = "DELETE FROM HTMLEDITOR_GROUPS WHERE PAGE_ID = " . $x->pageId;
-
-  if (!\db\mysql_query($sql))
+  $x->groupIds = json_decode($_REQUEST['iGroupIds']);
+  
+  if (file_exists($_FILES['iData']['tmp_name']))
   {
-    $errCode = 1;
-    $errText = "<P>Databasfel: " . \db\mysql_error() . "</P>\n";
+    $x->data = \db\mysql_real_escape_string(fread(fopen($_FILES['iData']['tmp_name'], "r"),$_FILES['iData']['size']));
+    if (!strlen($x->data))
+    {
+      trigger_error('Kunde ej läsa den uppladdade filen.', E_USER_ERROR);
+    }
+  }
+  else
+  {
+    trigger_error('Ingen fil skickad.', E_USER_ERROR);
   }
   
-  $query = sprintf("UPDATE HTMLEDITOR_PAGES " .
-                  "SET MENU_PATH = '%s', DATA = '%s'" .
-                  "WHERE PAGE_ID = " . $x->pageId,
-                  \db\mysql_real_escape_string($x->menuPath),
-                  $x->data);
-  \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
+  if ($x->pageId > 0)
+  {
+    $sql = "DELETE FROM HTMLEDITOR_GROUPS WHERE PAGE_ID = " . $x->pageId;
+  
+    if (!\db\mysql_query($sql))
+    {
+      $errCode = 1;
+      $errText = "<P>Databasfel: " . \db\mysql_error() . "</P>\n";
+    }
+    
+    $query = sprintf("UPDATE HTMLEDITOR_PAGES " .
+                    "SET MENU_PATH = '%s', DATA = '%s'" .
+                    "WHERE PAGE_ID = " . $x->pageId,
+                    \db\mysql_real_escape_string($x->menuPath),
+                    $x->data);
+    \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
+  }
+  else
+  {
+    $query = sprintf("INSERT INTO HTMLEDITOR_PAGES " .
+                    "(" .
+                    "  MENU_PATH, DATA" .
+                    ")" .
+                    " VALUES " .
+                    "(" .
+                    "  '%s', '%s'" .
+                    ")",
+                    \db\mysql_real_escape_string($x->menuPath),
+                    $x->data);
+  
+    \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
+  
+    $x->pageId = \db\mysql_insert_id();
+          
+    if ($x->pageId == 0)
+    {
+      trigger_error("Can't get the 'page_id' auto_increment value", E_USER_ERROR);
+    }
+  }
+  unset($x->menuPath);
+  unset($x->data);
+  
+  foreach($x->groupIds as $groupId)
+  {
+    $query = sprintf("INSERT INTO HTMLEDITOR_GROUPS " .
+                    "(" .
+                    "  PAGE_ID, GROUP_ID" .
+                    ")" .
+                    " VALUES " .
+                    "(" .
+                    "  %d, %d" .
+                    ")",
+                    $x->pageId,
+                    $groupId);
+  
+    \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
+  }
+  unset($x->groupIds);
 }
 else
 {
-  $query = sprintf("INSERT INTO HTMLEDITOR_PAGES " .
-                  "(" .
-                  "  MENU_PATH, DATA" .
-                  ")" .
-                  " VALUES " .
-                  "(" .
-                  "  '%s', '%s'" .
-                  ")",
-                  \db\mysql_real_escape_string($x->menuPath),
-                  $x->data);
-
-  \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
-
-  $x->pageId = \db\mysql_insert_id();
-        
-  if ($x->pageId == 0)
+  if ($_REQUEST['iUrl'])
   {
-    trigger_error("Can't get the 'file_id' auto_increment value", E_USER_ERROR);
+    $x->url = getIso88591($_REQUEST['iUrl']);
   }
+  else
+  {
+    trigger_error('Felaktig parameter "iUrl"', E_USER_ERROR);
+  }
+  
+  if ($x->linkId > 0)
+  {
+    $query = sprintf("UPDATE HTMLEDITOR_LINKS " .
+                    "SET MENU_PATH = '%s', URL = '%s'" .
+                    "WHERE LINK_ID = " . $x->linkId,
+                    \db\mysql_real_escape_string($x->menuPath),
+                    \db\mysql_real_escape_string($x->url));
+    \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
+  }
+  else
+  {
+    $query = sprintf("INSERT INTO HTMLEDITOR_LINKS " .
+                    "(" .
+                    "  MENU_PATH, URL" .
+                    ")" .
+                    " VALUES " .
+                    "(" .
+                    "  '%s', '%s'" .
+                    ")",
+                    \db\mysql_real_escape_string($x->menuPath),
+                    \db\mysql_real_escape_string($x->url));
+  
+    \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
+  
+    $x->linkId = \db\mysql_insert_id();
+          
+    if ($x->linkId == 0)
+    {
+      trigger_error("Can't get the 'link_id' auto_increment value", E_USER_ERROR);
+    }
+  }
+  unset($x->menuPath);
+  unset($x->url);
 }
-unset($x->menuPath);
-unset($x->data);
-
-foreach($x->groupIds as $groupId)
-{
-  $query = sprintf("INSERT INTO HTMLEDITOR_GROUPS " .
-                  "(" .
-                  "  PAGE_ID, GROUP_ID" .
-                  ")" .
-                  " VALUES " .
-                  "(" .
-                  "  %d, %d" .
-                  ")",
-                  $x->pageId,
-                  $groupId);
-
-  \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
-}
-unset($x->groupIds);
 
 header("Access-Control-Allow-Credentials: true");
 header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);

@@ -2,8 +2,10 @@ import React from 'react';
 import styled from 'styled-components';
 import { Menu } from 'antd';
 import MenuItem from '../menu/MenuItem';
-import { CaretRightOutlined, FileOutlined } from '@ant-design/icons';
+import { CaretRightOutlined, FileOutlined, LinkOutlined, SettingOutlined } from '@ant-design/icons';
 import MaterialIcon from '../materialIcon/MaterialIcon';
+import { HtmlEditorLinkModal } from '../htmlEditor/HtmlEditorLinkModal';
+import { DefaultMenuPath } from '../htmlEditor/HtmlEditor';
 
 const StyledSubMenu = styled(Menu.SubMenu)`
   &&& {
@@ -19,22 +21,62 @@ const StyledSubMenu = styled(Menu.SubMenu)`
   }
 `;
 
-const getMenuItems = (items, setHtmlEditor) =>
+const getMenuItems = (items, setHtmlEditor, htmEditorLinkform, t, globalStateModel, sessionModel, clubModel) =>
   items.map((item) => (
     <MenuItem
-      key={`menuItem#htmlEditor#${item.pageId}`}
+      key={`menuItem#htmlEditor#${item.pageId ? `pageId#${item.pageId}` : `linkId#${item.linkId}`}`}
       level={item.level}
-      icon={<FileOutlined style={{ verticalAlign: 'middle', fontSize: 18 }} />}
+      icon={
+        item.pageId ? (
+          <FileOutlined style={{ verticalAlign: 'middle', fontSize: 18 }} />
+        ) : sessionModel.loggedIn && sessionModel.isAdmin ? (
+          <SettingOutlined
+            style={{ verticalAlign: 'middle', fontSize: 18 }}
+            onClick={(event) => {
+              event.stopPropagation();
+              globalStateModel.setValue('rightMenuVisible', false);
+              HtmlEditorLinkModal(
+                t,
+                item.linkId,
+                item.menuPath,
+                item.url,
+                htmEditorLinkform,
+                globalStateModel,
+                sessionModel,
+                clubModel
+              )
+                .then(() => {})
+                .catch(() => {});
+            }}
+          />
+        ) : (
+          <LinkOutlined style={{ verticalAlign: 'middle', fontSize: 18 }} />
+        )
+      }
       name={item.description}
       onClick={() => {
-        setHtmlEditor(item.pageId);
+        if (item.pageId) {
+          setHtmlEditor(item.pageId);
+        } else {
+          const win = window.open(item.url, '_blank');
+          win.focus();
+        }
       }}
     />
   ));
 
-export const getHtmlEditorMenus = (menu, setHtmlEditor, path) => (
+export const getHtmlEditorMenus = (
+  menu,
+  setHtmlEditor,
+  path,
+  htmEditorLinkform,
+  t,
+  globalStateModel,
+  sessionModel,
+  clubModel
+) => (
   <>
-    {getMenuItems(menu.menuItems, setHtmlEditor)}
+    {getMenuItems(menu.menuItems, setHtmlEditor, htmEditorLinkform, t, globalStateModel, sessionModel, clubModel)}
     {menu.subMenus.map((subMenu) => (
       <StyledSubMenu
         key={'subMenu#htmlEditor' + path + '#' + subMenu.description}
@@ -46,7 +88,16 @@ export const getHtmlEditorMenus = (menu, setHtmlEditor, path) => (
           </span>
         }
       >
-        {getHtmlEditorMenus(subMenu.subMenus, setHtmlEditor, path + '#' + subMenu.description)}
+        {getHtmlEditorMenus(
+          subMenu.subMenus,
+          setHtmlEditor,
+          path + '#' + subMenu.description,
+          htmEditorLinkform,
+          t,
+          globalStateModel,
+          sessionModel,
+          clubModel
+        )}
       </StyledSubMenu>
     ))}
   </>
