@@ -35,11 +35,12 @@ const getMenuItems = (items, setHtmlEditor, htmEditorLinkform, t, globalStateMod
             onClick={(event) => {
               event.stopPropagation();
               globalStateModel.setValue('rightMenuVisible', false);
-              htmEditorLinkform.form.setFieldsValue({
-                iLinkID: item.linkId,
-                iMenuPath: item.menuPath,
-                iUrl: item.url,
-              });
+              htmEditorLinkform &&
+                htmEditorLinkform.setFieldsValue({
+                  iLinkID: item.linkId,
+                  iMenuPath: item.menuPath,
+                  iUrl: item.url,
+                });
 
               HtmlEditorLinkModal(
                 t,
