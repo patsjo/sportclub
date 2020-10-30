@@ -95,7 +95,8 @@ export const MobxClubModel = types
     raceClubs: types.maybe(RaceClubs),
     corsProxy: types.maybe(types.string),
     oldUrl: types.maybe(types.string),
-    sponsors: types.array(Sponsor)
+    sponsors: types.array(Sponsor),
+    facebookUrl: types.maybe(types.string)
   })
   .actions(self => ({
     setRaceClubs(raceClubs) {

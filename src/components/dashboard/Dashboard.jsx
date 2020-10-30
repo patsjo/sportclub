@@ -12,6 +12,7 @@ import Columns from './Columns';
 import InfiniteScroll from 'react-infinite-scroller';
 import { Spin } from 'antd';
 import HtmlEditor from '../htmlEditor/HtmlEditor';
+import ShowFacebookTimeline from '../facebook/ShowFacebookTimeline';
 const League = lazy(() => import('../results/League'));
 const ViewResults = lazy(() => import('../results/ViewResults'));
 const ResultsFees = lazy(() => import('../results/ResultsFees'));
@@ -78,6 +79,11 @@ const Dashboard = inject(
               />
             ) : null}
           </div>
+          {clubModel.facebookUrl ? (
+            <div column={-2} key="facebookTimeline" style={{ marginBottom: 12 }}>
+              <ShowFacebookTimeline />
+            </div>
+          ) : null}
           <div column={-1}>
             <SponsorsSlideshow />
           </div>
