@@ -19,7 +19,7 @@ const SponsorImage = styled.img`
 const AllSponsors = inject('clubModel')(
   observer((props) => {
     const { clubModel } = props;
-    const { sponsors } = clubModel;
+    const sponsors = clubModel.sponsors ? clubModel.sponsors.filter((s) => s.active) : undefined;
 
     return sponsors && sponsors.length > 0 ? (
       <Columns>

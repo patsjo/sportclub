@@ -50,7 +50,7 @@ const shuffle = (array) => {
 const SponsorsSlideshow = inject('clubModel')(
   observer((props) => {
     const { clubModel } = props;
-    const { sponsors } = clubModel;
+    const sponsors = clubModel.sponsors ? clubModel.sponsors.filter((s) => s.active) : undefined;
     const { t } = useTranslation();
 
     return sponsors && sponsors.length > 0 ? (

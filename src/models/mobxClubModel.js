@@ -55,7 +55,8 @@ const Module = types
 const Sponsor = types.model({
   name: types.string,
   logo: Logo,
-  url: types.maybe(types.string)
+  url: types.maybe(types.string),
+  active: types.boolean
 });
 
 const Eventor = types.model({
