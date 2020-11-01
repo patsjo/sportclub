@@ -8,7 +8,17 @@ import NewsEdit from './NewsEdit';
 import { PostJsonData } from '../../utils/api';
 import withForwardedRef from '../../utils/withForwardedRef';
 import MaterialIcon from '../materialIcon/MaterialIcon';
+import { colorShade } from '../../utils/colorHelper';
 import { getImage } from '../../utils/imageHelper';
+
+const BannerHolder = styled.div`
+  background-color: ${(props) => (props.hasImage ? 'inherit' : colorShade(props.theme.palette.primary.main, 0))};
+  border-radius: 8px;
+  color: ${(props) => (props.hasImage ? 'inherit' : props.theme.palette.primary.contrastText)};
+  padding: ${(props) => (props.hasImage ? '0' : '6px')};
+  text-align: ${(props) => (props.hasImage ? 'center' : 'inherit')};
+  margin-bottom: 4px;
+`;
 
 const ContentHolder = styled.div``;
 
@@ -39,6 +49,13 @@ const NewsText = styled.div`
   text-align: justify;
   text-justify: inter-word;
   white-space: pre-line;
+`;
+
+const BannerImage = styled.img`
+  width: auto;
+  height: auto;
+  max-height: 100px;
+  max-width: 100%;
 `;
 
 const NewsImage = styled.img`
@@ -98,7 +115,7 @@ const NewsItem = inject(
         const { sessionModel, clubModel, globalStateModel, forwardedRef, newsObject } = this.props;
         const moduleInfo = clubModel.module('News');
         const FileDownload = this.getFile();
-        const Image = getImage(200, NewsImage, newsObject, clubModel);
+        const Image = getImage(1000, BannerImage, newsObject, clubModel);
         const ImageBig = getImage(400, NewsImage, newsObject, clubModel);
 
         const Header = newsObject.link ? (
@@ -119,38 +136,24 @@ const NewsItem = inject(
           </NewsHeader>
         );
 
-        return (
+        return sessionModel.loggedIn || !newsObject.link ? (
           <FadeOutItem
             ref={forwardedRef}
             module={moduleInfo}
             content={
-              <ContentHolder>
-                <NewsHeader>
-                  {FileDownload}
-                  <div
-                    dangerouslySetInnerHTML={{
-                      __html: newsObject.header,
-                    }}
-                  />
-                </NewsHeader>
-                <NewsTime>{newsObject.modificationDate}</NewsTime>
-                {Image}
-                <NewsIntroduction>
-                  <div
-                    dangerouslySetInnerHTML={{
-                      __html: newsObject.introduction,
-                    }}
-                  />
-                </NewsIntroduction>
-                <NewsText>
-                  <div
-                    dangerouslySetInnerHTML={{
-                      __html: newsObject.text,
-                    }}
-                  />
-                </NewsText>
-                <NewsBy>{newsObject.modifiedBy}</NewsBy>
-              </ContentHolder>
+              <BannerHolder hasImage={Image != null}>
+                {Image ? (
+                  Image
+                ) : (
+                  <NewsHeader>
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: newsObject.header,
+                      }}
+                    />
+                  </NewsHeader>
+                )}
+              </BannerHolder>
             }
             modalContent={
               <ContentHolder>
@@ -195,6 +198,22 @@ const NewsItem = inject(
             }
             onDelete={() => globalStateModel.news.removeNewsItem(newsObject)}
           />
+        ) : (
+          <a href={newsObject.link} target="_blank" rel="noopener noreferrer">
+            <BannerHolder hasImage={Image != null}>
+              {Image ? (
+                Image
+              ) : (
+                <NewsHeader>
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: newsObject.header,
+                    }}
+                  />
+                </NewsHeader>
+              )}
+            </BannerHolder>
+          </a>
         );
       }
     }

@@ -114,6 +114,7 @@ i18next
           },
           news: {
             Add: "Add",
+            Banner: "Banner",
             Edit: "Edit news",
             ExpireDate: "Sista dag som nyheten visas",
             Educations: "Educations",
@@ -326,6 +327,7 @@ i18next
           },
           news: {
             Add: "Lägg till",
+            Banner: "Banner",
             Edit: "Redigera nyhet",
             Educations: "Utbildningar",
             ExpireDate: "Sista dag som nyheten visas",

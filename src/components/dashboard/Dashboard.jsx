@@ -1,5 +1,6 @@
 import React, { lazy } from 'react';
 import styled from 'styled-components';
+import useBanners from '../news/useBanners';
 import useNews from '../news/useNews';
 import useEventorEntries from '../eventor/useEventorEntries';
 import EsriOSMOrienteeringMap from '../map/EsriOSMOrienteeringMap';
@@ -49,15 +50,17 @@ const Dashboard = inject(
   observer(({ clubModel, globalStateModel }) => {
     const eventorEntries = useEventorEntries(globalStateModel, clubModel, globalStateModel.dashboardContentId);
     const { loadMoreCallback, newsItems } = useNews(globalStateModel, clubModel);
+    const bannerItems = useBanners(globalStateModel, clubModel);
 
     const Content =
       globalStateModel.dashboardContentId === dashboardContents.home ? (
         <Columns>
+          {bannerItems}
           {newsItems.slice(0, 2)}
           <div column={-2} key="weeklyCalendar" style={{ marginBottom: 12 }}>
             <WeeklyCalendar />
           </div>
-          <div column={-1} style={{ height: 400, marginBottom: 12 }}>
+          <div key="dashboard#homeMapContainer" column={-1} style={{ height: 400, marginBottom: 12 }}>
             {clubModel.mapCenter ? (
               <EsriOSMOrienteeringMap
                 key="dashboard#homeMap"

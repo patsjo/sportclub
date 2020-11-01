@@ -1,16 +1,16 @@
-import React from "react";
-import { Spin } from "antd";
-import styled from "styled-components";
-import { dashboardContents } from "../../models/globalStateModel";
-import { GetJsonData } from "../../utils/api";
-import EventRace from "./EventRace";
+import React from 'react';
+import { Spin } from 'antd';
+import styled from 'styled-components';
+import { dashboardContents } from '../../models/globalStateModel';
+import { GetJsonData } from '../../utils/api';
+import EventRace from './EventRace';
 
 const SpinnerDiv = styled.div`
   text-align: center;
   width: 100%;
 `;
 
-const flatten = list => list.reduce((a, b) => a.concat(Array.isArray(b) ? flatten(b) : b), []);
+const flatten = (list) => list.reduce((a, b) => a.concat(Array.isArray(b) ? flatten(b) : b), []);
 
 const useEventorEntries = (globalStateModel, clubModel, dashboardContentId) => {
   const [loaded, setLoaded] = React.useState(false);
@@ -35,32 +35,32 @@ const useEventorEntries = (globalStateModel, clubModel, dashboardContentId) => {
       clubModel.corsProxy +
         encodeURIComponent(
           clubModel.eventor.entriesUrl +
-            "?organisationIds=" +
+            '?organisationIds=' +
             clubModel.eventor.organisationId +
-            "&fromEventDate=" +
+            '&fromEventDate=' +
             fromDate +
-            "&toEventDate=" +
+            '&toEventDate=' +
             toDate +
-            "&includeEntryFees=true&includePersonElement=true&includeOrganisationElement=true&includeEventElement=true"
+            '&includeEntryFees=true&includePersonElement=true&includeOrganisationElement=true&includeEventElement=true'
         ) +
-        "&headers=" +
-        encodeURIComponent("ApiKey: " + clubModel.eventor.apiKey),
+        '&headers=' +
+        encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
       false
     );
     const oringenEventsPromise = GetJsonData(
       clubModel.corsProxy +
         encodeURIComponent(
           clubModel.eventor.eventsUrl +
-            "?organisationIds=" +
+            '?organisationIds=' +
             clubModel.eventor.oRingenOrganisationId +
-            "&fromDate=" +
+            '&fromDate=' +
             fromDate +
-            "&toDate=" +
+            '&toDate=' +
             toOringenDate +
-            "&includeAttributes=true"
+            '&includeAttributes=true'
         ) +
-        "&headers=" +
-        encodeURIComponent("ApiKey: " + clubModel.eventor.apiKey),
+        '&headers=' +
+        encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
       false
     );
     Promise.all([entriesPromise, oringenEventsPromise]).then(([entriesJson, oringenEventsJson]) => {
@@ -76,47 +76,49 @@ const useEventorEntries = (globalStateModel, clubModel, dashboardContentId) => {
       } else if (!Array.isArray(oringenEventsJson.Event)) {
         oringenEventsJson.Event = [oringenEventsJson.Event];
       }
-      entriesJson.Entry.forEach(entry => {
+      entriesJson.Entry.forEach((entry) => {
         if (Array.isArray(entry.Event.EventRace)) {
-          entry.EventRaceId = entry.Event.EventRace.map(eventRace => eventRace.EventRaceId);
+          entry.EventRaceId = entry.Event.EventRace.map((eventRace) => eventRace.EventRaceId);
         } else {
           entry.EventRaceId = entry.Event.EventRace.EventRaceId;
         }
       });
       let events = [
         ...new Set([
-          ...flatten(entriesJson.Entry.map(entry => entry.EventRaceId)),
-          ...flatten(oringenEventsJson.Event.map(event => event.EventRace)).map(eventRace => eventRace.EventRaceId)
-        ])
+          ...flatten(entriesJson.Entry.map((entry) => entry.EventRaceId)),
+          ...flatten(oringenEventsJson.Event.map((event) => event.EventRace)).map((eventRace) => eventRace.EventRaceId),
+        ]),
       ]
         // eslint-disable-next-line eqeqeq
-        .filter(eventRaceId => eventRaceId != undefined)
-        .map(eventRaceId => {
+        .filter((eventRaceId) => eventRaceId != undefined)
+        .map((eventRaceId) => {
           return { EventRaceId: eventRaceId };
         });
-      events.forEach(event => {
-        let entry = entriesJson.Entry.find(e =>
+      events.forEach((event) => {
+        let entry = entriesJson.Entry.find((e) =>
           Array.isArray(e.EventRaceId) ? e.EventRaceId.includes(event.EventRaceId) : e.EventRaceId === event.EventRaceId
         );
         // eslint-disable-next-line eqeqeq
         if (entry == undefined) {
           entry = {
-            Event: oringenEventsJson.Event.find(e =>
+            Event: oringenEventsJson.Event.find((e) =>
               Array.isArray(e.EventRace)
-                ? e.EventRace.map(er => er.EventRaceId).includes(event.EventRaceId)
+                ? e.EventRace.map((er) => er.EventRaceId).includes(event.EventRaceId)
                 : e.EventRace.EventRaceId === event.EventRaceId
-            )
+            ),
           };
         }
         event.Event = {
-          ...entry.Event
+          ...entry.Event,
         };
         if (Array.isArray(event.Event.EventRace)) {
-          event.Event.EventRace = event.Event.EventRace.find(eventRace => eventRace.EventRaceId === event.EventRaceId);
-          event.Event.Name = event.Event.Name + ", " + event.Event.EventRace.Name;
+          event.Event.EventRace = event.Event.EventRace.find(
+            (eventRace) => eventRace.EventRaceId === event.EventRaceId
+          );
+          event.Event.Name = event.Event.Name + ', ' + event.Event.EventRace.Name;
         }
         event.Competitors = entriesJson.Entry.filter(
-          entry =>
+          (entry) =>
             // eslint-disable-next-line eqeqeq
             entry.Competitor != undefined &&
             // eslint-disable-next-line eqeqeq
@@ -124,11 +126,11 @@ const useEventorEntries = (globalStateModel, clubModel, dashboardContentId) => {
             (Array.isArray(entry.EventRaceId)
               ? entry.EventRaceId.includes(event.EventRaceId)
               : entry.EventRaceId === event.EventRaceId)
-        ).map(entry => {
+        ).map((entry) => {
           return {
             ...entry.Competitor,
             EntryId: entry.EntryId,
-            EntryClass: entry.EntryClass
+            EntryClass: entry.EntryClass,
           };
         });
       });
@@ -144,7 +146,7 @@ const useEventorEntries = (globalStateModel, clubModel, dashboardContentId) => {
       // 9 Completed
       // 10 Canceled
       // 11 Reported
-      events = events.filter(event => ["5", "6", "7", "8", "9", "11"].includes(event.Event.EventStatusId));
+      events = events.filter((event) => ['5', '6', '7', '8', '9', '11'].includes(event.Event.EventStatusId));
       events = events.sort((a, b) =>
         a.Event.EventRace.RaceDate.Date > b.Event.EventRace.RaceDate.Date
           ? 1
@@ -165,16 +167,17 @@ const useEventorEntries = (globalStateModel, clubModel, dashboardContentId) => {
   const Items = loaded
     ? events.map((event, index) => (
         <EventRace
-          key={"entryObject#" + index}
+          key={'entryObject#' + index}
+          column={-50}
           header={event.Event.Name}
           date={event.Event.EventRace.RaceDate.Date}
           eventObject={event}
         />
       ))
     : [
-        <SpinnerDiv key="entryObject#spinner">
+        <SpinnerDiv key="entryObject#spinner" column={-50}>
           <Spin size="large" />
-        </SpinnerDiv>
+        </SpinnerDiv>,
       ];
   return Items;
 };

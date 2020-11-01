@@ -136,6 +136,7 @@ const NewsEdit = inject(
               <Select style={{ minWidth: 174 }}>
                 <Option value="1">{t('modules.News')}</Option>
                 <Option value="2">{t('news.LongTimeNews')}</Option>
+                <Option value="10">{t('news.Banner')}</Option>
                 <Option value="3">{t('news.Educations')}</Option>
               </Select>
             </FormItem>
