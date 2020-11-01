@@ -32,10 +32,33 @@ export const GlobalStateModel = types
     graphics: types.optional(types.array(Graphic), []),
     htmlEditorMenu: types.maybe(Menu)
   })
+  .volatile(self => ({
+    map: undefined,
+    MapView: undefined,
+    GraphicsLayer: undefined,
+    Graphic: undefined,
+    Circle: undefined,
+    WebMercatorUtils: undefined,
+    geometryEngine: undefined,
+    mapLoading: false
+  }))
   .actions((self) => {
     return {
       setValue(key, value) {
         self[key] = value;
+      },
+      setMap(map, MapView, GraphicsLayer, Graphic, Circle, WebMercatorUtils, geometryEngine) {
+        self.map = map;
+        self.MapView = MapView;
+        self.GraphicsLayer = GraphicsLayer;
+        self.Graphic = Graphic;
+        self.Circle = Circle;
+        self.WebMercatorUtils = WebMercatorUtils;
+        self.geometryEngine = geometryEngine;
+        self.mapLoading = false;
+      },
+      setMapLoading() {
+        self.mapLoading = true;
       },
       setDashboard(dashboardContentId, startDate, endDate, type) {
         self.dashboardContentId = dashboardContentId;

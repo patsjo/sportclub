@@ -2,6 +2,7 @@ import React, { lazy } from 'react';
 import styled from 'styled-components';
 import useBanners from '../news/useBanners';
 import useNews from '../news/useNews';
+import useEsriMap from '../map/useEsriMap';
 import useEventorEntries from '../eventor/useEventorEntries';
 import EsriOSMOrienteeringMap from '../map/EsriOSMOrienteeringMap';
 import WeeklyCalendar from '../calendar/weekly/WeeklyCalendar';
@@ -51,6 +52,7 @@ const Dashboard = inject(
     const eventorEntries = useEventorEntries(globalStateModel, clubModel, globalStateModel.dashboardContentId);
     const { loadMoreCallback, newsItems } = useNews(globalStateModel, clubModel);
     const bannerItems = useBanners(globalStateModel, clubModel);
+    const isUsingEsriMap = useEsriMap(globalStateModel);
 
     const Content =
       globalStateModel.dashboardContentId === dashboardContents.home ? (
@@ -61,7 +63,7 @@ const Dashboard = inject(
             <WeeklyCalendar />
           </div>
           <div key="dashboard#homeMapContainer" column={-1} style={{ height: 400, marginBottom: 12 }}>
-            {clubModel.mapCenter ? (
+            {isUsingEsriMap && clubModel.mapCenter ? (
               <EsriOSMOrienteeringMap
                 key="dashboard#homeMap"
                 containerId="homeMap"

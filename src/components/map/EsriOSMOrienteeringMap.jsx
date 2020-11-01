@@ -1,6 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
-import { setDefaultOptions, loadModules } from 'esri-loader';
+import { observer, inject } from 'mobx-react';
+import { message } from 'antd';
+import { backgroundLayerIds } from './useEsriMap';
 
 const MapDiv = styled.div`
   height: 100%;
@@ -22,201 +24,153 @@ const OrienteeringSymbol = {
   height: '15px',
 };
 
-const EsriOSMOrienteeringMap = ({
-  containerId,
-  mapCenter,
-  graphics = [],
-  onClick = () => {},
-  onHighlightClick = () => {},
-}) => {
-  const GraphicRef = React.useRef();
-  const CircleRef = React.useRef();
-  const WebMercatorUtilsRef = React.useRef();
-  const geometryEngineRef = React.useRef();
-  const [graphicsLayer, setGraphicsLayer] = React.useState();
-  const [mapView, setMapView] = React.useState();
+const EsriOSMOrienteeringMap = inject('globalStateModel')(
+  observer(
+    ({ globalStateModel, containerId, mapCenter, graphics = [], onClick = () => {}, onHighlightClick = () => {} }) => {
+      const [graphicsLayer, setGraphicsLayer] = React.useState();
+      const [mapView, setMapView] = React.useState();
 
-  React.useEffect(() => {
-    setDefaultOptions({ version: '4.17', css: true });
-    loadModules([
-      'esri/layers/OpenStreetMapLayer',
-      'esri/layers/GraphicsLayer',
-      'esri/Map',
-      'esri/views/MapView',
-      'esri/layers/BaseTileLayer',
-      'esri/Graphic',
-      'esri/geometry/Circle',
-      'esri/geometry/geometryEngine',
-      'esri/geometry/support/webMercatorUtils',
-    ]).then(
-      ([
-        OpenStreetMapLayer,
-        GraphicsLayer,
-        Map,
-        MapView,
-        BaseTileLayer,
-        Graphic,
-        Circle,
-        geometryEngine,
-        WebMercatorUtils,
-      ]) => {
-        GraphicRef.current = Graphic;
-        CircleRef.current = Circle;
-        WebMercatorUtilsRef.current = WebMercatorUtils;
-        geometryEngineRef.current = geometryEngine;
-        const osmLayer = new OpenStreetMapLayer();
-        const map = new Map({
-          basemap: {
-            baseLayers: [osmLayer],
-          },
-        });
+      React.useEffect(() => {
+        if (globalStateModel.map && !globalStateModel.mapLoading) {
+          const visibleViewLayerIds = [...backgroundLayerIds, containerId];
 
-        const view = new MapView({
-          map: map,
-          container: containerId, // Reference to the map object created before the scene
-          zoom: 12, // Sets zoom level based on level of detail (LOD)
-          center: mapCenter,
-          highlightOptions: {
-            color: 'orange',
-          },
-        });
-        view.ui.add(`${containerId}#orienteeringMapInfo`, 'top-right');
-
-        const OrienteeringTileLayer = BaseTileLayer.createSubclass({
-          properties: {
-            urlTemplates: [],
-          },
-
-          getTileUrl: function (level, row, col) {
-            return this.urlTemplates[Math.floor(Math.random() * Math.floor(this.urlTemplates.length))]
-              .replace('{z}', level)
-              .replace('{x}', col)
-              .replace('{y}', row);
-          },
-        });
-
-        const orienteeringLayer = new OrienteeringTileLayer({
-          urlTemplates: [
-            'https://tiler4.oobrien.com/oterrain_global/{z}/{x}/{y}.png',
-            'https://tiler5.oobrien.com/oterrain_global/{z}/{x}/{y}.png',
-            'https://tiler6.oobrien.com/oterrain_global/{z}/{x}/{y}.png',
-          ],
-          title: 'Orienteering layer',
-          minScale: 150000,
-        });
-
-        map.add(orienteeringLayer);
-
-        const newGraphicsLayer = new GraphicsLayer({
-          title: 'Graphics layer',
-        });
-
-        map.add(newGraphicsLayer);
-
-        const onTouchEvent = view.on('pointer-down', (event) => {
-          const point = WebMercatorUtilsRef.current.webMercatorToGeographic(view.toMap(event));
-          onClick(
-            newGraphicsLayer,
-            new Graphic({
-              geometry: { type: 'point', longitude: point.x, latitude: point.y },
-              symbol: OrienteeringSymbol,
-            })
-          );
-        });
-
-        view.when(() => {
-          view.whenLayerView(newGraphicsLayer).then((layerView) => {
-            let highlight, currentUids, highlighted;
-
-            const highlightGraphics = (event) => {
-              highlighted = newGraphicsLayer.graphics.items.filter((g) => {
-                const p = view.toScreen(g.geometry);
-                return g.attributes && Math.abs(p.x - event.x) < 8 && Math.abs(p.y - event.y) < 8;
-              });
-
-              if (highlighted.length) {
-                const text = highlighted
-                  .map((g) => g.attributes)
-                  .map((a) => `${a.time ? a.time : ''} ${a.name}`)
-                  .join('<br/>');
-                const highlightedUids = highlighted.map((g) => g.uid);
-
-                if (highlight && currentUids !== JSON.stringify(highlightedUids)) {
-                  highlight.remove();
-                  highlight = null;
-                  return;
-                }
-
-                if (highlight) {
-                  return;
-                }
-
-                document.getElementById(`${containerId}#orienteeringMapInfo`) &&
-                  (document.getElementById(`${containerId}#orienteeringMapInfo`).style.visibility = 'visible');
-                document.getElementById(`${containerId}#orienteeringMapInfoText`) &&
-                  (document.getElementById(`${containerId}#orienteeringMapInfoText`).innerHTML = text);
-
-                currentUids = JSON.stringify(highlightedUids);
-                highlight = layerView.highlight(highlightedUids);
-              } else {
-                // remove the highlight if no features are
-                // returned from the hitTest
-                highlight && highlight.remove();
-                highlight = null;
-                document.getElementById(`${containerId}#orienteeringMapInfo`) &&
-                  (document.getElementById(`${containerId}#orienteeringMapInfo`).style.visibility = 'hidden');
-              }
-            };
-            const highlightGraphicsClick = (event) => {
-              highlightGraphics(event);
-              if (highlighted.length && event.native && event.native.ctrlKey) {
-                onHighlightClick(newGraphicsLayer, highlighted[0]);
-              }
-            };
-            view.on('pointer-move', highlightGraphics);
-            view.on('pointer-up', highlightGraphicsClick);
-            setMapView(view);
-            setGraphicsLayer(newGraphicsLayer);
+          const view = new globalStateModel.MapView({
+            map: globalStateModel.map,
+            container: containerId, // Reference to the map object created before the scene
+            zoom: 12, // Sets zoom level based on level of detail (LOD)
+            center: mapCenter,
+            highlightOptions: {
+              color: 'orange',
+            },
           });
-        });
+          view.ui.add(`${containerId}#orienteeringMapInfo`, 'top-right');
 
-        return () => {
-          onTouchEvent && onTouchEvent.remove();
-        };
-      }
-    );
-  }, []);
+          const onTouchEvent = view.on('pointer-down', (event) => {
+            const point = globalStateModel.WebMercatorUtils.webMercatorToGeographic(view.toMap(event));
+            onClick(
+              newGraphicsLayer,
+              new globalStateModel.Graphic({
+                geometry: { type: 'point', longitude: point.x, latitude: point.y },
+                symbol: OrienteeringSymbol,
+              })
+            );
+          });
 
-  React.useEffect(() => {
-    if (mapView && graphicsLayer) {
-      graphicsLayer.removeAll();
-      graphicsLayer.addMany(
-        graphics.map(
-          (graphic) =>
-            new GraphicRef.current({
-              geometry:
-                graphic.geometry.type === 'circle'
-                  ? new CircleRef.current(graphic.geometry)
-                  : {
-                      ...graphic.geometry,
-                    },
-              attributes: graphic.attributes,
-              symbol: graphic.symbol ? graphic.symbol : OrienteeringSymbol,
+          const onLayerViewCreate = view.on('layerview-create', (event) => {
+            if (globalStateModel.map.layers.items.some((l) => l.id === event.layer.id)) {
+              event.layerView.visible = visibleViewLayerIds.includes(event.layer.id);
+            }
+          });
+
+          let newGraphicsLayer = globalStateModel.map.layers.items.find((l) => l.id === containerId);
+          if (!newGraphicsLayer) {
+            newGraphicsLayer = new globalStateModel.GraphicsLayer({
+              id: containerId,
+              title: 'Graphics layer',
+            });
+
+            globalStateModel.map.add(newGraphicsLayer);
+          }
+
+          view
+            .when(() => {
+              view.whenLayerView(newGraphicsLayer).then((layerView) => {
+                let highlight, currentUids, highlighted;
+
+                const highlightGraphics = (event) => {
+                  highlighted = newGraphicsLayer.graphics.items.filter((g) => {
+                    const p = view.toScreen(g.geometry);
+                    return g.attributes && Math.abs(p.x - event.x) < 8 && Math.abs(p.y - event.y) < 8;
+                  });
+
+                  if (highlighted.length) {
+                    const text = highlighted
+                      .map((g) => g.attributes)
+                      .map((a) => `${a.time ? a.time : ''} ${a.name}`)
+                      .join('<br/>');
+                    const highlightedUids = highlighted.map((g) => g.uid);
+
+                    if (highlight && currentUids !== JSON.stringify(highlightedUids)) {
+                      highlight.remove();
+                      highlight = null;
+                      return;
+                    }
+
+                    if (highlight) {
+                      return;
+                    }
+
+                    document.getElementById(`${containerId}#orienteeringMapInfo`) &&
+                      (document.getElementById(`${containerId}#orienteeringMapInfo`).style.visibility = 'visible');
+                    document.getElementById(`${containerId}#orienteeringMapInfoText`) &&
+                      (document.getElementById(`${containerId}#orienteeringMapInfoText`).innerHTML = text);
+
+                    currentUids = JSON.stringify(highlightedUids);
+                    highlight = layerView.highlight(highlightedUids);
+                  } else {
+                    // remove the highlight if no features are
+                    // returned from the hitTest
+                    highlight && highlight.remove();
+                    highlight = null;
+                    document.getElementById(`${containerId}#orienteeringMapInfo`) &&
+                      (document.getElementById(`${containerId}#orienteeringMapInfo`).style.visibility = 'hidden');
+                  }
+                };
+                const highlightGraphicsClick = (event) => {
+                  highlightGraphics(event);
+                  if (highlighted.length && event.native && event.native.ctrlKey) {
+                    onHighlightClick(newGraphicsLayer, highlighted[0]);
+                  }
+                };
+                view.on('pointer-move', highlightGraphics);
+                view.on('pointer-up', highlightGraphicsClick);
+                setMapView(view);
+                setGraphicsLayer(newGraphicsLayer);
+              });
             })
-        )
-      );
-      mapView.goTo(graphicsLayer.graphics.items);
-    }
-  }, [mapView, graphics, graphics.length, graphicsLayer]);
+            .catch((e) => {
+              message.error(e.message);
+            });
 
-  return (
-    <>
-      <MapDiv id={containerId} />
-      <MapInfo id={`${containerId}#orienteeringMapInfo`}>
-        <div id={`${containerId}#orienteeringMapInfoText`} />
-      </MapInfo>
-    </>
-  );
-};
+          return () => {
+            onTouchEvent && onTouchEvent.remove();
+            onLayerViewCreate && onLayerViewCreate.remove();
+          };
+        }
+      }, [globalStateModel.map, globalStateModel.mapLoading]);
+
+      React.useEffect(() => {
+        if (mapView && graphicsLayer) {
+          graphicsLayer.removeAll();
+          graphicsLayer.addMany(
+            graphics.map(
+              (graphic) =>
+                new globalStateModel.Graphic({
+                  geometry:
+                    graphic.geometry.type === 'circle'
+                      ? new globalStateModel.Circle(graphic.geometry)
+                      : {
+                          ...graphic.geometry,
+                        },
+                  attributes: graphic.attributes,
+                  symbol: graphic.symbol ? graphic.symbol : OrienteeringSymbol,
+                })
+            )
+          );
+          mapView.goTo(graphicsLayer.graphics.items);
+        }
+      }, [mapView, graphics, graphics.length, graphicsLayer]);
+
+      return (
+        <>
+          <MapDiv id={containerId} />
+          <MapInfo id={`${containerId}#orienteeringMapInfo`}>
+            <div id={`${containerId}#orienteeringMapInfoText`} />
+          </MapInfo>
+        </>
+      );
+    }
+  )
+);
 
 export default EsriOSMOrienteeringMap;
