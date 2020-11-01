@@ -86,7 +86,7 @@ class Columns extends Component {
   renderColumns(columns) {
     const { children, gap } = this.props;
     const { dimensions, refsCount } = this.state;
-    const allChildren = flatten(children);
+    const allChildren = flatten(children).filter((child) => child);
 
     if (columns > 1) {
       this.refs = [];

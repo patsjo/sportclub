@@ -35,7 +35,7 @@ const useEsriMap = (globalStateModel) => {
         geometryEngine,
         WebMercatorUtils,
       ]) => {
-        const osmLayer = new OpenStreetMapLayer();
+        const osmLayer = new OpenStreetMapLayer({ id: openStreetMapLayerId });
         const map = new Map({
           basemap: {
             baseLayers: [osmLayer],
