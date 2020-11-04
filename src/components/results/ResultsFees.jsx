@@ -1,15 +1,15 @@
-import React, { Component } from "react";
-import { observer, inject } from "mobx-react";
-import { Spin, Form, Row, Col, message } from "antd";
-import { SpinnerDiv, StyledTable } from "../styled/styled";
-import { withTranslation } from "react-i18next";
-import moment from "moment";
-import { PostJsonData } from "../../utils/api";
-import { FormSelect } from "../../utils/formHelper";
-import FormItem from "../formItems/FormItem";
-import { FormatTime } from "../../utils/resultHelper";
-import { raceDistanceOptions, raceLightConditionOptions } from "../../utils/resultConstants";
-import styled from "styled-components";
+import React, { Component } from 'react';
+import { observer, inject } from 'mobx-react';
+import { Spin, Form, Row, Col, message } from 'antd';
+import { SpinnerDiv, StyledTable } from '../styled/styled';
+import { withTranslation } from 'react-i18next';
+import moment from 'moment';
+import { PostJsonData } from '../../utils/api';
+import { FormSelect } from '../../utils/formHelper';
+import FormItem from '../formItems/FormItem';
+import { FormatTime } from '../../utils/resultHelper';
+import { raceDistanceOptions, raceLightConditionOptions } from '../../utils/resultConstants';
+import styled from 'styled-components';
 
 const StyledRow = styled(Row)`
   &&& {
@@ -19,33 +19,44 @@ const StyledRow = styled(Row)`
 
 const columns = (t, clubModel) => [
   {
-    title: t("results.Competitor"),
-    dataIndex: "competitorId",
-    key: "competitorId",
-    fixed: "left",
+    title: t('results.Competitor'),
+    dataIndex: 'competitorId',
+    key: 'competitorId',
+    fixed: 'left',
     width: 180,
-    render: (id) => (id == null ? null : clubModel.raceClubs.selectedClub.competitorById(id).fullName)
+    render: (id) => (id == null ? null : clubModel.raceClubs.selectedClub.competitorById(id).fullName),
   },
   {
-    title: t("results.OriginalFee"),
-    dataIndex: "originalFee",
-    key: "originalFee"
+    title: t('results.OriginalFee'),
+    dataIndex: 'originalFee',
+    key: 'originalFee',
   },
   {
-    title: t("results.LateFee"),
-    dataIndex: "lateFee",
-    key: "lateFee"
+    title: t('results.LateFee'),
+    dataIndex: 'lateFee',
+    key: 'lateFee',
   },
   {
-    title: t("results.FeeToClub"),
-    dataIndex: "feeToClub",
-    key: "feeToClub"
-  }
+    title: t('results.FeeToClub'),
+    dataIndex: 'feeToClub',
+    key: 'feeToClub',
+  },
+  {
+    title: t('results.ServiceFeeToClub'),
+    dataIndex: 'serviceFeeToClub',
+    key: 'serviceFeeToClub',
+  },
+  {
+    title: t('results.TotalFeeToClub'),
+    dataIndex: 'totalFeeToClub',
+    key: 'totalFeeToClub',
+    render: (_text, record) => record.feeToClub + record.serviceFeeToClub,
+  },
 ];
 
 const ResultsFees = inject(
-  "clubModel",
-  "sessionModel"
+  'clubModel',
+  'sessionModel'
 )(
   observer(
     class ResultsFees extends Component {
@@ -57,7 +68,7 @@ const ResultsFees = inject(
           year: new Date().getFullYear(),
           competitorId: undefined,
           loading: true,
-          formId: "resultsFeesForm" + Math.floor(Math.random() * 10000000000000000)
+          formId: 'resultsFeesForm' + Math.floor(Math.random() * 10000000000000000),
         };
       }
 
@@ -65,12 +76,12 @@ const ResultsFees = inject(
         const self = this;
         const { clubModel, sessionModel } = this.props;
         const { year } = this.state;
-        const url = clubModel.modules.find((module) => module.name === "Results").queryUrl;
+        const url = clubModel.modules.find((module) => module.name === 'Results').queryUrl;
 
         PostJsonData(
           url,
           {
-            iType: "CLUBS"
+            iType: 'CLUBS',
           },
           true,
           sessionModel.authorizationHeader
@@ -87,20 +98,20 @@ const ResultsFees = inject(
       updateEventYear(year) {
         const self = this;
         const { clubModel, sessionModel } = this.props;
-        const fromDate = moment(year, "YYYY").format("YYYY-MM-DD");
-        const toDate = moment(fromDate, "YYYY-MM-DD").add(1, "years").subtract(1, "days").format("YYYY-MM-DD");
+        const fromDate = moment(year, 'YYYY').format('YYYY-MM-DD');
+        const toDate = moment(fromDate, 'YYYY-MM-DD').add(1, 'years').subtract(1, 'days').format('YYYY-MM-DD');
 
         self.setState({
-          loading: true
+          loading: true,
         });
 
-        const url = clubModel.modules.find((module) => module.name === "Results").queryUrl;
+        const url = clubModel.modules.find((module) => module.name === 'Results').queryUrl;
         PostJsonData(
           url,
           {
-            iType: "FEES",
+            iType: 'FEES',
             iFromDate: fromDate,
-            iToDate: toDate
+            iToDate: toDate,
           },
           true,
           sessionModel.authorizationHeader
@@ -109,7 +120,7 @@ const ResultsFees = inject(
             self.setState({
               fees: feesJson,
               result: undefined,
-              loading: false
+              loading: false,
             });
           })
           .catch((e) => {
@@ -119,7 +130,7 @@ const ResultsFees = inject(
             self.setState({
               fees: [],
               result: undefined,
-              loading: false
+              loading: false,
             });
           });
       }
@@ -137,22 +148,22 @@ const ResultsFees = inject(
         const currentYear = new Date().getFullYear();
         const yearOptions = [...Array(1 + currentYear - fromYear).keys()].map((i) => ({
           code: currentYear - i,
-          description: currentYear - i
+          description: currentYear - i,
         }));
 
         return (
           <Form
             layout="vertical"
             initialValues={{
-              Year: year
+              Year: year,
             }}
           >
             <StyledRow gutter={8}>
               <Col span={4}>
-                <FormItem name="Year" label={t("calendar.SelectYear")}>
+                <FormItem name="Year" label={t('calendar.SelectYear')}>
                   <FormSelect
                     disabled={loading}
-                    style={{ minWidth: 70, maxWidth: 300, width: "100%" }}
+                    style={{ minWidth: 70, maxWidth: 300, width: '100%' }}
                     options={yearOptions}
                     onChange={(value) =>
                       isIndividual ? self.updateCompetitor(value, competitorId) : self.updateEventYear(value)

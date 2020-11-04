@@ -90,7 +90,7 @@ export const SessionModel = types
         }
       },
       setSuccessfullyLogin(id, name, isAdmin, eventorPersonId) {
-        self.id = id;
+        self.id = '' + id;
         self.name = name;
         self.loggedIn = true;
         self.isAdmin = isAdmin;

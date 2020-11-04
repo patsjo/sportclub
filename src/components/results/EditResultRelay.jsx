@@ -1,20 +1,20 @@
-import React, { Component } from "react";
-import PropTypes from "prop-types";
-import { Form, TimePicker, Select, Input, InputNumber, Row, Col } from "antd";
-import { withTranslation } from "react-i18next";
-import FormItem from "../formItems/FormItem";
-import { errorRequiredField, FormSelect, timeFormat, hasErrors } from "../../utils/formHelper";
-import { GetClassClassificationId, GetAge } from "../../utils/resultHelper";
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import { Form, TimePicker, Select, Input, InputNumber, Row, Col } from 'antd';
+import { withTranslation } from 'react-i18next';
+import FormItem from '../formItems/FormItem';
+import { errorRequiredField, FormSelect, timeFormat, hasErrors } from '../../utils/formHelper';
+import { GetClassClassificationId, GetAge } from '../../utils/resultHelper';
 import {
   difficulties,
   failedReasons,
   failedReasonOptions,
-  raceLightConditionOptions
-} from "../../utils/resultConstants";
-import moment from "moment";
-import styled from "styled-components";
-import { StyledIcon } from "../styled/styled";
-import { AddMapCompetitorConfirmModal } from "./AddMapCompetitorConfirmModal";
+  raceLightConditionOptions,
+} from '../../utils/resultConstants';
+import moment from 'moment';
+import styled from 'styled-components';
+import { StyledIcon } from '../styled/styled';
+import { AddMapCompetitorConfirmModal } from './AddMapCompetitorConfirmModal';
 
 const { Option } = Select;
 const ColorOptionContent = styled.div`
@@ -34,7 +34,7 @@ class EditResultRelay extends Component {
     result: PropTypes.object.isRequired,
     results: PropTypes.arrayOf(PropTypes.object),
     competitorsOptions: PropTypes.arrayOf(PropTypes.object),
-    onValidate: PropTypes.func.isRequired
+    onValidate: PropTypes.func.isRequired,
   };
   formRef = React.createRef();
 
@@ -42,8 +42,8 @@ class EditResultRelay extends Component {
     super(props);
 
     this.state = {
-      formId: "editResultRelay" + Math.floor(Math.random() * 10000000000000000),
-      failedReason: props.result.failedReason
+      formId: 'editResultRelay' + Math.floor(Math.random() * 10000000000000000),
+      failedReason: props.result.failedReason,
     };
   }
 
@@ -67,7 +67,7 @@ class EditResultRelay extends Component {
       result,
       results,
       competitorsOptions,
-      raceDate
+      raceDate,
     } = this.props;
     const { formId, failedReason } = this.state;
     const { raceClubs } = clubModel;
@@ -129,7 +129,9 @@ class EditResultRelay extends Component {
           iRaceLightCondition: raceLightCondition,
           iDeviantRaceLightCondition: result.deviantRaceLightCondition,
           iEventClassificationId: eventClassificationId,
-          iDeviantEventClassificationId: result.deviantEventClassificationId
+          iDeviantEventClassificationId: result.deviantEventClassificationId,
+          iServiceFeeToClub: result.serviceFeeToClub,
+          iServiceFeeDescription: result.serviceFeeDescription,
         }}
         onValuesChange={() => hasErrors(self.formRef.current).then((notValid) => onValidate(!notValid))}
       >
@@ -137,12 +139,12 @@ class EditResultRelay extends Component {
           <Col span={12}>
             <FormItem
               name="iCompetitorId"
-              label={t("results.Competitor")}
+              label={t('results.Competitor')}
               rules={[
                 {
                   required: true,
-                  message: errorRequiredField(t, "results.Competitor")
-                }
+                  message: errorRequiredField(t, 'results.Competitor'),
+                },
               ]}
             >
               <FormSelect
@@ -167,14 +169,14 @@ class EditResultRelay extends Component {
                   result.competitorId,
                   undefined,
                   {
-                    iType: "COMPETITOR",
+                    iType: 'COMPETITOR',
                     iFirstName: null,
                     iLastName: null,
                     iBirthDay: null,
                     iClubId: raceClubs.selectedClub.clubId,
-                    iStartDate: "1930-01-01",
+                    iStartDate: '1930-01-01',
                     iEndDate: null,
-                    iEventorCompetitorId: null
+                    iEventorCompetitorId: null,
                   },
                   result.className,
                   clubModel
@@ -183,10 +185,10 @@ class EditResultRelay extends Component {
                     result.competitorId = competitor ? competitor.competitorId : undefined;
                     self.formRef.current.setFieldsValue({
                       // eslint-disable-next-line eqeqeq
-                      iCompetitorId: result.competitorId == undefined ? undefined : result.competitorId.toString()
+                      iCompetitorId: result.competitorId == undefined ? undefined : result.competitorId.toString(),
                     });
                     self.setState({ age: competitor ? GetAge(competitor.birthDay, raceDate) : null }, () => {
-                      self.formRef.current.validateFields(["iCompetitorId"], { force: true });
+                      self.formRef.current.validateFields(['iCompetitorId'], { force: true });
                     });
                   })
                   .catch(() => {});
@@ -196,12 +198,12 @@ class EditResultRelay extends Component {
           <Col span={11}>
             <FormItem
               name="iTeamName"
-              label={t("results.TeamName")}
+              label={t('results.TeamName')}
               rules={[
                 {
                   required: true,
-                  message: errorRequiredField(t, "results.TeamName")
-                }
+                  message: errorRequiredField(t, 'results.TeamName'),
+                },
               ]}
             >
               <Input
@@ -216,12 +218,12 @@ class EditResultRelay extends Component {
           <Col span={4}>
             <FormItem
               name="iClassName"
-              label={t("results.Class")}
+              label={t('results.Class')}
               rules={[
                 {
                   required: true,
-                  message: errorRequiredField(t, "results.Class")
-                }
+                  message: errorRequiredField(t, 'results.Class'),
+                },
               ]}
             >
               <Input
@@ -241,10 +243,10 @@ class EditResultRelay extends Component {
                     iClassClassificationId:
                       // eslint-disable-next-line eqeqeq
                       result.classClassificationId == undefined ? undefined : result.classClassificationId.toString(),
-                    iDifficulty: result.difficulty
+                    iDifficulty: result.difficulty,
                   });
                   self.setState({}, () => {
-                    self.formRef.current.validateFields(["iClassClassificationId", "iDifficulty"], { force: true });
+                    self.formRef.current.validateFields(['iClassClassificationId', 'iDifficulty'], { force: true });
                   });
                 }}
               />
@@ -253,19 +255,19 @@ class EditResultRelay extends Component {
           <Col span={4}>
             <FormItem
               name="iStage"
-              label={t("results.Stage")}
+              label={t('results.Stage')}
               rules={[
                 {
                   required: true,
-                  message: errorRequiredField(t, "results.Stage")
-                }
+                  message: errorRequiredField(t, 'results.Stage'),
+                },
               ]}
             >
               <InputNumber
                 min={1}
                 max={1000}
                 step={1}
-                style={{ width: "100%" }}
+                style={{ width: '100%' }}
                 onChange={(value) => {
                   result.stage = value;
                   const resultWithSameClass = results.find(
@@ -299,29 +301,29 @@ class EditResultRelay extends Component {
                       iTotalStages: result.totalStages,
                       iDeviantRaceLightCondition: result.deviantRaceLightCondition,
                       iTotalNofStartsInClass: result.totalNofStartsInClass,
-                      iDeviantEventClassificationId: result.deviantEventClassificationId
+                      iDeviantEventClassificationId: result.deviantEventClassificationId,
                     });
                     self.setState({}, () => {
                       self.formRef.current.validateFields(
                         [
-                          "iClassClassificationId",
-                          "iDifficulty",
-                          "iLengthInMeter",
-                          "iWinnerTime",
-                          "iSecondTime",
-                          "iNofStartsInClass",
-                          "iTotalStages",
-                          "iDeviantRaceLightCondition",
-                          "iTotalNofStartsInClass",
-                          "iDeviantEventClassificationId",
-                          "iTotalStages"
+                          'iClassClassificationId',
+                          'iDifficulty',
+                          'iLengthInMeter',
+                          'iWinnerTime',
+                          'iSecondTime',
+                          'iNofStartsInClass',
+                          'iTotalStages',
+                          'iDeviantRaceLightCondition',
+                          'iTotalNofStartsInClass',
+                          'iDeviantEventClassificationId',
+                          'iTotalStages',
                         ],
                         { force: true }
                       );
                     });
                   } else {
                     self.setState({}, () => {
-                      self.formRef.current.validateFields(["iTotalStages"], { force: true });
+                      self.formRef.current.validateFields(['iTotalStages'], { force: true });
                     });
                   }
                 }}
@@ -331,12 +333,12 @@ class EditResultRelay extends Component {
           <Col span={6}>
             <FormItem
               name="iClassClassificationId"
-              label={t("results.ClassClassification")}
+              label={t('results.ClassClassification')}
               rules={[
                 {
                   required: true,
-                  message: errorRequiredField(t, "results.ClassClassification")
-                }
+                  message: errorRequiredField(t, 'results.ClassClassification'),
+                },
               ]}
             >
               <FormSelect
@@ -354,7 +356,7 @@ class EditResultRelay extends Component {
                       r.teamResultId !== result.teamResultId
                   );
                   resultsWithSameClass.forEach((r) =>
-                    r.setValue("classClassificationId", result.classClassificationId)
+                    r.setValue('classClassificationId', result.classClassificationId)
                   );
                 }}
               />
@@ -363,12 +365,12 @@ class EditResultRelay extends Component {
           <Col span={4}>
             <FormItem
               name="iDifficulty"
-              label={t("results.Difficulty")}
+              label={t('results.Difficulty')}
               rules={[
                 {
                   required: true,
-                  message: errorRequiredField(t, "results.Difficulty")
-                }
+                  message: errorRequiredField(t, 'results.Difficulty'),
+                },
               ]}
             >
               <Select
@@ -381,7 +383,7 @@ class EditResultRelay extends Component {
                       r.stage === result.stage &&
                       r.teamResultId !== result.teamResultId
                   );
-                  resultsWithSameClass.forEach((r) => r.setValue("difficulty", result.difficulty));
+                  resultsWithSameClass.forEach((r) => r.setValue('difficulty', result.difficulty));
                 }}
               >
                 <Option value={difficulties.green}>
@@ -414,19 +416,19 @@ class EditResultRelay extends Component {
           <Col span={6}>
             <FormItem
               name="iLengthInMeter"
-              label={t("results.LengthInMeter")}
+              label={t('results.LengthInMeter')}
               rules={[
                 {
                   required: failedReason !== failedReasons.NotStarted,
-                  message: errorRequiredField(t, "results.LengthInMeter")
-                }
+                  message: errorRequiredField(t, 'results.LengthInMeter'),
+                },
               ]}
             >
               <InputNumber
                 min={10}
                 max={100000}
                 step={100}
-                style={{ width: "100%" }}
+                style={{ width: '100%' }}
                 onChange={(value) => {
                   result.lengthInMeter = value;
                   const resultsWithSameClass = results.filter(
@@ -435,7 +437,7 @@ class EditResultRelay extends Component {
                       r.stage === result.stage &&
                       r.teamResultId !== result.teamResultId
                   );
-                  resultsWithSameClass.forEach((r) => r.setValue("lengthInMeter", result.lengthInMeter));
+                  resultsWithSameClass.forEach((r) => r.setValue('lengthInMeter', result.lengthInMeter));
                 }}
               />
             </FormItem>
@@ -443,7 +445,7 @@ class EditResultRelay extends Component {
         </Row>
         <Row gutter={8}>
           <Col span={6}>
-            <FormItem name="iFailedReason" label={t("results.FailedReason")}>
+            <FormItem name="iFailedReason" label={t('results.FailedReason')}>
               <FormSelect
                 allowClear={true}
                 options={failedReasonOptions(t)}
@@ -452,15 +454,15 @@ class EditResultRelay extends Component {
                   self.setState({ failedReason: code }, () => {
                     self.formRef.current.validateFields(
                       [
-                        "iLengthInMeter",
-                        "iCompetitorTime",
-                        "iWinnerTime",
-                        "iSecondTime",
-                        "iPosition",
-                        "iNofStartsInClass"
+                        'iLengthInMeter',
+                        'iCompetitorTime',
+                        'iWinnerTime',
+                        'iSecondTime',
+                        'iPosition',
+                        'iNofStartsInClass',
                       ],
                       {
-                        force: true
+                        force: true,
                       }
                     );
                   });
@@ -471,23 +473,23 @@ class EditResultRelay extends Component {
           <Col span={6}>
             <FormItem
               name="iCompetitorTime"
-              label={t("results.Time")}
+              label={t('results.Time')}
               rules={[
                 {
-                  type: "object",
+                  type: 'object',
                   required: !failedReason,
-                  message: errorRequiredField(t, "results.Time")
-                }
+                  message: errorRequiredField(t, 'results.Time'),
+                },
               ]}
             >
               <TimePicker
                 format={timeFormat}
                 allowClear={true}
-                style={{ width: "100%" }}
+                style={{ width: '100%' }}
                 onChange={(time) => {
                   result.competitorTime = !time ? null : time.format(timeFormat);
                   self.setState({}, () => {
-                    self.formRef.current.validateFields(["iWinnerTime"], { force: true });
+                    self.formRef.current.validateFields(['iWinnerTime'], { force: true });
                   });
                 }}
               />
@@ -496,33 +498,33 @@ class EditResultRelay extends Component {
           <Col span={6}>
             <FormItem
               name="iWinnerTime"
-              label={t("results.WinnerTime")}
+              label={t('results.WinnerTime')}
               rules={[
                 {
-                  type: "object",
+                  type: 'object',
                   required: !failedReason,
-                  message: errorRequiredField(t, "results.WinnerTime")
+                  message: errorRequiredField(t, 'results.WinnerTime'),
                 },
                 {
-                  type: "object",
+                  type: 'object',
                   validator: (rule, value, callback) => {
-                    const competitorTime = self.formRef.current.getFieldValue("iCompetitorTime");
+                    const competitorTime = self.formRef.current.getFieldValue('iCompetitorTime');
                     if (competitorTime && value && !value.isSameOrBefore(competitorTime)) {
-                      callback(t("results.WinnerTimeLessOrEqualThanTime"));
+                      callback(t('results.WinnerTimeLessOrEqualThanTime'));
                     }
                     callback();
-                  }
-                }
+                  },
+                },
               ]}
             >
               <TimePicker
                 format={timeFormat}
                 allowClear={true}
-                style={{ width: "100%" }}
+                style={{ width: '100%' }}
                 onChange={(time) => {
                   result.winnerTime = !time ? null : time.format(timeFormat);
                   self.setState({}, () => {
-                    self.formRef.current.validateFields(["iSecondTime"], { force: true });
+                    self.formRef.current.validateFields(['iSecondTime'], { force: true });
                   });
                   const resultsWithSameClass = results.filter(
                     (r) =>
@@ -530,7 +532,7 @@ class EditResultRelay extends Component {
                       r.stage === result.stage &&
                       r.teamResultId !== result.teamResultId
                   );
-                  resultsWithSameClass.forEach((r) => r.setValue("winnerTime", result.winnerTime));
+                  resultsWithSameClass.forEach((r) => r.setValue('winnerTime', result.winnerTime));
                 }}
               />
             </FormItem>
@@ -538,24 +540,24 @@ class EditResultRelay extends Component {
           <Col span={6}>
             <FormItem
               name="iSecondTime"
-              label={t("results.SecondTime")}
+              label={t('results.SecondTime')}
               rules={[
                 {
-                  type: "object",
+                  type: 'object',
                   validator: (rule, value, callback) => {
-                    const winnerTime = self.formRef.current.getFieldValue("iWinnerTime");
+                    const winnerTime = self.formRef.current.getFieldValue('iWinnerTime');
                     if (winnerTime && value && !value.isSameOrAfter(winnerTime)) {
-                      callback(t("results.SecondTimeGreaterOrEqualThanWinnerTime"));
+                      callback(t('results.SecondTimeGreaterOrEqualThanWinnerTime'));
                     }
                     callback();
-                  }
-                }
+                  },
+                },
               ]}
             >
               <TimePicker
                 format={timeFormat}
                 allowClear={true}
-                style={{ width: "100%" }}
+                style={{ width: '100%' }}
                 onChange={(time) => {
                   result.secondTime = !time ? null : time.format(timeFormat);
                   const resultsWithSameClass = results.filter(
@@ -564,7 +566,7 @@ class EditResultRelay extends Component {
                       r.stage === result.stage &&
                       r.teamResultId !== result.teamResultId
                   );
-                  resultsWithSameClass.forEach((r) => r.setValue("secondTime", result.secondTime));
+                  resultsWithSameClass.forEach((r) => r.setValue('secondTime', result.secondTime));
                 }}
               />
             </FormItem>
@@ -574,23 +576,23 @@ class EditResultRelay extends Component {
           <Col span={6}>
             <FormItem
               name="iPosition"
-              label={t("results.Position")}
+              label={t('results.Position')}
               rules={[
                 {
                   required: !failedReason,
-                  message: errorRequiredField(t, "results.Position")
-                }
+                  message: errorRequiredField(t, 'results.Position'),
+                },
               ]}
             >
               <InputNumber
                 min={1}
                 max={100000}
                 step={1}
-                style={{ width: "100%" }}
+                style={{ width: '100%' }}
                 onChange={(value) => {
                   result.position = value;
                   self.setState({}, () => {
-                    self.formRef.current.validateFields(["iNofStartsInClass"], { force: true });
+                    self.formRef.current.validateFields(['iNofStartsInClass'], { force: true });
                   });
                 }}
               />
@@ -599,28 +601,28 @@ class EditResultRelay extends Component {
           <Col span={6}>
             <FormItem
               name="iNofStartsInClass"
-              label={t("results.NofStartsInClass")}
+              label={t('results.NofStartsInClass')}
               rules={[
                 {
                   required: !failedReason,
-                  message: errorRequiredField(t, "results.NofStartsInClass")
+                  message: errorRequiredField(t, 'results.NofStartsInClass'),
                 },
                 {
                   validator: (rule, value, callback) => {
-                    const position = self.formRef.current.getFieldValue("iPosition");
+                    const position = self.formRef.current.getFieldValue('iPosition');
                     if (position && value && value < position) {
-                      callback(t("results.PositionGreaterThanStarts"));
+                      callback(t('results.PositionGreaterThanStarts'));
                     }
                     callback();
-                  }
-                }
+                  },
+                },
               ]}
             >
               <InputNumber
                 min={1}
                 max={100000}
                 step={1}
-                style={{ width: "100%" }}
+                style={{ width: '100%' }}
                 onChange={(value) => {
                   result.nofStartsInClass = value;
                   const resultsWithSameClass = results.filter(
@@ -629,7 +631,7 @@ class EditResultRelay extends Component {
                       r.stage === result.stage &&
                       r.teamResultId !== result.teamResultId
                   );
-                  resultsWithSameClass.forEach((r) => r.setValue("nofStartsInClass", result.nofStartsInClass));
+                  resultsWithSameClass.forEach((r) => r.setValue('nofStartsInClass', result.nofStartsInClass));
                 }}
               />
             </FormItem>
@@ -637,34 +639,34 @@ class EditResultRelay extends Component {
           <Col span={6}>
             <FormItem
               name="iTotalStages"
-              label={t("results.TotalStages")}
+              label={t('results.TotalStages')}
               rules={[
                 {
                   required: true,
-                  message: errorRequiredField(t, "results.TotalStages")
+                  message: errorRequiredField(t, 'results.TotalStages'),
                 },
                 {
                   validator: (rule, value, callback) => {
-                    const stage = self.formRef.current.getFieldValue("iStage");
+                    const stage = self.formRef.current.getFieldValue('iStage');
                     if (stage && value && value < stage) {
-                      callback(t("results.StageGreaterThanTotalStages"));
+                      callback(t('results.StageGreaterThanTotalStages'));
                     }
                     callback();
-                  }
-                }
+                  },
+                },
               ]}
             >
               <InputNumber
                 min={1}
                 max={1000}
                 step={1}
-                style={{ width: "100%" }}
+                style={{ width: '100%' }}
                 onChange={(value) => {
                   result.totalStages = value;
                   const resultsWithSameClass = results.filter(
                     (r) => r.className === result.className && r.teamResultId !== result.teamResultId
                   );
-                  resultsWithSameClass.forEach((r) => r.setValue("totalStages", result.totalStages));
+                  resultsWithSameClass.forEach((r) => r.setValue('totalStages', result.totalStages));
                 }}
               />
             </FormItem>
@@ -672,12 +674,12 @@ class EditResultRelay extends Component {
         </Row>
         <Row gutter={8}>
           <Col span={6}>
-            <FormItem name="iDeltaPositions" label={t("results.DeltaPositions")}>
+            <FormItem name="iDeltaPositions" label={t('results.DeltaPositions')}>
               <InputNumber
                 min={-1000}
                 max={1000}
                 step={1}
-                style={{ width: "100%" }}
+                style={{ width: '100%' }}
                 onChange={(value) => {
                   result.deltaPositions = value;
                 }}
@@ -685,11 +687,11 @@ class EditResultRelay extends Component {
             </FormItem>
           </Col>
           <Col span={6}>
-            <FormItem name="iDeltaTimeBehind" label={t("results.DeltaTimeBehind")}>
+            <FormItem name="iDeltaTimeBehind" label={t('results.DeltaTimeBehind')}>
               <TimePicker
                 format={timeFormat}
                 allowClear={true}
-                style={{ width: "100%" }}
+                style={{ width: '100%' }}
                 onChange={(time) => {
                   result.deltaTimeBehind = !time ? null : time.format(timeFormat);
                 }}
@@ -697,12 +699,12 @@ class EditResultRelay extends Component {
             </FormItem>
           </Col>
           <Col span={6}>
-            <FormItem name="iTotalStagePosition" label={t("results.TotalStagePosition")}>
+            <FormItem name="iTotalStagePosition" label={t('results.TotalStagePosition')}>
               <InputNumber
                 min={-1000}
                 max={1000}
                 step={1}
-                style={{ width: "100%" }}
+                style={{ width: '100%' }}
                 onChange={(value) => {
                   result.totalStagePosition = value;
                 }}
@@ -710,11 +712,11 @@ class EditResultRelay extends Component {
             </FormItem>
           </Col>
           <Col span={6}>
-            <FormItem name="iTotalStageTimeBehind" label={t("results.TotalStageTimeBehind")}>
+            <FormItem name="iTotalStageTimeBehind" label={t('results.TotalStageTimeBehind')}>
               <TimePicker
                 format={timeFormat}
                 allowClear={true}
-                style={{ width: "100%" }}
+                style={{ width: '100%' }}
                 onChange={(time) => {
                   result.totalStageTimeBehind = !time ? null : time.format(timeFormat);
                 }}
@@ -724,7 +726,7 @@ class EditResultRelay extends Component {
         </Row>
         <Row gutter={8}>
           <Col span={6}>
-            <FormItem name="iTeamFailedReason" label={t("results.TeamFailedReason")}>
+            <FormItem name="iTeamFailedReason" label={t('results.TeamFailedReason')}>
               <FormSelect
                 allowClear={true}
                 options={failedReasonOptions(t)}
@@ -732,9 +734,9 @@ class EditResultRelay extends Component {
                   result.teamFailedReason = code;
                   self.setState({ teamFailedReason: code }, () => {
                     self.formRef.current.validateFields(
-                      ["iTotalTimeBehind", "iTotalPosition", "iTotalNofStartsInClass"],
+                      ['iTotalTimeBehind', 'iTotalPosition', 'iTotalNofStartsInClass'],
                       {
-                        force: true
+                        force: true,
                       }
                     );
                   });
@@ -743,16 +745,16 @@ class EditResultRelay extends Component {
             </FormItem>
           </Col>
           <Col span={6}>
-            <FormItem name="iTotalPosition" label={t("results.TotalPosition")}>
+            <FormItem name="iTotalPosition" label={t('results.TotalPosition')}>
               <InputNumber
                 min={1}
                 max={100000}
                 step={1}
-                style={{ width: "100%" }}
+                style={{ width: '100%' }}
                 onChange={(value) => {
                   result.totalPosition = value;
                   self.setState({}, () => {
-                    self.formRef.current.validateFields(["iTotalNofStartsInClass"], { force: true });
+                    self.formRef.current.validateFields(['iTotalNofStartsInClass'], { force: true });
                   });
                 }}
               />
@@ -761,42 +763,42 @@ class EditResultRelay extends Component {
           <Col span={6}>
             <FormItem
               name="iTotalNofStartsInClass"
-              label={t("results.TotalNofStartsInClass")}
+              label={t('results.TotalNofStartsInClass')}
               rules={[
                 {
                   validator: (rule, value, callback) => {
-                    const totalPosition = self.formRef.current.getFieldValue("iTotalPosition");
+                    const totalPosition = self.formRef.current.getFieldValue('iTotalPosition');
                     if (totalPosition && value && value < totalPosition) {
-                      callback(t("results.PositionGreaterThanStarts"));
+                      callback(t('results.PositionGreaterThanStarts'));
                     }
                     callback();
-                  }
-                }
+                  },
+                },
               ]}
             >
               <InputNumber
                 min={1}
                 max={100000}
                 step={1}
-                style={{ width: "100%" }}
+                style={{ width: '100%' }}
                 onChange={(value) => {
                   result.totalNofStartsInClass = value;
                   const resultsWithSameClass = results.filter(
                     (r) => r.className === result.className && r.teamResultId !== result.teamResultId
                   );
                   resultsWithSameClass.forEach((r) =>
-                    r.setValue("totalNofStartsInClass", result.totalNofStartsInClass)
+                    r.setValue('totalNofStartsInClass', result.totalNofStartsInClass)
                   );
                 }}
               />
             </FormItem>
           </Col>
           <Col span={6}>
-            <FormItem name="iTotalTimeBehind" label={t("results.TotalTimeBehind")}>
+            <FormItem name="iTotalTimeBehind" label={t('results.TotalTimeBehind')}>
               <TimePicker
                 format={timeFormat}
                 allowClear={true}
-                style={{ width: "100%" }}
+                style={{ width: '100%' }}
                 onChange={(time) => {
                   result.totalTimeBehind = !time ? null : time.format(timeFormat);
                 }}
@@ -806,12 +808,12 @@ class EditResultRelay extends Component {
         </Row>
         <Row gutter={8}>
           <Col span={4}>
-            <FormItem name="iRaceLightCondition" label={t("results.RaceLightCondition")}>
+            <FormItem name="iRaceLightCondition" label={t('results.RaceLightCondition')}>
               <FormSelect disabled={true} options={raceLightConditionOptions(t)} />
             </FormItem>
           </Col>
           <Col span={6}>
-            <FormItem name="iDeviantRaceLightCondition" label={t("results.DeviantRaceLightCondition")}>
+            <FormItem name="iDeviantRaceLightCondition" label={t('results.DeviantRaceLightCondition')}>
               <FormSelect
                 allowClear={true}
                 options={raceLightConditionOptions(t)}
@@ -822,12 +824,12 @@ class EditResultRelay extends Component {
             </FormItem>
           </Col>
           <Col span={6}>
-            <FormItem name="iEventClassificationId" label={t("results.EventClassification")}>
+            <FormItem name="iEventClassificationId" label={t('results.EventClassification')}>
               <FormSelect disabled={true} options={raceClubs.eventClassificationOptions} />
             </FormItem>
           </Col>
           <Col span={8}>
-            <FormItem name="iDeviantEventClassificationId" label={t("results.DeviantEventClassification")}>
+            <FormItem name="iDeviantEventClassificationId" label={t('results.DeviantEventClassification')}>
               <FormSelect
                 dropdownMatchSelectWidth={false}
                 allowClear={true}
@@ -850,11 +852,46 @@ class EditResultRelay extends Component {
                   self.formRef.current.setFieldsValue({
                     iClassClassificationId:
                       // eslint-disable-next-line eqeqeq
-                      result.classClassificationId == undefined ? undefined : result.classClassificationId.toString()
+                      result.classClassificationId == undefined ? undefined : result.classClassificationId.toString(),
                   });
                   self.setState({ raceEventClassification: raceEventClassification }, () => {
-                    self.formRef.current.validateFields(["iClassClassificationId"], { force: true });
+                    self.formRef.current.validateFields(['iClassClassificationId'], { force: true });
                   });
+                }}
+              />
+            </FormItem>
+          </Col>
+        </Row>
+        <Row gutter={8}>
+          <Col span={6}>
+            <FormItem
+              name="iServiceFeeToClub"
+              label={t('results.ServiceFeeToClub')}
+              rules={[
+                {
+                  required: true,
+                  message: errorRequiredField(t, 'results.ServiceFeeToClub'),
+                },
+              ]}
+            >
+              <InputNumber
+                min={0}
+                max={100000}
+                step={5}
+                precision={2}
+                decimalSeparator=","
+                style={{ width: '100%' }}
+                onChange={(value) => {
+                  result.serviceFeeToClub = value;
+                }}
+              />
+            </FormItem>
+          </Col>
+          <Col span={18}>
+            <FormItem name="iServiceFeeDescription" label={t('results.ServiceFeeDescription')}>
+              <Input
+                onChange={(e) => {
+                  result.serviceFeeDescription = e.currentTarget.value;
                 }}
               />
             </FormItem>

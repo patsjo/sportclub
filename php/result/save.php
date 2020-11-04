@@ -24,6 +24,9 @@ if (!(ValidGroup($cADMIN_GROUP_ID)))
   NotAuthorized();
 }
 
+header("Access-Control-Allow-Credentials: true");
+header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);
+header("Access-Control-Allow-Headers: *");
 header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
 header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); // Date in the past
 
@@ -204,6 +207,7 @@ elseif ($iType == "EVENT")
   $x->latitude = getRequestDecimal("latitude");
   $x->results = json_decode($_REQUEST['results']);
   $x->teamResults = json_decode($_REQUEST['teamResults']);
+  $x->invoiceVerified = getRequestBool("invoiceVerified");
 
   $query = sprintf("INSERT INTO RACE_EVENT " .
                  "(" .
@@ -212,11 +216,11 @@ elseif ($iType == "EVENT")
                  "  SPORT_CODE, IS_RELAY, EVENT_CLASSIFICATION_ID, RACE_LIGHT_CONDITION," .
                  "  RACE_DISTANCE, PAYMENT_MODEL, MEETS_AWARD_REQUIREMENTS," .
                  "  RANKING_BASE_TIME_PER_KILOMETER, RANKING_BASE_POINT, RANKING_BASE_DESCRIPTION," .
-                 "  LONGITUDE, LATITUDE" .
+                 "  LONGITUDE, LATITUDE, INVOICE_VERIFIED" .
                  ")" .
                  " VALUES " .
                  "(" .
-                 "  %s, %s, '%s', '%s', '%s', %s, '%s', %s, '%s', %s, %s, %d, %d, '%s', %f, '%s', %s, %s" .
+                 "  %s, %s, '%s', '%s', '%s', %s, '%s', %s, '%s', %s, %s, %d, %d, '%s', %f, '%s', %s, %s, %s" .
                  ")",
                  is_null($x->eventorId) ? "NULL" : $x->eventorId,
                  is_null($x->eventorRaceId) ? "NULL" : $x->eventorRaceId,
@@ -228,7 +232,8 @@ elseif ($iType == "EVENT")
                  $x->rankingBasetimePerKilometer,
                  $x->rankingBasepoint, $x->rankingBaseDescription,
                  is_null($x->longitude) ? "NULL" : $x->longitude,
-                 is_null($x->latitude) ? "NULL" : $x->latitude);
+                 is_null($x->latitude) ? "NULL" : $x->latitude,
+                 intval($x->invoiceVerified));
 
   \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
   $x->eventId = \db\mysql_insert_id();
@@ -243,11 +248,12 @@ elseif ($iType == "EVENT")
                     "  WINNER_TIME, SECOND_TIME, POSITION," .
                     "  NOF_STARTS_IN_CLASS, ORIGINAL_FEE, LATE_FEE," .
                     "  FEE_TO_CLUB, AWARD, POINTS," .
-                    "  POINTS_OLD, POINTS_1000, RANKING" .
+                    "  POINTS_OLD, POINTS_1000, RANKING," .
+                    "  SERVICEFEE_TO_CLUB, SERVICEFEE_DESCRIPTION" .
                     ")" .
                     " VALUES " .
                     "(" .
-                    "  %d, %d, '%s', %s, %d, %s, %s, %s, %s, %s, %s, %s, %s, %f, %f, %f, %s, %s, %s, %s, %s" .
+                    "  %d, %d, '%s', %s, %d, %s, %s, %s, %s, %s, %s, %s, %s, %f, %f, %f, %s, %s, %s, %s, %s, %f, %s" .
                     ")",
                     $x->eventId, $result->competitorId, $result->className,
                     is_null($result->deviantEventClassificationId) ? "NULL" : "'" . $result->deviantEventClassificationId . "'",
@@ -265,7 +271,9 @@ elseif ($iType == "EVENT")
                     is_null($result->points) ? "NULL" : $result->points,
                     is_null($result->pointsOld) ? "NULL" : $result->pointsOld,
                     is_null($result->points1000) ? "NULL" : $result->points1000,
-                    is_null($result->ranking) ? "NULL" : $result->ranking);
+                    is_null($result->ranking) ? "NULL" : $result->ranking,
+                    (!isset($result->serviceFeeToClub) || is_null($result->serviceFeeToClub)) ? 0.0 : $result->serviceFeeToClub,
+                    (!isset($result->serviceFeeDescription) || is_null($result->serviceFeeDescription)) ? "NULL" : "'" . $result->serviceFeeDescription . "'");
 
     \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
     $result->resultId = \db\mysql_insert_id();
@@ -309,11 +317,12 @@ elseif ($iType == "EVENT")
                     "  POSITION, NOF_STARTS_IN_CLASS, STAGE," .
                     "  TOTAL_STAGES, DEVIANT_RACE_LIGHT_CONDITION, DELTA_POSITIONS," .
                     "  DELTA_TIME_BEHIND, TOTAL_STAGE_POSITION, TOTAL_STAGE_TIME_BEHIND," .
-                    "  TOTAL_POSITION, TOTAL_NOF_STARTS_IN_CLASS, TOTAL_TIME_BEHIND, POINTS_1000, RANKING" .
+                    "  TOTAL_POSITION, TOTAL_NOF_STARTS_IN_CLASS, TOTAL_TIME_BEHIND, POINTS_1000, RANKING," .
+                    "  SERVICEFEE_TO_CLUB, SERVICEFEE_DESCRIPTION" .
                     ")" .
                     " VALUES " .
                     "(" .
-                    "  %d, '%s', '%s', %s, %d, %s, %d, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s" .
+                    "  %d, '%s', '%s', %s, %d, %s, %d, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %f, %s" .
                     ")",
                     $x->eventId,
                     $result->className,
@@ -341,7 +350,9 @@ elseif ($iType == "EVENT")
                     is_null($result->totalNofStartsInClass) ? "NULL" : $result->totalNofStartsInClass,
                     is_null($result->totalTimeBehind) ? "NULL" : "'" . $result->totalTimeBehind . "'",
                     is_null($result->points1000) ? "NULL" : $result->points1000,
-                    is_null($result->ranking) ? "NULL" : $result->ranking);
+                    is_null($result->ranking) ? "NULL" : $result->ranking,
+                    (!isset($result->serviceFeeToClub) || is_null($result->serviceFeeToClub)) ? 0.0 : $result->serviceFeeToClub,
+                    (!isset($result->serviceFeeDescription) || is_null($result->serviceFeeDescription)) ? "NULL" : "'" . $result->serviceFeeDescription . "'");
 
     \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
     $result->teamResultId = \db\mysql_insert_id();
@@ -352,9 +363,6 @@ else
   trigger_error(sprintf('Unsupported type (%s)', $iType), E_USER_ERROR);
 }
   
-  header("Access-Control-Allow-Credentials: true");
-  header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);
-  header("Access-Control-Allow-Headers: *");
   header("Content-Type: application/json; charset=ISO-8859-1");
   echo utf8_decode(json_encode($x));
   CloseDatabase();

@@ -39,7 +39,9 @@ const useBanners = (globalStateModel, clubModel) => {
   }, [globalStateModel.dashboardContentId]);
 
   return !firstLoading
-    ? bannerItems.map((newsObject) => <BannerItem key={'bannerObject#' + newsObject.id} newsObject={newsObject} />)
+    ? bannerItems.map((newsObject) => (
+        <BannerItem key={'bannerObject#' + newsObject.id} column={-50} newsObject={newsObject} />
+      ))
     : [
         <SpinnerDiv>
           <Spin size="large" />

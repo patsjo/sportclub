@@ -130,6 +130,7 @@ if ($iType == "EVENT" || $iType == "COMPETITOR")
         $rows->rankingBaseDescription      = $row['RANKING_BASE_DESCRIPTION'];
         $rows->longitude                   = is_null($row['LONGITUDE']) ? NULL : floatval($row['LONGITUDE']);
         $rows->latitude                    = is_null($row['LATITUDE']) ? NULL : floatval($row['LATITUDE']);
+        $rows->invoiceVerified             = boolval($row['INVOICE_VERIFIED']);
       }
     }
     \db\mysql_free_result($result);
@@ -191,6 +192,8 @@ if ($iType == "EVENT" || $iType == "COMPETITOR")
       $x->originalFee                  = is_null($row['ORIGINAL_FEE']) ? NULL : floatval($row['ORIGINAL_FEE']);
       $x->lateFee                      = is_null($row['LATE_FEE']) ? NULL : floatval($row['LATE_FEE']);
       $x->feeToClub                    = is_null($row['FEE_TO_CLUB']) ? NULL : floatval($row['FEE_TO_CLUB']);
+      $x->serviceFeeToClub             = floatval($row['SERVICEFEE_TO_CLUB']);
+      $x->serviceFeeDescription        = $row['SERVICEFEE_DESCRIPTION'];
       $x->award                        = $row['AWARD'];
       $x->points                       = is_null($row['POINTS']) ? NULL : intval($row['POINTS']);
       $x->pointsOld                    = is_null($row['POINTS_OLD']) ? NULL : intval($row['POINTS_OLD']);
@@ -273,6 +276,8 @@ if ($iType == "EVENT" || $iType == "COMPETITOR")
       $x->totalTimeBehind              = is_null($row['TOTAL_TIME_BEHIND']) ? NULL : time2StringWithSeconds(strtotime($row['TOTAL_TIME_BEHIND']));
       $x->points1000                   = is_null($row['POINTS_1000']) ? NULL : intval($row['POINTS_1000']);
       $x->ranking                      = is_null($row['RANKING']) ? NULL : floatval($row['RANKING']);
+      $x->serviceFeeToClub             = floatval($row['SERVICEFEE_TO_CLUB']);
+      $x->serviceFeeDescription        = $row['SERVICEFEE_DESCRIPTION'];
       array_push($rows->teamResults, $x);
     }
   }
@@ -517,7 +522,8 @@ elseif ($iType == "FEES")
   $sql = "SELECT RACE_EVENT_RESULTS.COMPETITOR_ID, FIRST_NAME, LAST_NAME," .
     "   SUM(ORIGINAL_FEE) AS ORIGINAL_FEE," .
     "   SUM(LATE_FEE) AS LATE_FEE," .
-    "   SUM(FEE_TO_CLUB) AS FEE_TO_CLUB " .
+    "   SUM(FEE_TO_CLUB) AS FEE_TO_CLUB, " .
+    "   SUM(SERVICEFEE_TO_CLUB) AS SERVICEFEE_TO_CLUB " .
     "FROM RACE_EVENT " .
     "INNER JOIN RACE_EVENT_RESULTS ON (RACE_EVENT.EVENT_ID = RACE_EVENT_RESULTS.EVENT_ID) ".
     "INNER JOIN RACE_COMPETITORS ON (RACE_EVENT_RESULTS.COMPETITOR_ID = RACE_COMPETITORS.COMPETITOR_ID) ".
@@ -541,6 +547,7 @@ elseif ($iType == "FEES")
       $x->originalFee           = is_null($row['ORIGINAL_FEE']) ? NULL : floatval($row['ORIGINAL_FEE']);
       $x->lateFee               = is_null($row['LATE_FEE']) ? NULL : floatval($row['LATE_FEE']);
       $x->feeToClub             = is_null($row['FEE_TO_CLUB']) ? NULL : floatval($row['FEE_TO_CLUB']);
+      $x->serviceFeeToClub      = is_null($row['SERVICEFEE_TO_CLUB']) ? NULL : floatval($row['SERVICEFEE_TO_CLUB']);
       array_push($rows, $x);
     }
   }

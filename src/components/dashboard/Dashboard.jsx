@@ -57,8 +57,8 @@ const Dashboard = inject(
     const Content =
       globalStateModel.dashboardContentId === dashboardContents.home ? (
         <Columns>
-          {bannerItems}
           {newsItems.slice(0, 2)}
+          {bannerItems}
           <div column={-2} key="weeklyCalendar" style={{ marginBottom: 12 }}>
             <WeeklyCalendar />
           </div>

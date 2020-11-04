@@ -192,7 +192,9 @@ const RaceTeamResult = types
     totalNofStartsInClass: types.maybeNull(types.integer),
     totalTimeBehind: types.maybeNull(types.string),
     points1000: types.maybeNull(types.integer),
-    ranking: types.maybeNull(types.number)
+    ranking: types.maybeNull(types.number),
+    serviceFeeToClub: types.optional(types.number, 0),
+    serviceFeeDescription: types.maybeNull(types.string)
   })
   .actions(self => {
     return {
@@ -255,6 +257,8 @@ const RaceResult = types
     originalFee: types.maybeNull(types.number),
     lateFee: types.maybeNull(types.number),
     feeToClub: types.maybeNull(types.number),
+    serviceFeeToClub: types.optional(types.number, 0),
+    serviceFeeDescription: types.maybeNull(types.string),
     award: types.maybeNull(types.string),
     points: types.maybeNull(types.integer),
     pointsOld: types.maybeNull(types.integer),
@@ -339,7 +343,8 @@ export const RaceEvent = types
     rankingBasepoint: types.maybeNull(types.number),
     rankingBaseDescription: types.maybeNull(types.string),
     longitude: types.maybeNull(types.number),
-    latitude: types.maybeNull(types.number)
+    latitude: types.maybeNull(types.number),
+    invoiceVerified: types.optional(types.boolean, false)
   })
   .actions(self => {
     return {

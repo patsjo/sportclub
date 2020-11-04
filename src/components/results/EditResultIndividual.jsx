@@ -1,15 +1,15 @@
-import React, { Component } from "react";
-import PropTypes from "prop-types";
-import { Form, TimePicker, Select, Input, InputNumber, Row, Col } from "antd";
-import { withTranslation } from "react-i18next";
-import FormItem from "../formItems/FormItem";
-import { errorRequiredField, FormSelect, timeFormat, hasErrors } from "../../utils/formHelper";
-import { GetCompetitorFee, GetClassClassificationId, GetAward, GetAge } from "../../utils/resultHelper";
-import { difficulties, failedReasons, failedReasonOptions } from "../../utils/resultConstants";
-import moment from "moment";
-import styled from "styled-components";
-import { StyledIcon } from "../styled/styled";
-import { AddMapCompetitorConfirmModal } from "./AddMapCompetitorConfirmModal";
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import { Form, TimePicker, Select, Input, InputNumber, Row, Col } from 'antd';
+import { withTranslation } from 'react-i18next';
+import FormItem from '../formItems/FormItem';
+import { errorRequiredField, FormSelect, timeFormat, hasErrors } from '../../utils/formHelper';
+import { GetCompetitorFee, GetClassClassificationId, GetAward, GetAge } from '../../utils/resultHelper';
+import { difficulties, failedReasons, failedReasonOptions } from '../../utils/resultConstants';
+import moment from 'moment';
+import styled from 'styled-components';
+import { StyledIcon } from '../styled/styled';
+import { AddMapCompetitorConfirmModal } from './AddMapCompetitorConfirmModal';
 
 const { Option } = Select;
 const ColorOptionContent = styled.div`
@@ -31,7 +31,7 @@ class EditResultIndividual extends Component {
     result: PropTypes.object.isRequired,
     results: PropTypes.arrayOf(PropTypes.object),
     competitorsOptions: PropTypes.arrayOf(PropTypes.object),
-    onValidate: PropTypes.func.isRequired
+    onValidate: PropTypes.func.isRequired,
   };
   formRef = React.createRef();
 
@@ -51,12 +51,12 @@ class EditResultIndividual extends Component {
     );
 
     this.state = {
-      formId: "editResultIndividual" + Math.floor(Math.random() * 10000000000000000),
+      formId: 'editResultIndividual' + Math.floor(Math.random() * 10000000000000000),
       failedReason: props.result.failedReason,
       age: age,
       raceEventClassification: raceEventClassification,
       isAwardTouched: props.result.isAwardTouched,
-      classClassification: classClassification
+      classClassification: classClassification,
     };
   }
 
@@ -83,7 +83,7 @@ class EditResultIndividual extends Component {
       competitorsOptions,
       meetsAwardRequirements,
       isSprint,
-      raceDate
+      raceDate,
     } = this.props;
     const { formId, failedReason, raceEventClassification, age, isAwardTouched } = this.state;
     const { raceClubs } = clubModel;
@@ -124,8 +124,11 @@ class EditResultIndividual extends Component {
           iOriginalFee: result.originalFee,
           iLateFee: result.lateFee,
           iFeeToClub: result.feeToClub,
+          iServiceFeeToClub: result.serviceFeeToClub,
+          iServiceFeeDescription: result.serviceFeeDescription,
+          iTotalFeeToClub: result.feeToClub + result.serviceFeeToClub,
           iEventClassificationId: eventClassificationId,
-          iDeviantEventClassificationId: result.deviantEventClassificationId
+          iDeviantEventClassificationId: result.deviantEventClassificationId,
         }}
         onValuesChange={() => hasErrors(self.formRef.current).then((notValid) => onValidate(!notValid))}
       >
@@ -133,12 +136,12 @@ class EditResultIndividual extends Component {
           <Col span={18}>
             <FormItem
               name="iCompetitorId"
-              label={t("results.Competitor")}
+              label={t('results.Competitor')}
               rules={[
                 {
                   required: true,
-                  message: errorRequiredField(t, "results.Competitor")
-                }
+                  message: errorRequiredField(t, 'results.Competitor'),
+                },
               ]}
             >
               <FormSelect
@@ -163,14 +166,14 @@ class EditResultIndividual extends Component {
                   result.competitorId,
                   undefined,
                   {
-                    iType: "COMPETITOR",
+                    iType: 'COMPETITOR',
                     iFirstName: null,
                     iLastName: null,
                     iBirthDay: null,
                     iClubId: raceClubs.selectedClub.clubId,
-                    iStartDate: "1930-01-01",
+                    iStartDate: '1930-01-01',
                     iEndDate: null,
-                    iEventorCompetitorId: null
+                    iEventorCompetitorId: null,
                   },
                   result.className,
                   clubModel
@@ -181,10 +184,10 @@ class EditResultIndividual extends Component {
                     self.formRef.current.setFieldsValue({
                       // eslint-disable-next-line eqeqeq
                       iCompetitorId: result.competitorId == undefined ? undefined : result.competitorId.toString(),
-                      iFeeToClub: result.feeToClub
+                      iFeeToClub: result.feeToClub,
                     });
                     self.setState({ age: competitor ? GetAge(competitor.birthDay, raceDate) : null }, () => {
-                      self.formRef.current.validateFields(["iCompetitorId", "iFeeToClub"], { force: true });
+                      self.formRef.current.validateFields(['iCompetitorId', 'iFeeToClub'], { force: true });
                     });
                   })
                   .catch(() => {});
@@ -196,12 +199,12 @@ class EditResultIndividual extends Component {
           <Col span={6}>
             <FormItem
               name="iClassName"
-              label={t("results.Class")}
+              label={t('results.Class')}
               rules={[
                 {
                   required: true,
-                  message: errorRequiredField(t, "results.Class")
-                }
+                  message: errorRequiredField(t, 'results.Class'),
+                },
               ]}
             >
               <Input
@@ -233,19 +236,19 @@ class EditResultIndividual extends Component {
                       iSecondTime: result.secondTime,
                       iNofStartsInClass: result.nofStartsInClass,
                       iOriginalFee: result.originalFee,
-                      iDeviantEventClassificationId: result.deviantEventClassificationId
+                      iDeviantEventClassificationId: result.deviantEventClassificationId,
                     });
                     self.setState({}, () => {
                       self.formRef.current.validateFields(
                         [
-                          "iClassClassificationId",
-                          "iDifficulty",
-                          "iLengthInMeter",
-                          "iWinnerTime",
-                          "iSecondTime",
-                          "iNofStartsInClass",
-                          "iOriginalFee",
-                          "iDeviantEventClassificationId"
+                          'iClassClassificationId',
+                          'iDifficulty',
+                          'iLengthInMeter',
+                          'iWinnerTime',
+                          'iSecondTime',
+                          'iNofStartsInClass',
+                          'iOriginalFee',
+                          'iDeviantEventClassificationId',
                         ],
                         { force: true }
                       );
@@ -264,10 +267,10 @@ class EditResultIndividual extends Component {
                     self.formRef.current.setFieldsValue({
                       iClassClassificationId:
                         result.classClassificationId == null ? undefined : result.classClassificationId.toString(),
-                      iDifficulty: result.difficulty
+                      iDifficulty: result.difficulty,
                     });
                     self.setState({}, () => {
-                      self.formRef.current.validateFields(["iClassClassificationId", "iDifficulty"], { force: true });
+                      self.formRef.current.validateFields(['iClassClassificationId', 'iDifficulty'], { force: true });
                     });
                   }
                 }}
@@ -277,12 +280,12 @@ class EditResultIndividual extends Component {
           <Col span={6}>
             <FormItem
               name="iClassClassificationId"
-              label={t("results.ClassClassification")}
+              label={t('results.ClassClassification')}
               rules={[
                 {
                   required: true,
-                  message: errorRequiredField(t, "results.ClassClassification")
-                }
+                  message: errorRequiredField(t, 'results.ClassClassification'),
+                },
               ]}
             >
               <FormSelect
@@ -300,14 +303,14 @@ class EditResultIndividual extends Component {
                     (r) => r.className === result.className && r.resultId !== result.resultId
                   );
                   resultsWithSameClass.forEach((r) =>
-                    r.setValue("classClassificationId", result.classClassificationId)
+                    r.setValue('classClassificationId', result.classClassificationId)
                   );
                   self.formRef.current.setFieldsValue({
-                    iFeeToClub: result.feeToClub
+                    iFeeToClub: result.feeToClub,
                   });
                   self.setState({ classClassification: tempClassClassification }, () => {
-                    self.formRef.current.validateFields(["iFeeToClub"], {
-                      force: true
+                    self.formRef.current.validateFields(['iFeeToClub'], {
+                      force: true,
                     });
                   });
                 }}
@@ -317,12 +320,12 @@ class EditResultIndividual extends Component {
           <Col span={6}>
             <FormItem
               name="iDifficulty"
-              label={t("results.Difficulty")}
+              label={t('results.Difficulty')}
               rules={[
                 {
                   required: true,
-                  message: errorRequiredField(t, "results.Difficulty")
-                }
+                  message: errorRequiredField(t, 'results.Difficulty'),
+                },
               ]}
             >
               <Select
@@ -332,7 +335,7 @@ class EditResultIndividual extends Component {
                   const resultsWithSameClass = results.filter(
                     (r) => r.className === result.className && r.resultId !== result.resultId
                   );
-                  resultsWithSameClass.forEach((r) => r.setValue("difficulty", result.difficulty));
+                  resultsWithSameClass.forEach((r) => r.setValue('difficulty', result.difficulty));
                 }}
               >
                 <Option value={difficulties.green}>
@@ -365,25 +368,25 @@ class EditResultIndividual extends Component {
           <Col span={6}>
             <FormItem
               name="iLengthInMeter"
-              label={t("results.LengthInMeter")}
+              label={t('results.LengthInMeter')}
               rules={[
                 {
                   required: failedReason !== failedReasons.NotStarted,
-                  message: errorRequiredField(t, "results.LengthInMeter")
-                }
+                  message: errorRequiredField(t, 'results.LengthInMeter'),
+                },
               ]}
             >
               <InputNumber
                 min={10}
                 max={100000}
                 step={100}
-                style={{ width: "100%" }}
+                style={{ width: '100%' }}
                 onChange={(value) => {
                   result.lengthInMeter = value;
                   const resultsWithSameClass = results.filter(
                     (r) => r.className === result.className && r.resultId !== result.resultId
                   );
-                  resultsWithSameClass.forEach((r) => r.setValue("lengthInMeter", result.lengthInMeter));
+                  resultsWithSameClass.forEach((r) => r.setValue('lengthInMeter', result.lengthInMeter));
                 }}
               />
             </FormItem>
@@ -391,7 +394,7 @@ class EditResultIndividual extends Component {
         </Row>
         <Row gutter={8}>
           <Col span={6}>
-            <FormItem name="iFailedReason" label={t("results.FailedReason")}>
+            <FormItem name="iFailedReason" label={t('results.FailedReason')}>
               <FormSelect
                 allowClear={true}
                 options={failedReasonOptions(t)}
@@ -399,21 +402,21 @@ class EditResultIndividual extends Component {
                   result.failedReason = code;
                   result.feeToClub = GetCompetitorFee(paymentModel, result, age, classClassification);
                   self.formRef.current.setFieldsValue({
-                    iFeeToClub: result.feeToClub
+                    iFeeToClub: result.feeToClub,
                   });
                   self.setState({ failedReason: code }, () => {
                     self.formRef.current.validateFields(
                       [
-                        "iLengthInMeter",
-                        "iCompetitorTime",
-                        "iWinnerTime",
-                        "iSecondTime",
-                        "iPosition",
-                        "iNofStartsInClass",
-                        "iFeeToClub"
+                        'iLengthInMeter',
+                        'iCompetitorTime',
+                        'iWinnerTime',
+                        'iSecondTime',
+                        'iPosition',
+                        'iNofStartsInClass',
+                        'iFeeToClub',
                       ],
                       {
-                        force: true
+                        force: true,
                       }
                     );
                   });
@@ -424,23 +427,23 @@ class EditResultIndividual extends Component {
           <Col span={6}>
             <FormItem
               name="iCompetitorTime"
-              label={t("results.Time")}
+              label={t('results.Time')}
               rules={[
                 {
-                  type: "object",
+                  type: 'object',
                   required: !failedReason,
-                  message: errorRequiredField(t, "results.Time")
-                }
+                  message: errorRequiredField(t, 'results.Time'),
+                },
               ]}
             >
               <TimePicker
                 format={timeFormat}
                 allowClear={true}
-                style={{ width: "100%" }}
+                style={{ width: '100%' }}
                 onChange={(time) => {
                   result.competitorTime = !time ? null : time.format(timeFormat);
                   self.setState({}, () => {
-                    self.formRef.current.validateFields(["iWinnerTime"], { force: true });
+                    self.formRef.current.validateFields(['iWinnerTime'], { force: true });
                   });
                 }}
               />
@@ -449,38 +452,38 @@ class EditResultIndividual extends Component {
           <Col span={6}>
             <FormItem
               name="iWinnerTime"
-              label={t("results.WinnerTime")}
+              label={t('results.WinnerTime')}
               rules={[
                 {
-                  type: "object",
+                  type: 'object',
                   required: !failedReason,
-                  message: errorRequiredField(t, "results.WinnerTime")
+                  message: errorRequiredField(t, 'results.WinnerTime'),
                 },
                 {
-                  type: "object",
+                  type: 'object',
                   validator: (rule, value, callback) => {
-                    const competitorTime = self.formRef.current.getFieldValue("iCompetitorTime");
+                    const competitorTime = self.formRef.current.getFieldValue('iCompetitorTime');
                     if (competitorTime && value && !value.isSameOrBefore(competitorTime)) {
-                      callback(t("results.WinnerTimeLessOrEqualThanTime"));
+                      callback(t('results.WinnerTimeLessOrEqualThanTime'));
                     }
                     callback();
-                  }
-                }
+                  },
+                },
               ]}
             >
               <TimePicker
                 format={timeFormat}
                 allowClear={true}
-                style={{ width: "100%" }}
+                style={{ width: '100%' }}
                 onChange={(time) => {
                   result.winnerTime = !time ? null : time.format(timeFormat);
                   self.setState({}, () => {
-                    self.formRef.current.validateFields(["iSecondTime"], { force: true });
+                    self.formRef.current.validateFields(['iSecondTime'], { force: true });
                   });
                   const resultsWithSameClass = results.filter(
                     (r) => r.className === result.className && r.resultId !== result.resultId
                   );
-                  resultsWithSameClass.forEach((r) => r.setValue("winnerTime", result.winnerTime));
+                  resultsWithSameClass.forEach((r) => r.setValue('winnerTime', result.winnerTime));
                 }}
               />
             </FormItem>
@@ -488,30 +491,30 @@ class EditResultIndividual extends Component {
           <Col span={6}>
             <FormItem
               name="iSecondTime"
-              label={t("results.SecondTime")}
+              label={t('results.SecondTime')}
               rules={[
                 {
-                  type: "object",
+                  type: 'object',
                   validator: (rule, value, callback) => {
-                    const winnerTime = self.formRef.current.getFieldValue("iWinnerTime");
+                    const winnerTime = self.formRef.current.getFieldValue('iWinnerTime');
                     if (winnerTime && value && !value.isSameOrAfter(winnerTime)) {
-                      callback(t("results.SecondTimeGreaterOrEqualThanWinnerTime"));
+                      callback(t('results.SecondTimeGreaterOrEqualThanWinnerTime'));
                     }
                     callback();
-                  }
-                }
+                  },
+                },
               ]}
             >
               <TimePicker
                 format={timeFormat}
                 allowClear={true}
-                style={{ width: "100%" }}
+                style={{ width: '100%' }}
                 onChange={(time) => {
                   result.secondTime = !time ? null : time.format(timeFormat);
                   const resultsWithSameClass = results.filter(
                     (r) => r.className === result.className && r.resultId !== result.resultId
                   );
-                  resultsWithSameClass.forEach((r) => r.setValue("secondTime", result.secondTime));
+                  resultsWithSameClass.forEach((r) => r.setValue('secondTime', result.secondTime));
                 }}
               />
             </FormItem>
@@ -521,23 +524,23 @@ class EditResultIndividual extends Component {
           <Col span={6}>
             <FormItem
               name="iPosition"
-              label={t("results.Position")}
+              label={t('results.Position')}
               rules={[
                 {
                   required: !failedReason,
-                  message: errorRequiredField(t, "results.Position")
-                }
+                  message: errorRequiredField(t, 'results.Position'),
+                },
               ]}
             >
               <InputNumber
                 min={1}
                 max={100000}
                 step={1}
-                style={{ width: "100%" }}
+                style={{ width: '100%' }}
                 onChange={(value) => {
                   result.position = value;
                   self.setState({}, () => {
-                    self.formRef.current.validateFields(["iNofStartsInClass"], { force: true });
+                    self.formRef.current.validateFields(['iNofStartsInClass'], { force: true });
                   });
                 }}
               />
@@ -546,40 +549,40 @@ class EditResultIndividual extends Component {
           <Col span={6}>
             <FormItem
               name="iNofStartsInClass"
-              label={t("results.NofStartsInClass")}
+              label={t('results.NofStartsInClass')}
               rules={[
                 {
                   required: !failedReason,
-                  message: errorRequiredField(t, "results.NofStartsInClass")
+                  message: errorRequiredField(t, 'results.NofStartsInClass'),
                 },
                 {
                   validator: (rule, value, callback) => {
-                    const position = self.formRef.current.getFieldValue("iPosition");
+                    const position = self.formRef.current.getFieldValue('iPosition');
                     if (position && value && value < position) {
-                      callback(t("results.PositionGreaterThanStarts"));
+                      callback(t('results.PositionGreaterThanStarts'));
                     }
                     callback();
-                  }
-                }
+                  },
+                },
               ]}
             >
               <InputNumber
                 min={1}
                 max={100000}
                 step={1}
-                style={{ width: "100%" }}
+                style={{ width: '100%' }}
                 onChange={(value) => {
                   result.nofStartsInClass = value;
                   const resultsWithSameClass = results.filter(
                     (r) => r.className === result.className && r.resultId !== result.resultId
                   );
-                  resultsWithSameClass.forEach((r) => r.setValue("nofStartsInClass", result.nofStartsInClass));
+                  resultsWithSameClass.forEach((r) => r.setValue('nofStartsInClass', result.nofStartsInClass));
                 }}
               />
             </FormItem>
           </Col>
           <Col span={6}>
-            <FormItem name="iAward" label={t("results.Award")}>
+            <FormItem name="iAward" label={t('results.Award')}>
               <Select
                 allowClear={true}
                 onChange={(code) => {
@@ -596,12 +599,12 @@ class EditResultIndividual extends Component {
           <Col span={6}>
             <FormItem
               name="iOriginalFee"
-              label={t("results.OriginalFee")}
+              label={t('results.OriginalFee')}
               rules={[
                 {
                   required: true,
-                  message: errorRequiredField(t, "results.OriginalFee")
-                }
+                  message: errorRequiredField(t, 'results.OriginalFee'),
+                },
               ]}
             >
               <InputNumber
@@ -610,24 +613,25 @@ class EditResultIndividual extends Component {
                 step={5}
                 precision={2}
                 decimalSeparator=","
-                style={{ width: "100%" }}
+                style={{ width: '100%' }}
                 onChange={(value) => {
                   result.originalFee = value;
                   result.feeToClub = GetCompetitorFee(paymentModel, result, age, classClassification);
                   self.formRef.current.setFieldsValue({
-                    iFeeToClub: result.feeToClub
+                    iFeeToClub: result.feeToClub,
+                    iTotalFeeToClub: result.feeToClub + result.serviceFeeToClub,
                   });
                   self.setState({}, () => {
-                    self.formRef.current.validateFields(["iFeeToClub"], {
-                      force: true
+                    self.formRef.current.validateFields(['iFeeToClub'], {
+                      force: true,
                     });
                   });
                   const resultsWithSameClass = results.filter(
                     (r) => r.className === result.className && r.resultId !== result.resultId
                   );
                   resultsWithSameClass.forEach((r) => {
-                    r.setValue("originalFee", result.originalFee);
-                    r.setValue("feeToClub", GetCompetitorFee(paymentModel, r, age, classClassification));
+                    r.setValue('originalFee', result.originalFee);
+                    r.setValue('feeToClub', GetCompetitorFee(paymentModel, r, age, classClassification));
                   });
                 }}
               />
@@ -636,12 +640,12 @@ class EditResultIndividual extends Component {
           <Col span={6}>
             <FormItem
               name="iLateFee"
-              label={t("results.LateFee")}
+              label={t('results.LateFee')}
               rules={[
                 {
                   required: true,
-                  message: errorRequiredField(t, "results.LateFee")
-                }
+                  message: errorRequiredField(t, 'results.LateFee'),
+                },
               ]}
             >
               <InputNumber
@@ -650,16 +654,17 @@ class EditResultIndividual extends Component {
                 step={5}
                 precision={2}
                 decimalSeparator=","
-                style={{ width: "100%" }}
+                style={{ width: '100%' }}
                 onChange={(value) => {
                   result.lateFee = value;
                   result.feeToClub = GetCompetitorFee(paymentModel, result, age, classClassification);
                   self.formRef.current.setFieldsValue({
-                    iFeeToClub: result.feeToClub
+                    iFeeToClub: result.feeToClub,
+                    iTotalFeeToClub: result.feeToClub + result.serviceFeeToClub,
                   });
                   self.setState({}, () => {
-                    self.formRef.current.validateFields(["iFeeToClub"], {
-                      force: true
+                    self.formRef.current.validateFields(['iFeeToClub'], {
+                      force: true,
                     });
                   });
                 }}
@@ -669,12 +674,12 @@ class EditResultIndividual extends Component {
           <Col span={6}>
             <FormItem
               name="iFeeToClub"
-              label={t("results.FeeToClub")}
+              label={t('results.FeeToClub')}
               rules={[
                 {
                   required: true,
-                  message: errorRequiredField(t, "results.FeeToClub")
-                }
+                  message: errorRequiredField(t, 'results.FeeToClub'),
+                },
               ]}
             >
               <InputNumber
@@ -683,22 +688,68 @@ class EditResultIndividual extends Component {
                 step={5}
                 precision={2}
                 decimalSeparator=","
-                style={{ width: "100%" }}
+                style={{ width: '100%' }}
                 onChange={(value) => {
                   result.feeToClub = value;
+                  self.formRef.current.setFieldsValue({
+                    iTotalFeeToClub: result.feeToClub + result.serviceFeeToClub,
+                  });
                 }}
               />
             </FormItem>
           </Col>
         </Row>
         <Row gutter={8}>
+          <Col span={6}>
+            <FormItem
+              name="iServiceFeeToClub"
+              label={t('results.ServiceFeeToClub')}
+              rules={[
+                {
+                  required: true,
+                  message: errorRequiredField(t, 'results.ServiceFeeToClub'),
+                },
+              ]}
+            >
+              <InputNumber
+                min={0}
+                max={100000}
+                step={5}
+                precision={2}
+                decimalSeparator=","
+                style={{ width: '100%' }}
+                onChange={(value) => {
+                  result.serviceFeeToClub = value;
+                  self.formRef.current.setFieldsValue({
+                    iTotalFeeToClub: result.feeToClub + result.serviceFeeToClub,
+                  });
+                }}
+              />
+            </FormItem>
+          </Col>
           <Col span={12}>
-            <FormItem name="iEventClassificationId" label={t("results.EventClassification")}>
+            <FormItem name="iServiceFeeDescription" label={t('results.ServiceFeeDescription')}>
+              <Input
+                onChange={(e) => {
+                  result.serviceFeeDescription = e.currentTarget.value;
+                }}
+              />
+            </FormItem>
+          </Col>
+          <Col span={6}>
+            <FormItem name="iTotalFeeToClub" label={t('results.TotalFeeToClub')}>
+              <InputNumber disabled={true} precision={2} decimalSeparator="," style={{ width: '100%' }} />
+            </FormItem>
+          </Col>
+        </Row>
+        <Row gutter={8}>
+          <Col span={12}>
+            <FormItem name="iEventClassificationId" label={t('results.EventClassification')}>
               <FormSelect disabled={true} options={raceClubs.eventClassificationOptions} />
             </FormItem>
           </Col>
           <Col span={12}>
-            <FormItem name="iDeviantEventClassificationId" label={t("results.DeviantEventClassification")}>
+            <FormItem name="iDeviantEventClassificationId" label={t('results.DeviantEventClassification')}>
               <FormSelect
                 allowClear={true}
                 options={raceClubs.eventClassificationOptions}
@@ -720,17 +771,17 @@ class EditResultIndividual extends Component {
                   self.formRef.current.setFieldsValue({
                     iClassClassificationId:
                       // eslint-disable-next-line eqeqeq
-                      result.classClassificationId == undefined ? undefined : result.classClassificationId.toString()
+                      result.classClassificationId == undefined ? undefined : result.classClassificationId.toString(),
                   });
                   self.setState({ raceEventClassification: raceEventClassification }, () => {
-                    self.formRef.current.validateFields(["iClassClassificationId"], { force: true });
+                    self.formRef.current.validateFields(['iClassClassificationId'], { force: true });
                   });
                   const resultsWithSameClass = results.filter(
                     (r) => r.className === result.className && r.resultId !== result.resultId
                   );
                   resultsWithSameClass.forEach((r) => {
-                    r.setValue("deviantEventClassificationId", result.deviantEventClassificationId);
-                    r.setValue("classClassificationId", result.classClassificationId);
+                    r.setValue('deviantEventClassificationId', result.deviantEventClassificationId);
+                    r.setValue('classClassificationId', result.classClassificationId);
                   });
                 }}
               />
