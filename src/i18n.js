@@ -229,7 +229,9 @@ i18next
             TotalNofStartsInClass: "Starts in class",
             TotalTimeBehind: "Team time behind",
             TeamFailedReason: "Team failed reason",
-            TeamName: "Team name"
+            TeamName: "Team name",
+            InvoiceVerifier: "Invoice verifier",
+            InvoiceAlreadyVerified: "Invoice verified"
           },
           eventor: {
             Participant: "Participant",
@@ -446,7 +448,9 @@ i18next
             TotalNofStartsInClass: "Startande lag",
             TotalTimeBehind: "Lagets tid efter",
             TeamFailedReason: "Lag orsak utan tid",
-            TeamName: "Lagnamn"
+            TeamName: "Lagnamn",
+            InvoiceVerifier: "Kontroll av faktura",
+            InvoiceAlreadyVerified: "Faktura kontrollerad"
           },
           eventor: {
             Participant: "Anmäld",

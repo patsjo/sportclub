@@ -29,7 +29,7 @@ const MenuText = styled.span`
 export default class StyledMenuItem extends Component {
   static propTypes = {
     key: PropTypes.string.isRequired,
-    icon: PropTypes.string.isRequired,
+    icon: PropTypes.object.isRequired,
     name: PropTypes.string.isRequired,
     onClick: PropTypes.func.isRequired,
     isSubMenu: PropTypes.bool,

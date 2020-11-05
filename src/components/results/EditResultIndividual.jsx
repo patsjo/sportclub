@@ -730,6 +730,7 @@ class EditResultIndividual extends Component {
           <Col span={12}>
             <FormItem name="iServiceFeeDescription" label={t('results.ServiceFeeDescription')}>
               <Input
+                style={{ width: '100%' }}
                 onChange={(e) => {
                   result.serviceFeeDescription = e.currentTarget.value;
                 }}

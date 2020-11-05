@@ -1,21 +1,24 @@
-import React, { useState, lazy, Suspense } from "react";
-import { inject, observer } from "mobx-react";
-import MenuItem from "../MenuItem";
-import { useTranslation } from "react-i18next";
-import { dashboardContents } from "../../../models/globalStateModel";
-const ResultsWizardModal = lazy(() => import("../../results/ResultsWizardModal"));
+import React, { useState, lazy, Suspense } from 'react';
+import { inject, observer } from 'mobx-react';
+import { AuditOutlined } from '@ant-design/icons';
+import MenuItem from '../MenuItem';
+import { useTranslation } from 'react-i18next';
+import { dashboardContents } from '../../../models/globalStateModel';
+const ResultsWizardModal = lazy(() => import('../../results/ResultsWizardModal'));
+const InvoiceWizardModal = lazy(() => import('../../results/InvoiceWizardModal'));
 
-const moduleName = "Results";
+const moduleName = 'Results';
 const ResultsSubMenus = inject(
-  "clubModel",
-  "globalStateModel",
-  "sessionModel"
+  'clubModel',
+  'globalStateModel',
+  'sessionModel'
 )(
   observer((props) => {
     const { t } = useTranslation();
     const { clubModel, globalStateModel, sessionModel } = props;
-    const moduleInfo = clubModel.module("Results");
+    const moduleInfo = clubModel.module('Results');
     const [addResultsWizardModalIsOpen, setAddResultsWizardModalIsOpen] = useState(false);
+    const [invoiceWizardModalIsOpen, setInvoiceWizardModalIsOpen] = useState(false);
     const [addOldResultsWizardModalIsOpen, setAddOldResultsWizardModalIsOpen] = useState(false);
 
     return (
@@ -28,68 +31,84 @@ const ResultsSubMenus = inject(
             />
           </Suspense>
         ) : null}
+        {invoiceWizardModalIsOpen ? (
+          <Suspense fallback={null}>
+            <InvoiceWizardModal open={invoiceWizardModalIsOpen} onClose={() => setInvoiceWizardModalIsOpen(false)} />
+          </Suspense>
+        ) : null}
         <MenuItem
-          key={"menuItem#results"}
-          icon={moduleName + "Icon"}
-          name={t("results.Latest")}
+          key={'menuItem#results'}
+          icon={moduleName + 'Icon'}
+          name={t('results.Latest')}
           disabled={!sessionModel.loggedIn}
           isSubMenu
           onClick={() => {
-            globalStateModel.setValue("rightMenuVisible", false);
+            globalStateModel.setValue('rightMenuVisible', false);
             globalStateModel.setDashboard(dashboardContents.results);
           }}
         />
         <MenuItem
-          key={"menuItem#resultsIndividual"}
+          key={'menuItem#resultsIndividual'}
           icon="user"
-          name={t("results.Individual")}
+          name={t('results.Individual')}
           disabled={!sessionModel.loggedIn}
           isSubMenu
           onClick={() => {
-            globalStateModel.setValue("rightMenuVisible", false);
+            globalStateModel.setValue('rightMenuVisible', false);
             globalStateModel.setDashboard(dashboardContents.individualResults);
           }}
         />
         <MenuItem
-          key={"menuItem#resultsTeam"}
+          key={'menuItem#resultsTeam'}
           icon="team"
-          name={t("results.Team")}
+          name={t('results.Team')}
           disabled={true || !sessionModel.loggedIn}
           isSubMenu
           onClick={() => {
-            globalStateModel.setDashboard(dashboardContents.news, "1990-01-01", "2099-12-31", 3);
+            globalStateModel.setDashboard(dashboardContents.news, '1990-01-01', '2099-12-31', 3);
           }}
         />
         <MenuItem
-          key={"menuItem#resultsAdd"}
+          key={'menuItem#resultsAdd'}
           icon="plus"
-          name={t("results.Add")}
+          name={t('results.Add')}
           disabled={!moduleInfo.addUrl || !sessionModel.loggedIn || !sessionModel.isAdmin}
           isSubMenu
           onClick={() => {
-            globalStateModel.setValue("rightMenuVisible", false);
+            globalStateModel.setValue('rightMenuVisible', false);
             setTimeout(() => setAddResultsWizardModalIsOpen(true), 0);
           }}
         />
         <MenuItem
-          key={"menuItem#resultsFees"}
+          key={'menuItem#resultsInvoiceVerifier'}
+          icon={<AuditOutlined style={{ verticalAlign: 'middle', fontSize: 18 }} />}
+          name={t('results.InvoiceVerifier')}
+          disabled={!moduleInfo.addUrl || !sessionModel.loggedIn || !sessionModel.isAdmin}
+          isSubMenu
+          onClick={() => {
+            globalStateModel.setValue('rightMenuVisible', false);
+            setTimeout(() => setInvoiceWizardModalIsOpen(true), 0);
+          }}
+        />
+        <MenuItem
+          key={'menuItem#resultsFees'}
           icon="euro"
-          name={t("results.FeeToClub")}
+          name={t('results.FeeToClub')}
           disabled={!sessionModel.loggedIn}
           isSubMenu
           onClick={() => {
-            globalStateModel.setValue("rightMenuVisible", false);
+            globalStateModel.setValue('rightMenuVisible', false);
             globalStateModel.setDashboard(dashboardContents.resultsFees);
           }}
         />
         <MenuItem
-          key={"menuItem#resultsConvert"}
+          key={'menuItem#resultsConvert'}
           icon="cloud-upload"
-          name={t("results.Convert")}
+          name={t('results.Convert')}
           disabled={true || !sessionModel.loggedIn || !sessionModel.isAdmin}
           isSubMenu
           onClick={() => {
-            globalStateModel.setValue("rightMenuVisible", false);
+            globalStateModel.setValue('rightMenuVisible', false);
             setTimeout(() => setAddOldResultsWizardModalIsOpen(true), 0);
           }}
         />

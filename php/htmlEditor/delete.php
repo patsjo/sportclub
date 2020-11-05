@@ -20,16 +20,16 @@ include_once($_SERVER["DOCUMENT_ROOT"] . "/include/users.php");
 ValidLogin();
 
 $iPageID     = 0;
-$file_id     = 0;
+$iLinkID     = 0;
 $errCode     = 0;
 
-if (is_numeric($_REQUEST['iPageID']))
+if (isset($_REQUEST['iPageID']) && is_numeric($_REQUEST['iPageID']))
 {
   $iPageID = intval($_REQUEST['iPageID']);
 }
-else
+if (isset($_REQUEST['iLinkID']) && is_numeric($_REQUEST['iLinkID']))
 {
-  trigger_error('Felaktig parameter "iPageID"', E_USER_ERROR);
+  $iLinkID = intval($_REQUEST['iLinkID']);
 }
 
 if (!(ValidGroup($cADMIN_GROUP_ID)))
@@ -37,29 +37,42 @@ if (!(ValidGroup($cADMIN_GROUP_ID)))
   NotAuthorized();
 }
 
-htmlHeader("Radera hemsida");
+htmlHeader("Radera hemsida/länk");
 
 echo "<TABLE class=\"body\">\n";
 echo "  <TR>\n";
-echo "    <TD><H1>Radera hemsida</H1></TD>\n";
+echo "    <TD><H1>Radera hemsida/länk</H1></TD>\n";
 echo "  </TR>\n";
 
 OpenDatabase();
 
-$sql = "DELETE FROM HTMLEDITOR_GROUPS WHERE PAGE_ID = " . $iPageID;
-
-if (!\db\mysql_query($sql))
+if ($iPageID > 0)
 {
-  $errCode = 1;
-  $errText = "<P>Databasfel: " . \db\mysql_error() . "</P>\n";
+  $sql = "DELETE FROM HTMLEDITOR_GROUPS WHERE PAGE_ID = " . $iPageID;
+  
+  if (!\db\mysql_query($sql))
+  {
+    $errCode = 1;
+    $errText = "<P>Databasfel: " . \db\mysql_error() . "</P>\n";
+  }
+  
+  $sql = "DELETE FROM HTMLEDITOR_PAGES WHERE PAGE_ID = " . $iPageID;
+  
+  if (!\db\mysql_query($sql))
+  {
+    $errCode = 1;
+    $errText = "<P>Databasfel: " . \db\mysql_error() . "</P>\n";
+  }
 }
-
-$sql = "DELETE FROM HTMLEDITOR_PAGES WHERE PAGE_ID = " . $iPageID;
-
-if (!\db\mysql_query($sql))
+elseif ($iLinkID > 0)
 {
-  $errCode = 1;
-  $errText = "<P>Databasfel: " . \db\mysql_error() . "</P>\n";
+  $sql = "DELETE FROM HTMLEDITOR_LINKS WHERE LINK_ID = " . $iLinkID;
+  
+  if (!\db\mysql_query($sql))
+  {
+    $errCode = 1;
+    $errText = "<P>Databasfel: " . \db\mysql_error() . "</P>\n";
+  }
 }
 
 CloseDatabase();

@@ -890,6 +890,7 @@ class EditResultRelay extends Component {
           <Col span={18}>
             <FormItem name="iServiceFeeDescription" label={t('results.ServiceFeeDescription')}>
               <Input
+                style={{ width: '100%' }}
                 onChange={(e) => {
                   result.serviceFeeDescription = e.currentTarget.value;
                 }}

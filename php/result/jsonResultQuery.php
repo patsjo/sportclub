@@ -302,6 +302,7 @@ elseif ($iType == "EVENTS")
       $x->name                  = $row['NAME'];
       $x->date                  = date2String(strtotime($row['RACEDATE']));
       $x->time                  = is_null($row['RACETIME']) ? NULL : time2StringWithSeconds(strtotime($row['RACETIME']));
+      $x->invoiceVerified       = boolval($row['INVOICE_VERIFIED']);
       array_push($rows, $x);
     }
   }

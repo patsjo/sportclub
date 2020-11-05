@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form, Input, Modal, message } from 'antd';
+import { Button, Form, Input, Modal, message } from 'antd';
 import { hasErrors, errorRequiredField } from '../../utils/formHelper';
 import { PostJsonData } from '../../utils/api';
 import FormItem from '../formItems/FormItem';
@@ -27,8 +27,10 @@ export const HtmlEditorLinkModal = (t, linkId, menuPath, url, form, globalStateM
             hasErrors(form).then((notValid) =>
               confirmModal.update({
                 okButtonProps: {
-                  disabled: notValid,
+                  danger: notValid && linkId > 0,
+                  disabled: linkId > 0 ? false : notValid,
                 },
+                okText: notValid && linkId > 0 ? t('common.Delete') : t('common.Save'),
               })
             )
           }
@@ -68,39 +70,69 @@ export const HtmlEditorLinkModal = (t, linkId, menuPath, url, form, globalStateM
       },
       cancelText: t('common.Cancel'),
       onOk() {
-        const htmlEditorModule = clubModel.modules.find((module) => module.name === 'HTMLEditor');
-        const saveUrl = linkId < 0 ? htmlEditorModule.addUrl : htmlEditorModule.updateUrl;
+        hasErrors(form).then((notValid) => {
+          const htmlEditorModule = clubModel.modules.find((module) => module.name === 'HTMLEditor');
+          const deleteUrl = htmlEditorModule.deleteUrl;
+          const saveUrl = linkId < 0 ? htmlEditorModule.addUrl : htmlEditorModule.updateUrl;
 
-        confirmModal.update({
-          okButtonProps: {
-            loading: true,
-          },
-        });
-        form.validateFields().then((values) => {
-          PostJsonData(
-            saveUrl,
-            {
-              ...values,
-              iLinkID: linkId,
-              username: sessionModel.username,
-              password: sessionModel.password,
-              jsonResponse: true,
+          confirmModal.update({
+            okButtonProps: {
+              loading: true,
             },
-            true,
-            sessionModel.authorizationHeader
-          )
-            .then((linkResponse) => {
-              globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, sessionModel, message);
-              resolve(linkResponse);
-            })
-            .catch((e) => {
-              message.error(e.message);
-              confirmModal.update({
-                okButtonProps: {
-                  loading: false,
-                },
+          });
+
+          if (notValid && linkId > 0) {
+            PostJsonData(
+              deleteUrl,
+              {
+                iLinkID: linkId,
+                username: sessionModel.username,
+                password: sessionModel.password,
+                jsonResponse: true,
+              },
+              true,
+              sessionModel.authorizationHeader
+            )
+              .then((linkResponse) => {
+                globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, sessionModel, message);
+                resolve(linkResponse);
+              })
+              .catch((e) => {
+                message.error(e.message);
+                confirmModal.update({
+                  okButtonProps: {
+                    loading: false,
+                  },
+                });
               });
+          } else {
+            form.validateFields().then((values) => {
+              PostJsonData(
+                saveUrl,
+                {
+                  ...values,
+                  iLinkID: linkId,
+                  username: sessionModel.username,
+                  password: sessionModel.password,
+                  jsonResponse: true,
+                },
+                true,
+                sessionModel.authorizationHeader
+              )
+                .then((linkResponse) => {
+                  globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, sessionModel, message);
+                  resolve(linkResponse);
+                })
+                .catch((e) => {
+                  message.error(e.message);
+                  confirmModal.update({
+                    okButtonProps: {
+                      loading: false,
+                    },
+                  });
+                });
             });
+          }
         });
       },
       onCancel() {
