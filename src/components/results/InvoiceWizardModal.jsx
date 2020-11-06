@@ -111,7 +111,7 @@ const InvoiceWizardModal = inject(
           saveUrl,
           {
             ...data,
-            iType: 'EVENT',
+            iType: 'EVENT_VERIFY',
             username: sessionModel.username,
             password: sessionModel.password,
             jsonResponse: true,

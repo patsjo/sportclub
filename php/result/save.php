@@ -16,7 +16,14 @@
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/db.php");
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/users.php");
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/functions.php");
-set_error_handler("error_handler");
+
+function error_rollback($errno, $errstr, $errfile, $errline)
+{
+  mysqli_rollback($db_conn);
+  error_handler($errno, $errstr, $errfile, $errline);
+}
+
+set_error_handler("error_rollback");
 
 ValidLogin();
 if (!(ValidGroup($cADMIN_GROUP_ID)))
@@ -358,11 +365,56 @@ elseif ($iType == "EVENT")
     $result->teamResultId = \db\mysql_insert_id();
   }
 }
+elseif ($iType == "EVENT_VERIFY")
+{
+  $x = new stdClass();
+  $x->eventId = getRequestInt("eventId");
+  $x->results = json_decode($_REQUEST['results']);
+  $x->teamResults = json_decode($_REQUEST['teamResults']);
+  $x->invoiceVerified = getRequestBool("invoiceVerified");
+
+  $query = "UPDATE RACE_EVENT " .
+    "SET INVOICE_VERIFIED = " . intval($x->invoiceVerified) . " " .
+    "WHERE EVENT_ID = " . $x->eventId;
+  \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
+
+  foreach($x->results as $result)
+  {
+    $query = sprintf("UPDATE RACE_EVENT_RESULTS " .
+      "SET ORIGINAL_FEE = %f, " .
+      "    LATE_FEE = %f, " .
+      "    FEE_TO_CLUB = %f, " .
+      "    SERVICEFEE_TO_CLUB = %f, " .
+      "    SERVICEFEE_DESCRIPTION = %s " .
+      "WHERE RESULT_ID = " . $result->resultId,
+      $result->originalFee,
+      $result->lateFee,
+      $result->feeToClub,
+      (!isset($result->serviceFeeToClub) || is_null($result->serviceFeeToClub)) ? 0.0 : $result->serviceFeeToClub,
+      (!isset($result->serviceFeeDescription) || is_null($result->serviceFeeDescription)) ? "NULL" : "'" . $result->serviceFeeDescription . "'"
+    );
+    \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
+  }
+
+  foreach($x->teamResults as $result)
+  {
+    $query = sprintf("UPDATE RACE_EVENT_RESULTS_TEAM " .
+      "SET SERVICEFEE_TO_CLUB = %f, " .
+      "    SERVICEFEE_DESCRIPTION = %s " .
+      "WHERE TEAM_RESULT_ID = " . $result->teamResultId,
+      (!isset($result->serviceFeeToClub) || is_null($result->serviceFeeToClub)) ? 0.0 : $result->serviceFeeToClub,
+      (!isset($result->serviceFeeDescription) || is_null($result->serviceFeeDescription)) ? "NULL" : "'" . $result->serviceFeeDescription . "'"
+    );
+    \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
+  }
+}
 else
 {
   trigger_error(sprintf('Unsupported type (%s)', $iType), E_USER_ERROR);
 }
   
+  mysqli_commit($db_conn);
+
   header("Content-Type: application/json; charset=ISO-8859-1");
   echo utf8_decode(json_encode($x));
   CloseDatabase();

@@ -94,7 +94,7 @@ export const SessionModel = types
         self.name = name;
         self.loggedIn = true;
         self.isAdmin = isAdmin;
-        self.eventorPersonId = eventorPersonId;
+        self.eventorPersonId = '' + eventorPersonId;
       },
       setFailedLogin() {
         self.id = undefined;
