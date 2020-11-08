@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { observer, inject } from 'mobx-react';
 import CKEditor from '@ckeditor/ckeditor5-react';
-import ClassicEditor from 'ckeditor5-build-classic-dna';
+import ClassicEditor, { ckEditorConfig } from './ckeditor';
 import styled from 'styled-components';
 import { Button, Form, Input, Popconfirm, Select, Spin, message } from 'antd';
 import { PostJsonData } from '../../utils/api';
@@ -84,7 +84,7 @@ const HtmlEditor = inject(
             setMenuPath(DefaultMenuPath);
           }
           setGroups(pageResponse.groups);
-          setEditable(!pageResponse.isEditable);
+          setEditable(pageResponse.isEditable);
           form.setFieldsValue({
             iPageID: loadPageId,
             iMenuPath: loadPageId > 0 ? pageResponse.menuPath : DefaultMenuPath,
@@ -199,35 +199,7 @@ const HtmlEditor = inject(
         <StyledCKEditor
           editor={ClassicEditor}
           isReadOnly={isReadOnly}
-          config={{
-            table: {
-              customClass: ['ui', 'table', 'celled'], // Important!!! need to be array
-            },
-            image: {
-              customClass: ['ui', 'fluid', 'image'], // Use whatever class names defined in your theme
-            },
-            toolbar: [
-              'heading',
-              '|',
-              'bold',
-              'italic',
-              'link',
-              'bulletedList',
-              'numberedList',
-              '|',
-              'indent',
-              'outdent',
-              '|',
-              'imageUpload',
-              'insertImage',
-              'codeBlock',
-              'blockQuote',
-              'insertTable',
-              'mediaEmbed',
-              'undo',
-              'redo',
-            ],
-          }}
+          config={ckEditorConfig}
           data={data}
           onInit={(editor) => {
             toolbarContainer.current = editor.ui.view.stickyPanel;

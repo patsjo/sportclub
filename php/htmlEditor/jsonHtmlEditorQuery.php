@@ -85,8 +85,8 @@ if ($iType == "MENUS")
     {
       $x = new stdClass();
       $x->linkId     = intval($row['LINK_ID']);
-      $x->menuPath   = utf8_encode($row['MENU_PATH']);
-      $x->url        = utf8_encode($row['URL']);
+      $x->menuPath   = isUTF8($row['MENU_PATH']) ? $row['MENU_PATH'] : utf8_encode($row['MENU_PATH']);
+      $x->url        = isUTF8($row['URL']) ? $row['URL'] : utf8_encode($row['URL']);
       array_push($rows, $x);
     }
   }
@@ -107,6 +107,7 @@ elseif ($iType == "PAGE")
 
   $rows->pageId  = -1;
   $rows->groups  = array();
+  $selectedGroups = array();
 
   if (\db\mysql_num_rows($result) > 0)
   {
@@ -137,11 +138,15 @@ elseif ($iType == "PAGE")
       $x->description = $row['description'];
       $x->selected    = !is_null($row['selected_group_id']);
       array_push($rows->groups, $x);
+      if ($x->selected)
+      {
+        array_push($selectedGroups, $x);
+      }
     }
   }
 
   $rows->isEditable = $user_id > 0 && ValidGroup(1);
-  if (count($rows->groups) > 0 && ($user_id <= 0 || (!ValidGroup(1) && !array_reduce($rows->groups, function ($validGroup, $group) { return $validGroup || ValidGroup($group->groupId); }))))
+  if (count($selectedGroups) > 0 && ($user_id <= 0 || (!ValidGroup(1) && !array_reduce($selectedGroups, function ($validGroup, $group) { return $validGroup || ValidGroup($group->groupId); }))))
   {
     $rows->data = '';
   }
