@@ -59,16 +59,6 @@ const ResultsSubMenus = inject(
           }}
         />
         <MenuItem
-          key={'menuItem#resultsTeam'}
-          icon="team"
-          name={t('results.Team')}
-          disabled={true || !sessionModel.loggedIn}
-          isSubMenu
-          onClick={() => {
-            globalStateModel.setDashboard(dashboardContents.news, '1990-01-01', '2099-12-31', 3);
-          }}
-        />
-        <MenuItem
           key={'menuItem#resultsAdd'}
           icon="plus"
           name={t('results.Add')}

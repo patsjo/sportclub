@@ -91,10 +91,10 @@ const RaceClub = types
   })
   .views(self => ({
     competitorById(id) {
-      return self.competitors.find(competitor => competitor.competitorId === id);
+      return self.competitors.find(competitor => competitor.competitorId === parseInt(id));
     },
     competitorByEventorId(id) {
-      return self.competitors.find(competitor => competitor.eventorCompetitorIds.includes(id));
+      return self.competitors.find(competitor => competitor.eventorCompetitorIds.includes(parseInt(id)));
     },
     get competitorsOptions() {
       return self.competitors

@@ -118,9 +118,9 @@ const Dashboard = inject(
       ) : globalStateModel.dashboardContentId === dashboardContents.scoringBoard ? (
         <League />
       ) : globalStateModel.dashboardContentId === dashboardContents.results ? (
-        <ViewResults key="clubViewResult" />
+        <ViewResults key="clubViewResult" isIndividual={false} />
       ) : globalStateModel.dashboardContentId === dashboardContents.individualResults ? (
-        <ViewResults key="individualViewResult" isIndividual />
+        <ViewResults key="individualViewResult" isIndividual={true} />
       ) : globalStateModel.dashboardContentId === dashboardContents.resultsFees ? (
         <ResultsFees key="resultsFees" />
       ) : globalStateModel.dashboardContentId === dashboardContents.htmlEditor ? (

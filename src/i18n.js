@@ -50,7 +50,13 @@ i18next
             Previous: "Previous",
             Next: "Next",
             Of: "of",
-            OurSponsors: "Our sponsors"
+            OurSponsors: "Our sponsors",
+            Table: "Table",
+            PDF: "PDF",
+            Portrait: "Portrait",
+            Landscape: "Landscape",
+            All: "All",
+            MarginsLabel: "Margins [left, top, right, bottom]:"
           },
           calendar: {
             Calendar: "Calendar",
@@ -129,8 +135,8 @@ i18next
             AddCompetitor: "Add competitor",
             Edit: "Edit",
             Convert: "Convert old results from GIK-programmet",
-            Latest: "Latest processed",
-            Individual: "Individual",
+            Latest: "Club result",
+            Individual: "Individual result",
             Team: "Team",
             Step0Input: "Datum mm",
             Step1ChooseRace: "Choose race",
@@ -268,7 +274,13 @@ i18next
             Previous: "Tillbaka",
             Next: "Nästa",
             Of: "av",
-            OurSponsors: "Våra sponsorer"
+            OurSponsors: "Våra sponsorer",
+            Table: "Tabell",
+            PDF: "PDF",
+            Portrait: "Stående",
+            Landscape: "Liggande",
+            All: "Alla",
+            MarginsLabel: "Marginaler [vänster, överkant, höger, nederkant]:"
           },
           calendar: {
             Calendar: "Kalender",
@@ -347,7 +359,7 @@ i18next
             AddCompetitor: "Lägg till löpare",
             Edit: "Ändra",
             Convert: "Konvertera gamla resultat från GIK-programmet",
-            Latest: "Senast bearbetade klubbresultat",
+            Latest: "Klubbresultat",
             Individual: "Personligt resultat",
             Team: "Lag resultat",
             Step0Input: "Datum mm",

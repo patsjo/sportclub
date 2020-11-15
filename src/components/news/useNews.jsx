@@ -46,7 +46,7 @@ const useNews = (globalStateModel, clubModel) => {
     return () => {
       globalStateModel.news.reset();
     };
-  }, [globalStateModel.dashboardContentId]);
+  }, [globalStateModel.dashboardContentId, globalStateModel.type]);
 
   const { newsItems } = globalStateModel.news;
 
@@ -54,10 +54,14 @@ const useNews = (globalStateModel, clubModel) => {
     loadMoreCallback: loadNews,
     newsItems: !firstLoading
       ? newsItems.map((newsObject) => (
-          <NewsItem key={'newsObject#' + newsObject.id} column={50} newsObject={newsObject} />
+          <NewsItem
+            key={'newsObject#' + newsObject.id}
+            column={globalStateModel.dashboardContentId === dashboardContents.home ? 50 : undefined}
+            newsObject={newsObject}
+          />
         ))
       : [
-          <SpinnerDiv column={50}>
+          <SpinnerDiv column={globalStateModel.dashboardContentId === dashboardContents.home ? 50 : undefined}>
             <Spin size="large" />
           </SpinnerDiv>,
         ],
