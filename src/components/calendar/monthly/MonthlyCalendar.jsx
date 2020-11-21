@@ -1,17 +1,17 @@
-import React, { useState, useCallback, useEffect } from "react";
-import { inject, observer } from "mobx-react";
-import styled from "styled-components";
-import { Row, Col, Skeleton, message } from "antd";
-import { LeftOutlined, RightOutlined } from "@ant-design/icons";
-import { useTranslation } from "react-i18next";
-import { GetDates, GetMonthName } from "../calendarHelper";
-import moment from "moment";
-import { PostJsonData } from "../../../utils/api";
-import CalendarItem from "../item/CalendarItem";
-import { dateFormat } from "../../../utils/formHelper";
-import { dashboardContents } from "../../../models/globalStateModel";
+import React, { useState, useCallback, useEffect } from 'react';
+import { inject, observer } from 'mobx-react';
+import styled from 'styled-components';
+import { Row, Col, Skeleton, message } from 'antd';
+import { LeftOutlined, RightOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
+import { GetDates, GetMonthName } from '../calendarHelper';
+import moment from 'moment';
+import { PostJsonData } from '../../../utils/api';
+import CalendarItem from '../item/CalendarItem';
+import { dateFormat } from '../../../utils/formHelper';
+import { dashboardContents } from '../../../models/globalStateModel';
 
-const dayNotInMonthColor = "#D0D0D0";
+const dayNotInMonthColor = '#D0D0D0';
 
 const MonthlyContainer = styled.div`
   & {
@@ -53,10 +53,21 @@ const WeekCol = styled(Col)`
   border-right: 1px solid #d0d0d0;
   color: black;
   font-size: 18px;
-  height: 80px;
-  line-height: 80px;
+  min-height: 80px;
   text-align: center;
   overflow-y: hidden;
+`;
+
+const WeekColText = styled.p`
+  margin: 0;
+  position: absolute;
+  min-width: 80px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-90deg);
+  -webkit-transform: translate(-50%, -50%) rotate(-90deg);
+  -moz-transform: translate(-50%, -50%) rotate(-90deg);
+  -o-transform: translate(-50%, -50%) rotate(-90deg);
 `;
 
 const DayContainerCol = styled(Col)`
@@ -64,8 +75,7 @@ const DayContainerCol = styled(Col)`
   border-right: 1px solid #d0d0d0;
   color: black;
   font-size: 10px;
-  height: 80px;
-  overflow-y: hidden;
+  min-height: 80px;
 `;
 
 const DateContainer = styled.div`
@@ -78,6 +88,7 @@ const BigDate = styled.div`
   font-size: 28px;
   line-height: 1;
   float: right;
+  padding-right: 2px;
 `;
 
 const SmallDateDescription = styled.div`
@@ -92,19 +103,23 @@ const SmallDateDescription = styled.div`
 `;
 
 const Activity = styled.div`
+  color: ${(props) => props.color};
   font-size: 12px;
   line-height: 1;
-  padding-top: 2px;
-  padding-left: 2px;
+  padding-top: 3px;
+  padding-left: 4px;
+  :hover {
+    color: #1890ff;
+  }
 `;
 
 const ActivityUrl = styled.a`
-  color: black;
+  color: ${(props) => props.color};
 `;
 
 const MonthlyCalendar = inject(
-  "globalStateModel",
-  "clubModel"
+  'globalStateModel',
+  'clubModel'
 )(
   observer((props) => {
     const { clubModel, globalStateModel } = props;
@@ -116,19 +131,19 @@ const MonthlyCalendar = inject(
     useEffect(() => {
       setLoaded(false);
       setActivities([]);
-      const url = clubModel.modules.find((module) => module.name === "Calendar").queryUrl;
+      const url = clubModel.modules.find((module) => module.name === 'Calendar').queryUrl;
       const data = {
-        iType: "ACTIVITIES",
-        iFromDate: moment(globalStateModel.startDate).isoWeekday(1).format("YYYY-MM-DD"),
-        iToDate: moment(globalStateModel.endDate).isoWeekday(7).format("YYYY-MM-DD")
+        iType: 'ACTIVITIES',
+        iFromDate: moment(globalStateModel.startDate).isoWeekday(1).format('YYYY-MM-DD'),
+        iToDate: moment(globalStateModel.endDate).isoWeekday(7).format('YYYY-MM-DD'),
       };
       const eventsData = {
         ...data,
-        iType: "EVENTS"
+        iType: 'EVENTS',
       };
       const domainsData = {
         ...data,
-        iType: "DOMAINS"
+        iType: 'DOMAINS',
       };
 
       const activitesPromise = PostJsonData(url, data, true);
@@ -144,11 +159,11 @@ const MonthlyCalendar = inject(
               isEvent: true,
               activityId: `event#${event.calendarEventId}`,
               date: event.date,
-              time: event.time === "00:00" ? "" : event.time,
+              time: event.time === '00:00' ? '' : event.time,
               header: event.organiserName,
               place: event.name,
-              url: `https://eventor.orientering.se/Events/Show/${event.eventorId}`
-            }))
+              url: `https://eventor.orientering.se/Events/Show/${event.eventorId}`,
+            })),
           ]);
           setLoaded(true);
         })
@@ -161,8 +176,8 @@ const MonthlyCalendar = inject(
       () =>
         globalStateModel.setDashboard(
           dashboardContents.calendar,
-          moment(globalStateModel.startDate).add(-1, "months").startOf("month").format(dateFormat),
-          moment(globalStateModel.startDate).add(-1, "months").endOf("month").format(dateFormat),
+          moment(globalStateModel.startDate).add(-1, 'months').startOf('month').format(dateFormat),
+          moment(globalStateModel.startDate).add(-1, 'months').endOf('month').format(dateFormat),
           1
         ),
       []
@@ -172,8 +187,8 @@ const MonthlyCalendar = inject(
       () =>
         globalStateModel.setDashboard(
           dashboardContents.calendar,
-          moment(globalStateModel.startDate).add(1, "months").startOf("month").format(dateFormat),
-          moment(globalStateModel.startDate).add(1, "months").endOf("month").format(dateFormat),
+          moment(globalStateModel.startDate).add(1, 'months').startOf('month').format(dateFormat),
+          moment(globalStateModel.startDate).add(1, 'months').endOf('month').format(dateFormat),
           1
         ),
       []
@@ -181,10 +196,10 @@ const MonthlyCalendar = inject(
 
     const startDate = moment(globalStateModel.startDate);
     const startMonday = startDate.clone().isoWeekday(1);
-    const endSunday = startDate.clone().endOf("month").isoWeekday(7);
+    const endSunday = startDate.clone().endOf('month').isoWeekday(7);
     const days = [...Array(7).keys()];
-    const weeks = [...Array(endSunday.add(1, "days").diff(startMonday, "weeks")).keys()];
-    const isCurrentMonth = (date) => startDate.format("MM") === date.format("MM");
+    const weeks = [...Array(endSunday.add(1, 'days').diff(startMonday, 'weeks')).keys()];
+    const isCurrentMonth = (date) => startDate.format('MM') === date.format('MM');
 
     return (
       <MonthlyContainer>
@@ -193,11 +208,11 @@ const MonthlyCalendar = inject(
             <Col span={4}>
               <LeftOutlined onClick={onPrevious} />
             </Col>
-            <Col span={16} style={{ textAlign: "center" }}>{`${GetMonthName(
+            <Col span={16} style={{ textAlign: 'center' }}>{`${GetMonthName(
               moment(globalStateModel.startDate),
               t
             )}`}</Col>
-            <Col span={4} style={{ textAlign: "right" }}>
+            <Col span={4} style={{ textAlign: 'right' }}>
               <RightOutlined onClick={onNext} />
             </Col>
           </Row>
@@ -206,7 +221,7 @@ const MonthlyCalendar = inject(
           <HeaderContainerCol span={1} />
           {days.map((day) => (
             <HeaderContainerCol span={day < 5 ? 3 : 4}>
-              <DateContainer color={day === 6 ? "red" : day === 5 ? "grey" : "black"}>
+              <DateContainer color={day === 6 ? 'red' : day === 5 ? 'grey' : 'black'}>
                 {t(`calendar.DayOfWeek${day + 1}`)}
               </DateContainer>
             </HeaderContainerCol>
@@ -214,32 +229,41 @@ const MonthlyCalendar = inject(
         </MonthlyDayRow>
         {weeks.map((week) => (
           <MonthlyDayRow>
-            <WeekCol span={1}>{startMonday.clone().add(week, "weeks").format("WW")}</WeekCol>
-            {GetDates(startMonday.clone().add(week, "weeks"), 7, t).map((dateObj) => (
+            <WeekCol span={1}>
+              <WeekColText>v. {startMonday.clone().add(week, 'weeks').format('WW')}</WeekColText>
+            </WeekCol>
+            {GetDates(startMonday.clone().add(week, 'weeks'), 7, t).map((dateObj) => (
               <DayContainerCol
                 span={dateObj.date.isoWeekday() < 6 ? 3 : 4}
-                key={`MonthlyCalendar${dateObj.date.format("YYYYMMDD")}`}
+                key={`MonthlyCalendar${dateObj.date.format('YYYYMMDD')}`}
               >
                 <BigDate color={isCurrentMonth(dateObj.date) ? dateObj.color : dayNotInMonthColor}>
-                  {dateObj.date.format("D")}
+                  {dateObj.date.format('D')}
                 </BigDate>
                 <SmallDateDescription color={isCurrentMonth(dateObj.date) ? dateObj.color : dayNotInMonthColor}>
                   {dateObj.holidayName}
                 </SmallDateDescription>
                 <Skeleton loading={!loaded} active paragraph={false}>
                   {activities
-                    .filter((act) => act.date === dateObj.date.format("YYYY-MM-DD"))
-                    .map((act) =>
-                      act.isEvent ? (
-                        <Activity key={`activity#${act.activityId}`}>
-                          <ActivityUrl href={act.url} target="_blank">{`${act.time}${act.time ? ", " : ""}${
-                            act.header
-                          }${act.place ? ", " : ""}${act.place}`}</ActivityUrl>
-                        </Activity>
-                      ) : (
-                        <CalendarItem key={`activity#${act.activityId}`} calendarObject={act} domains={domains} />
-                      )
-                    )}
+                    .filter((act) => act.date === dateObj.date.format('YYYY-MM-DD'))
+                    .map((act) => (
+                      <Activity
+                        key={`activity#${act.activityId}`}
+                        color={isCurrentMonth(dateObj.date) ? 'inherit' : dayNotInMonthColor}
+                      >
+                        {act.isEvent ? (
+                          <ActivityUrl
+                            href={act.url}
+                            target="_blank"
+                            color={isCurrentMonth(dateObj.date) ? 'black' : dayNotInMonthColor}
+                          >{`${act.time}${act.time ? ', ' : ''}${act.header}${act.place ? ', ' : ''}${
+                            act.place
+                          }`}</ActivityUrl>
+                        ) : (
+                          <CalendarItem key={`activity#${act.activityId}`} calendarObject={act} domains={domains} />
+                        )}
+                      </Activity>
+                    ))}
                 </Skeleton>
               </DayContainerCol>
             ))}
