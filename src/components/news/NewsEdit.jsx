@@ -10,6 +10,13 @@ import UploadDragger from '../formItems/UploadDragger';
 import FormItem from '../formItems/FormItem';
 
 const { TextArea } = Input;
+const StyledModal = styled(Modal)`
+  &&& .ant-modal-body {
+    max-height: calc(100vh - 200px);
+    overflow-y: scroll;
+    overflow-x: hidden;
+  }
+`;
 const Option = Select.Option;
 const StyledModalContent = styled.div``;
 
@@ -81,7 +88,7 @@ const NewsEdit = inject(
     }, []);
 
     return (
-      <Modal
+      <StyledModal
         closable={false}
         maskClosable={false}
         title={t('news.Edit')}
@@ -96,7 +103,8 @@ const NewsEdit = inject(
           });
         }}
         onCancel={onClose}
-        style={{ top: 40, minWidth: 560 }}
+        style={{ top: 40 }}
+        width={800}
       >
         <StyledModalContent>
           <Form
@@ -192,7 +200,7 @@ const NewsEdit = inject(
             </FormItem>
           </Form>
         </StyledModalContent>
-      </Modal>
+      </StyledModal>
     );
   })
 );

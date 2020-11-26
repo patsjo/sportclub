@@ -256,9 +256,11 @@ const MonthlyCalendar = inject(
                             href={act.url}
                             target="_blank"
                             color={isCurrentMonth(dateObj.date) ? 'black' : dayNotInMonthColor}
-                          >{`${act.time}${act.time ? ', ' : ''}${act.header}${act.place ? ', ' : ''}${
-                            act.place
-                          }`}</ActivityUrl>
+                          >
+                            {act.time ? `${act.time}, ` : ''}
+                            {act.header}
+                            {act.place ? `, ${act.place}` : ''}
+                          </ActivityUrl>
                         ) : (
                           <CalendarItem key={`activity#${act.activityId}`} calendarObject={act} domains={domains} />
                         )}

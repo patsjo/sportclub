@@ -164,11 +164,43 @@ const InvoiceWizardStep2EditRace = inject(
                 title: t('results.OriginalFee'),
                 dataIndex: 'originalFee',
                 key: 'originalFee',
+                render: (data, record) => (
+                  <InputNumber
+                    key={`originalFee#${record.key}`}
+                    min={0}
+                    max={100000}
+                    step={5}
+                    defaultValue={data}
+                    precision={2}
+                    decimalSeparator=","
+                    style={{ width: '100%' }}
+                    onChange={(value) => {
+                      record.originalFee = value;
+                      self.setValue(record, 'originalFee', value);
+                    }}
+                  />
+                ),
               },
               {
                 title: t('results.LateFee'),
                 dataIndex: 'lateFee',
                 key: 'lateFee',
+                render: (data, record) => (
+                  <InputNumber
+                    key={`lateFee#${record.key}`}
+                    min={0}
+                    max={100000}
+                    step={5}
+                    defaultValue={data}
+                    precision={2}
+                    decimalSeparator=","
+                    style={{ width: '100%' }}
+                    onChange={(value) => {
+                      record.lateFee = value;
+                      self.setValue(record, 'lateFee', value);
+                    }}
+                  />
+                ),
               },
               {
                 title: t('results.FeeToClub'),

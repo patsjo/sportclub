@@ -1,12 +1,12 @@
-import React, { Component } from "react";
-import styled from "styled-components";
-import PropTypes from "prop-types";
-import FadeOutItem from "../../fadeOutItem/FadeOutItem";
-import { observer, inject } from "mobx-react";
-import { withTranslation } from "react-i18next";
-import CalendarEdit from "./CalendarEdit";
-import { PostJsonData } from "../../../utils/api";
-import withForwardedRef from "../../../utils/withForwardedRef";
+import React, { Component } from 'react';
+import styled from 'styled-components';
+import PropTypes from 'prop-types';
+import FadeOutItem from '../../fadeOutItem/FadeOutItem';
+import { observer, inject } from 'mobx-react';
+import { withTranslation } from 'react-i18next';
+import CalendarEdit from './CalendarEdit';
+import { PostJsonData } from '../../../utils/api';
+import withForwardedRef from '../../../utils/withForwardedRef';
 
 const ContentHolder = styled.div``;
 
@@ -47,27 +47,27 @@ const Activity = styled.div`
 // @inject("clubModel")
 // @observer
 const CalendarItem = inject(
-  "clubModel",
-  "sessionModel",
-  "globalStateModel"
+  'clubModel',
+  'sessionModel',
+  'globalStateModel'
 )(
   observer(
     class CalendarItem extends Component {
       static propTypes = {
         calendarObject: PropTypes.object.isRequired,
-        domains: PropTypes.object.isRequired
+        domains: PropTypes.object.isRequired,
       };
 
       render() {
         const { t, sessionModel, clubModel, forwardedRef, calendarObject, domains } = this.props;
-        const moduleInfo = clubModel.module("Calendar");
+        const moduleInfo = clubModel.module('Calendar');
 
         const Header = calendarObject.url ? (
           <CalendarHeader>
             <a href={calendarObject.url} target="_blank" rel="noopener noreferrer">
               <div
                 dangerouslySetInnerHTML={{
-                  __html: calendarObject.header
+                  __html: calendarObject.header,
                 }}
               />
             </a>
@@ -83,29 +83,32 @@ const CalendarItem = inject(
             ref={forwardedRef}
             module={moduleInfo}
             content={
-              <Activity key={`activity#${calendarObject.activityId}`}>{`${calendarObject.time}${
-                calendarObject.time ? ", " : ""
-              }${calendarObject.header}${calendarObject.place ? ", " : ""}${calendarObject.place}`}</Activity>
+              <Activity key={`activity#${calendarObject.activityId}`}>
+                {calendarObject.time ? `${calendarObject.time}, ` : ''}
+                {calendarObject.header}
+                {calendarObject.place ? `, ${calendarObject.place}` : ''}
+              </Activity>
             }
             modalContent={
               <ContentHolder>
                 {Header}
-                <CalendarTime>{`${calendarObject.date}${calendarObject.time ? ", " : ""}${
-                  calendarObject.time
-                }`}</CalendarTime>
-                <CalendarText>{`${t("calendar.ActivityType")}: ${
-                  domains.activityTypes.find(activityType => activityType.code === calendarObject.activityTypeId)
+                <CalendarTime>
+                  {calendarObject.date}
+                  {calendarObject.time ? `, ${calendarObject.time}` : ''}
+                </CalendarTime>
+                <CalendarText>{`${t('calendar.ActivityType')}: ${
+                  domains.activityTypes.find((activityType) => activityType.code === calendarObject.activityTypeId)
                     .description
                 }`}</CalendarText>
-                <CalendarText>{`${t("calendar.Group")}: ${
-                  domains.groups.find(group => group.code === calendarObject.groupId).description
+                <CalendarText>{`${t('calendar.Group')}: ${
+                  domains.groups.find((group) => group.code === calendarObject.groupId).description
                 }`}</CalendarText>
                 {calendarObject.place ? (
-                  <CalendarText>{`${t("calendar.Place")}: ${calendarObject.place}`}</CalendarText>
+                  <CalendarText>{`${t('calendar.Place')}: ${calendarObject.place}`}</CalendarText>
                 ) : null}
                 <CalendarText>{calendarObject.description}</CalendarText>
                 <CalendarBy>
-                  {domains.users.find(user => user.code === calendarObject.responsibleUserId).description}
+                  {domains.users.find((user) => user.code === calendarObject.responsibleUserId).description}
                 </CalendarBy>
               </ContentHolder>
             }
@@ -113,10 +116,10 @@ const CalendarItem = inject(
             editFormContent={
               sessionModel.isAdmin || calendarObject.responsibleUserId.toString() === sessionModel.id ? (
                 <CalendarEdit
-                  title={t("calendar.Edit")}
+                  title={t('calendar.Edit')}
                   calendarObject={calendarObject}
                   domains={domains}
-                  onChange={updatedCalendarObject => {}}
+                  onChange={(updatedCalendarObject) => {}}
                 />
               ) : null
             }
@@ -128,7 +131,7 @@ const CalendarItem = inject(
                       {
                         iActivityID: calendarObject.activityId,
                         username: sessionModel.username,
-                        password: sessionModel.password
+                        password: sessionModel.password,
                       },
                       true,
                       sessionModel.authorizationHeader
@@ -136,6 +139,24 @@ const CalendarItem = inject(
                 : undefined
             }
             onDelete={() => {}}
+            deleteAllPromise={
+              (sessionModel.isAdmin || calendarObject.responsibleUserId.toString() === sessionModel.id) &&
+              calendarObject.repeatingGid != null
+                ? () =>
+                    PostJsonData(
+                      moduleInfo.deleteUrl,
+                      {
+                        iActivityID: calendarObject.activityId,
+                        iRepeatingGid: calendarObject.repeatingGid,
+                        username: sessionModel.username,
+                        password: sessionModel.password,
+                      },
+                      true,
+                      sessionModel.authorizationHeader
+                    )
+                : undefined
+            }
+            onDeleteAll={() => {}}
           />
         );
       }

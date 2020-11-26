@@ -69,6 +69,8 @@ const FadeOutItem = inject('sessionModel')(
         editFormContent: PropTypes.object,
         deletePromise: PropTypes.func,
         onDelete: PropTypes.func,
+        deleteAllPromise: PropTypes.func,
+        onDeleteAll: PropTypes.func,
         maxHeight: PropTypes.number,
       };
       constructor(props) {
@@ -103,6 +105,8 @@ const FadeOutItem = inject('sessionModel')(
           module,
           deletePromise,
           onDelete,
+          deleteAllPromise,
+          onDeleteAll,
           forwardedRef,
           maxHeight,
         } = this.props;
@@ -146,6 +150,36 @@ const FadeOutItem = inject('sessionModel')(
             </Popconfirm>
           ) : null;
 
+        const ShowDeleteAllButton =
+          // eslint-disable-next-line eqeqeq
+          module.deleteUrl != undefined && deleteAllPromise && sessionModel.loggedIn ? (
+            <Popconfirm
+              title={t('common.Confirm')}
+              okText={t('common.Yes')}
+              cancelText={t('common.No')}
+              onConfirm={() => {
+                this.setState({
+                  saving: true,
+                });
+                deleteAllPromise()
+                  .then(() => {
+                    onDeleteAll && onDeleteAll();
+                    self.closeModal();
+                  })
+                  .catch((e) => {
+                    message.error(e.message);
+                    self.setState({
+                      saving: false,
+                    });
+                  });
+              }}
+            >
+              <Button type="danger" loading={this.state.saving}>
+                {t('common.DeleteAll')}
+              </Button>
+            </Popconfirm>
+          ) : null;
+
         const EditFormContent = this.state.showEdit
           ? React.cloneElement(editFormContent, {
               open: this.state.showEdit,
@@ -165,6 +199,7 @@ const FadeOutItem = inject('sessionModel')(
               onCancel={this.closeModal}
               style={{ top: 40, minWidth: 560 }}
               footer={[
+                ShowDeleteAllButton,
                 ShowDeleteButton,
                 ShowEditButton,
                 <Button type="primary" onClick={this.closeModal} loading={this.state.saving}>

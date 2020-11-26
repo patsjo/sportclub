@@ -1,20 +1,20 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { Modal, Form, Input, Switch } from "antd";
-import { UserOutlined, LockOutlined } from "@ant-design/icons";
-import { observer, inject } from "mobx-react";
-import { useTranslation } from "react-i18next";
-import styled from "styled-components";
-import { PostJsonData } from "../../utils/api";
-import { hasErrors, errorRequiredField } from "../../utils/formHelper";
-import FormItem from "../formItems/FormItem";
+import React, { useState, useEffect, useCallback } from 'react';
+import { Modal, Form, Input, Switch } from 'antd';
+import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import { observer, inject } from 'mobx-react';
+import { useTranslation } from 'react-i18next';
+import styled from 'styled-components';
+import { PostJsonData } from '../../utils/api';
+import { hasErrors, errorRequiredField } from '../../utils/formHelper';
+import FormItem from '../formItems/FormItem';
 
 const StyledModalContent = styled.div``;
 
 // @inject("sessionModel", "clubModel")
 // @observer
 const Login = inject(
-  "sessionModel",
-  "clubModel"
+  'sessionModel',
+  'clubModel'
 )(
   observer((props) => {
     const { clubModel, sessionModel, open, onClose } = props;
@@ -39,7 +39,7 @@ const Login = inject(
         clubModel.loginUrl,
         { username: values.username, password: values.password },
         true,
-        { "X-Requested-With": "XMLHttpRequest" },
+        { 'X-Requested-With': 'XMLHttpRequest' },
         1
       )
         .then((json) => {
@@ -62,11 +62,11 @@ const Login = inject(
       <Modal
         closable={false}
         maskClosable={false}
-        title={t("common.Login")}
+        title={t('common.Login')}
         visible={open}
-        okText={t("common.Login")}
+        okText={t('common.Login')}
         okButtonProps={{ disabled: !valid, loading: loggingIn }}
-        cancelText={t("common.Cancel")}
+        cancelText={t('common.Cancel')}
         cancelButtonProps={{ loading: loggingIn }}
         onOk={() => {
           form.validateFields().then((values) => {
@@ -74,7 +74,7 @@ const Login = inject(
           });
         }}
         onCancel={onClose}
-        style={{ top: 40, minWidth: 560 }}
+        style={{ top: 40 }}
       >
         <StyledModalContent>
           <Form
@@ -84,35 +84,35 @@ const Login = inject(
             initialValues={{
               username: sessionModel.username,
               password: sessionModel.password,
-              rememberLogin: sessionModel.rememberLogin
+              rememberLogin: sessionModel.rememberLogin,
             }}
             onValuesChange={() => hasErrors(form).then((notValid) => setValid(!notValid))}
           >
             <FormItem
               name="username"
-              label={t("common.Username")}
+              label={t('common.Username')}
               rules={[
                 {
                   required: true,
-                  message: errorRequiredField(t, "common.Username")
-                }
+                  message: errorRequiredField(t, 'common.Username'),
+                },
               ]}
             >
-              <Input prefix={<UserOutlined style={{ color: "rgba(0,0,0,.25)" }} />} />
+              <Input prefix={<UserOutlined style={{ color: 'rgba(0,0,0,.25)' }} />} />
             </FormItem>
             <FormItem
               name="password"
-              label={t("common.Password")}
+              label={t('common.Password')}
               rules={[
                 {
                   required: true,
-                  message: errorRequiredField(t, "common.Password")
-                }
+                  message: errorRequiredField(t, 'common.Password'),
+                },
               ]}
             >
-              <Input.Password prefix={<LockOutlined style={{ color: "rgba(0,0,0,.25)" }} />} />
+              <Input.Password prefix={<LockOutlined style={{ color: 'rgba(0,0,0,.25)' }} />} />
             </FormItem>
-            <FormItem name="rememberLogin" label={t("common.RememberLogin")} valuePropName="checked">
+            <FormItem name="rememberLogin" label={t('common.RememberLogin')} valuePropName="checked">
               <Switch disabled={!sessionModel.canReadLocalStorage} />
             </FormItem>
           </Form>

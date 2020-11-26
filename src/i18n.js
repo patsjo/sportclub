@@ -34,6 +34,7 @@ i18next
             Menu: "Menu",
             Close: "Close",
             Delete: "Delete",
+            DeleteAll: "Delete the entire serie",
             Edit: "Edit",
             Save: "Save",
             Cancel: "Cancel",
@@ -93,7 +94,11 @@ i18next
             Place: "Place",
             Description: "Description",
             Url: "Url",
-            Responsible: "Responsible"
+            Responsible: "Responsible",
+            DurationMinutes: "Duration [minutes]",
+            IsRepeating: "Is repeating",
+            RepeatingDates: "Repeating weeks",
+            RepeatingModified: "Change only this"
           },
           error: {
             Missing: "MISSING",
@@ -258,6 +263,7 @@ i18next
             Menu: "Meny",
             Close: "Stäng",
             Delete: "Ta bort",
+            DeleteAll: "Ta bort hela serien",
             Edit: "Redigera",
             Save: "Spara",
             Cancel: "Avbryt",
@@ -317,7 +323,11 @@ i18next
             Place: "Plats",
             Description: "Beskrivning",
             Url: "Url",
-            Responsible: "Ansvarig"
+            Responsible: "Ansvarig",
+            DurationMinutes: "Varar i [minuter]",
+            IsRepeating: "Återkommande",
+            RepeatingDates: "Återkommande veckor",
+            RepeatingModified: "Ändra endast denna"
           },
           error: {
             Missing: "SAKNAS",

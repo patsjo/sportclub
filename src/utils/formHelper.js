@@ -5,6 +5,7 @@ import { Select } from "antd";
 const Option = Select.Option;
 
 export const dateFormat = "YYYY-MM-DD";
+export const weekFormat = "GGGG-WW";
 export const timeFormat = "HH:mm:ss";
 export const timeFormatWithoutHour = "mm:ss";
 export const shortTimeFormat = "HH:mm";

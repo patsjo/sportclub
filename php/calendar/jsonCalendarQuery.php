@@ -80,6 +80,7 @@ if ($iType == "ACTIVITIES")
       $x->groupId               = intval($row['group_id']);
       $x->date                  = date2String(strtotime($row['activity_day']));
       $x->time                  = is_null($row['activity_time']) ? NULL : time2String(strtotime($row['activity_time']));
+      $x->activityDurationMinutes = is_null($row['activity_duration_minutes']) ? NULL : intval($row['activity_duration_minutes']);
       $x->place                 = $row['place'];
       $x->header                = $row['header'];
       $x->description           = $row['descr'];
@@ -87,9 +88,30 @@ if ($iType == "ACTIVITIES")
       $x->longitude             = is_null($row['longitude']) ? NULL : floatval($row['longitude']);
       $x->latitude              = is_null($row['latitude']) ? NULL : floatval($row['latitude']);
       $x->responsibleUserId     = intval($row['responsible_user_id']);
+      $x->repeatingGid          = $row['repeating_gid'];
+      $x->repeatingModified     = boolval($row['repeating_modified']);
+      if (!is_null($x->repeatingGid)) {
+        $sql2 = "SELECT MIN(activity_day) AS first_activity_day, MAX(activity_day) AS last_activity_day FROM activity WHERE repeating_gid = '" . $x->repeatingGid . "'";
+        $result2 = \db\mysql_query($sql2);
+        if (!$result2)
+        {
+          die('SQL Error: ' . \db\mysql_error());
+        }
+      
+        if (\db\mysql_num_rows($result2) > 0)
+        {
+          while($row2 = \db\mysql_fetch_assoc($result2))
+          {
+            $x->firstRepeatingDate = date2String(strtotime($row2['first_activity_day']));
+            $x->lastRepeatingDate  = date2String(strtotime($row2['last_activity_day']));
+          }
+        }
+        \db\mysql_free_result($result2);
+      }
       array_push($rows, $x);
     }
   }
+
 }
 elseif ($iType == "EVENTS")
 {
@@ -209,11 +231,12 @@ else
   die('Wrong iType parameter');
 }
 
+\db\mysql_free_result($result);
+
 header("Content-Type: application/json; charset=ISO-8859-1");
 ini_set( 'precision', 20 );
 ini_set( 'serialize_precision', 14 );
 echo utf8_decode(json_encode($rows));
 
-\db\mysql_free_result($result);
 
 ?>

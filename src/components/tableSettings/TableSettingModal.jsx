@@ -78,6 +78,7 @@ export const TableSettingModal = (t, localStorageName, columns) =>
     let confirmModal;
     confirmModal = confirm({
       title: `${t('common.Table')}/${t('common.PDF')}`,
+      style: { top: 40 },
       icon: <SettingOutlined />,
       content: (
         <Tabs defaultActiveKey="tableTab">
@@ -85,7 +86,7 @@ export const TableSettingModal = (t, localStorageName, columns) =>
             <Table
               showHeader={false}
               pagination={false}
-              scroll={false}
+              scroll={{ y: 'calc(100vh - 295px)' }}
               columns={selectColumns}
               dataSource={settings.table.columns}
             />
@@ -93,10 +94,20 @@ export const TableSettingModal = (t, localStorageName, columns) =>
           <TabPane tab={t('common.PDF')} key="pdfTab">
             <RadioGroup
               defaultValue={settings.pdf.pageOrientation}
+              buttonStyle="solid"
               onChange={(e) => (settings.pdf.pageOrientation = e.target.value)}
             >
               <Radio.Button value="portrait">{t('common.Portrait')}</Radio.Button>
               <Radio.Button value="landscape">{t('common.Landscape')}</Radio.Button>
+            </RadioGroup>
+            <RadioGroup
+              defaultValue={settings.pdf.pageSize}
+              style={{ marginLeft: 24 }}
+              buttonStyle="solid"
+              onChange={(e) => (settings.pdf.pageSize = e.target.value)}
+            >
+              <Radio.Button value="A3">A3</Radio.Button>
+              <Radio.Button value="A4">A4</Radio.Button>
             </RadioGroup>
             <Label>{t('common.MarginsLabel')}</Label>
             {[0, 1, 2, 3].map((index) => (
@@ -109,14 +120,10 @@ export const TableSettingModal = (t, localStorageName, columns) =>
               />
             ))}
             <Label />
-            <RadioGroup defaultValue={settings.pdf.pageSize} onChange={(e) => (settings.pdf.pageSize = e.target.value)}>
-              <Radio.Button value="A3">A3</Radio.Button>
-              <Radio.Button value="A4">A4</Radio.Button>
-            </RadioGroup>
             <Table
               showHeader={false}
               pagination={false}
-              scroll={false}
+              scroll={{ y: 'calc(100vh - 393px)' }}
               columns={selectColumns}
               dataSource={settings.pdf.columns}
             />

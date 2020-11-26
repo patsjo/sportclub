@@ -9,6 +9,12 @@ import './fonts/Arvo-Regular.ttf';
 import './fonts/Arvo-Italic.ttf';
 import './fonts/Arvo-Bold.ttf';
 import './fonts/Arvo-BoldItalic.ttf';
+import moment from 'moment';
+
+moment.updateLocale("en", { week: {
+    dow: 1, // First day of week is Monday
+    doy: 4  // First week of year must contain 4 January (7 + 1 - 4)
+  }});
 
 ReactDOM.render(<App />, document.getElementById("root"));
 

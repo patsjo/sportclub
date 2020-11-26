@@ -197,6 +197,18 @@ const resultsColumns = (t, clubModel) => [
       ).description,
   },
   {
+    title: t('results.OriginalFee'),
+    selected: false,
+    dataIndex: 'originalFee',
+    key: 'originalFee',
+  },
+  {
+    title: t('results.LateFee'),
+    selected: false,
+    dataIndex: 'lateFee',
+    key: 'lateFee',
+  },
+  {
     title: t('results.FeeToClub'),
     selected: true,
     dataIndex: 'feeToClub',
