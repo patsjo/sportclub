@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button } from 'antd';
-import { PrinterOutlined, SettingOutlined } from '@ant-design/icons';
+import { Menu, Dropdown, Button } from 'antd';
+import { DownOutlined, PrinterOutlined, SettingOutlined, FileZipOutlined } from '@ant-design/icons';
 import { getLocalStorage, TableSettingModal } from './TableSettingModal';
 import styled from 'styled-components';
 
@@ -26,6 +26,35 @@ const TablePrintSettingButtons = ({
     onTableColumns(settings.table.columns);
   }, [settings]);
 
+  const printAllmenu = (
+    <Menu>
+      <Menu.Item
+        key="allInOnePdf"
+        icon={<PrinterOutlined />}
+        onClick={() => {
+          setLoading(true);
+          onPrintAll(settings, true)
+            .then(() => setLoading(false))
+            .catch(() => setLoading(false));
+        }}
+      >
+        {t('common.AllInOnePdf')}
+      </Menu.Item>
+      <Menu.Item
+        key="allDividedInZip"
+        icon={<FileZipOutlined />}
+        onClick={() => {
+          setLoading(true);
+          onPrintAll(settings, false)
+            .then(() => setLoading(false))
+            .catch(() => setLoading(false));
+        }}
+      >
+        {t('common.AllDividedInZip')}
+      </Menu.Item>
+    </Menu>
+  );
+
   return (
     <ButtonsContainer>
       <Button
@@ -41,20 +70,11 @@ const TablePrintSettingButtons = ({
         }}
       />
       {onPrintAll ? (
-        <Button
-          icon={<PrinterOutlined />}
-          disabled={disablePrintAll}
-          style={{ marginRight: 5 }}
-          loading={loading}
-          onClick={() => {
-            setLoading(true);
-            onPrintAll(settings)
-              .then(() => setLoading(false))
-              .catch(() => setLoading(false));
-          }}
-        >
-          {t('common.All')}
-        </Button>
+        <Dropdown overlay={printAllmenu} placement="bottomLeft">
+          <Button style={{ marginRight: 5 }} disabled={disablePrintAll} loading={loading}>
+            {t('common.All')} <DownOutlined />
+          </Button>
+        </Dropdown>
       ) : null}
       <Button
         icon={<SettingOutlined />}

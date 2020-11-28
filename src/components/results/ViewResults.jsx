@@ -6,10 +6,10 @@ import { withTranslation } from 'react-i18next';
 import moment from 'moment';
 import { PostJsonData } from '../../utils/api';
 import { FormSelect } from '../../utils/formHelper';
-import { getPdf } from '../../utils/pdf';
+import { getPdf, getZip } from '../../utils/pdf';
 import FormItem from '../formItems/FormItem';
 import { FormatTime } from '../../utils/resultHelper';
-import { raceDistanceOptions, raceLightConditionOptions } from '../../utils/resultConstants';
+import { failedReasons, raceDistanceOptions, raceLightConditionOptions } from '../../utils/resultConstants';
 import TablePrintSettingButtons from '../tableSettings/TablePrintSettingButtons';
 import styled from 'styled-components';
 
@@ -475,6 +475,17 @@ const ViewResults = inject(
             value: clubModel.raceClubs.sportOptions.find((opt) => opt.code === result.sportCode).description,
           });
         }
+        const nofStarts =
+          (result.results
+            ? result.results.reduce((sum, obj) => (sum += obj.failedReason !== failedReasons.NotStarted ? 1 : 0), 0)
+            : 0) +
+          (result.teamResults
+            ? result.teamResults.reduce((sum, obj) => (sum += obj.failedReason !== failedReasons.NotStarted ? 1 : 0), 0)
+            : 0);
+        inputs.push({
+          label: t('results.TotalNofStarts'),
+          value: nofStarts,
+        });
 
         if (result && result.results.length) {
           tables.push({
@@ -514,7 +525,7 @@ const ViewResults = inject(
         });
       }
 
-      onPrintAll(settings) {
+      onPrintAll(settings, allInOnePdf) {
         const self = this;
         const { t, clubModel, sessionModel, isIndividual } = self.props;
         const { year, events } = self.state;
@@ -556,20 +567,37 @@ const ViewResults = inject(
                 })
                 .filter((promise) => promise !== undefined);
 
-              getPdf(
-                clubModel.corsProxy,
-                clubModel.logo.url,
-                `${t(isIndividual ? 'results.Individual' : 'results.Latest')} ${year}`,
-                printObjects,
-                settings.pdf
-              )
-                .then(resolve)
-                .catch((e) => {
-                  if (e && e.message) {
-                    message.error(e.message);
-                  }
-                  reject();
-                });
+              if (allInOnePdf) {
+                getPdf(
+                  clubModel.corsProxy,
+                  clubModel.logo.url,
+                  `${t(isIndividual ? 'results.Individual' : 'results.Latest')} ${year}`,
+                  printObjects,
+                  settings.pdf
+                )
+                  .then(resolve)
+                  .catch((e) => {
+                    if (e && e.message) {
+                      message.error(e.message);
+                    }
+                    reject();
+                  });
+              } else {
+                getZip(
+                  clubModel.corsProxy,
+                  clubModel.logo.url,
+                  `${t(isIndividual ? 'results.Individual' : 'results.Latest')} ${year}`,
+                  printObjects,
+                  settings.pdf
+                )
+                  .then(resolve)
+                  .catch((e) => {
+                    if (e && e.message) {
+                      message.error(e.message);
+                    }
+                    reject();
+                  });
+              }
             })
             .catch((e) => {
               if (e && e.message) {

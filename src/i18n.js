@@ -57,6 +57,8 @@ i18next
             Portrait: "Portrait",
             Landscape: "Landscape",
             All: "All",
+            AllInOnePdf: "All in one pdf",
+            AllDividedInZip: "Divided into many PDF (ZIP)",
             MarginsLabel: "Margins [left, top, right, bottom]:"
           },
           calendar: {
@@ -242,7 +244,8 @@ i18next
             TeamFailedReason: "Team failed reason",
             TeamName: "Team name",
             InvoiceVerifier: "Invoice verifier",
-            InvoiceAlreadyVerified: "Invoice verified"
+            InvoiceAlreadyVerified: "Invoice verified",
+            TotalNofStarts: "Starts"
           },
           eventor: {
             Participant: "Participant",
@@ -286,6 +289,8 @@ i18next
             Portrait: "Stående",
             Landscape: "Liggande",
             All: "Alla",
+            AllInOnePdf: "Alla i en stor pdf",
+            AllDividedInZip: "Uppdelat i flera PDF (ZIP)",
             MarginsLabel: "Marginaler [vänster, överkant, höger, nederkant]:"
           },
           calendar: {
@@ -472,7 +477,8 @@ i18next
             TeamFailedReason: "Lag orsak utan tid",
             TeamName: "Lagnamn",
             InvoiceVerifier: "Kontroll av faktura",
-            InvoiceAlreadyVerified: "Faktura kontrollerad"
+            InvoiceAlreadyVerified: "Faktura kontrollerad",
+            TotalNofStarts: "Antal starter"
           },
           eventor: {
             Participant: "Anmäld",

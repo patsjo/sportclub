@@ -32,6 +32,7 @@
     "esri-loader": "^2.15.0",
     "i18next": "^19.7.0",
     "i18next-browser-languagedetector": "^6.0.1",
+    "jszip": "^3.5.0",
     "mobx": "^5.15.7",
     "mobx-react": "^6.3.0",
     "mobx-state-tree": "^3.17.2",
