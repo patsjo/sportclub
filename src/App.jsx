@@ -138,6 +138,13 @@ class App extends Component {
             ]
           : [],
     });
+
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    if (urlParams.has('pageId')) {
+      this.globalStateModel.setHtmlEditor(parseInt(urlParams.get('pageId')));
+    }
+
     document.title = this.clubModel.title;
     // this.theme = createMuiTheme({
     //   ...this.clubModel.theme,

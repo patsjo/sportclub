@@ -10,6 +10,8 @@ import { SpinnerDiv } from '../styled/styled';
 import FormItem from '../formItems/FormItem';
 import { hasErrors, errorRequiredField } from '../../utils/formHelper';
 import { dashboardContents } from '../../models/globalStateModel';
+import { CopyOutlined } from '@ant-design/icons';
+import copy from 'copy-to-clipboard';
 import './ckeditor5.css';
 
 const DefaultData = '<p>Här lägger man in all text och bilder</p>';
@@ -206,6 +208,19 @@ const HtmlEditor = inject(
             setCurrentEditor(editor);
           }}
         />
+        {pageId > 0 ? (
+          <StyledButton
+            icon={<CopyOutlined />}
+            onClick={() => {
+              copy(`${window.location.origin}${window.location.pathname}?pageId=${pageId}`);
+              message.success(
+                `${t('htmlEditor.CopyUrl')}: ${window.location.origin}${window.location.pathname}?pageId=${pageId}`
+              );
+            }}
+          >
+            {t('htmlEditor.CopyUrl')}
+          </StyledButton>
+        ) : null}
         {!isReadOnly ? (
           <>
             <StyledButton onClick={() => setIsReadOnly(true)} loading={saving}>

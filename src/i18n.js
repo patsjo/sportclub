@@ -256,7 +256,8 @@ i18next
             MenuLink: "Create meny link",
             Path: "Menu path",
             Url: "Url",
-            Groups: "Authority groups needed to view the page"
+            Groups: "Authority groups needed to view the page",
+            CopyUrl: "Copy url"
           }
         }
       },
@@ -489,7 +490,8 @@ i18next
             MenuLink: "Skapa menylänk",
             Path: "Meny",
             Url: "Url",
-            Groups: "Behörighetsgrupper för att kunna visa sidan"
+            Groups: "Behörighetsgrupper för att kunna visa sidan",
+            CopyUrl: "Kopiera url"
           }
         }
       }
