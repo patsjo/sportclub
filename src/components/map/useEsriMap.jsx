@@ -8,7 +8,7 @@ export const backgroundLayerIds = [openStreetMapLayerId, orienteeringTileLayerId
 
 const useEsriMap = (globalStateModel) => {
   React.useEffect(() => {
-    if (globalStateModel.map || globalStateModel.mapLoading) {
+    if (globalStateModel.map != null || globalStateModel.mapLoading) {
       return;
     }
     globalStateModel.setMapLoading();
@@ -73,7 +73,7 @@ const useEsriMap = (globalStateModel) => {
     );
   }, []);
 
-  return true;
+  return globalStateModel.map != null;
 };
 
 export default useEsriMap;

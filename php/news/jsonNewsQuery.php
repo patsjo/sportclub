@@ -75,16 +75,19 @@ else
   $whereEndDate = " AND DATE_FORMAT(mod_date, '%Y-%m-%d') <= '" . date2String($iEndDate) . "'";
 }
 
+$whereExpireDate = "";
+$orderByExpire = "";
 if (is_null($iStartDate) && is_null($iEndDate))
 {
-  $whereExpireDate = " AND DATE_FORMAT(expire_date, '%Y-%m-%d') >= '" . date2String($today) . "'";
+  if ($offset == 0) {
+    $whereExpireDate = " AND DATE_FORMAT(expire_date, '%Y-%m-%d') >= '" . date2String($today) . "'";
+  }
 }
-else
-{
-  $whereExpireDate = "";
-}
+$orderByExpire = "CASE WHEN (news_type_id = 2 AND DATE_FORMAT(expire_date, '%Y-%m-%d') >= '" . date2String($today) . "') THEN 0 ELSE 1 END ASC, " .
+  " CASE WHEN (DATE_FORMAT(expire_date, '%Y-%m-%d') >= '" . date2String($today) . "') THEN 0 ELSE 1 END ASC, " .
+  " CASE WHEN (news_type_id = 2 AND DATE_FORMAT(expire_date, '%Y-%m-%d') >= '" . date2String($todayMinusTwoMonths) . "') THEN 0 ELSE 1 END ASC, ";
 
-$sql = "SELECT * FROM news LEFT OUTER JOIN users ON (news.mod_by_user_id = users.user_id) LEFT OUTER JOIN files ON (news.file_id = files.file_id) WHERE " . $whereNewsType . $whereStartDate . $whereEndDate . $whereExpireDate . " ORDER BY CASE WHEN (news_type_id = 2 AND DATE_FORMAT(expire_date, '%Y-%m-%d') >= '" . date2String($todayMinusTwoMonths) . "') THEN 0 ELSE 1 END ASC, mod_date DESC LIMIT " . $limit . " OFFSET " . $offset;
+$sql = "SELECT * FROM news LEFT OUTER JOIN users ON (news.mod_by_user_id = users.user_id) LEFT OUTER JOIN files ON (news.file_id = files.file_id) WHERE " . $whereNewsType . $whereStartDate . $whereEndDate . $whereExpireDate . " ORDER BY " . $orderByExpire . " mod_date DESC LIMIT " . $limit . " OFFSET " . $offset;
 $result = \db\mysql_query($sql);
 if (!$result)
 {

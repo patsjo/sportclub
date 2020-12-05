@@ -1,4 +1,4 @@
-import React, { Component, Suspense, lazy } from 'react';
+import React, { Component, Suspense } from 'react';
 import clubJson from './models/okorion';
 import { MobxClubModel } from './models/mobxClubModel';
 import { SessionModel, getLocalStorage } from './models/sessionModel';
@@ -9,8 +9,7 @@ import Toolbar from './components/toolbar/Toolbar';
 import { Provider } from 'mobx-react';
 import { PostJsonData } from './utils/api';
 import { dashboardContents } from './models/globalStateModel';
-
-const Dashboard = lazy(() => import('./components/dashboard/Dashboard'));
+import AppContent from './AppContent';
 
 const StyledLayout = styled(Layout)`
   background-color: #ffffff;
@@ -46,6 +45,13 @@ const LayoutHeader = styled(Layout.Header)`
   }
 `;
 const { Content: LayoutContent } = Layout;
+const ContentArea = styled.div`
+  & {
+    margin-top: 24px;
+    margin-left: 12px;
+    margin-right: 12px;
+  }
+`;
 const StyledLogo = styled.img`
   &&& {
     margin-top: 10px;
@@ -256,7 +262,7 @@ class App extends Component {
                   </SpinnerDiv>
                 }
               >
-                <Dashboard />
+                <AppContent />
               </Suspense>
             </LayoutContent>
           </StyledLayout>

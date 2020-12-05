@@ -95,7 +95,7 @@ export const WinnerTime = (timeStr, timeDiffStr, position) => {
   return time.format("HH:mm:ss");
 };
 
-export const TimeDiff = (time1Str, time2Str) => {
+export const TimeDiff = (time1Str, time2Str, useFormatTime = false) => {
   const time1 = time1Str.length > 5 ? moment(time1Str, "HH:mm:ss") : moment(`00:${time1Str}`, "HH:mm:ss");
   const time2 = time2Str.length > 5 ? moment(time2Str, "HH:mm:ss") : moment(`00:${time2Str}`, "HH:mm:ss");
 
@@ -103,12 +103,12 @@ export const TimeDiff = (time1Str, time2Str) => {
     time1.subtract(time2.second(), "seconds");
     time1.subtract(time2.minute(), "minutes");
     time1.subtract(time2.hour(), "hours");
-    return `-${time1.format("HH:mm:ss")}`;
+    return `-${useFormatTime ? FormatTime(time1.format("HH:mm:ss")) : time1.format("HH:mm:ss")}`;
   }
   time2.subtract(time1.second(), "seconds");
   time2.subtract(time1.minute(), "minutes");
   time2.subtract(time1.hour(), "hours");
-  return time2.format("HH:mm:ss");
+  return useFormatTime ? FormatTime(time2.format("HH:mm:ss")) : time2.format("HH:mm:ss");
 };
 
 export const GetAge = (birthDateStr, raceDateStr) => {

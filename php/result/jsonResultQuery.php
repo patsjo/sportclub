@@ -134,6 +134,8 @@ if ($iType == "EVENT" || $iType == "COMPETITOR")
       }
     }
     \db\mysql_free_result($result);
+    $select = "C.FIRST_NAME, C.LAST_NAME, ";
+    $innerJoin = " INNER JOIN RACE_COMPETITORS C ON (R.COMPETITOR_ID = C.COMPETITOR_ID) ";
   }
   else
   {
@@ -178,6 +180,11 @@ if ($iType == "EVENT" || $iType == "COMPETITOR")
       }
       $x->resultId                     = intval($row['RESULT_ID']);
       $x->competitorId                 = intval($row['COMPETITOR_ID']);
+      if ($iType == "EVENT")
+      {
+        $x->firstName                    = $row['FIRST_NAME'];
+        $x->lastName                     = $row['LAST_NAME'];
+      }
       $x->className                    = $row['CLASS_NAME'];
       $x->deviantEventClassificationId = $row['DEVIANT_EVENT_CLASSIFICATION_ID'];
       $x->classClassificationId        = intval($row['CLASS_CLASSIFICATION_ID']);
@@ -256,6 +263,11 @@ if ($iType == "EVENT" || $iType == "COMPETITOR")
       $x->difficulty                   = $row['DIFFICULTY'];
       $x->teamName                     = $row['TEAM_NAME'];
       $x->competitorId                 = intval($row['COMPETITOR_ID']);
+      if ($iType == "EVENT")
+      {
+        $x->firstName                    = $row['FIRST_NAME'];
+        $x->lastName                     = $row['LAST_NAME'];
+      }
       $x->lengthInMeter                = is_null($row['LENGTH_IN_METER']) ? NULL : intval($row['LENGTH_IN_METER']);
       $x->failedReason                 = $row['FAILED_REASON'];
       $x->teamFailedReason             = $row['TEAM_FAILED_REASON'];

@@ -43,7 +43,7 @@ const useBanners = (globalStateModel, clubModel) => {
         <BannerItem key={'bannerObject#' + newsObject.id} column={-50} newsObject={newsObject} />
       ))
     : [
-        <SpinnerDiv>
+        <SpinnerDiv key="bannerObject#spinner">
           <Spin size="large" />
         </SpinnerDiv>,
       ];

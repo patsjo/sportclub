@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { dashboardContents } from '../../models/globalStateModel';
 import NewsItem from './NewsItem';
 import { Spin } from 'antd';
@@ -13,11 +13,16 @@ const SpinnerDiv = styled.div`
 const useNews = (globalStateModel, clubModel) => {
   const [firstLoading, setFirstLoading] = React.useState(true);
 
-  const loadNews = () => {
+  const loadNews = useCallback(() => {
     const url = clubModel.modules.find((module) => module.name === 'News').queryUrl;
     const { limit, offset } = globalStateModel.news;
+    const now = new Date();
+    const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    let startDate = new Date(today.valueOf());
+    startDate.setDate(startDate.getDate() - 180);
+    const iStartDate = startDate.toISOString().substr(0, 10);
     const data = {
-      iStartDate: globalStateModel.startDate ? globalStateModel.startDate : '',
+      iStartDate: globalStateModel.startDate ? globalStateModel.startDate : iStartDate,
       iEndDate: globalStateModel.endDate ? globalStateModel.endDate : '',
       iNewsTypeID: globalStateModel.type ? globalStateModel.type : '',
       offset: offset,
@@ -33,7 +38,7 @@ const useNews = (globalStateModel, clubModel) => {
       globalStateModel.news.addNewsItemsToBottom(newArray);
       setFirstLoading(false);
     });
-  };
+  }, [globalStateModel.dashboardContentId, globalStateModel.type]);
 
   React.useEffect(() => {
     if (
@@ -61,7 +66,10 @@ const useNews = (globalStateModel, clubModel) => {
           />
         ))
       : [
-          <SpinnerDiv column={globalStateModel.dashboardContentId === dashboardContents.home ? 50 : undefined}>
+          <SpinnerDiv
+            key="newsObject#spinner"
+            column={globalStateModel.dashboardContentId === dashboardContents.home ? 50 : undefined}
+          >
             <Spin size="large" />
           </SpinnerDiv>,
         ],
