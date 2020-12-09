@@ -245,7 +245,10 @@ i18next
             TeamName: "Team name",
             InvoiceVerifier: "Invoice verifier",
             InvoiceAlreadyVerified: "Invoice verified",
-            TotalNofStarts: "Starts"
+            TotalNofStarts: "Starts",
+            Gender: "Gender",
+            FeMale: "Female",
+            Male: "Male"
           },
           eventor: {
             Participant: "Participant",
@@ -479,7 +482,10 @@ i18next
             TeamName: "Lagnamn",
             InvoiceVerifier: "Kontroll av faktura",
             InvoiceAlreadyVerified: "Faktura kontrollerad",
-            TotalNofStarts: "Antal starter"
+            TotalNofStarts: "Antal starter",
+            Gender: "Kön",
+            FeMale: "Dam",
+            Male: "Herr"
           },
           eventor: {
             Participant: "Anmäld",

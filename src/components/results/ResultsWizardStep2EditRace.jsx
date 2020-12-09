@@ -5,6 +5,7 @@ import { observer, inject } from 'mobx-react';
 import { applySnapshot, getSnapshot } from 'mobx-state-tree';
 import { GetJsonData, PostJsonData } from '../../utils/api';
 import {
+  genders,
   payments,
   paymentOptions,
   raceDistanceOptions,
@@ -394,8 +395,13 @@ const ResultWizardStep2EditRace = inject(
                               iFirstName: personResult.Person.PersonName.Given,
                               iLastName: personResult.Person.PersonName.Family,
                               iBirthDay:
-                                // eslint-disable-next-line eqeqeq
-                                personResult.Person.BirthDate == undefined ? null : personResult.Person.BirthDate.Date,
+                                personResult.Person.BirthDate == null ? null : personResult.Person.BirthDate.Date,
+                              iGender:
+                                personResult.Person['@attributes'] == null
+                                  ? null
+                                  : personResult.Person['@attributes'].sex === 'F'
+                                  ? genders.FeMale
+                                  : genders.Male,
                               iClubId: clubModel.raceClubs.selectedClub.clubId,
                               iStartDate: '1930-01-01',
                               iEndDate: null,
@@ -617,6 +623,12 @@ const ResultWizardStep2EditRace = inject(
                               teamMemberResult.Person.BirthDate == undefined
                                 ? null
                                 : teamMemberResult.Person.BirthDate.Date,
+                            iGender:
+                              teamMemberResult.Person['@attributes'] == null
+                                ? null
+                                : teamMemberResult.Person['@attributes'].sex === 'F'
+                                ? genders.FeMale
+                                : genders.Male,
                             iClubId: clubModel.raceClubs.selectedClub.clubId,
                             iStartDate: '1930-01-01',
                             iEndDate: null,

@@ -1,11 +1,12 @@
-import React, { Component } from "react";
-import { observer, inject } from "mobx-react";
-import { Spin, Select, Tabs, message } from "antd";
-import { SpinnerDiv, StyledTable } from "../styled/styled";
-import { withTranslation } from "react-i18next";
-import moment from "moment";
-import { PostJsonData } from "../../utils/api";
-import styled from "styled-components";
+import React, { Component } from 'react';
+import { observer, inject } from 'mobx-react';
+import { Spin, Select, Tabs, message } from 'antd';
+import { SpinnerDiv, StyledTable } from '../styled/styled';
+import { withTranslation } from 'react-i18next';
+import moment from 'moment';
+import { PostJsonData } from '../../utils/api';
+import { genders } from '../../utils/resultConstants';
+import styled from 'styled-components';
 
 const { TabPane } = Tabs;
 const { Option } = Select;
@@ -14,90 +15,98 @@ const StyledSelect = styled(Select)`
     width: 120px;
   }
 `;
+const GenderSelect = styled(Select)`
+  &&& {
+    width: 72px;
+    margin-right: 8px;
+  }
+`;
 
 const getColumns = (t, nofPoints, isTotal = false) => [
   {
-    title: t("results.Position"),
-    dataIndex: "position",
-    key: "position",
-    fixed: "left",
-    width: 80
+    title: t('results.Position'),
+    dataIndex: 'position',
+    key: 'position',
+    fixed: 'left',
+    width: 80,
   },
   {
-    title: t("results.Competitor"),
-    dataIndex: "name",
-    key: "name",
-    fixed: "left",
-    width: 200
+    title: t('results.Competitor'),
+    dataIndex: 'name',
+    key: 'name',
+    fixed: 'left',
+    width: 200,
   },
   ...[...Array(nofPoints).keys()].map((i) => ({
     title: isTotal
       ? t(
           `results.${
-            i === 0 ? "RankingLeague" : i === 1 ? "RankingRelayLeague" : i === 2 ? "Points1000League" : "PointsLeague"
+            i === 0 ? 'RankingLeague' : i === 1 ? 'RankingRelayLeague' : i === 2 ? 'Points1000League' : 'PointsLeague'
           }`
         )
       : (i + 1).toString(),
     dataIndex: `p${i}`,
-    key: `p${i}`
+    key: `p${i}`,
   })),
   {
-    title: t("results.Total"),
-    dataIndex: "total",
-    key: "total",
-    fixed: "right",
-    width: 80
-  }
+    title: t('results.Total'),
+    dataIndex: 'total',
+    key: 'total',
+    fixed: 'right',
+    width: 80,
+  },
 ];
 
-const League = inject("clubModel")(
+const League = inject('clubModel')(
   observer(
     class League extends Component {
       constructor(props) {
         super(props);
         this.state = {
           year: -1,
+          gender: undefined,
           grandSlam: [],
           rankingLeague: [],
           rankingRelayLeague: [],
           points1000League: [],
           pointsLeague: [],
           pointsOldLeague: [],
-          loading: true
+          loading: true,
         };
       }
 
       componentDidMount() {
-        this.update(-1);
+        this.update(-1, undefined);
       }
 
-      update(year) {
+      update(year, gender) {
         const self = this;
         const { clubModel } = this.props;
-        const fromDate =
-          year === -1 ? moment().startOf("year").format("YYYY-MM-DD") : moment(year, "YYYY").format("YYYY-MM-DD");
+        const league = clubModel.modules.find((module) => module.name === 'Results').league;
+        const searchYear = year === -1 ? parseInt(moment().format('YYYY')) : year;
+        const fromDate = moment(searchYear, 'YYYY').format('YYYY-MM-DD');
         const toDate =
           year === -1
-            ? moment().format("YYYY-MM-DD")
-            : moment(fromDate, "YYYY-MM-DD").add(1, "years").subtract(1, "days").format("YYYY-MM-DD");
+            ? moment().format('YYYY-MM-DD')
+            : moment(fromDate, 'YYYY-MM-DD').add(1, 'years').subtract(1, 'days').format('YYYY-MM-DD');
         const rankingFromDate =
           year === -1
-            ? moment(toDate, "YYYY-MM-DD").add(1, "days").subtract(1, "years").format("YYYY-MM-DD")
+            ? moment(toDate, 'YYYY-MM-DD').add(1, 'days').subtract(1, 'years').format('YYYY-MM-DD')
             : fromDate;
 
         self.setState({
-          loading: true
+          loading: true,
         });
 
-        const url = clubModel.modules.find((module) => module.name === "Results").queryUrl;
+        const url = clubModel.modules.find((module) => module.name === 'Results').queryUrl;
         const rankingPromise =
           year === -1
             ? PostJsonData(
                 url,
                 {
-                  iType: "POINTS",
+                  iType: 'POINTS',
                   iFromDate: rankingFromDate,
-                  iToDate: toDate
+                  iToDate: toDate,
                 },
                 true
               )
@@ -105,9 +114,9 @@ const League = inject("clubModel")(
         const pointsPromise = PostJsonData(
           url,
           {
-            iType: "POINTS",
+            iType: 'POINTS',
             iFromDate: fromDate,
-            iToDate: toDate
+            iToDate: toDate,
           },
           true
         );
@@ -121,14 +130,19 @@ const League = inject("clubModel")(
             let prevRanking = [];
             let prevPos = 1;
             const rankingLeague = rankingJson
-              .filter((c) => c.ranking.length > 0)
+              .filter(
+                (c) =>
+                  c.ranking.length > 0 &&
+                  (!gender || gender === c.gender) &&
+                  (league.rankingLeagueAgeLimit === 0 || searchYear - c.birthYear >= league.rankingLeagueAgeLimit)
+              )
               .map((c) => {
                 const ranking = c.ranking.slice(0, 6);
                 return {
                   competitorId: c.competitorId,
                   name: c.name,
                   ranking: ranking,
-                  total: Math.round((100 * ranking.reduce((a, b) => a + b, 0)) / ranking.length) / 100
+                  total: Math.round((100 * ranking.reduce((a, b) => a + b, 0)) / ranking.length) / 100,
                 };
               })
               .sort((a, b) => (a.total > b.total ? 1 : -1))
@@ -143,14 +157,20 @@ const League = inject("clubModel")(
             prevRanking = [];
             prevPos = 1;
             const rankingRelayLeague = rankingJson
-              .filter((c) => c.rankingRelay.length > 0)
+              .filter(
+                (c) =>
+                  c.rankingRelay.length > 0 &&
+                  (!gender || gender === c.gender) &&
+                  (league.rankingRelayLeagueAgeLimit === 0 ||
+                    searchYear - c.birthYear >= league.rankingRelayLeagueAgeLimit)
+              )
               .map((c) => {
                 const ranking = c.rankingRelay.slice(0, 3);
                 return {
                   competitorId: c.competitorId,
                   name: c.name,
                   ranking: ranking,
-                  total: Math.round((100 * ranking.reduce((a, b) => a + b, 0)) / ranking.length) / 100
+                  total: Math.round((100 * ranking.reduce((a, b) => a + b, 0)) / ranking.length) / 100,
                 };
               })
               .sort((a, b) => (a.total > b.total ? 1 : -1))
@@ -166,7 +186,12 @@ const League = inject("clubModel")(
             prevPos = 1;
             let prevNumberOf100 = -1;
             const points1000League = pointsJson
-              .filter((c) => c.points1000.length > 0)
+              .filter(
+                (c) =>
+                  c.points1000.length > 0 &&
+                  (!gender || gender === c.gender) &&
+                  (league.points1000LeagueAgeLimit === 0 || searchYear - c.birthYear >= league.points1000LeagueAgeLimit)
+              )
               .map((c) => {
                 const numberOf100 = c.points1000.filter((p) => p === 100).length;
                 const points1000 = c.points1000.slice(0, 10);
@@ -175,7 +200,7 @@ const League = inject("clubModel")(
                   name: c.name,
                   numberOf100: numberOf100,
                   points1000: points1000,
-                  total: points1000.reduce((a, b) => a + b, 0)
+                  total: points1000.reduce((a, b) => a + b, 0),
                 };
               })
               .sort((a, b) =>
@@ -193,14 +218,19 @@ const League = inject("clubModel")(
             prevPoints = [];
             prevPos = 1;
             const pointsLeague = pointsJson
-              .filter((c) => c.points.length > 0)
+              .filter(
+                (c) =>
+                  c.points.length > 0 &&
+                  (!gender || gender === c.gender) &&
+                  (league.pointsLeagueAgeLimit === 0 || searchYear - c.birthYear >= league.pointsLeagueAgeLimit)
+              )
               .map((c) => {
                 const points = c.points.slice(0, 10);
                 return {
                   competitorId: c.competitorId,
                   name: c.name,
                   points: points,
-                  total: points.reduce((a, b) => a + b, 0)
+                  total: points.reduce((a, b) => a + b, 0),
                 };
               })
               .sort((a, b) => (a.total > b.total ? -1 : 1))
@@ -215,14 +245,19 @@ const League = inject("clubModel")(
             prevPoints = [];
             prevPos = 1;
             const pointsOldLeague = pointsJson
-              .filter((c) => c.pointsOld.length > 0)
+              .filter(
+                (c) =>
+                  c.pointsOld.length > 0 &&
+                  (!gender || gender === c.gender) &&
+                  (league.pointsLeagueAgeLimit === 0 || searchYear - c.birthYear >= league.pointsLeagueAgeLimit)
+              )
               .map((c) => {
                 const pointsOld = c.pointsOld.slice(0, 10);
                 return {
                   competitorId: c.competitorId,
                   name: c.name,
                   pointsOld: pointsOld,
-                  total: pointsOld.reduce((a, b) => a + b, 0)
+                  total: pointsOld.reduce((a, b) => a + b, 0),
                 };
               })
               .sort((a, b) => (a.total > b.total ? -1 : 1))
@@ -244,6 +279,11 @@ const League = inject("clubModel")(
             prevPoints = [];
             prevPos = 1;
             const grandSlam = pointsJson
+              .filter(
+                (c) =>
+                  (!gender || gender === c.gender) &&
+                  (league.grandSlamAgeLimit === 0 || searchYear - c.birthYear >= league.grandSlamAgeLimit)
+              )
               .map((c) => {
                 const c1 = rankingLeague.find((cc) => cc.competitorId === c.competitorId);
                 const pos1 = c1 !== undefined ? c1.position : rankingLeague.length + 1;
@@ -269,7 +309,7 @@ const League = inject("clubModel")(
                   p2: pos3,
                   p3: pos4,
                   total: positions.reduce((a, b) => a + b, 0),
-                  positions: positions
+                  positions: positions,
                 };
               })
               .sort((a, b) => (a.total > b.total ? 1 : -1))
@@ -283,13 +323,14 @@ const League = inject("clubModel")(
 
             self.setState({
               year: year,
+              gender: gender,
               grandSlam: grandSlam,
               rankingLeague: rankingLeague,
               rankingRelayLeague: rankingRelayLeague,
               points1000League: points1000League,
               pointsLeague: pointsLeague,
               pointsOldLeague: pointsOldLeague,
-              loading: false
+              loading: false,
             });
           })
           .catch((e) => {
@@ -298,27 +339,29 @@ const League = inject("clubModel")(
             }
             self.setState({
               year: -1,
+              gender: undefined,
               rankingLeague: [],
               rankingRelayLeague: [],
               points1000League: [],
               pointsLeague: [],
               pointsOldLeague: [],
-              loading: false
+              loading: false,
             });
           });
       }
       render() {
         const self = this;
-        const { t } = self.props;
+        const { t, clubModel } = self.props;
         const {
           loading,
           year,
+          gender,
           grandSlam,
           rankingLeague,
           rankingRelayLeague,
           points1000League,
           pointsLeague,
-          pointsOldLeague
+          pointsOldLeague,
         } = self.state;
         const Spinner = (
           <SpinnerDiv>
@@ -328,18 +371,26 @@ const League = inject("clubModel")(
         const fromYear = 1994;
         const currentYear = new Date().getFullYear();
         const YearOptions = (
-          <StyledSelect defaultValue={-1} onChange={(year) => self.update(year)}>
-            <Option value={-1}>{t("results.CurrentSeason")}</Option>
+          <StyledSelect defaultValue={-1} onChange={(value) => self.update(value, gender)}>
+            <Option value={-1}>{t('results.CurrentSeason')}</Option>
             {[...Array(1 + currentYear - fromYear).keys()].map((i) => (
               <Option value={currentYear - i}>{currentYear - i}</Option>
             ))}
           </StyledSelect>
         );
+        const GenderOptions = (
+          <GenderSelect allowClear={true} onChange={(value) => self.update(year, value)}>
+            <Option value={genders.FeMale}>{t('results.FeMale')}</Option>
+            <Option value={genders.Male}>{t('results.Male')}</Option>
+          </GenderSelect>
+        );
+        const league = clubModel.modules.find((module) => module.name === 'Results').league;
 
         return (
-          <Tabs defaultActiveKey="grandSlam" tabBarExtraContent={YearOptions}>
-            <TabPane tab={t("results.GrandSlam")} key="grandSlam">
+          <Tabs defaultActiveKey="grandSlam" tabBarExtraContent={[GenderOptions, YearOptions]}>
+            <TabPane tab={t('results.GrandSlam')} key="grandSlam">
               Sammanlagd placering i de fyra ligorna.
+              {league.grandSlamAgeLimit > 0 ? ` Åldersgräns ${league.grandSlamAgeLimit} år.` : ''}
               {!loading ? (
                 <StyledTable
                   columns={getColumns(t, 4, true)}
@@ -352,10 +403,11 @@ const League = inject("clubModel")(
                 Spinner
               )}
             </TabPane>
-            <TabPane tab={t("results.RankingLeague")} key="rankingLeague">
+            <TabPane tab={t('results.RankingLeague')} key="rankingLeague">
               Antal minuter efter sveriges bästa herrsenior på en 75 minuters bana. Samma grundprincip som ranking och
               sverigelistan, fast utan konstiga överankingar i gubbaklasser. Även samma rankinglista för damer och
               herrar. Man får ranking på alla tävlingar, både individuellt, jaktstart och stafetter.
+              {league.rankingLeagueAgeLimit > 0 ? ` Åldersgräns ${league.rankingLeagueAgeLimit} år.` : ''}
               {!loading ? (
                 <StyledTable
                   columns={getColumns(t, 6)}
@@ -368,10 +420,11 @@ const League = inject("clubModel")(
                 Spinner
               )}
             </TabPane>
-            <TabPane tab={t("results.RankingRelayLeague")} key="rankingRelayLeague">
+            <TabPane tab={t('results.RankingRelayLeague')} key="rankingRelayLeague">
               Antal minuter efter sveriges bästa herrsenior på en 75 minuters bana. Samma grundprincip som ranking och
               sverigelistan, fast utan konstiga överankingar i gubbaklasser. Även samma rankinglista för damer och
               herrar. En ren stafett ranking.
+              {league.rankingRelayLeagueAgeLimit > 0 ? ` Åldersgräns ${league.rankingRelayLeagueAgeLimit} år.` : ''}
               {!loading ? (
                 <StyledTable
                   columns={getColumns(t, 3)}
@@ -384,9 +437,10 @@ const League = inject("clubModel")(
                 Spinner
               )}
             </TabPane>
-            <TabPane tab={t("results.Points1000League")} key="points1000League">
+            <TabPane tab={t('results.Points1000League')} key="points1000League">
               OK Orions spring till 1000. Placering i förhållande till antal startande. 100 poäng för seger i en
               nationell tävling vid minst två startande. 30 är lägsta poäng vid fullföljt.
+              {league.points1000LeagueAgeLimit > 0 ? ` Åldersgräns ${league.points1000LeagueAgeLimit} år.` : ''}
               {!loading ? (
                 <StyledTable
                   columns={getColumns(t, 10)}
@@ -400,12 +454,13 @@ const League = inject("clubModel")(
               )}
             </TabPane>
             <TabPane
-              tab={t(year > 1900 && year < 2003 ? "results.PointsOldLeague" : "results.PointsLeague")}
+              tab={t(year > 1900 && year < 2003 ? 'results.PointsOldLeague' : 'results.PointsLeague')}
               key="pointsLeague"
             >
               {year > 1900 && year < 2003
-                ? "Gårdsby IK poängliga fram till 2002. Grundpoäng baserat på typ av tävling och klass + Placeringspoäng + Poäng för antal startande - Poäng för minuter efter täten per 100m."
-                : "Värend GN poängliga från 2003. Grundpoäng baserat på typ av tävling och klass + Logaritmen av antal startande i förhållande till placering. Allt sedan i förhållande till hur många procent efter täten man är."}
+                ? 'Gårdsby IK poängliga fram till 2002. Grundpoäng baserat på typ av tävling och klass + Placeringspoäng + Poäng för antal startande - Poäng för minuter efter täten per 100m.'
+                : 'Värend GN poängliga från 2003. Grundpoäng baserat på typ av tävling och klass + Logaritmen av antal startande i förhållande till placering. Allt sedan i förhållande till hur många procent efter täten man är.'}
+              {league.pointsLeagueAgeLimit > 0 ? ` Åldersgräns ${league.pointsLeagueAgeLimit} år.` : ''}
               {!loading ? (
                 <StyledTable
                   columns={getColumns(t, 10)}

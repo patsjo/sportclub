@@ -1,6 +1,20 @@
 import { types } from "mobx-state-tree";
 import { RaceClubs } from "./resultModel";
 
+
+const League = types.model({
+  rankingLeagueAgeLimit: types.optional(types.integer, 0),
+  rankingRelayLeagueAgeLimit: types.optional(types.integer, 0),
+  points1000LeagueAgeLimit: types.optional(types.integer, 0),
+  pointsLeagueAgeLimit: types.optional(types.integer, 0)
+})
+.views(self => ({
+  get grandSlamAgeLimit() {
+    return Math.max(self.rankingLeagueAgeLimit, self.rankingRelayLeagueAgeLimit,
+      self.points1000LeagueAgeLimit, self.pointsLeagueAgeLimit);
+  }
+}));
+
 const Logo = types.model({
   url: types.string,
   width: types.integer,
@@ -44,7 +58,8 @@ const Module = types
     addUrl: types.maybe(types.string),
     deleteUrl: types.maybe(types.string),
     updateUrl: types.maybe(types.string),
-    queryUrl: types.maybe(types.string)
+    queryUrl: types.maybe(types.string),
+    league: types.optional(League, {})
   })
   .views(self => ({
     get hasSubMenus() {

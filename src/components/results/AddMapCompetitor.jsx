@@ -1,10 +1,11 @@
-import React, { Component } from "react";
-import PropTypes from "prop-types";
-import { Form, Tabs, DatePicker, Input } from "antd";
-import { withTranslation } from "react-i18next";
-import FormItem from "../formItems/FormItem";
-import { errorRequiredField, FormSelect, dateFormat } from "../../utils/formHelper";
-import moment from "moment";
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import { Form, Tabs, DatePicker, Input } from 'antd';
+import { withTranslation } from 'react-i18next';
+import FormItem from '../formItems/FormItem';
+import { errorRequiredField, FormSelect, dateFormat } from '../../utils/formHelper';
+import { genderOptions } from '../../utils/resultConstants';
+import moment from 'moment';
 
 const { TabPane } = Tabs;
 
@@ -14,26 +15,28 @@ class AddMapCompetitor extends Component {
     competitorsOptions: PropTypes.arrayOf(PropTypes.object),
     defaultActiveKey: PropTypes.number.isRequired,
     onTabChange: PropTypes.func.isRequired,
-    onValidate: PropTypes.func.isRequired
+    onValidate: PropTypes.func.isRequired,
   };
 
   constructor(props) {
     super(props);
     this.state = {
-      formId: "addMapCompetitor" + Math.floor(Math.random() * 10000000000000000)
+      formId: 'addMapCompetitor' + Math.floor(Math.random() * 10000000000000000),
     };
   }
 
   onThisTabChange(key) {
     const { addLinkCompetitor, onValidate, onTabChange } = this.props;
-    let { iFirstName, iLastName, iBirthDay, iStartDate } = addLinkCompetitor.newCompetitor;
+    let { iFirstName, iLastName, iBirthDay, iGender, iStartDate } = addLinkCompetitor.newCompetitor;
 
     onTabChange(key);
-    if (key === "1") {
+    if (key === '1') {
       // eslint-disable-next-line eqeqeq
       onValidate(addLinkCompetitor.competitorId != undefined);
     } else {
-      onValidate(iFirstName && iLastName && iBirthDay && iStartDate && iFirstName.length > 0 && iLastName.length > 0);
+      onValidate(
+        iFirstName && iLastName && iBirthDay && iGender && iStartDate && iFirstName.length > 0 && iLastName.length > 0
+      );
     }
   }
 
@@ -53,21 +56,22 @@ class AddMapCompetitor extends Component {
           iBirthDay: !addLinkCompetitor.newCompetitor.iBirthDay
             ? null
             : moment(addLinkCompetitor.newCompetitor.iBirthDay, dateFormat),
+          iGender: addLinkCompetitor.newCompetitor.iGender,
           iStartDate: !addLinkCompetitor.newCompetitor.iStartDate
             ? null
-            : moment(addLinkCompetitor.newCompetitor.iStartDate, dateFormat)
+            : moment(addLinkCompetitor.newCompetitor.iStartDate, dateFormat),
         }}
       >
         <Tabs defaultActiveKey={defaultActiveKey} onChange={self.onThisTabChange.bind(self)}>
-          <TabPane tab={t("results.MapCompetitor")} key="1">
+          <TabPane tab={t('results.MapCompetitor')} key="1">
             <FormItem
               name="iCompetitorId"
-              label={t("results.Competitor")}
+              label={t('results.Competitor')}
               rules={[
                 {
                   required: true,
-                  message: errorRequiredField(t, "results.Competitor")
-                }
+                  message: errorRequiredField(t, 'results.Competitor'),
+                },
               ]}
             >
               <FormSelect
@@ -86,15 +90,15 @@ class AddMapCompetitor extends Component {
               />
             </FormItem>
           </TabPane>
-          <TabPane tab={t("results.AddCompetitor")} key="2">
+          <TabPane tab={t('results.AddCompetitor')} key="2">
             <FormItem
               name="iFirstName"
-              label={t("results.FirstName")}
+              label={t('results.FirstName')}
               rules={[
                 {
                   required: true,
-                  message: errorRequiredField(t, "results.FirstName")
-                }
+                  message: errorRequiredField(t, 'results.FirstName'),
+                },
               ]}
             >
               <Input
@@ -104,6 +108,7 @@ class AddMapCompetitor extends Component {
                     addLinkCompetitor.newCompetitor.iFirstName &&
                       addLinkCompetitor.newCompetitor.iLastName &&
                       addLinkCompetitor.newCompetitor.iBirthDay &&
+                      addLinkCompetitor.newCompetitor.iGender &&
                       addLinkCompetitor.newCompetitor.iStartDate &&
                       addLinkCompetitor.newCompetitor.iFirstName.length > 0 &&
                       addLinkCompetitor.newCompetitor.iLastName.length > 0
@@ -113,12 +118,12 @@ class AddMapCompetitor extends Component {
             </FormItem>
             <FormItem
               name="iLastName"
-              label={t("results.LastName")}
+              label={t('results.LastName')}
               rules={[
                 {
                   required: true,
-                  message: errorRequiredField(t, "results.LastName")
-                }
+                  message: errorRequiredField(t, 'results.LastName'),
+                },
               ]}
             >
               <Input
@@ -128,6 +133,34 @@ class AddMapCompetitor extends Component {
                     addLinkCompetitor.newCompetitor.iFirstName &&
                       addLinkCompetitor.newCompetitor.iLastName &&
                       addLinkCompetitor.newCompetitor.iBirthDay &&
+                      addLinkCompetitor.newCompetitor.iGender &&
+                      addLinkCompetitor.newCompetitor.iStartDate &&
+                      addLinkCompetitor.newCompetitor.iFirstName.length > 0 &&
+                      addLinkCompetitor.newCompetitor.iLastName.length > 0
+                  );
+                }}
+              />
+            </FormItem>
+            <FormItem
+              name="iGender"
+              label={t('results.Gender')}
+              rules={[
+                {
+                  required: true,
+                  message: errorRequiredField(t, 'results.Gender'),
+                },
+              ]}
+            >
+              <FormSelect
+                style={{ minWidth: 60, maxWidth: 100 }}
+                options={genderOptions(t)}
+                onChange={(value) => {
+                  addLinkCompetitor.newCompetitor.iGender = value;
+                  onValidate(
+                    addLinkCompetitor.newCompetitor.iFirstName &&
+                      addLinkCompetitor.newCompetitor.iLastName &&
+                      addLinkCompetitor.newCompetitor.iBirthDay &&
+                      addLinkCompetitor.newCompetitor.iGender &&
                       addLinkCompetitor.newCompetitor.iStartDate &&
                       addLinkCompetitor.newCompetitor.iFirstName.length > 0 &&
                       addLinkCompetitor.newCompetitor.iLastName.length > 0
@@ -137,13 +170,13 @@ class AddMapCompetitor extends Component {
             </FormItem>
             <FormItem
               name="iBirthDay"
-              label={t("results.BirthDay")}
+              label={t('results.BirthDay')}
               rules={[
                 {
                   required: true,
-                  type: "object",
-                  message: errorRequiredField(t, "results.BirthDay")
-                }
+                  type: 'object',
+                  message: errorRequiredField(t, 'results.BirthDay'),
+                },
               ]}
             >
               <DatePicker
@@ -155,6 +188,7 @@ class AddMapCompetitor extends Component {
                     addLinkCompetitor.newCompetitor.iFirstName &&
                       addLinkCompetitor.newCompetitor.iLastName &&
                       addLinkCompetitor.newCompetitor.iBirthDay &&
+                      addLinkCompetitor.newCompetitor.iGender &&
                       addLinkCompetitor.newCompetitor.iStartDate &&
                       addLinkCompetitor.newCompetitor.iFirstName.length > 0 &&
                       addLinkCompetitor.newCompetitor.iLastName.length > 0
@@ -164,13 +198,13 @@ class AddMapCompetitor extends Component {
             </FormItem>
             <FormItem
               name="iStartDate"
-              label={t("results.StartDate")}
+              label={t('results.StartDate')}
               rules={[
                 {
                   required: true,
-                  type: "object",
-                  message: errorRequiredField(t, "results.StartDate")
-                }
+                  type: 'object',
+                  message: errorRequiredField(t, 'results.StartDate'),
+                },
               ]}
             >
               <DatePicker
@@ -182,6 +216,7 @@ class AddMapCompetitor extends Component {
                     addLinkCompetitor.newCompetitor.iFirstName &&
                       addLinkCompetitor.newCompetitor.iLastName &&
                       addLinkCompetitor.newCompetitor.iBirthDay &&
+                      addLinkCompetitor.newCompetitor.iGender &&
                       addLinkCompetitor.newCompetitor.iStartDate &&
                       addLinkCompetitor.newCompetitor.iFirstName.length > 0 &&
                       addLinkCompetitor.newCompetitor.iLastName.length > 0

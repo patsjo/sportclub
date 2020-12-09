@@ -9,6 +9,7 @@ const RaceCompetitor = types
     firstName: types.string,
     lastName: types.string,
     birthDay: types.string,
+    gender: types.string,
     startDate: types.string,
     endDate: types.maybeNull(types.string),
     eventorCompetitorIds: types.array(types.integer)

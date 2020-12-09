@@ -134,7 +134,7 @@ if ($iType == "EVENT" || $iType == "COMPETITOR")
       }
     }
     \db\mysql_free_result($result);
-    $select = "C.FIRST_NAME, C.LAST_NAME, ";
+    $select = "C.FIRST_NAME, C.LAST_NAME, C.GENDER, ";
     $innerJoin = " INNER JOIN RACE_COMPETITORS C ON (R.COMPETITOR_ID = C.COMPETITOR_ID) ";
   }
   else
@@ -184,6 +184,7 @@ if ($iType == "EVENT" || $iType == "COMPETITOR")
       {
         $x->firstName                    = $row['FIRST_NAME'];
         $x->lastName                     = $row['LAST_NAME'];
+        $x->gender                       = $row['GENDER'];
       }
       $x->className                    = $row['CLASS_NAME'];
       $x->deviantEventClassificationId = $row['DEVIANT_EVENT_CLASSIFICATION_ID'];
@@ -267,6 +268,7 @@ if ($iType == "EVENT" || $iType == "COMPETITOR")
       {
         $x->firstName                    = $row['FIRST_NAME'];
         $x->lastName                     = $row['LAST_NAME'];
+        $x->gender                       = $row['GENDER'];
       }
       $x->lengthInMeter                = is_null($row['LENGTH_IN_METER']) ? NULL : intval($row['LENGTH_IN_METER']);
       $x->failedReason                 = $row['FAILED_REASON'];
@@ -407,6 +409,7 @@ elseif ($iType == "CLUBS")
           $y->firstName            = $row2['FIRST_NAME'];
           $y->lastName             = $row2['LAST_NAME'];
           $y->birthDay             = $row2['BIRTHDAY'];
+          $y->gender               = $row2['GENDER'];
           $y->startDate            = is_null($row2['START_DATE']) ? NULL : date2String(strtotime($row2['START_DATE']));
           $y->endDate              = is_null($row2['END_DATE']) ? NULL : date2String(strtotime($row2['END_DATE']));
           $y->eventorCompetitorIds = array();
@@ -487,7 +490,7 @@ elseif ($iType == "CLUBS")
 }
 elseif ($iType == "POINTS")
 {
-  $sql = "SELECT RACE_EVENT_RESULTS.COMPETITOR_ID, FIRST_NAME, LAST_NAME," .
+  $sql = "SELECT RACE_EVENT_RESULTS.COMPETITOR_ID, FIRST_NAME, LAST_NAME, GENDER, BIRTHDAY, " .
     "   GROUP_CONCAT(POINTS SEPARATOR ',') AS POINTS," .
     "   GROUP_CONCAT(POINTS_OLD SEPARATOR ',') AS POINTS_OLD," .
     "   GROUP_CONCAT(POINTS_1000 SEPARATOR ',') AS POINTS_1000," .
@@ -501,7 +504,7 @@ elseif ($iType == "POINTS")
     "      INNER JOIN RACE_EVENT_RESULTS_TEAM ON (RACE_EVENT.EVENT_ID = RACE_EVENT_RESULTS_TEAM.EVENT_ID) ".
     "      WHERE (POINTS_1000 IS NOT NULL OR RANKING IS NOT NULL)" . $whereStartDate . $whereEndDate . ") RACE_EVENT_RESULTS " .
     "INNER JOIN RACE_COMPETITORS ON (RACE_EVENT_RESULTS.COMPETITOR_ID = RACE_COMPETITORS.COMPETITOR_ID) ".
-    "GROUP BY RACE_EVENT_RESULTS.COMPETITOR_ID, FIRST_NAME, LAST_NAME";
+    "GROUP BY RACE_EVENT_RESULTS.COMPETITOR_ID, FIRST_NAME, LAST_NAME, GENDER, BIRTHDAY";
 
   $result = \db\mysql_query($sql);
   if (!$result)
@@ -516,6 +519,8 @@ elseif ($iType == "POINTS")
       $x = new stdClass();
       $x->competitorId          = intval($row['COMPETITOR_ID']);
       $x->name                  = $row['FIRST_NAME'] . " " . $row['LAST_NAME'];
+      $x->gender                = $row['GENDER'];
+      $x->birthYear             = intval(date("Y", strtotime($row['BIRTHDAY'])));
       $x->points                = is_null($row['POINTS']) ? array() : array_map('intval', explode(",", $row['POINTS']));
       $x->pointsOld             = is_null($row['POINTS_OLD']) ? array() : array_map('intval', explode(",", $row['POINTS_OLD']));
       $x->points1000            = is_null($row['POINTS_1000']) ? array() : array_map('intval', explode(",", $row['POINTS_1000']));

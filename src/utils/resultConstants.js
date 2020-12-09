@@ -22,6 +22,16 @@ export const failedReasonOptions = t => [
   { code: failedReasons.Finished, description: t("results.Finished") }
 ];
 
+export const genders = {
+  FeMale: "FEMALE",
+  Male: "MALE"
+};
+
+export const genderOptions = t => [
+  { code: genders.FeMale, description: t("results.FeMale") },
+  { code: genders.Male, description: t("results.Male") }
+];
+
 export const payments = {
   defaultFee0And100IfNotStarted: 0,
   defaultFee0And100IfNotFinished: 1,

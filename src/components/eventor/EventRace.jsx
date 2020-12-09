@@ -69,39 +69,41 @@ const EventRace = inject('clubModel')(
     const loadFromClubResult = useCallback(() => {
       const url = clubModel.modules.find((module) => module.name === 'Results').queryUrl;
 
-      PostJsonData(url, { iType: 'EVENT', iEventId: eventObject.eventId }, true).then(async (editResultJson) => {
-        eventObject.Competitors = editResultJson.results
-          .filter((result) => !result.failedReason)
-          .sort((a, b) => (a.position > b.position ? 1 : a.position < b.position ? -1 : 0))
-          .map((result) => ({
-            Person: {
-              PersonName: {
-                Given: result.firstName,
-                Family: result.lastName,
+      PostJsonData(url, { iType: 'EVENT', iEventId: eventObject.eventId }, true)
+        .then(async (editResultJson) => {
+          eventObject.Competitors = editResultJson.results
+            .filter((result) => !result.failedReason)
+            .sort((a, b) => (a.position > b.position ? 1 : a.position < b.position ? -1 : 0))
+            .map((result) => ({
+              Person: {
+                PersonName: {
+                  Given: result.firstName,
+                  Family: result.lastName,
+                },
               },
-            },
-            EntryClass: {
-              ClassShortName: result.className,
-              numberOfStarts: result.nofStartsInClass,
-            },
-            Result: {
-              ResultId: result.resultId,
-              ResultPosition: result.position,
-              Time: FormatTime(result.competitorTime),
-              TimeDiff: TimeDiff(
-                result.winnerTime === result.competitorTime && result.secondTime
-                  ? result.secondTime
-                  : result.winnerTime,
-                result.competitorTime,
-                true
-              ),
-            },
-          }));
+              EntryClass: {
+                ClassShortName: result.className,
+                numberOfStarts: result.nofStartsInClass,
+              },
+              Result: {
+                ResultId: result.resultId,
+                ResultPosition: result.position,
+                Time: FormatTime(result.competitorTime),
+                TimeDiff: TimeDiff(
+                  result.winnerTime === result.competitorTime && result.secondTime
+                    ? result.secondTime
+                    : result.winnerTime,
+                  result.competitorTime,
+                  true
+                ),
+              },
+            }));
 
-        setEvent(eventObject);
-        setShowResult(eventObject.Competitors.length > 0);
-        setLoaded(true);
-      });
+          setEvent(eventObject);
+          setShowResult(eventObject.Competitors.length > 0);
+          setLoaded(true);
+        })
+        .catch(() => setLoaded(true));
     }, []);
 
     const loadFromEventor = useCallback(() => {
@@ -160,76 +162,141 @@ const EventRace = inject('clubModel')(
             )
           : new Promise((resolve) => resolve(undefined));
 
-      Promise.all([classPromise, startPromise, resultPromise]).then((jsons) => {
-        const classJson = jsons[0];
-        const startJson = jsons[1];
-        const resultJson = jsons[2];
-        // eslint-disable-next-line eqeqeq
-        if (startJson != undefined && startJson.ClassStart != undefined) {
-          eventObject.Competitors = [];
-          const ClassStarts = Array.isArray(startJson.ClassStart) ? startJson.ClassStart : [startJson.ClassStart];
-          ClassStarts.forEach((classStart) => {
-            let currentClass = { EventClassId: classStart.EventClassId };
-            // eslint-disable-next-line eqeqeq
-            if (classJson != undefined) {
-              currentClass = classJson.EventClass.find((evtClass) => evtClass.EventClassId === classStart.EventClassId);
-              if (Array.isArray(currentClass.ClassRaceInfo)) {
-                currentClass.numberOfEntries = currentClass.ClassRaceInfo.find(
-                  (raceInfo) => raceInfo.EventRaceId === eventObject.eventorRaceId
-                )['@attributes'].noOfEntries;
-              } else {
-                currentClass.numberOfEntries = currentClass['@attributes'].numberOfEntries;
+      Promise.all([classPromise, startPromise, resultPromise])
+        .then((jsons) => {
+          const classJson = jsons[0];
+          const startJson = jsons[1];
+          const resultJson = jsons[2];
+          // eslint-disable-next-line eqeqeq
+          if (startJson != undefined && startJson.ClassStart != undefined) {
+            eventObject.Competitors = [];
+            const ClassStarts = Array.isArray(startJson.ClassStart) ? startJson.ClassStart : [startJson.ClassStart];
+            ClassStarts.forEach((classStart) => {
+              let currentClass = { EventClassId: classStart.EventClassId };
+              // eslint-disable-next-line eqeqeq
+              if (classJson != undefined) {
+                currentClass = classJson.EventClass.find(
+                  (evtClass) => evtClass.EventClassId === classStart.EventClassId
+                );
+                if (Array.isArray(currentClass.ClassRaceInfo)) {
+                  currentClass.numberOfEntries = currentClass.ClassRaceInfo.find(
+                    (raceInfo) => raceInfo.EventRaceId === eventObject.eventorRaceId
+                  )['@attributes'].noOfEntries;
+                } else {
+                  currentClass.numberOfEntries = currentClass['@attributes'].numberOfEntries;
+                }
               }
-            }
 
-            // eslint-disable-next-line eqeqeq
-            if (classStart.PersonStart != undefined) {
-              const PersonStarts = Array.isArray(classStart.PersonStart)
-                ? classStart.PersonStart.filter(
-                    (personStart) =>
-                      // eslint-disable-next-line eqeqeq
-                      personStart.RaceStart == undefined ||
-                      personStart.RaceStart.EventRaceId === eventObject.eventorRaceId
-                  )
-                : [classStart.PersonStart];
-              PersonStarts.forEach((personStart) => {
-                eventObject.Competitors.push({
-                  Person: personStart.Person,
-                  EntryClass: currentClass,
-                  // eslint-disable-next-line eqeqeq
-                  Start: personStart.RaceStart != undefined ? personStart.RaceStart.Start : personStart.Start,
+              // eslint-disable-next-line eqeqeq
+              if (classStart.PersonStart != undefined) {
+                const PersonStarts = Array.isArray(classStart.PersonStart)
+                  ? classStart.PersonStart.filter(
+                      (personStart) =>
+                        // eslint-disable-next-line eqeqeq
+                        personStart.RaceStart == undefined ||
+                        personStart.RaceStart.EventRaceId === eventObject.eventorRaceId
+                    )
+                  : [classStart.PersonStart];
+                PersonStarts.forEach((personStart) => {
+                  eventObject.Competitors.push({
+                    Person: personStart.Person,
+                    EntryClass: currentClass,
+                    // eslint-disable-next-line eqeqeq
+                    Start: personStart.RaceStart != undefined ? personStart.RaceStart.Start : personStart.Start,
+                  });
                 });
-              });
+              }
+              // eslint-disable-next-line eqeqeq
+              if (classStart.TeamStart != undefined) {
+                const TeamStarts = Array.isArray(classStart.TeamStart) ? classStart.TeamStart : [classStart.TeamStart];
+                TeamStarts.forEach((teamStart) => {
+                  eventObject.Competitors.push({
+                    Person: {
+                      PersonName: { Given: teamStart.TeamName, Family: '' },
+                    },
+                    EntryClass: currentClass,
+                    Start: { StartTime: teamStart.StartTime },
+                  });
+                });
+              }
+            });
+          }
+          // eslint-disable-next-line eqeqeq
+          if (resultJson != undefined && resultJson.ClassResult != undefined) {
+            eventObject.Competitors = [];
+            const ClassResults = Array.isArray(resultJson.ClassResult)
+              ? resultJson.ClassResult
+              : [resultJson.ClassResult];
+            ClassResults.forEach((classResult) => {
+              let currentClass = {
+                EventClassId: classResult.EventClass.EventClassId,
+              };
+              // eslint-disable-next-line eqeqeq
+              if (classJson != undefined) {
+                currentClass = classJson.EventClass.find(
+                  (evtClass) => evtClass.EventClassId === classResult.EventClass.EventClassId
+                );
+                if (Array.isArray(currentClass.ClassRaceInfo)) {
+                  currentClass.ClassRaceInfo = currentClass.ClassRaceInfo.find(
+                    (raceInfo) => raceInfo.EventRaceId === eventObject.eventorRaceId
+                  );
+                }
+                currentClass.numberOfEntries = currentClass.ClassRaceInfo['@attributes'].noOfEntries;
+                currentClass.numberOfStarts = currentClass.ClassRaceInfo['@attributes'].noOfStarts;
+              }
+
+              // eslint-disable-next-line eqeqeq
+              if (classResult.PersonResult != undefined) {
+                const PersonResults = Array.isArray(classResult.PersonResult)
+                  ? classResult.PersonResult.filter(
+                      (personResult) =>
+                        // eslint-disable-next-line eqeqeq
+                        personResult.RaceResult == undefined ||
+                        personResult.RaceResult.EventRaceId === eventObject.eventorRaceId
+                    )
+                  : // eslint-disable-next-line eqeqeq
+                  classResult.PersonResult.RaceResult == undefined ||
+                    classResult.PersonResult.RaceResult.EventRaceId === eventObject.eventorRaceId
+                  ? [classResult.PersonResult]
+                  : [];
+                PersonResults.forEach((personResult) => {
+                  eventObject.Competitors.push({
+                    Person: personResult.Person,
+                    EntryClass: currentClass,
+                    // eslint-disable-next-line eqeqeq
+                    Result: personResult.RaceResult != undefined ? personResult.RaceResult.Result : personResult.Result,
+                  });
+                });
+              }
+              // if (classResult.TeamStart != undefined) {
+              //   const TeamStarts = Array.isArray(classResult.TeamStart)
+              //     ? classResult.TeamStart
+              //     : [classResult.TeamStart];
+              //   TeamStarts.forEach(teamStart => {
+              //     eventObject.Competitors.push({
+              //       Person: {
+              //         PersonName: { Given: teamStart.TeamName, Family: "" }
+              //       },
+              //       EntryClass: currentClass,
+              //       Start: { StartTime: teamStart.StartTime }
+              //     });
+              //   });
+              // }
+            });
+          }
+          eventObject.Competitors.forEach((competitor) => {
+            // eslint-disable-next-line eqeqeq
+            if (competitor.Start == undefined || competitor.Start.StartTime == undefined) {
+              competitor.Start = {
+                StartTime: {
+                  Clock: '',
+                },
+              };
             }
             // eslint-disable-next-line eqeqeq
-            if (classStart.TeamStart != undefined) {
-              const TeamStarts = Array.isArray(classStart.TeamStart) ? classStart.TeamStart : [classStart.TeamStart];
-              TeamStarts.forEach((teamStart) => {
-                eventObject.Competitors.push({
-                  Person: {
-                    PersonName: { Given: teamStart.TeamName, Family: '' },
-                  },
-                  EntryClass: currentClass,
-                  Start: { StartTime: teamStart.StartTime },
-                });
-              });
-            }
-          });
-        }
-        // eslint-disable-next-line eqeqeq
-        if (resultJson != undefined && resultJson.ClassResult != undefined) {
-          eventObject.Competitors = [];
-          const ClassResults = Array.isArray(resultJson.ClassResult)
-            ? resultJson.ClassResult
-            : [resultJson.ClassResult];
-          ClassResults.forEach((classResult) => {
-            let currentClass = {
-              EventClassId: classResult.EventClass.EventClassId,
-            };
-            // eslint-disable-next-line eqeqeq
-            if (classJson != undefined) {
-              currentClass = classJson.EventClass.find(
-                (evtClass) => evtClass.EventClassId === classResult.EventClass.EventClassId
+            if (competitor.EntryClass.ClassShortName == undefined && classJson != undefined) {
+              const currentClass = classJson.EventClass.find(
+                (evtClass) => evtClass.EventClassId === competitor.EntryClass.EventClassId
               );
               if (Array.isArray(currentClass.ClassRaceInfo)) {
                 currentClass.ClassRaceInfo = currentClass.ClassRaceInfo.find(
@@ -238,101 +305,40 @@ const EventRace = inject('clubModel')(
               }
               currentClass.numberOfEntries = currentClass.ClassRaceInfo['@attributes'].noOfEntries;
               currentClass.numberOfStarts = currentClass.ClassRaceInfo['@attributes'].noOfStarts;
+              competitor.EntryClass = currentClass;
             }
-
-            // eslint-disable-next-line eqeqeq
-            if (classResult.PersonResult != undefined) {
-              const PersonResults = Array.isArray(classResult.PersonResult)
-                ? classResult.PersonResult.filter(
-                    (personResult) =>
-                      // eslint-disable-next-line eqeqeq
-                      personResult.RaceResult == undefined ||
-                      personResult.RaceResult.EventRaceId === eventObject.eventorRaceId
-                  )
-                : // eslint-disable-next-line eqeqeq
-                classResult.PersonResult.RaceResult == undefined ||
-                  classResult.PersonResult.RaceResult.EventRaceId === eventObject.eventorRaceId
-                ? [classResult.PersonResult]
-                : [];
-              PersonResults.forEach((personResult) => {
-                eventObject.Competitors.push({
-                  Person: personResult.Person,
-                  EntryClass: currentClass,
-                  // eslint-disable-next-line eqeqeq
-                  Result: personResult.RaceResult != undefined ? personResult.RaceResult.Result : personResult.Result,
-                });
-              });
-            }
-            // if (classResult.TeamStart != undefined) {
-            //   const TeamStarts = Array.isArray(classResult.TeamStart)
-            //     ? classResult.TeamStart
-            //     : [classResult.TeamStart];
-            //   TeamStarts.forEach(teamStart => {
-            //     eventObject.Competitors.push({
-            //       Person: {
-            //         PersonName: { Given: teamStart.TeamName, Family: "" }
-            //       },
-            //       EntryClass: currentClass,
-            //       Start: { StartTime: teamStart.StartTime }
-            //     });
-            //   });
-            // }
           });
-        }
-        eventObject.Competitors.forEach((competitor) => {
           // eslint-disable-next-line eqeqeq
-          if (competitor.Start == undefined || competitor.Start.StartTime == undefined) {
-            competitor.Start = {
-              StartTime: {
-                Clock: '',
-              },
-            };
-          }
-          // eslint-disable-next-line eqeqeq
-          if (competitor.EntryClass.ClassShortName == undefined && classJson != undefined) {
-            const currentClass = classJson.EventClass.find(
-              (evtClass) => evtClass.EventClassId === competitor.EntryClass.EventClassId
+          if (startJson != undefined && startJson.ClassStart != undefined) {
+            eventObject.Competitors = eventObject.Competitors.sort((a, b) =>
+              a.Start.StartTime.Clock > b.Start.StartTime.Clock
+                ? 1
+                : a.Start.StartTime.Clock < b.Start.StartTime.Clock
+                ? -1
+                : 0
             );
-            if (Array.isArray(currentClass.ClassRaceInfo)) {
-              currentClass.ClassRaceInfo = currentClass.ClassRaceInfo.find(
-                (raceInfo) => raceInfo.EventRaceId === eventObject.eventorRaceId
-              );
-            }
-            currentClass.numberOfEntries = currentClass.ClassRaceInfo['@attributes'].noOfEntries;
-            currentClass.numberOfStarts = currentClass.ClassRaceInfo['@attributes'].noOfStarts;
-            competitor.EntryClass = currentClass;
+            // eslint-disable-next-line eqeqeq
+          } else if (resultJson != undefined && resultJson.ClassResult != undefined) {
+            eventObject.Competitors = eventObject.Competitors.filter(
+              (competitor) =>
+                // eslint-disable-next-line eqeqeq
+                competitor.Result != undefined && competitor.Result.CompetitorStatus['@attributes'].value === 'OK'
+            );
+            eventObject.Competitors = eventObject.Competitors.sort((a, b) =>
+              parseInt(a.Result.ResultPosition) > parseInt(b.Result.ResultPosition)
+                ? 1
+                : parseInt(a.Result.ResultPosition) < parseInt(b.Result.ResultPosition)
+                ? -1
+                : 0
+            );
           }
-        });
-        // eslint-disable-next-line eqeqeq
-        if (startJson != undefined && startJson.ClassStart != undefined) {
-          eventObject.Competitors = eventObject.Competitors.sort((a, b) =>
-            a.Start.StartTime.Clock > b.Start.StartTime.Clock
-              ? 1
-              : a.Start.StartTime.Clock < b.Start.StartTime.Clock
-              ? -1
-              : 0
-          );
-          // eslint-disable-next-line eqeqeq
-        } else if (resultJson != undefined && resultJson.ClassResult != undefined) {
-          eventObject.Competitors = eventObject.Competitors.filter(
-            (competitor) =>
-              // eslint-disable-next-line eqeqeq
-              competitor.Result != undefined && competitor.Result.CompetitorStatus['@attributes'].value === 'OK'
-          );
-          eventObject.Competitors = eventObject.Competitors.sort((a, b) =>
-            parseInt(a.Result.ResultPosition) > parseInt(b.Result.ResultPosition)
-              ? 1
-              : parseInt(a.Result.ResultPosition) < parseInt(b.Result.ResultPosition)
-              ? -1
-              : 0
-          );
-        }
-        const currentDate = moment().format('YYYY-MM-DD');
-        setEvent(eventObject);
-        setShowStart(startJson != null && startJson.ClassStart != null && date >= currentDate);
-        setShowResult(resultJson != null && resultJson.ClassResult != null);
-        setLoaded(true);
-      });
+          const currentDate = moment().format('YYYY-MM-DD');
+          setEvent(eventObject);
+          setShowStart(startJson != null && startJson.ClassStart != null && date >= currentDate);
+          setShowResult(resultJson != null && resultJson.ClassResult != null);
+          setLoaded(true);
+        })
+        .catch(() => setLoaded(true));
     }, []);
 
     useEffect(() => {
