@@ -54,12 +54,12 @@ const getMenuLevels = (splittedMenus, level = 1, prevMenus = '') => ({
       if (subMenu) {
         return getPageId(subMenu.subMenus, menuPath, level + 1);
       }
-      subMenu = menu.subMenus.find(m => m.description.toLocaleLowerCase() === menuPaths[level].toLocaleLowerCase());
+      subMenu = menu.subMenus.find(m => m.description.toLocaleLowerCase().replace(/\s+/g, '') === menuPaths[level].toLocaleLowerCase().replace(/\s+/g, ''));
       if (subMenu) {
         return getPageId(subMenu.subMenus, menuPath, level + 1);
       }
     }
-    menuItem = menu.menuItems.find(m => m.menuPath.toLocaleLowerCase() === menuPath.toLocaleLowerCase());
+    menuItem = menu.menuItems.find(m => m.menuPath.toLocaleLowerCase().replace(/\s+/g, '') === menuPath.toLocaleLowerCase().replace(/\s+/g, ''));
     if (menuItem) {
       return menuItem.pageId;
     }

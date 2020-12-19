@@ -4,7 +4,7 @@ import { observer, inject } from 'mobx-react';
 import CKEditor from '@ckeditor/ckeditor5-react';
 import ClassicEditor, { ckEditorConfig } from './ckeditor';
 import styled from 'styled-components';
-import { Button, Form, Input, Popconfirm, Select, Spin, message } from 'antd';
+import { Button, Form, Input, Popconfirm, Select, Spin, Alert, message } from 'antd';
 import { PostJsonData } from '../../utils/api';
 import { SpinnerDiv } from '../styled/styled';
 import FormItem from '../formItems/FormItem';
@@ -44,6 +44,7 @@ const HtmlEditor = inject(
     const { t } = useTranslation();
     const [currentEditor, setCurrentEditor] = useState();
     const [pageId, setPageId] = useState();
+    const [error, setError] = useState();
     const [isReadOnly, setIsReadOnly] = useState(path !== '/page/new');
     const [isEditable, setEditable] = useState(path === '/page/new');
     const [form] = Form.useForm();
@@ -65,6 +66,7 @@ const HtmlEditor = inject(
     }, [currentEditor, isReadOnly]);
 
     useEffect(() => {
+      setError(undefined);
       if (path === '/page/new' || globalStateModel.htmlEditorMenu === undefined) {
         return;
       }
@@ -73,7 +75,7 @@ const HtmlEditor = inject(
       setIsReadOnly(true);
       const pageId = getPageId(globalStateModel.htmlEditorMenu.toJSON(), path);
       if (!pageId) {
-        message.error('Page not found');
+        setError('404 - Page not found');
         setLoading(false);
         return;
       }
@@ -107,8 +109,8 @@ const HtmlEditor = inject(
           setLoading(false);
         })
         .catch((e) => {
-          message.error(e.message);
           setLoading(false);
+          setError(e.message);
         });
     }, [
       htmlEditorModule.queryUrl,
@@ -173,6 +175,8 @@ const HtmlEditor = inject(
       <SpinnerDiv>
         <Spin size="large" />
       </SpinnerDiv>
+    ) : error ? (
+      <Alert message="Error" description={error} type="error" showIcon />
     ) : (
       <>
         {!isReadOnly ? (
