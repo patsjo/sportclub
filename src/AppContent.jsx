@@ -1,7 +1,7 @@
 import React, { lazy } from 'react';
 import { observer, inject } from 'mobx-react';
 import styled from 'styled-components';
-import { dashboardContents } from './models/globalStateModel';
+import { Switch, Route, useLocation } from 'react-router-dom';
 const Dashboard = lazy(() => import('./components/dashboard/Dashboard'));
 const News = lazy(() => import('./components/news/News'));
 const League = lazy(() => import('./components/results/League'));
@@ -34,33 +34,46 @@ const AppContent = inject(
   'globalStateModel'
 )(
   observer(({ clubModel, globalStateModel }) => {
-    const Content =
-      globalStateModel.dashboardContentId === dashboardContents.home ? (
-        <Dashboard />
-      ) : globalStateModel.dashboardContentId === dashboardContents.news ? (
-        <News />
-      ) : globalStateModel.dashboardContentId === dashboardContents.calendar ? (
-        <>
-          <NoMonthlyContainer>
-            <WeeklyCalendar />
-          </NoMonthlyContainer>
-          <MonthlyCalendar />
-        </>
-      ) : globalStateModel.dashboardContentId === dashboardContents.scoringBoard ? (
-        <League />
-      ) : globalStateModel.dashboardContentId === dashboardContents.results ? (
-        <ViewResults key="clubViewResult" isIndividual={false} />
-      ) : globalStateModel.dashboardContentId === dashboardContents.individualResults ? (
-        <ViewResults key="individualViewResult" isIndividual={true} />
-      ) : globalStateModel.dashboardContentId === dashboardContents.resultsFees ? (
-        <ResultsFees key="resultsFees" />
-      ) : globalStateModel.dashboardContentId === dashboardContents.htmlEditor ? (
-        <HtmlEditor key="htmlEditor" loadPageId={globalStateModel.pageId} />
-      ) : globalStateModel.dashboardContentId === dashboardContents.ourSponsors ? (
-        <AllSponsors key="individualViewResult" isIndividual />
-      ) : null;
+    const location = useLocation();
 
-    return <ContentArea>{Content}</ContentArea>;
+    return (
+      <ContentArea>
+        <Switch>
+          <Route exact path="/news">
+            <News />
+          </Route>
+          <Route exact path="/calendar">
+            <>
+              <NoMonthlyContainer>
+                <WeeklyCalendar />
+              </NoMonthlyContainer>
+              <MonthlyCalendar />
+            </>
+          </Route>
+          <Route exact path="/league">
+            <League />
+          </Route>
+          <Route exact path="/results/individual">
+            <ViewResults key="individualViewResult" isIndividual={true} />
+          </Route>
+          <Route exact path="/results/fees">
+            <ResultsFees key="resultsFees" />
+          </Route>
+          <Route exact path="/results">
+            <ViewResults key="clubViewResult" isIndividual={false} />
+          </Route>
+          <Route exact path="/sponsors">
+            <AllSponsors key="individualViewResult" isIndividual />
+          </Route>
+          <Route exact path="/">
+            <Dashboard />
+          </Route>
+          <Route path="*">
+            <HtmlEditor key="htmlEditor" path={location.pathname} />
+          </Route>
+        </Switch>
+      </ContentArea>
+    );
   })
 );
 

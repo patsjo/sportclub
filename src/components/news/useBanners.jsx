@@ -1,18 +1,19 @@
 import React from 'react';
-import { dashboardContents } from '../../models/globalStateModel';
 import BannerItem from './BannerItem';
 import { Spin } from 'antd';
 import styled from 'styled-components';
 import { PostJsonData } from '../../utils/api';
+import { useLocation } from 'react-router-dom';
 
 const SpinnerDiv = styled.div`
   text-align: center;
   width: 100%;
 `;
 
-const useBanners = (globalStateModel, clubModel) => {
+const useBanners = (clubModel) => {
   const [firstLoading, setFirstLoading] = React.useState(true);
   const [bannerItems, setBannerItems] = React.useState([]);
+  const location = useLocation();
 
   const loadBanners = React.useCallback(() => {
     const url = clubModel.modules.find((module) => module.name === 'News').queryUrl;
@@ -32,11 +33,11 @@ const useBanners = (globalStateModel, clubModel) => {
   }, []);
 
   React.useEffect(() => {
-    if (globalStateModel.dashboardContentId !== dashboardContents.home) {
+    if (location.pathname !== '/') {
       return;
     }
     loadBanners();
-  }, [globalStateModel.dashboardContentId]);
+  }, [location.pathname]);
 
   return !firstLoading
     ? bannerItems.map((newsObject) => (

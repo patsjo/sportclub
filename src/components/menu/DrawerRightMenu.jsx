@@ -7,10 +7,10 @@ import MenuItem from './MenuItem';
 import LoginMenuItem from '../login/LoginMenuItem';
 import ModuleSubMenu from './moduleSubMenus/ModuleSubMenu';
 import MaterialIcon from '../materialIcon/MaterialIcon';
-import { dashboardContents } from '../../models/globalStateModel';
 import { getHtmlEditorMenus } from '../htmlEditor/HtmlEditorMenus';
 import { HtmlEditorLinkModal } from '../htmlEditor/HtmlEditorLinkModal';
 import { DefaultMenuPath } from '../htmlEditor/HtmlEditor';
+import { useHistory } from 'react-router-dom';
 
 const StyledDrawer = styled(Drawer)`
   &&& {
@@ -48,6 +48,7 @@ const DrawerRightMenu = inject(
     const { t } = useTranslation();
     const { clubModel, globalStateModel, sessionModel } = props;
     const [htmEditorLinkform] = Form.useForm();
+    const history = useHistory();
 
     return (
       <StyledDrawer
@@ -64,7 +65,7 @@ const DrawerRightMenu = inject(
             icon={'HomeIcon'}
             name={t('modules.Home')}
             onClick={() => {
-              globalStateModel.setDashboard(dashboardContents.home);
+              globalStateModel.setDashboard(history, '/');
             }}
           />
           <LoginMenuItem />
@@ -100,7 +101,7 @@ const DrawerRightMenu = inject(
               {globalStateModel.htmlEditorMenu ? (
                 getHtmlEditorMenus(
                   globalStateModel.htmlEditorMenu,
-                  globalStateModel.setHtmlEditor,
+                  (path) => globalStateModel.setHtmlEditor(history, path),
                   '',
                   htmEditorLinkform,
                   t,
@@ -117,7 +118,7 @@ const DrawerRightMenu = inject(
                 name={t('modules.HtmlEditor')}
                 disabled={!sessionModel.loggedIn || !sessionModel.isAdmin}
                 onClick={() => {
-                  globalStateModel.setHtmlEditor(-1);
+                  globalStateModel.setHtmlEditor(history, '/page/new');
                 }}
               />
               <MenuItem
@@ -150,7 +151,7 @@ const DrawerRightMenu = inject(
               icon={'bank'}
               name={t('common.OurSponsors')}
               onClick={() => {
-                globalStateModel.setDashboard(dashboardContents.ourSponsors);
+                globalStateModel.setDashboard(history, '/sponsors');
               }}
             />
           ) : null}

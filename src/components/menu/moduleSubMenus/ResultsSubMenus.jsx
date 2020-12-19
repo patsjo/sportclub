@@ -3,7 +3,7 @@ import { inject, observer } from 'mobx-react';
 import { AuditOutlined } from '@ant-design/icons';
 import MenuItem from '../MenuItem';
 import { useTranslation } from 'react-i18next';
-import { dashboardContents } from '../../../models/globalStateModel';
+import { useHistory } from 'react-router-dom';
 const ResultsWizardModal = lazy(() => import('../../results/ResultsWizardModal'));
 const InvoiceWizardModal = lazy(() => import('../../results/InvoiceWizardModal'));
 
@@ -20,6 +20,7 @@ const ResultsSubMenus = inject(
     const [addResultsWizardModalIsOpen, setAddResultsWizardModalIsOpen] = useState(false);
     const [invoiceWizardModalIsOpen, setInvoiceWizardModalIsOpen] = useState(false);
     const [addOldResultsWizardModalIsOpen, setAddOldResultsWizardModalIsOpen] = useState(false);
+    const history = useHistory();
 
     return (
       <>
@@ -44,7 +45,7 @@ const ResultsSubMenus = inject(
           isSubMenu
           onClick={() => {
             globalStateModel.setValue('rightMenuVisible', false);
-            globalStateModel.setDashboard(dashboardContents.results);
+            globalStateModel.setDashboard(history, '/results');
           }}
         />
         <MenuItem
@@ -55,7 +56,7 @@ const ResultsSubMenus = inject(
           isSubMenu
           onClick={() => {
             globalStateModel.setValue('rightMenuVisible', false);
-            globalStateModel.setDashboard(dashboardContents.individualResults);
+            globalStateModel.setDashboard(history, '/results/individual');
           }}
         />
         <MenuItem
@@ -88,7 +89,7 @@ const ResultsSubMenus = inject(
           isSubMenu
           onClick={() => {
             globalStateModel.setValue('rightMenuVisible', false);
-            globalStateModel.setDashboard(dashboardContents.resultsFees);
+            globalStateModel.setDashboard(history, '/results/fees');
           }}
         />
         <MenuItem

@@ -39,3 +39,29 @@ const getMenuLevels = (splittedMenus, level = 1, prevMenus = '') => ({
 
     return menuLevels;
   };
+
+  export const getPageId = (menu, menuPath, level = 0) => {
+    if (!menu) {
+      return undefined;
+    }
+    let menuItem = menu.menuItems.find(m => m.menuPath === menuPath);
+    if (menuItem) {
+      return menuItem.pageId;
+    }
+    const menuPaths = menuPath.replace(/^[\s/]+|[\s/]+$/g, '').split('/');
+    if (Array.isArray(menuPaths) && menuPaths.length > level + 1) {
+      let subMenu = menu.subMenus.find(m => m.description === menuPaths[level]);
+      if (subMenu) {
+        return getPageId(subMenu.subMenus, menuPath, level + 1);
+      }
+      subMenu = menu.subMenus.find(m => m.description.toLocaleLowerCase() === menuPaths[level].toLocaleLowerCase());
+      if (subMenu) {
+        return getPageId(subMenu.subMenus, menuPath, level + 1);
+      }
+    }
+    menuItem = menu.menuItems.find(m => m.menuPath.toLocaleLowerCase() === menuPath.toLocaleLowerCase());
+    if (menuItem) {
+      return menuItem.pageId;
+    }
+    return undefined;
+  }

@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { inject, observer } from 'mobx-react';
 import MenuItem from '../MenuItem';
 import { useTranslation } from 'react-i18next';
-import { dashboardContents } from '../../../models/globalStateModel';
 import EventSelectorWizardModal from '../../calendar/eventSelector/EventSelectorWizardModal';
 import CalendarEdit from '../../calendar/item/CalendarEdit';
 import { PostJsonData } from '../../../utils/api';
 import { message } from 'antd';
 import moment from 'moment';
 import { dateFormat } from '../../../utils/formHelper';
+import { useHistory } from 'react-router-dom';
 
 const moduleName = 'Calendar';
 const defaultCalendarObject = (userId) => ({
@@ -40,6 +40,7 @@ const CalendarSubMenus = inject(
     const [addCalendarModalIsOpen, setAddCalendarModalIsOpen] = useState(false);
     const [eventSelectorWizardModalIsOpen, setEventSelectorWizardModalIsOpen] = useState(false);
     const [domains, setDomains] = useState();
+    const history = useHistory();
 
     useEffect(() => {
       const url = clubModel.modules.find((module) => module.name === 'Calendar').queryUrl;
@@ -83,7 +84,8 @@ const CalendarSubMenus = inject(
           isSubMenu
           onClick={() => {
             globalStateModel.setDashboard(
-              dashboardContents.calendar,
+              history,
+              '/calendar',
               moment().startOf('month').format(dateFormat),
               moment().endOf('month').format(dateFormat),
               1

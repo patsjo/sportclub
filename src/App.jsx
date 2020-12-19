@@ -8,8 +8,8 @@ import styled, { ThemeProvider } from 'styled-components';
 import Toolbar from './components/toolbar/Toolbar';
 import { Provider } from 'mobx-react';
 import { PostJsonData } from './utils/api';
-import { dashboardContents } from './models/globalStateModel';
 import AppContent from './AppContent';
+import { BrowserRouter as Router, Link } from 'react-router-dom';
 
 const StyledLayout = styled(Layout)`
   background-color: #ffffff;
@@ -145,12 +145,6 @@ class App extends Component {
           : [],
     });
 
-    const queryString = window.location.search;
-    const urlParams = new URLSearchParams(queryString);
-    if (urlParams.has('pageId')) {
-      this.globalStateModel.setHtmlEditor(parseInt(urlParams.get('pageId')));
-    }
-
     document.title = this.clubModel.title;
     // this.theme = createMuiTheme({
     //   ...this.clubModel.theme,
@@ -216,56 +210,49 @@ class App extends Component {
       ? this.clubModel.titleLogo.width * (24 / this.clubModel.titleLogo.height)
       : 0;
     const Header = this.clubModel.titleLogo ? (
-      <StyledTitleLogo
-        src={this.clubModel.titleLogo.url}
-        width={titleWidth}
-        height={24}
-        maxWidth={76 + logoWidth + titleWidth}
-        onClick={() => {
-          this.globalStateModel.setDashboard(dashboardContents.home);
-        }}
-      />
+      <Link to="/">
+        <StyledTitleLogo
+          src={this.clubModel.titleLogo.url}
+          width={titleWidth}
+          height={24}
+          maxWidth={76 + logoWidth + titleWidth}
+        />
+      </Link>
     ) : (
-      <StyledHeader
-        maxWidth={76 + logoWidth}
-        onClick={() => {
-          this.globalStateModel.setDashboard(dashboardContents.home);
-        }}
-      >
-        <StyledEllipsis>{this.clubModel.title}</StyledEllipsis>
-      </StyledHeader>
+      <Link to="/">
+        <StyledHeader maxWidth={76 + logoWidth}>
+          <StyledEllipsis>{this.clubModel.title}</StyledEllipsis>
+        </StyledHeader>
+      </Link>
     );
 
     return (
       <Provider clubModel={this.clubModel} sessionModel={this.sessionModel} globalStateModel={this.globalStateModel}>
         <ThemeProvider theme={this.clubModel.theme}>
-          <StyledLayout onScroll={this.onScroll} ref={this.scrollRef}>
-            <StickyHolder top={this.state.stickyPos}>
-              <LayoutHeader>
-                <StyledLogo
-                  src={this.clubModel.logo.url}
-                  width={logoWidth}
-                  height={logoHeight}
-                  onClick={() => {
-                    this.globalStateModel.setDashboard(dashboardContents.home);
-                  }}
-                />
-                {Header}
-                <Toolbar />
-              </LayoutHeader>
-            </StickyHolder>
-            <LayoutContent>
-              <Suspense
-                fallback={
-                  <SpinnerDiv>
-                    <Spin size="large" />
-                  </SpinnerDiv>
-                }
-              >
-                <AppContent />
-              </Suspense>
-            </LayoutContent>
-          </StyledLayout>
+          <Router>
+            <StyledLayout onScroll={this.onScroll} ref={this.scrollRef}>
+              <StickyHolder top={this.state.stickyPos}>
+                <LayoutHeader>
+                  <Link to="/">
+                    <StyledLogo src={this.clubModel.logo.url} width={logoWidth} height={logoHeight} />
+                  </Link>
+                  {Header}
+                  <Toolbar />
+                </LayoutHeader>
+              </StickyHolder>
+              <LayoutContent>
+                <Suspense
+                  fallback={
+                    <SpinnerDiv>
+                      <Spin size="large" />
+                    </SpinnerDiv>
+                  }
+                >
+                  <AppContent />
+                </Suspense>
+              </LayoutContent>
+            </StyledLayout>
+          </Router>
         </ThemeProvider>
       </Provider>
     );

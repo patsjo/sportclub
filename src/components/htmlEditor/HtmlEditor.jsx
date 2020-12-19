@@ -9,9 +9,10 @@ import { PostJsonData } from '../../utils/api';
 import { SpinnerDiv } from '../styled/styled';
 import FormItem from '../formItems/FormItem';
 import { hasErrors, errorRequiredField } from '../../utils/formHelper';
-import { dashboardContents } from '../../models/globalStateModel';
+import { getPageId } from '../../utils/htmlEditorMenuHelper';
 import { CopyOutlined } from '@ant-design/icons';
 import copy from 'copy-to-clipboard';
+import { useHistory } from 'react-router-dom';
 import './ckeditor5.css';
 
 const DefaultData = '<p>Här lägger man in all text och bilder</p>';
@@ -39,22 +40,23 @@ const HtmlEditor = inject(
   'globalStateModel',
   'sessionModel'
 )(
-  observer(({ clubModel, globalStateModel, sessionModel, loadPageId }) => {
+  observer(({ clubModel, globalStateModel, sessionModel, path }) => {
     const { t } = useTranslation();
     const [currentEditor, setCurrentEditor] = useState();
-    const [pageId, setPageId] = useState(loadPageId);
-    const [isReadOnly, setIsReadOnly] = useState(loadPageId > 0);
-    const [isEditable, setEditable] = useState(false);
+    const [pageId, setPageId] = useState();
+    const [isReadOnly, setIsReadOnly] = useState(path !== '/page/new');
+    const [isEditable, setEditable] = useState(path === '/page/new');
     const [form] = Form.useForm();
     const [data, setData] = useState(DefaultData);
     const [menuPath, setMenuPath] = useState(DefaultMenuPath);
     const [groups, setGroups] = useState([]);
     const [valid, setValid] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [loading, setLoading] = useState(loadPageId > 0);
+    const [loading, setLoading] = useState(path !== '/page/new');
     const formId = 'htmlEditorForm' + Math.floor(Math.random() * 10000000000000000);
     const htmlEditorModule = clubModel.modules.find((module) => module.name === 'HTMLEditor');
     const toolbarContainer = useRef();
+    const history = useHistory();
 
     useEffect(() => {
       if (currentEditor) {
@@ -63,13 +65,23 @@ const HtmlEditor = inject(
     }, [currentEditor, isReadOnly]);
 
     useEffect(() => {
+      if (path === '/page/new' || globalStateModel.htmlEditorMenu === undefined) {
+        return;
+      }
       setLoading(true);
-      setIsReadOnly(loadPageId >= 0);
+      setEditable(false);
+      setIsReadOnly(true);
+      const pageId = getPageId(globalStateModel.htmlEditorMenu.toJSON(), path);
+      if (!pageId) {
+        message.error('Page not found');
+        setLoading(false);
+        return;
+      }
       PostJsonData(
         htmlEditorModule.queryUrl,
         {
           iType: 'PAGE',
-          iPageID: loadPageId,
+          iPageID: pageId,
           username: sessionModel.username,
           password: sessionModel.password,
         },
@@ -77,8 +89,8 @@ const HtmlEditor = inject(
         sessionModel.authorizationHeader
       )
         .then((pageResponse) => {
-          setPageId(loadPageId);
-          if (loadPageId > 0) {
+          setPageId(pageResponse.pageId);
+          if (pageResponse.pageId > 0) {
             setData(pageResponse.data);
             setMenuPath(pageResponse.menuPath);
           } else {
@@ -88,8 +100,8 @@ const HtmlEditor = inject(
           setGroups(pageResponse.groups);
           setEditable(pageResponse.isEditable);
           form.setFieldsValue({
-            iPageID: loadPageId,
-            iMenuPath: loadPageId > 0 ? pageResponse.menuPath : DefaultMenuPath,
+            iPageID: pageResponse.pageId,
+            iMenuPath: pageResponse.pageId > 0 ? pageResponse.menuPath : DefaultMenuPath,
             iGroupIds: pageResponse.groups.filter((group) => group.selected).map((group) => group.groupId),
           });
           setLoading(false);
@@ -103,7 +115,8 @@ const HtmlEditor = inject(
       sessionModel.authorizationHeader,
       sessionModel.username,
       sessionModel.password,
-      loadPageId,
+      globalStateModel.htmlEditorMenu,
+      path,
       form,
     ]);
 
@@ -212,9 +225,11 @@ const HtmlEditor = inject(
           <StyledButton
             icon={<CopyOutlined />}
             onClick={() => {
-              copy(`${window.location.origin}${window.location.pathname}?pageId=${pageId}`);
+              copy(`${window.location.origin}/${menuPath.startsWith('/') ? menuPath.substr(1) : menuPath}`);
               message.success(
-                `${t('htmlEditor.CopyUrl')}: ${window.location.origin}${window.location.pathname}?pageId=${pageId}`
+                `${t('htmlEditor.CopyUrl')}: ${window.location.origin}/${
+                  menuPath.startsWith('/') ? menuPath.substr(1) : menuPath
+                }`
               );
             }}
           >
@@ -249,7 +264,7 @@ const HtmlEditor = inject(
                   sessionModel.authorizationHeader
                 )
                   .then(() => {
-                    globalStateModel.setDashboard(dashboardContents.home);
+                    globalStateModel.setDashboard(history, '/');
                   })
                   .catch((e) => {
                     message.error(e.message);

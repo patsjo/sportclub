@@ -9,7 +9,7 @@ import moment from 'moment';
 import { PostJsonData } from '../../../utils/api';
 import CalendarItem from '../item/CalendarItem';
 import { dateFormat } from '../../../utils/formHelper';
-import { dashboardContents } from '../../../models/globalStateModel';
+import { useHistory } from 'react-router-dom';
 
 const dayNotInMonthColor = '#D0D0D0';
 
@@ -127,6 +127,7 @@ const MonthlyCalendar = inject(
     const [loaded, setLoaded] = useState(false);
     const [activities, setActivities] = useState([]);
     const [domains, setDomains] = useState({});
+    const history = useHistory();
 
     useEffect(() => {
       setLoaded(false);
@@ -175,7 +176,8 @@ const MonthlyCalendar = inject(
     const onPrevious = useCallback(
       () =>
         globalStateModel.setDashboard(
-          dashboardContents.calendar,
+          history,
+          '/calendar',
           moment(globalStateModel.startDate).add(-1, 'months').startOf('month').format(dateFormat),
           moment(globalStateModel.startDate).add(-1, 'months').endOf('month').format(dateFormat),
           1
@@ -186,7 +188,8 @@ const MonthlyCalendar = inject(
     const onNext = useCallback(
       () =>
         globalStateModel.setDashboard(
-          dashboardContents.calendar,
+          history,
+          '/calendar',
           moment(globalStateModel.startDate).add(1, 'months').startOf('month').format(dateFormat),
           moment(globalStateModel.startDate).add(1, 'months').endOf('month').format(dateFormat),
           1

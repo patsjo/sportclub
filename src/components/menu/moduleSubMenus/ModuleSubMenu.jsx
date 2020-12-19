@@ -6,7 +6,7 @@ import CalendarSubMenus from './CalendarSubMenus';
 import MenuItem from '../MenuItem';
 import { useTranslation } from 'react-i18next';
 import { inject, observer } from 'mobx-react';
-import { dashboardContents } from '../../../models/globalStateModel';
+import { useHistory } from 'react-router-dom';
 
 const ModuleSubMenu = inject(
   'clubModel',
@@ -15,6 +15,7 @@ const ModuleSubMenu = inject(
   observer((props) => {
     const { module, clubModel, globalStateModel, ...other } = props;
     const { t } = useTranslation();
+    const history = useHistory();
 
     switch (module.name) {
       case 'Eventor':
@@ -38,7 +39,7 @@ const ModuleSubMenu = inject(
             name={t('modules.ScoringBoard')}
             onClick={() => {
               globalStateModel.setValue('rightMenuVisible', false);
-              globalStateModel.setDashboard(dashboardContents.scoringBoard);
+              globalStateModel.setDashboard(history, '/league');
             }}
           />
         );

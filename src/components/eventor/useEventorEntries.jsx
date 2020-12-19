@@ -1,9 +1,9 @@
 import React from 'react';
 import { Spin } from 'antd';
 import styled from 'styled-components';
-import { dashboardContents } from '../../models/globalStateModel';
 import { GetJsonData, PostJsonData } from '../../utils/api';
 import EventRace from './EventRace';
+import { useLocation } from 'react-router-dom';
 
 const SpinnerDiv = styled.div`
   text-align: center;
@@ -12,12 +12,13 @@ const SpinnerDiv = styled.div`
 
 const flatten = (list) => list.reduce((a, b) => a.concat(Array.isArray(b) ? flatten(b) : b), []);
 
-const useEventorEntries = (globalStateModel, clubModel, dashboardContentId) => {
+const useEventorEntries = (clubModel) => {
   const [loaded, setLoaded] = React.useState(false);
   const [events, setEvents] = React.useState([]);
+  let location = useLocation();
 
   React.useEffect(() => {
-    if (dashboardContentId !== dashboardContents.home) {
+    if (location.pathname != '/') {
       return;
     }
     const now = new Date();
@@ -201,7 +202,7 @@ const useEventorEntries = (globalStateModel, clubModel, dashboardContentId) => {
         };
       }
     );
-  }, [dashboardContentId]);
+  }, [location.pathname]);
 
   const Items = loaded
     ? events.map((event, index) => (

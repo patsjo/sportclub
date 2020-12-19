@@ -63,7 +63,7 @@ const getMenuItems = (items, setHtmlEditor, htmEditorLinkform, t, globalStateMod
       name={item.description}
       onClick={() => {
         if (item.pageId) {
-          setHtmlEditor(item.pageId);
+          setHtmlEditor(item.menuPath);
         } else {
           const win = window.open(item.url, '_blank');
           win.focus();

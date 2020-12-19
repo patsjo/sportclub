@@ -1,9 +1,9 @@
 import React, { useCallback } from 'react';
-import { dashboardContents } from '../../models/globalStateModel';
 import NewsItem from './NewsItem';
 import { Spin } from 'antd';
 import styled from 'styled-components';
 import { PostJsonData } from '../../utils/api';
+import { useLocation } from 'react-router-dom';
 
 const SpinnerDiv = styled.div`
   text-align: center;
@@ -12,6 +12,7 @@ const SpinnerDiv = styled.div`
 
 const useNews = (globalStateModel, clubModel) => {
   const [firstLoading, setFirstLoading] = React.useState(true);
+  const location = useLocation();
 
   const loadNews = useCallback(() => {
     const url = clubModel.modules.find((module) => module.name === 'News').queryUrl;
@@ -38,20 +39,17 @@ const useNews = (globalStateModel, clubModel) => {
       globalStateModel.news.addNewsItemsToBottom(newArray);
       setFirstLoading(false);
     });
-  }, [globalStateModel.dashboardContentId, globalStateModel.type]);
+  }, [location.pathname, globalStateModel.type]);
 
   React.useEffect(() => {
-    if (
-      globalStateModel.dashboardContentId !== dashboardContents.home &&
-      globalStateModel.dashboardContentId !== dashboardContents.news
-    ) {
+    if (location.pathname !== '/' && location.pathname !== '/news') {
       return;
     }
     loadNews();
     return () => {
       globalStateModel.news.reset();
     };
-  }, [globalStateModel.dashboardContentId, globalStateModel.type]);
+  }, [location.pathname, globalStateModel.type]);
 
   const { newsItems } = globalStateModel.news;
 
@@ -61,15 +59,12 @@ const useNews = (globalStateModel, clubModel) => {
       ? newsItems.map((newsObject) => (
           <NewsItem
             key={'newsObject#' + newsObject.id}
-            column={globalStateModel.dashboardContentId === dashboardContents.home ? 50 : undefined}
+            column={location.pathname === '/' ? 50 : undefined}
             newsObject={newsObject}
           />
         ))
       : [
-          <SpinnerDiv
-            key="newsObject#spinner"
-            column={globalStateModel.dashboardContentId === dashboardContents.home ? 50 : undefined}
-          >
+          <SpinnerDiv key="newsObject#spinner" column={location.pathname === '/' ? 50 : undefined}>
             <Spin size="large" />
           </SpinnerDiv>,
         ],
