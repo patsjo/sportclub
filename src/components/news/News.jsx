@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import useNews from './useNews';
 import { observer, inject } from 'mobx-react';
 import Columns from '../dashboard/columns/Columns';
-import InfiniteScroll from 'react-infinite-scroller';
+import InfiniteScroll from '../../utils/infinityScroll';
 import { Spin } from 'antd';
 
 const SpinnerDiv = styled.div`

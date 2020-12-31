@@ -10,7 +10,7 @@ import SponsorsSlideshow from '../sponsors/SponsorsSlideshow';
 import { observer, inject } from 'mobx-react';
 import { getSnapshot } from 'mobx-state-tree';
 import Columns from './columns/Columns';
-import InfiniteScroll from 'react-infinite-scroller';
+import InfiniteScroll from '../../utils/infinityScroll';
 import { Spin } from 'antd';
 import ShowFacebookTimeline from '../facebook/ShowFacebookTimeline';
 
