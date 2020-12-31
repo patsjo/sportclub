@@ -36,7 +36,8 @@ export const NewsModel = types
         self.newsItems.unshift(newsitem);
       },
       addNewsItemsToBottom(newsitems) {
-        self.newsItems = [...self.newsItems, ...newsitems];
+        const addItems = newsitems.filter(newsItem => !self.newsItems.some(item => item.id === newsItem.id));
+        self.newsItems = [...self.newsItems, ...addItems];
         self.offset = self.offset + newsitems.length;
         self.hasMoreItems = newsitems.length === self.limit;
       },

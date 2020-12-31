@@ -41,9 +41,13 @@ export default class InfiniteScroll extends Component {
   }
 
   componentDidMount() {
+    const self = this;
     this.pageLoaded = this.props.pageStart;
     this.options = this.eventListenerOptions();
     this.attachScrollListener();
+    setTimeout(() => {
+      self.scrollListener();
+    }, 3000);
   }
 
   componentWillUnmount() {
