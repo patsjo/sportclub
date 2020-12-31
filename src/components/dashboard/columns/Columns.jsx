@@ -40,15 +40,18 @@ const Columns = ({ children }) => {
   const [columns, setColumns] = useState(getColumns(getWidth()));
   const childItems = useRef([]);
 
-  const onHeightChange = useCallback((key, height) => {
-    const child = childItems.current.find((c) => c.key === key);
+  const onHeightChange = useCallback(
+    (key, height) => {
+      const child = childItems.current.find((c) => c.key === key);
 
-    if (child && child.height !== height) {
-      child.height = height;
-      mapNodesToColumns(childItems.current, columns);
-      setRenderTrigger(!renderTrigger);
-    }
-  }, []);
+      if (child && child.height !== height) {
+        child.height = height;
+        mapNodesToColumns(childItems.current, columns);
+        setRenderTrigger(!renderTrigger);
+      }
+    },
+    [columns]
+  );
 
   useEffect(() => {
     const resizeListener = () => {
@@ -64,7 +67,7 @@ const Columns = ({ children }) => {
     return () => {
       window.removeEventListener('resize', resizeListener);
     };
-  }, []);
+  }, [columns]);
 
   useEffect(() => {
     const newChildItems = allChildren

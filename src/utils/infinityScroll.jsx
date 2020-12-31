@@ -192,7 +192,7 @@ export default class InfiniteScroll extends Component {
   }
 
   calculateOffset(el, scrollTop) {
-    if (!el || el.offsetHeight < window.innerHeight) {
+    if (!el) {
       return -1;
     }
 

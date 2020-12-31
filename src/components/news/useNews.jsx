@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import NewsItem from './NewsItem';
 import { Spin } from 'antd';
 import styled from 'styled-components';
@@ -12,11 +12,17 @@ const SpinnerDiv = styled.div`
 
 const useNews = (globalStateModel, clubModel) => {
   const [firstLoading, setFirstLoading] = React.useState(true);
+  const [loading, setLoading] = useState(false);
   const location = useLocation();
 
   const loadNews = useCallback(
     () =>
       new Promise((resolve, reject) => {
+        if (loading) {
+          resolve();
+          return;
+        }
+        setLoading(true);
         const url = clubModel.modules.find((module) => module.name === 'News').queryUrl;
         const { limit, offset } = globalStateModel.news;
         const now = new Date();
@@ -41,13 +47,16 @@ const useNews = (globalStateModel, clubModel) => {
             });
             globalStateModel.news.addNewsItemsToBottom(newArray);
             setFirstLoading(false);
+            setLoading(false);
             resolve();
           })
           .catch(() => {
+            setFirstLoading(false);
+            setLoading(false);
             reject();
           });
       }),
-    [location.pathname, globalStateModel.type]
+    [loading, location.pathname, globalStateModel.type]
   );
 
   React.useEffect(() => {

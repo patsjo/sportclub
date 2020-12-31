@@ -12,10 +12,15 @@ const SpinnerDiv = styled.div`
 
 const useBanners = (clubModel) => {
   const [firstLoading, setFirstLoading] = React.useState(true);
+  const [loading, setLoading] = React.useState(false);
   const [bannerItems, setBannerItems] = React.useState([]);
   const location = useLocation();
 
   const loadBanners = React.useCallback(() => {
+    if (loading) {
+      return;
+    }
+    setLoading(true);
     const url = clubModel.modules.find((module) => module.name === 'News').queryUrl;
     const data = {
       iNewsTypeID: 10,
@@ -29,6 +34,7 @@ const useBanners = (clubModel) => {
       });
       setBannerItems(newArray);
       setFirstLoading(false);
+      setLoading(false);
     });
   }, []);
 
