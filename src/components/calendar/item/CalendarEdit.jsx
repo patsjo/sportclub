@@ -277,7 +277,6 @@ const CalendarEdit = inject(
               <Col span={8}>
                 <FormItem
                   name="iActivityDay"
-                  disabled={repeatingDisabled}
                   label={t('calendar.ActivityDay')}
                   rules={[
                     {
@@ -287,7 +286,7 @@ const CalendarEdit = inject(
                     },
                   ]}
                 >
-                  <DatePicker format={dateFormat} style={{ width: '100%' }} />
+                  <DatePicker disabled={repeatingDisabled} format={dateFormat} style={{ width: '100%' }} />
                 </FormItem>
               </Col>
               <Col span={8}>

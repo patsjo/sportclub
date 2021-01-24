@@ -43,7 +43,7 @@ const HtmlEditor = inject(
   observer(({ clubModel, globalStateModel, sessionModel, path }) => {
     const { t } = useTranslation();
     const [currentEditor, setCurrentEditor] = useState();
-    const [pageId, setPageId] = useState();
+    const [pageId, setPageId] = useState(-1);
     const [error, setError] = useState();
     const [isReadOnly, setIsReadOnly] = useState(path !== '/page/new');
     const [isEditable, setEditable] = useState(path === '/page/new');

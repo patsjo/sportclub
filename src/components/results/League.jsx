@@ -269,12 +269,22 @@ const League = inject('clubModel')(
                 return { ...c, position: prevPos, ...c.pointsOld.reduce((ac, a, i) => ({ ...ac, [`p${i}`]: a }), {}) };
               });
 
-            rankingLeague.forEach((c) => {
-              const c1 = pointsJson.find((cc) => cc.competitorId === c.competitorId);
-              if (c1 === undefined) {
-                pointsJson.push({ ...c, points1000: [], points: [], pointsOld: [] });
-              }
-            });
+            rankingJson
+              .filter(
+                (c) =>
+                  (c.ranking.length > 0 || c.rankingRelay.length > 0) &&
+                  (!gender || gender === c.gender) &&
+                  (league.rankingLeagueAgeLimit === 0 ||
+                    searchYear - c.birthYear >= league.rankingLeagueAgeLimit ||
+                    league.rankingRelayLeagueAgeLimit === 0 ||
+                    searchYear - c.birthYear >= league.rankingRelayLeagueAgeLimit)
+              )
+              .forEach((c) => {
+                const c1 = pointsJson.find((cc) => cc.competitorId === c.competitorId);
+                if (c1 === undefined) {
+                  pointsJson.push({ ...c, points1000: [], points: [], pointsOld: [] });
+                }
+              });
 
             prevPoints = [];
             prevPos = 1;

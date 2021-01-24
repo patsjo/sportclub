@@ -8,7 +8,7 @@ export const getImage = (maxSize, ImageComp, newsObject, clubModel) => {
     if (ImageHeight > maxSize && ImageHeight > ImageWidth) {
       ImageWidth = ImageWidth * (maxSize / ImageHeight);
       ImageHeight = maxSize;
-    } else if (ImageWidth > maxSize && ImageWidth > ImageHeight) {
+    } else if (ImageWidth > maxSize && ImageWidth >= ImageHeight) {
       ImageHeight = ImageHeight * (maxSize / ImageWidth);
       ImageWidth = maxSize;
     }
