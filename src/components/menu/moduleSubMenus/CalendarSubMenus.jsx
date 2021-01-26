@@ -23,8 +23,10 @@ const defaultCalendarObject = (userId) => ({
   description: '',
   url: '',
   responsibleUserId: userId,
-  repeatingGid: undefined,
+  repeatingGid: null,
   repeatingModified: false,
+  longitude: null,
+  latitude: null,
 });
 
 const CalendarSubMenus = inject(

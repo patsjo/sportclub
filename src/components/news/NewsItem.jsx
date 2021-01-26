@@ -49,6 +49,13 @@ const NewsImage = styled.img`
   height: auto;
 `;
 
+const NewsReadMore = styled.div`
+  font-size: 14px;
+  font-weight: bold;
+  text-align: left;
+  cursor: pointer;
+`;
+
 const NewsBy = styled.div`
   font-size: 10px;
   font-weight: normal;
@@ -101,23 +108,20 @@ const NewsItem = inject(
         const Image = getImage(200, NewsImage, newsObject, clubModel);
         const ImageBig = getImage(400, NewsImage, newsObject, clubModel);
 
-        const Header = newsObject.link ? (
-          <NewsHeader>
-            {FileDownload}
-            <a href={newsObject.link} target="_blank" rel="noopener noreferrer">
-              <div
-                dangerouslySetInnerHTML={{
-                  __html: newsObject.header,
-                }}
-              />
-            </a>
-          </NewsHeader>
-        ) : (
+        const Header = (
           <NewsHeader>
             {FileDownload}
             <div dangerouslySetInnerHTML={{ __html: newsObject.header }} />
           </NewsHeader>
         );
+
+        const ReadMore = newsObject.link ? (
+          <NewsReadMore>
+            <a href={newsObject.link} target="_blank" rel="noopener noreferrer">
+              Läs mer...
+            </a>
+          </NewsReadMore>
+        ) : null;
 
         return (
           <FadeOutItem
@@ -171,10 +175,11 @@ const NewsItem = inject(
                     }}
                   />
                 </NewsText>
+                {ReadMore}
                 <NewsBy>{newsObject.modifiedBy}</NewsBy>
               </ContentHolder>
             }
-            modalColumns={3}
+            modalColumns={4}
             editFormContent={
               <NewsEdit
                 newsObject={newsObject}

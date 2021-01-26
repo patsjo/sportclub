@@ -13,11 +13,11 @@ export const mapNodesToColumns = (children, columns) => {
     if (child.preferredColumn === undefined) {
       index = heights.indexOf(Math.min(...heights));
     } else if (child.preferredColumn === -50 && columns > 1) {
-      const weightedHeights = heights.map((h, idx) => h > 1000 ? h : (idx < (columns / 2) && h < 280 ? 280 : h) + 300 * ((columns - idx) / columns));
+      const weightedHeights = heights.map((h, idx) => h > 1280 ? h : (idx < (columns / 2) ? (h < 280 ? 840 : 840 + 0.44 * (h-280)) : h));
       index = weightedHeights.indexOf(Math.min(...weightedHeights));
       if (index < 0) index = columns - 1;
     } else if (child.preferredColumn === 50 && columns > 1) {
-      const weightedHeights = heights.map((h, idx) => h > 1000 ? h : (idx >= (columns / 2) && h < 280 ? 280 : h) + 300 * ((1 + idx) / columns));
+      const weightedHeights = heights.map((h, idx) => h > 1280 ? h : (idx > (columns / 2) ? (h < 280 ? 840 : 840 + 0.44 * (h-280)) : h));
       index = weightedHeights.indexOf(Math.min(...weightedHeights));
       if (index < 0) index = 0;
     } else if (child.preferredColumn < 0 && columns > 2) {

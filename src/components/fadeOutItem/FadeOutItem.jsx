@@ -197,7 +197,8 @@ const FadeOutItem = inject('sessionModel')(
               maskClosable={false}
               visible={this.state.showModalItem}
               onCancel={this.closeModal}
-              style={{ top: 40, minWidth: 560 }}
+              width="calc(100% - 80px)"
+              style={{ top: 40, minWidth: 560, maxWidth: 800 }}
               footer={[
                 ShowDeleteAllButton,
                 ShowDeleteButton,

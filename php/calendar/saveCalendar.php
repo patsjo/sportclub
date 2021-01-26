@@ -72,6 +72,10 @@ if ($iType == "ACTIVITY")
   $x->firstRepeatingDate    = getRequestDate("iNewFirstRepeatingDate");
   $x->lastRepeatingDate     = getRequestDate("iNewLastRepeatingDate");
   $x->repeatingGid          = getRequestString("iRepeatingGid");
+  if ($x->repeatingGid == "")
+  {
+    $x->repeatingGid = null;
+  }
   $x->repeatingModified     = getRequestBool("iRepeatingModified");
 
   $isRepeating              = getRequestBool("iIsRepeating");

@@ -70,13 +70,12 @@ const Columns = ({ children }) => {
   }, [columns]);
 
   useEffect(() => {
-    const newChildItems = allChildren
-      .filter((child) => !childItems.current.some((c) => c.key === child.key))
-      .map((child) => ({ key: child.key, height: 70, preferredColumn: child.props.column, column: 0 }));
-    childItems.current = [
-      ...childItems.current.filter((child) => allChildren.some((c) => c.key === child.key)),
-      ...newChildItems,
-    ];
+    childItems.current = allChildren.map((child) => {
+      const existingChild = childItems.current.find((c) => c.key === child.key);
+      return existingChild
+        ? existingChild
+        : { key: child.key, height: 70, preferredColumn: child.props.column, column: 0 };
+    });
     mapNodesToColumns(childItems.current, columns);
     setRenderTrigger(!renderTrigger);
   }, [allChildren.length, columns]);

@@ -165,7 +165,9 @@ const useEventorEntries = (clubModel) => {
         events = events
           .filter((event) => ['5', '6', '7', '8', '9', '11'].includes(event.Event.EventStatusId))
           .map((event) => {
-            const savedEvent = alreadySavedEventsJson.find((saved) => saved.eventorRaceId === event.EventRaceId);
+            const savedEvent = alreadySavedEventsJson.find(
+              (saved) => '' + saved.eventorRaceId === '' + event.EventRaceId
+            );
             return {
               eventorId: event.Event.EventId,
               eventorRaceId: event.EventRaceId,
@@ -204,22 +206,21 @@ const useEventorEntries = (clubModel) => {
     );
   }, [location.pathname]);
 
-  const Items = loaded
-    ? events.map((event, index) => (
-        <EventRace
-          key={'entryObject#' + event.eventorRaceId}
-          column={-50}
-          header={event.name}
-          date={event.date}
-          eventObject={event}
-        />
-      ))
-    : [
-        <SpinnerDiv key="entryObject#spinner" column={-50}>
-          <Spin size="large" />
-        </SpinnerDiv>,
-      ];
-  return Items;
+  return loaded ? (
+    events.map((event, index) => (
+      <EventRace
+        key={'entryObject#' + event.eventorRaceId}
+        column={-50}
+        header={event.name}
+        date={event.date}
+        eventObject={event}
+      />
+    ))
+  ) : (
+    <SpinnerDiv key="entryObject#spinner" column={-50}>
+      <Spin size="large" />
+    </SpinnerDiv>
+  );
 };
 
 export default useEventorEntries;
