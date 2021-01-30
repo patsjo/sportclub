@@ -36,7 +36,7 @@ const NewsHeader = styled.div`
 `;
 
 const NewsIntroduction = styled.div`
-  font-size: 11px;
+  font-size: 13px;
   font-weight: bold;
   text-align: justify;
   text-justify: inter-word;
@@ -44,7 +44,7 @@ const NewsIntroduction = styled.div`
 `;
 
 const NewsText = styled.div`
-  font-size: 11px;
+  font-size: 12px;
   font-weight: normal;
   text-align: justify;
   text-justify: inter-word;

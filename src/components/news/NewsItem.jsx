@@ -26,15 +26,15 @@ const NewsHeader = styled.div`
 `;
 
 const NewsIntroduction = styled.div`
-  font-size: 11px;
-  font-weight: bold;
+  font-size: 13px;
+  font-weight: 600;
   text-align: justify;
   text-justify: inter-word;
   white-space: pre-line;
 `;
 
 const NewsText = styled.div`
-  font-size: 11px;
+  font-size: 12px;
   font-weight: normal;
   text-align: justify;
   text-justify: inter-word;

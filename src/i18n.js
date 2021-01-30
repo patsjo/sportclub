@@ -135,7 +135,8 @@ i18next
             Link: "Link",
             LongTimeNews: "News (prioritized)",
             Introduction: "Introduction text",
-            Text: "Text"
+            Text: "Text",
+            UpdateModificationDate: "Update modification date"
           },
           results: {
             Add: "Import/Add/Edit",
@@ -371,7 +372,8 @@ i18next
             Link: "Länk",
             LongTimeNews: "Nyheter (prioriterad)",
             Introduction: "Inledande text",
-            Text: "Brödtext"
+            Text: "Brödtext",
+            UpdateModificationDate: "Uppdatera senaste ändringsdatum"
           },
           results: {
             Add: "Importera/Lägg till/Redigera",

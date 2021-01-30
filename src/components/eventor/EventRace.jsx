@@ -31,7 +31,7 @@ const EventHeader = styled.div`
 
 const StyledTable = styled.table`
   border-spacing: 0px;
-  font-size: 11px;
+  font-size: 12px;
   width: 100%;
 `;
 const StyledTableRow = styled.tr``;

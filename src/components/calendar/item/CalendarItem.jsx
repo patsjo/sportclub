@@ -24,7 +24,7 @@ const CalendarHeader = styled.div`
 `;
 
 const CalendarText = styled.div`
-  font-size: 11px;
+  font-size: 13px;
   font-weight: normal;
   text-align: justify;
   text-justify: inter-word;

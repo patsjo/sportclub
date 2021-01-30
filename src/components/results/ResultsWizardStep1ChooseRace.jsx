@@ -1,19 +1,19 @@
-import React, { Component } from "react";
-import { withTranslation } from "react-i18next";
-import { Spin, message } from "antd";
-import { SpinnerDiv, StyledTable } from "../styled/styled";
-import { observer, inject } from "mobx-react";
-import { GetJsonData, PostJsonData } from "../../utils/api";
-import moment from "moment";
-import { dateFormat } from "../../utils/formHelper";
+import React, { Component } from 'react';
+import { withTranslation } from 'react-i18next';
+import { Spin, message } from 'antd';
+import { SpinnerDiv, StyledTable } from '../styled/styled';
+import { observer, inject } from 'mobx-react';
+import { GetJsonData, PostJsonData } from '../../utils/api';
+import moment from 'moment';
+import { dateFormat } from '../../utils/formHelper';
 const flatten = (list) => list.reduce((a, b) => a.concat(Array.isArray(b) ? flatten(b) : b), []);
 
 // @inject("clubModel")
 // @observer
 const ResultWizardStep1ChooseRace = inject(
-  "clubModel",
-  "raceWizardModel",
-  "sessionModel"
+  'clubModel',
+  'raceWizardModel',
+  'sessionModel'
 )(
   observer(
     class ResultWizardStep1ChooseRace extends Component {
@@ -22,19 +22,19 @@ const ResultWizardStep1ChooseRace = inject(
         this.state = {
           loaded: false,
           events: [],
-          selectedRowKeys: undefined
+          selectedRowKeys: undefined,
         };
       }
 
       componentDidMount() {
         const self = this;
         const { raceWizardModel, clubModel, sessionModel, onFailed } = this.props;
-        const url = clubModel.modules.find((module) => module.name === "Results").queryUrl;
+        const url = clubModel.modules.find((module) => module.name === 'Results').queryUrl;
         const queryData = {
-          iType: "EVENTS",
+          iType: 'EVENTS',
           iClubId: clubModel.raceClubs.selectedClub.clubId,
-          iFromDate: moment(raceWizardModel.queryStartDate, dateFormat).add(-7, "days").format(dateFormat),
-          iToDate: moment(raceWizardModel.queryEndDate, dateFormat).add(7, "days").format(dateFormat)
+          iFromDate: moment(raceWizardModel.queryStartDate, dateFormat).add(-7, 'days').format(dateFormat),
+          iToDate: moment(raceWizardModel.queryEndDate, dateFormat).add(7, 'days').format(dateFormat),
         };
 
         const alreadySavedEventsPromise = PostJsonData(url, queryData, true, sessionModel.authorizationHeader);
@@ -42,16 +42,16 @@ const ResultWizardStep1ChooseRace = inject(
           clubModel.corsProxy +
             encodeURIComponent(
               clubModel.eventor.entriesUrl +
-                "?organisationIds=" +
+                '?organisationIds=' +
                 clubModel.raceClubs.selectedClub.eventorOrganisationId +
-                "&fromEventDate=" +
+                '&fromEventDate=' +
                 raceWizardModel.queryStartDate +
-                "&toEventDate=" +
+                '&toEventDate=' +
                 raceWizardModel.queryEndDate +
-                "&includeEntryFees=true&includePersonElement=true&includeOrganisationElement=true&includeEventElement=true"
+                '&includeEntryFees=true&includePersonElement=true&includeOrganisationElement=true&includeEventElement=true'
             ) +
-            "&headers=" +
-            encodeURIComponent("ApiKey: " + clubModel.eventor.apiKey),
+            '&headers=' +
+            encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
           true
         );
         const noEntriesPromise = raceWizardModel.queryForEventWithNoEntry
@@ -60,11 +60,11 @@ const ResultWizardStep1ChooseRace = inject(
                 clubModel.corsProxy +
                   encodeURIComponent(
                     clubModel.eventor.competitorsUrl +
-                      "?organisationId=" +
+                      '?organisationId=' +
                       clubModel.raceClubs.selectedClub.eventorOrganisationId
                   ) +
-                  "&headers=" +
-                  encodeURIComponent("ApiKey: " + clubModel.eventor.apiKey),
+                  '&headers=' +
+                  encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
                 true
               )
                 .then((competitorsJson) => {
@@ -77,15 +77,15 @@ const ResultWizardStep1ChooseRace = inject(
                       clubModel.corsProxy +
                         encodeURIComponent(
                           clubModel.eventor.personResultUrl +
-                            "?personId=" +
+                            '?personId=' +
                             c.Person.PersonId +
-                            "&fromDate=" +
+                            '&fromDate=' +
                             raceWizardModel.queryStartDate +
-                            "&toDate=" +
+                            '&toDate=' +
                             raceWizardModel.queryEndDate
                         ) +
-                        "&headers=" +
-                        encodeURIComponent("ApiKey: " + clubModel.eventor.apiKey),
+                        '&headers=' +
+                        encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
                       true
                     )
                   );
@@ -155,16 +155,16 @@ const ResultWizardStep1ChooseRace = inject(
           clubModel.corsProxy +
             encodeURIComponent(
               clubModel.eventor.eventsUrl +
-                "?organisationIds=" +
+                '?organisationIds=' +
                 self.props.clubModel.eventor.oRingenOrganisationId +
-                "&fromDate=" +
+                '&fromDate=' +
                 raceWizardModel.queryStartDate +
-                "&toDate=" +
+                '&toDate=' +
                 raceWizardModel.queryEndDate +
-                "&includeAttributes=true"
+                '&includeAttributes=true'
             ) +
-            "&headers=" +
-            encodeURIComponent("ApiKey: " + clubModel.eventor.apiKey),
+            '&headers=' +
+            encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
           true
         );
 
@@ -201,8 +201,8 @@ const ResultWizardStep1ChooseRace = inject(
                 ...flatten(entriesJson.Entry.map((entry) => entry.EventRaceId)),
                 ...flatten(oringenEventsJson.Event.map((event) => event.EventRace)).map(
                   (eventRace) => eventRace.EventRaceId
-                )
-              ])
+                ),
+              ]),
             ]
               // eslint-disable-next-line eqeqeq
               .filter((eventRaceId) => eventRaceId != undefined)
@@ -222,17 +222,17 @@ const ResultWizardStep1ChooseRace = inject(
                     Array.isArray(e.EventRace)
                       ? e.EventRace.map((er) => er.EventRaceId).includes(event.EventRaceId)
                       : e.EventRace.EventRaceId === event.EventRaceId
-                  )
+                  ),
                 };
               }
               event.Event = {
-                ...entry.Event
+                ...entry.Event,
               };
               if (Array.isArray(event.Event.EventRace)) {
                 event.Event.EventRace = event.Event.EventRace.find(
                   (eventRace) => eventRace.EventRaceId === event.EventRaceId
                 );
-                event.Event.Name = event.Event.Name + ", " + event.Event.EventRace.Name;
+                event.Event.Name = event.Event.Name + ', ' + event.Event.EventRace.Name;
               }
               const alreadySaved = alreadySavedEventsJson.find(
                 (saved) =>
@@ -253,14 +253,14 @@ const ResultWizardStep1ChooseRace = inject(
             // 9 Completed
             // 10 Canceled
             // 11 Reported
-            events = events.filter((event) => ["9", "11"].includes(event.Event.EventStatusId));
+            events = events.filter((event) => ['9', '11'].includes(event.Event.EventStatusId));
             const alreadySavedEventsNotInEventor = alreadySavedEventsJson
               .filter(
                 (saved) =>
-                  (moment(raceWizardModel.queryStartDate).isSame(saved.Date) ||
-                    moment(raceWizardModel.queryStartDate).isBefore(saved.Date)) &&
-                  (moment(raceWizardModel.queryEndDate).isSame(saved.Date) ||
-                    moment(raceWizardModel.queryEndDate).isAfter(saved.Date)) &&
+                  (moment(raceWizardModel.queryStartDate).isSame(saved.date) ||
+                    moment(raceWizardModel.queryStartDate).isBefore(saved.date)) &&
+                  (moment(raceWizardModel.queryEndDate).isSame(saved.date) ||
+                    moment(raceWizardModel.queryEndDate).isAfter(saved.date)) &&
                   !events.some(
                     (event) =>
                       saved.eventorId.toString() === event.Event.EventId &&
@@ -276,12 +276,12 @@ const ResultWizardStep1ChooseRace = inject(
                   EventRace: {
                     RaceDate: {
                       Date: e.date,
-                      Clock: e.time
-                    }
+                      Clock: e.time,
+                    },
                   },
-                  Name: e.name
+                  Name: e.name,
                 },
-                EventRaceId: e.eventorRaceId
+                EventRaceId: e.eventorRaceId,
               }));
             if (!raceWizardModel.queryIncludeExisting) {
               events = events.filter((event) => event.alreadySavedEventId === -1);
@@ -298,7 +298,7 @@ const ResultWizardStep1ChooseRace = inject(
             self.setState({
               loaded: true,
               events: events,
-              selectedRowKeys: undefined
+              selectedRowKeys: undefined,
             });
           })
           .catch((e) => {
@@ -311,16 +311,16 @@ const ResultWizardStep1ChooseRace = inject(
         const { raceWizardModel, onValidate } = this.props;
         const selected = JSON.parse(selectedRowKeys);
 
-        raceWizardModel.setValue("selectedEventId", parseInt(selected.selectedEventId));
+        raceWizardModel.setValue('selectedEventId', parseInt(selected.selectedEventId));
         raceWizardModel.setValue(
-          "selectedEventorId",
+          'selectedEventorId',
           selected.selectedEventorId ? parseInt(selected.selectedEventorId) : null
         );
         raceWizardModel.setValue(
-          "selectedEventorRaceId",
+          'selectedEventorRaceId',
           selected.selectedEventorRaceId ? parseInt(selected.selectedEventorRaceId) : null
         );
-        raceWizardModel.setValue("overwrite", selected.existInEventor);
+        raceWizardModel.setValue('overwrite', selected.existInEventor);
         this.setState({ selectedRowKeys });
         onValidate(true);
       };
@@ -331,36 +331,36 @@ const ResultWizardStep1ChooseRace = inject(
         const rowSelection = {
           selectedRowKeys,
           onChange: this.onSelectChange,
-          type: "radio"
+          type: 'radio',
         };
         const columns = [
           {
-            title: t("results.Date"),
-            dataIndex: "date",
-            key: "date"
+            title: t('results.Date'),
+            dataIndex: 'date',
+            key: 'date',
           },
           {
-            title: t("results.Time"),
-            dataIndex: "time",
-            key: "time"
+            title: t('results.Time'),
+            dataIndex: 'time',
+            key: 'time',
           },
           {
-            title: t("results.Name"),
-            dataIndex: "name",
-            key: "name"
+            title: t('results.Name'),
+            dataIndex: 'name',
+            key: 'name',
           },
           {
-            title: t("results.AlreadySaved"),
-            dataIndex: "alreadySavedEventId",
-            key: "alreadySavedEventId",
-            render: (alreadySavedEventId) => (alreadySavedEventId !== -1 ? t("common.Yes") : t("common.No"))
+            title: t('results.AlreadySaved'),
+            dataIndex: 'alreadySavedEventId',
+            key: 'alreadySavedEventId',
+            render: (alreadySavedEventId) => (alreadySavedEventId !== -1 ? t('common.Yes') : t('common.No')),
           },
           {
-            title: t("results.ExistInEventor"),
-            dataIndex: "existInEventor",
-            key: "existInEventor",
-            render: (existInEventor) => (existInEventor ? t("common.Yes") : t("common.No"))
-          }
+            title: t('results.ExistInEventor'),
+            dataIndex: 'existInEventor',
+            key: 'existInEventor',
+            render: (existInEventor) => (existInEventor ? t('common.Yes') : t('common.No')),
+          },
         ];
         const data = events.map((event) =>
           event.alreadySavedEventsNotInEventor
@@ -371,10 +371,10 @@ const ResultWizardStep1ChooseRace = inject(
                   selectedEventorRaceId: event.eventorRaceId,
                   selectedEventId: event.eventId,
                   alreadySavedEventId: -1,
-                  existInEventor: false
+                  existInEventor: false,
                 }),
                 alreadySavedEventId: event.alreadySavedEventId,
-                existInEventor: false
+                existInEventor: false,
               }
             : {
                 key: JSON.stringify({
@@ -382,13 +382,13 @@ const ResultWizardStep1ChooseRace = inject(
                   selectedEventorRaceId: event.EventRaceId,
                   selectedEventId: event.alreadySavedEventId,
                   alreadySavedEventId: event.alreadySavedEventId,
-                  existInEventor: true
+                  existInEventor: true,
                 }),
                 date: event.Event.EventRace.RaceDate.Date,
-                time: event.Event.EventRace.RaceDate.Clock === "00:00:00" ? "" : event.Event.EventRace.RaceDate.Clock,
+                time: event.Event.EventRace.RaceDate.Clock === '00:00:00' ? '' : event.Event.EventRace.RaceDate.Clock,
                 name: `${event.Event.Name}`,
                 alreadySavedEventId: event.alreadySavedEventId,
-                existInEventor: true
+                existInEventor: true,
               }
         );
 
@@ -397,7 +397,7 @@ const ResultWizardStep1ChooseRace = inject(
             rowSelection={rowSelection}
             onRow={(record) => {
               return {
-                onClick: () => this.onSelectChange([record.key])
+                onClick: () => this.onSelectChange([record.key]),
               };
             }}
             columns={columns}

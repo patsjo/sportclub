@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Modal, Form, Input, DatePicker, Select, message } from 'antd';
+import { Modal, Form, Input, DatePicker, Select, Switch, message } from 'antd';
 import { observer, inject } from 'mobx-react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
@@ -119,6 +119,7 @@ const NewsEdit = inject(
               iInledning: newsObject.introduction,
               iTexten: newsObject.text,
               iExpireDate: moment(newsObject.expireDate, dateFormat),
+              iUpdateModificationDate: true,
               iFileID: newsObject.fileId,
               iFileData: null,
               iFiles:
@@ -197,6 +198,9 @@ const NewsEdit = inject(
             </FormItem>
             <FormItem name="iFileData">
               <Input type="hidden" />
+            </FormItem>
+            <FormItem name="iUpdateModificationDate" label={t('news.UpdateModificationDate')} valuePropName="checked">
+              <Switch />
             </FormItem>
           </Form>
         </StyledModalContent>

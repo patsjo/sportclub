@@ -124,6 +124,8 @@ if ($iFileID == -1) // New File to upload
   list($image_width, $image_height, $image_type, $image_attr) = @getimagesize($_FILES['iFileData']['tmp_name']);
 }
 
+$iUpdateModificationDate = getRequestBool('iUpdateModificationDate');
+
 if (!$jsonResponse) {
   htmlHeader("Värend GN, " . $title);
 }
@@ -228,86 +230,172 @@ else
 {
   if ($is_new_file_uploaded)
   {
-    $query = sprintf("UPDATE news " .
-                     "SET " .
-                     "  rubrik = '%s'," .
-                     "  lank = '%s'," .
-                     "  inledning = '%s'," .
-                     "  texten = '%s'," .
-                     "  news_type_id = %d," .
-                     "  expire_date = '%s'," .
-                     "  file_id = %d," .
-                     "  image_width = %d," .
-                     "  image_height = %d," .
-                     "  mod_by_user_id = %d," .
-                     "  mod_date = '%s' " .
-                     "WHERE id = %d",
-                     \db\mysql_real_escape_string($iRubrik),
-                     \db\mysql_real_escape_string($iLank),
-                     \db\mysql_real_escape_string($iInledning),
-                     \db\mysql_real_escape_string($iTexten),
-                     $iNewsTypeID,
-                     Date("Y-m-d G:i:s", $iExpireDate),
-                     $iFileID,
-                     $image_width,
-                     $image_height,
-                     $user_id,
-                     $now,
-                     $iNewsID);
+    if ($iUpdateModificationDate)
+    {
+      $query = sprintf("UPDATE news " .
+                      "SET " .
+                      "  rubrik = '%s'," .
+                      "  lank = '%s'," .
+                      "  inledning = '%s'," .
+                      "  texten = '%s'," .
+                      "  news_type_id = %d," .
+                      "  expire_date = '%s'," .
+                      "  file_id = %d," .
+                      "  image_width = %d," .
+                      "  image_height = %d," .
+                      "  mod_by_user_id = %d," .
+                      "  mod_date = '%s' " .
+                      "WHERE id = %d",
+                      \db\mysql_real_escape_string($iRubrik),
+                      \db\mysql_real_escape_string($iLank),
+                      \db\mysql_real_escape_string($iInledning),
+                      \db\mysql_real_escape_string($iTexten),
+                      $iNewsTypeID,
+                      Date("Y-m-d G:i:s", $iExpireDate),
+                      $iFileID,
+                      $image_width,
+                      $image_height,
+                      $user_id,
+                      $now,
+                      $iNewsID);
+    }
+    else
+    {
+      $query = sprintf("UPDATE news " .
+                      "SET " .
+                      "  rubrik = '%s'," .
+                      "  lank = '%s'," .
+                      "  inledning = '%s'," .
+                      "  texten = '%s'," .
+                      "  news_type_id = %d," .
+                      "  expire_date = '%s'," .
+                      "  file_id = %d," .
+                      "  image_width = %d," .
+                      "  image_height = %d," .
+                      "  mod_by_user_id = %d " .
+                      "WHERE id = %d",
+                      \db\mysql_real_escape_string($iRubrik),
+                      \db\mysql_real_escape_string($iLank),
+                      \db\mysql_real_escape_string($iInledning),
+                      \db\mysql_real_escape_string($iTexten),
+                      $iNewsTypeID,
+                      Date("Y-m-d G:i:s", $iExpireDate),
+                      $iFileID,
+                      $image_width,
+                      $image_height,
+                      $user_id,
+                      $iNewsID);
+    }
   }
   else if ($iFileID == 0) // There is no file
   {
-    $query = sprintf("UPDATE news " .
-                     "SET " .
-                     "  rubrik = '%s'," .
-                     "  lank = '%s'," .
-                     "  inledning = '%s'," .
-                     "  texten = '%s'," .
-                     "  news_type_id = %d," .
-                     "  expire_date = '%s'," .
-                     "  file_id = %d," .
-                     "  image_width = %d," .
-                     "  image_height = %d," .
-                     "  mod_by_user_id = %d," .
-                     "  mod_date = '%s' " .
-                     "WHERE id = %d",
-                     \db\mysql_real_escape_string($iRubrik),
-                     \db\mysql_real_escape_string($iLank),
-                     \db\mysql_real_escape_string($iInledning),
-                     \db\mysql_real_escape_string($iTexten),
-                     $iNewsTypeID,
-                     Date("Y-m-d G:i:s", $iExpireDate),
-                     $iFileID,
-                     0,
-                     0,
-                     $user_id,
-                     $now,
-                     $iNewsID);
+    if ($iUpdateModificationDate)
+    {
+      $query = sprintf("UPDATE news " .
+                      "SET " .
+                      "  rubrik = '%s'," .
+                      "  lank = '%s'," .
+                      "  inledning = '%s'," .
+                      "  texten = '%s'," .
+                      "  news_type_id = %d," .
+                      "  expire_date = '%s'," .
+                      "  file_id = %d," .
+                      "  image_width = %d," .
+                      "  image_height = %d," .
+                      "  mod_by_user_id = %d," .
+                      "  mod_date = '%s' " .
+                      "WHERE id = %d",
+                      \db\mysql_real_escape_string($iRubrik),
+                      \db\mysql_real_escape_string($iLank),
+                      \db\mysql_real_escape_string($iInledning),
+                      \db\mysql_real_escape_string($iTexten),
+                      $iNewsTypeID,
+                      Date("Y-m-d G:i:s", $iExpireDate),
+                      $iFileID,
+                      0,
+                      0,
+                      $user_id,
+                      $now,
+                      $iNewsID);
+    }
+    else
+    {
+      $query = sprintf("UPDATE news " .
+                      "SET " .
+                      "  rubrik = '%s'," .
+                      "  lank = '%s'," .
+                      "  inledning = '%s'," .
+                      "  texten = '%s'," .
+                      "  news_type_id = %d," .
+                      "  expire_date = '%s'," .
+                      "  file_id = %d," .
+                      "  image_width = %d," .
+                      "  image_height = %d," .
+                      "  mod_by_user_id = %d " .
+                      "WHERE id = %d",
+                      \db\mysql_real_escape_string($iRubrik),
+                      \db\mysql_real_escape_string($iLank),
+                      \db\mysql_real_escape_string($iInledning),
+                      \db\mysql_real_escape_string($iTexten),
+                      $iNewsTypeID,
+                      Date("Y-m-d G:i:s", $iExpireDate),
+                      $iFileID,
+                      0,
+                      0,
+                      $user_id,
+                      $iNewsID);
+    }
   }
   else
   {
-    $query = sprintf("UPDATE news " .
-                     "SET " .
-                     "  rubrik = '%s'," .
-                     "  lank = '%s'," .
-                     "  inledning = '%s'," .
-                     "  texten = '%s'," .
-                     "  news_type_id = %d," .
-                     "  expire_date = '%s'," .
-                     "  file_id = %d," .
-                     "  mod_by_user_id = %d," .
-                     "  mod_date = '%s' " .
-                     "WHERE id = %d",
-                     \db\mysql_real_escape_string($iRubrik),
-                     \db\mysql_real_escape_string($iLank),
-                     \db\mysql_real_escape_string($iInledning),
-                     \db\mysql_real_escape_string($iTexten),
-                     $iNewsTypeID,
-                     Date("Y-m-d G:i:s", $iExpireDate),
-                     $iFileID,
-                     $user_id,
-                     $now,
-                     $iNewsID);
+    if ($iUpdateModificationDate)
+    {
+      $query = sprintf("UPDATE news " .
+                      "SET " .
+                      "  rubrik = '%s'," .
+                      "  lank = '%s'," .
+                      "  inledning = '%s'," .
+                      "  texten = '%s'," .
+                      "  news_type_id = %d," .
+                      "  expire_date = '%s'," .
+                      "  file_id = %d," .
+                      "  mod_by_user_id = %d," .
+                      "  mod_date = '%s' " .
+                      "WHERE id = %d",
+                      \db\mysql_real_escape_string($iRubrik),
+                      \db\mysql_real_escape_string($iLank),
+                      \db\mysql_real_escape_string($iInledning),
+                      \db\mysql_real_escape_string($iTexten),
+                      $iNewsTypeID,
+                      Date("Y-m-d G:i:s", $iExpireDate),
+                      $iFileID,
+                      $user_id,
+                      $now,
+                      $iNewsID);
+    }
+    else
+    {
+      $query = sprintf("UPDATE news " .
+                      "SET " .
+                      "  rubrik = '%s'," .
+                      "  lank = '%s'," .
+                      "  inledning = '%s'," .
+                      "  texten = '%s'," .
+                      "  news_type_id = %d," .
+                      "  expire_date = '%s'," .
+                      "  file_id = %d," .
+                      "  mod_by_user_id = %d " .
+                      "WHERE id = %d",
+                      \db\mysql_real_escape_string($iRubrik),
+                      \db\mysql_real_escape_string($iLank),
+                      \db\mysql_real_escape_string($iInledning),
+                      \db\mysql_real_escape_string($iTexten),
+                      $iNewsTypeID,
+                      Date("Y-m-d G:i:s", $iExpireDate),
+                      $iFileID,
+                      $user_id,
+                      $iNewsID);
+    }
   }
 
   \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);

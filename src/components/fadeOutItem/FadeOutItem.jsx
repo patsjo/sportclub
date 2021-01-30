@@ -17,8 +17,8 @@ const ItemFadeOut = styled.div`
   break-inside: avoid-column;
   max-height: ${(props) => (props.maxHeight ? props.maxHeight : 300)}px;
   overflow: hidden;
-  padding-left: 2px;
-  padding-right: 2px;
+  padding-left: 0;
+  padding-right: 0;
   position: relative;
   cursor: pointer;
   :after {

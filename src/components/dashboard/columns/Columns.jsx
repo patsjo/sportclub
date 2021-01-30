@@ -92,7 +92,7 @@ const Columns = ({ children }) => {
       columnContent[column].push(React.cloneElement(reactChild));
     });
     const renderedColumns = columnContent.map((column, i) => (
-      <StyledColumn key={`numberOfColumns#${columns}#column${i}`} column={i} columns={columns} gap={8}>
+      <StyledColumn key={`numberOfColumns#${columns}#column${i}`} column={i} columns={columns} gap={18}>
         {column.map((child) => (
           <ColumnItem
             key={`columnItem#${child.key}#column${i}`}
