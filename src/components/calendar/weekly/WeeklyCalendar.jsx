@@ -8,6 +8,7 @@ import { GetDates } from '../calendarHelper';
 import moment from 'moment';
 import { PostJsonData } from '../../../utils/api';
 import CalendarItem from '../item/CalendarItem';
+import { DirectionPngUrl } from '../../map/EsriOSMOrienteeringMap';
 
 const WeeklyContainer = styled.div`
   padding-bottom: 4px;
@@ -56,6 +57,11 @@ const Activity = styled.div`
 
 const ActivityUrl = styled.a`
   color: black;
+  cursor: pointer;
+`;
+
+const DirectionImage = styled.img`
+  margin-left: 4px;
 `;
 
 const WeeklyCalendar = inject(
@@ -126,7 +132,11 @@ const WeeklyCalendar = inject(
           globalStateModel.setGraphics('event', eventGraphics);
           setDomains(domainsJson);
           setActivities([
-            ...activitiesJson,
+            ...activitiesJson.map((act) => ({
+              ...act,
+              longitude: act.longitude && parseFloat(act.longitude),
+              latitude: act.latitude && parseFloat(act.latitude),
+            })),
             ...eventsJson.map((event) => ({
               isEvent: true,
               activityId: `event#${event.calendarEventId}`,
@@ -135,6 +145,8 @@ const WeeklyCalendar = inject(
               header: event.organiserName,
               place: event.name,
               url: `https://eventor.orientering.se/Events/Show/${event.eventorId}`,
+              longitude: event.longitude,
+              latitude: event.latitude,
             })),
           ]);
           setLoaded(true);
@@ -182,9 +194,27 @@ const WeeklyCalendar = inject(
                           <ActivityUrl href={act.url} target="_blank">{`${act.time}${act.time ? ', ' : ''}${
                             act.header
                           }${act.place ? ', ' : ''}${act.place}`}</ActivityUrl>
+                          {act.longitude && act.latitude ? (
+                            <ActivityUrl
+                              href={`http://maps.google.com/maps?saddr=&daddr=N${act.latitude},E${act.longitude}`}
+                              target="_blank"
+                            >
+                              <DirectionImage src={DirectionPngUrl} width="16" height="16" />
+                            </ActivityUrl>
+                          ) : null}
                         </Activity>
                       ) : (
-                        <CalendarItem key={`activity#${act.activityId}`} calendarObject={act} domains={domains} />
+                        <CalendarItem key={`activity#${act.activityId}`} calendarObject={act} domains={domains}>
+                          {act.longitude && act.latitude ? (
+                            <ActivityUrl
+                              href={`http://maps.google.com/maps?saddr=&daddr=N${act.latitude},E${act.longitude}`}
+                              target="_blank"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <DirectionImage src={DirectionPngUrl} width="16" height="16" />
+                            </ActivityUrl>
+                          ) : null}
+                        </CalendarItem>
                       )
                     )}
                 </Skeleton>

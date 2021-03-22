@@ -112,7 +112,8 @@ i18next
             SelectPosition: "Click in map to select position",
             ChooseMapPosition: "Choose in map",
             Longitude: "Longitude",
-            Latitude: "Latitude"
+            Latitude: "Latitude",
+            ClickForDirection: "Click for direction"
           },
           modules: {
             Home: "Home",
@@ -349,7 +350,8 @@ i18next
             SelectPosition: "Klicka i kartan för att välja position",
             ChooseMapPosition: "Välj i karta",
             Longitude: "Longitud",
-            Latitude: "Latitud"
+            Latitude: "Latitud",
+            ClickForDirection: "Klicka för vägbeskrivning"
           },
           modules: {
             Home: "Startsida",

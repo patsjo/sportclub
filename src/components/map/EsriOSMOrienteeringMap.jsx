@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { observer, inject } from 'mobx-react';
 import { message } from 'antd';
 import { backgroundLayerIds } from './useEsriMap';
+import { useTranslation } from 'react-i18next';
 
 const MapDiv = styled.div`
   height: 100%;
@@ -16,6 +17,18 @@ const MapInfo = styled.div`
   visibility: hidden;
 `;
 
+export const DirectionPngUrl =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH5QIIEx8SFao54QAAAZ9JREFUWMPV2L9Lw0AUB/Dvu9R26A3i3+AfITgIcdNJQbAQB+ciDuJi5vgPVFxFLVpE8C8wIMX/KA622rqc0NImud9p3pYEjk/eXS7vHsFShEl2BOAWwA+AszTmrzbGJUu4DoBHAIG49QsgSmM+qBy4BAebSHKEs4YkhzgrSHKMM0aSB5wRkjzhtJHkEaeFJM84ZSTJ4BjhaTKF1WAETKbolCGZTOZMcNH22tL7Ysx+mGTHWkBb03q608xFirELkczHmjNBMg8fhBGS+cCZIEkVt7UZ4GKviQ3OtKF3HyP0P8dSWxBTzdzlfssIp5rJRphkByrTut62UuMiKH7Hf+Q3A9Bzteby4mE4wv1wXPoOAHqNss26LHavvwqfv1+1dXBzie6KhbkqmZv9WM5ZGvM3ACeukRq4KI35CwOANObPLpGauMHcRu0KaYJb+JO4QJrgcutB1788lQKWPFbRWtU1eS71lUt/qZLfEVLqXFL/Q1Mtjp21OLjXovVRi+aRBtJ/+00BWV0DUwJZfQu4ALk6TfQZ5CGAG3HZFYWwcfwBUbAXA/xsjAAAAAAASUVORK5CYII=';
+
+const DirectionSymbol = {
+  type: 'picture-marker', // autocasts as new PictureMarkerSymbol()
+  url: DirectionPngUrl,
+  width: '15px',
+  height: '15px',
+  xoffset: '10px',
+  yoffset: '-10px',
+};
+
 const OrienteeringSymbol = {
   type: 'picture-marker', // autocasts as new PictureMarkerSymbol()
   url:
@@ -27,6 +40,7 @@ const OrienteeringSymbol = {
 const EsriOSMOrienteeringMap = inject('globalStateModel')(
   observer(
     ({ globalStateModel, containerId, mapCenter, graphics = [], onClick = () => {}, onHighlightClick = () => {} }) => {
+      const { t } = useTranslation();
       const [graphicsLayer, setGraphicsLayer] = React.useState();
       const [mapView, setMapView] = React.useState();
 
@@ -80,14 +94,22 @@ const EsriOSMOrienteeringMap = inject('globalStateModel')(
                 const highlightGraphics = (event) => {
                   highlighted = newGraphicsLayer.graphics.items.filter((g) => {
                     const p = view.toScreen(g.geometry);
-                    return g.attributes && Math.abs(p.x - event.x) < 8 && Math.abs(p.y - event.y) < 8;
+                    return (
+                      g.attributes &&
+                      ((!g.attributes.direction && Math.abs(p.x - event.x) < 8 && Math.abs(p.y - event.y) < 8) ||
+                        (g.attributes.direction && Math.abs(p.x + 10 - event.x) + Math.abs(p.y + 10 - event.y) < 10))
+                    );
                   });
 
                   if (highlighted.length) {
-                    const text = highlighted
+                    let text = highlighted
+                      .filter((g) => !g.attributes.direction)
                       .map((g) => g.attributes)
                       .map((a) => `${a.time ? a.time : ''} ${a.name}`)
                       .join('<br/>');
+                    text = `${text}${text && text.length ? '<br/>' : ''}${
+                      highlighted.some((g) => g.attributes.direction) ? t('map.ClickForDirection') : ''
+                    }`;
                     const highlightedUids = highlighted.map((g) => g.uid);
 
                     if (highlight && currentUids !== JSON.stringify(highlightedUids)) {
@@ -100,10 +122,12 @@ const EsriOSMOrienteeringMap = inject('globalStateModel')(
                       return;
                     }
 
-                    document.getElementById(`${containerId}#orienteeringMapInfo`) &&
-                      (document.getElementById(`${containerId}#orienteeringMapInfo`).style.visibility = 'visible');
-                    document.getElementById(`${containerId}#orienteeringMapInfoText`) &&
-                      (document.getElementById(`${containerId}#orienteeringMapInfoText`).innerHTML = text);
+                    if (text && text.length) {
+                      document.getElementById(`${containerId}#orienteeringMapInfo`) &&
+                        (document.getElementById(`${containerId}#orienteeringMapInfo`).style.visibility = 'visible');
+                      document.getElementById(`${containerId}#orienteeringMapInfoText`) &&
+                        (document.getElementById(`${containerId}#orienteeringMapInfoText`).innerHTML = text);
+                    }
 
                     currentUids = JSON.stringify(highlightedUids);
                     highlight = layerView.highlight(highlightedUids);
@@ -118,8 +142,9 @@ const EsriOSMOrienteeringMap = inject('globalStateModel')(
                 };
                 const highlightGraphicsClick = (event) => {
                   highlightGraphics(event);
-                  if (highlighted.length && event.native && event.native.ctrlKey) {
-                    onHighlightClick(newGraphicsLayer, highlighted[0]);
+                  const highLightedDirections = highlighted.filter((g) => g.attributes.direction);
+                  if (highLightedDirections.length) {
+                    onHighlightClick(newGraphicsLayer, highLightedDirections[0]);
                   }
                 };
                 view.on('pointer-move', highlightGraphics);
@@ -156,6 +181,20 @@ const EsriOSMOrienteeringMap = inject('globalStateModel')(
                   symbol: graphic.symbol ? graphic.symbol : OrienteeringSymbol,
                 })
             )
+          );
+          graphicsLayer.addMany(
+            graphics
+              .filter((graphic) => graphic.geometry.type === 'point')
+              .map(
+                (graphic) =>
+                  new globalStateModel.Graphic({
+                    geometry: {
+                      ...graphic.geometry,
+                    },
+                    attributes: { direction: true },
+                    symbol: DirectionSymbol,
+                  })
+              )
           );
           mapView.goTo(graphicsLayer.graphics.items);
         }

@@ -30,7 +30,12 @@ const CalendarText = styled.div`
   text-justify: inter-word;
   white-space: pre-line;
 `;
-
+const CalendarReadMore = styled.div`
+  font-size: 14px;
+  font-weight: bold;
+  text-align: left;
+  cursor: pointer;
+`;
 const CalendarBy = styled.div`
   font-size: 10px;
   font-weight: normal;
@@ -59,24 +64,22 @@ const CalendarItem = inject(
       };
 
       render() {
-        const { t, sessionModel, clubModel, forwardedRef, calendarObject, domains } = this.props;
+        const { t, sessionModel, clubModel, forwardedRef, calendarObject, domains, children } = this.props;
         const moduleInfo = clubModel.module('Calendar');
 
-        const Header = calendarObject.url ? (
-          <CalendarHeader>
-            <a href={calendarObject.url} target="_blank" rel="noopener noreferrer">
-              <div
-                dangerouslySetInnerHTML={{
-                  __html: calendarObject.header,
-                }}
-              />
-            </a>
-          </CalendarHeader>
-        ) : (
+        const Header = (
           <CalendarHeader>
             <div dangerouslySetInnerHTML={{ __html: calendarObject.header }} />
           </CalendarHeader>
         );
+
+        const ReadMore = calendarObject.url ? (
+          <CalendarReadMore>
+            <a href={calendarObject.url} target="_blank" rel="noopener noreferrer">
+              Läs mer...
+            </a>
+          </CalendarReadMore>
+        ) : null;
 
         return (
           <FadeOutItem
@@ -87,6 +90,7 @@ const CalendarItem = inject(
                 {calendarObject.time ? `${calendarObject.time}, ` : ''}
                 {calendarObject.header}
                 {calendarObject.place ? `, ${calendarObject.place}` : ''}
+                {children}
               </Activity>
             }
             modalContent={
@@ -106,7 +110,11 @@ const CalendarItem = inject(
                 {calendarObject.place ? (
                   <CalendarText>{`${t('calendar.Place')}: ${calendarObject.place}`}</CalendarText>
                 ) : null}
-                <CalendarText>{calendarObject.description}</CalendarText>
+                <CalendarText>
+                  {calendarObject.description}
+                  {children}
+                  {ReadMore}
+                </CalendarText>
                 <CalendarBy>
                   {domains.users.find((user) => user.code === calendarObject.responsibleUserId).description}
                 </CalendarBy>
