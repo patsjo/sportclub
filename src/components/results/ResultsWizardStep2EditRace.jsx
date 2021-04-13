@@ -375,7 +375,7 @@ const ResultWizardStep2EditRace = inject(
                               (c) =>
                                 c.firstName === personResult.Person.PersonName.Given &&
                                 c.lastName === personResult.Person.PersonName.Family &&
-                                c.birthDay === personResult.Person.BirthDate.Date
+                                c.birthDay === personResult.Person.BirthDate?.Date
                             );
                             if (competitor) {
                               await competitor.addEventorId(
@@ -395,7 +395,7 @@ const ResultWizardStep2EditRace = inject(
                               iFirstName: personResult.Person.PersonName.Given,
                               iLastName: personResult.Person.PersonName.Family,
                               iBirthDay:
-                                personResult.Person.BirthDate == null ? null : personResult.Person.BirthDate.Date,
+                                personResult.Person.BirthDate == null ? null : personResult.Person.BirthDate?.Date,
                               iGender:
                                 personResult.Person['@attributes'] == null
                                   ? null
@@ -599,7 +599,7 @@ const ResultWizardStep2EditRace = inject(
                             (c) =>
                               c.firstName === teamMemberResult.Person.PersonName.Given &&
                               c.lastName === teamMemberResult.Person.PersonName.Family &&
-                              c.birthDay === teamMemberResult.Person.BirthDate.Date
+                              c.birthDay === teamMemberResult.Person.BirthDate?.Date
                           );
                           if (competitor) {
                             await competitor.addEventorId(
@@ -622,7 +622,7 @@ const ResultWizardStep2EditRace = inject(
                               // eslint-disable-next-line eqeqeq
                               teamMemberResult.Person.BirthDate == undefined
                                 ? null
-                                : teamMemberResult.Person.BirthDate.Date,
+                                : teamMemberResult.Person.BirthDate?.Date,
                             iGender:
                               teamMemberResult.Person['@attributes'] == null
                                 ? null
