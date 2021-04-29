@@ -93,11 +93,80 @@ const Eventor = types.model({
   oRingenOrganisationId: types.optional(types.integer, 611)
 });
 
+const Extent = types.model({
+  xmin: types.number,
+  ymin: types.number,
+  xmax: types.number,
+  ymax: types.number,
+});
+
+const MapTileLayer = types.model({
+  type: types.literal('base-tile'),
+  id: types.string,
+  title: types.string,
+  visible: types.optional(types.boolean, true),
+  urlTemplates: types.array(types.string),
+  minScale: types.optional(types.integer, 0),
+  maxScale: types.optional(types.integer, 0),
+  fullExtent: Extent
+}).views(self => ({
+  getByLayerId(id) {
+    if (self.id === id) return self;
+    return undefined;
+  }
+}));
+
+const MapGroupLayer = types.model({
+  type: types.literal('group'),
+  id: types.string,
+  title: types.string,
+  visible: types.optional(types.boolean, true),
+  layers: types.array(types.union({ eager: false, dispatcher: snapshot => snapshot.type === 'group' ? MapGroupLayer : MapTileLayer} )),
+}).views(self => ({
+  get fullExtent() {
+    const extent = {
+      xmin: undefined,
+      ymin: undefined,
+      xmax: undefined,
+      ymax: undefined,
+    }
+    self.layers.forEach(layer => {
+      if (!extent.xmin || extent.xmin > layer.fullExtent.xmin) extent.xmin = layer.fullExtent.xmin;
+      if (!extent.ymin || extent.ymin > layer.fullExtent.ymin) extent.ymin = layer.fullExtent.ymin;
+      if (!extent.xmax || extent.xmax < layer.fullExtent.xmax) extent.xmax = layer.fullExtent.xmax;
+      if (!extent.ymax || extent.ymax > layer.fullExtent.ymax) extent.ymax = layer.fullExtent.ymax;
+    });
+    return extent;
+  }, getByLayerId(id) {
+    if (self.id === id) return self;
+    for (let i = 0; i < self.layers.length; i++){
+      const layer = self.layers[i].getByLayerId(id);
+      if (layer) return layer;
+    };
+  }
+}));
+
+const Map = types.model({
+  center: types.array(types.number),
+  minScale: types.optional(types.integer, 0),
+  maxScale: types.optional(types.integer, 0),
+  layers: types.array(types.union({ eager: false, dispatcher: snapshot => snapshot.type === 'group' ? MapGroupLayer : MapTileLayer} )),
+  fullExtent: Extent
+}).views(self => ({
+  getLayerFullExtent(id) {
+    for (let i = 0; i < self.layers.length; i++){
+      const layer = self.layers[i].getByLayerId(id);
+      if (layer) return layer.fullExtent.toJSON();
+    };
+    return self.fullExtent.toJSON();
+  }
+}));
+
 export const MobxClubModel = types
   .model({
     title: types.string,
     titleLogo: types.maybe(Logo),
-    mapCenter: types.array(types.number),
+    map: types.maybe(Map),
     defaultLanguage: types.enumeration("Lang", ["sv", "en"]),
     logo: Logo,
     attachmentUrl: types.optional(types.string, "/showfile.php?iFileID="),

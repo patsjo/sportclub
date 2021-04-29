@@ -29,7 +29,7 @@ const Dashboard = inject(
     const eventorEntries = useEventorEntries(clubModel);
     const { loadMoreCallback, newsItems } = useNews(globalStateModel, clubModel);
     const bannerItems = useBanners(clubModel);
-    const esriMapIsLoaded = useEsriMap(globalStateModel);
+    const esriMapIsLoaded = useEsriMap(globalStateModel, clubModel);
     const showSponsors = clubModel.sponsors ? clubModel.sponsors.some((s) => s.active) : false;
 
     const Content = (
@@ -50,13 +50,13 @@ const Dashboard = inject(
           <div column={-2} key="weeklyCalendar" style={{ marginBottom: 12 }}>
             <WeeklyCalendar />
           </div>
-          {clubModel.mapCenter ? (
+          {clubModel.map?.center ? (
             <div key="dashboard#homeMapContainer" column={-1} style={{ height: 400, marginBottom: 12 }}>
               {esriMapIsLoaded ? (
                 <EsriOSMOrienteeringMap
                   key="dashboard#homeMap"
                   containerId="homeMap"
-                  mapCenter={clubModel.mapCenter}
+                  mapCenter={clubModel.map?.center}
                   graphics={getSnapshot(globalStateModel.graphics)}
                   nofGraphics={globalStateModel.graphics.length}
                   onHighlightClick={(graphicLayer, graphic) => {

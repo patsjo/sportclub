@@ -117,13 +117,13 @@ class App extends Component {
         hasMoreItems: true,
       },
       graphics:
-        this.clubModel.mapCenter && this.clubModel.logo
+        this.clubModel.map?.center && this.clubModel.logo
           ? [
               {
                 geometry: {
                   type: 'point',
-                  longitude: this.clubModel.mapCenter[0],
-                  latitude: this.clubModel.mapCenter[1],
+                  longitude: this.clubModel.map?.center[0],
+                  latitude: this.clubModel.map?.center[1],
                 },
                 attributes: { name: this.clubModel.title, type: 'logo' },
                 symbol: {

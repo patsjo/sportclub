@@ -125,18 +125,18 @@ const EventSelectorWizardStep0Input = inject(
                 </FormItem>
               </Form>
             </Col>
-            {clubModel.mapCenter ? (
+            {clubModel.map?.center ? (
               <Col span={12}>
                 <MapContainer>
                   <EsriOSMOrienteeringMap
                     key="eventSelector#maxDistanceMap"
                     containerId="maxDistanceMap"
-                    mapCenter={clubModel.mapCenter}
+                    mapCenter={clubModel.map?.center}
                     graphics={[
                       {
                         geometry: {
                           type: 'circle',
-                          center: clubModel.mapCenter,
+                          center: clubModel.map?.center,
                           geodesic: true,
                           radius: eventSelectorWizardModel.maxDistanceDistrict,
                           radiusUnit: 'kilometers',
@@ -154,7 +154,7 @@ const EventSelectorWizardStep0Input = inject(
                       {
                         geometry: {
                           type: 'circle',
-                          center: clubModel.mapCenter,
+                          center: clubModel.map?.center,
                           geodesic: true,
                           radius: eventSelectorWizardModel.maxDistanceNearbyAndClub,
                           radiusUnit: 'kilometers',

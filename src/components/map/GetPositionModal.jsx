@@ -5,7 +5,7 @@ import { Provider } from 'mobx-react';
 
 const { confirm } = Modal;
 
-export const GetPositionModal = (t, longitude, latitude, exists, globalStateModel) =>
+export const GetPositionModal = (t, longitude, latitude, exists, globalStateModel, clubModel) =>
   new Promise((resolve, reject) => {
     const mapCenter = [longitude, latitude];
     let selectedPosition = exists ? { longitude: longitude, latitude: latitude } : null;
@@ -14,7 +14,7 @@ export const GetPositionModal = (t, longitude, latitude, exists, globalStateMode
       title: t('map.SelectPosition'),
       content: (
         <div style={{ height: 400 }}>
-          <Provider globalStateModel={globalStateModel}>
+          <Provider clubModel={clubModel} globalStateModel={globalStateModel}>
             <EsriOSMOrienteeringMap
               key="confirm#getPositionMap"
               containerId="getPositionMap"

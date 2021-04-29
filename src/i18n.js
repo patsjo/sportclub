@@ -113,7 +113,8 @@ i18next
             ChooseMapPosition: "Choose in map",
             Longitude: "Longitude",
             Latitude: "Latitude",
-            ClickForDirection: "Click for direction"
+            ClickForDirection: "Click for direction",
+            GoToFullExtent: "Zoom to layer"
           },
           modules: {
             Home: "Home",
@@ -351,7 +352,8 @@ i18next
             ChooseMapPosition: "Välj i karta",
             Longitude: "Longitud",
             Latitude: "Latitud",
-            ClickForDirection: "Klicka för vägbeskrivning"
+            ClickForDirection: "Klicka för vägbeskrivning",
+            GoToFullExtent: "Zooma till lager"
           },
           modules: {
             Home: "Startsida",

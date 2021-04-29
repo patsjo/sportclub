@@ -22,7 +22,12 @@ export const GlobalStateModel = types
     Graphic: undefined,
     Circle: undefined,
     WebMercatorUtils: undefined,
+    Extent: undefined,
     geometryEngine: undefined,
+    watchUtils: undefined,
+    Home: undefined,
+    Fullscreen: undefined,
+    Expand: undefined,
     mapLoading: false
   }))
   .actions((self) => {
@@ -30,14 +35,20 @@ export const GlobalStateModel = types
       setValue(key, value) {
         self[key] = value;
       },
-      setMap(map, MapView, GraphicsLayer, Graphic, Circle, WebMercatorUtils, geometryEngine) {
+      setMap(map, MapView, GraphicsLayer, Graphic, Circle, WebMercatorUtils, Extent, geometryEngine, watchUtils, Home, Fullscreen, LayerList, Expand) {
         self.map = map;
         self.MapView = MapView;
         self.GraphicsLayer = GraphicsLayer;
         self.Graphic = Graphic;
         self.Circle = Circle;
         self.WebMercatorUtils = WebMercatorUtils;
+        self.Extent = Extent;
         self.geometryEngine = geometryEngine;
+        self.watchUtils = watchUtils;
+        self.Home = Home;
+        self.Fullscreen = Fullscreen;
+        self.LayerList = LayerList;
+        self.Expand = Expand;
         self.mapLoading = false;
       },
       setMapLoading() {

@@ -37,27 +37,95 @@ const OrienteeringSymbol = {
   height: '15px',
 };
 
-const EsriOSMOrienteeringMap = inject('globalStateModel')(
+const EsriOSMOrienteeringMap = inject(
+  'globalStateModel',
+  'clubModel'
+)(
   observer(
-    ({ globalStateModel, containerId, mapCenter, graphics = [], onClick = () => {}, onHighlightClick = () => {} }) => {
+    ({
+      globalStateModel,
+      clubModel,
+      containerId,
+      mapCenter,
+      graphics = [],
+      onClick = () => {},
+      onHighlightClick = () => {},
+    }) => {
       const { t } = useTranslation();
       const [graphicsLayer, setGraphicsLayer] = React.useState();
       const [mapView, setMapView] = React.useState();
 
       React.useEffect(() => {
         if (globalStateModel.map && !globalStateModel.mapLoading) {
-          const visibleViewLayerIds = [...backgroundLayerIds, containerId];
+          const visibleViewLayerIds = [
+            ...backgroundLayerIds,
+            ...clubModel.map.layers.filter((l) => l.visible).map((l) => l.id),
+            containerId,
+          ];
 
           const view = new globalStateModel.MapView({
             map: globalStateModel.map,
             container: containerId, // Reference to the map object created before the scene
-            zoom: 12, // Sets zoom level based on level of detail (LOD)
-            center: mapCenter,
+            extent: clubModel.map.fullExtent,
             highlightOptions: {
               color: 'orange',
             },
+            constraints: {
+              minScale: clubModel.map.minScale,
+              maxScale: clubModel.map.maxScale,
+            },
           });
           view.ui.add(`${containerId}#orienteeringMapInfo`, 'top-right');
+
+          const homeWidget = new globalStateModel.Home({
+            view: view,
+          });
+          view.ui.add(homeWidget, 'top-left');
+
+          function defineActions(event) {
+            const item = event.item;
+            item.actionsSections = [
+              [
+                {
+                  title: t('map.GoToFullExtent'),
+                  className: 'esri-icon-search',
+                  id: 'full-extent',
+                },
+              ],
+            ];
+          }
+
+          const layerList = new globalStateModel.LayerList({
+            view: view,
+            container: document.createElement('div'),
+            listItemCreatedFunction: defineActions,
+          });
+
+          const layerListTriggerActionEvent = layerList.on('trigger-action', (event) => {
+            console.log(event);
+
+            // Capture the action id.
+            var id = event.action.id;
+
+            if (id === 'full-extent') {
+              const extent = new globalStateModel.Extent(clubModel.map.getLayerFullExtent(event.item.layer.id));
+              view.goTo(extent).then(() => {});
+            }
+          });
+
+          const layerListExpand = new globalStateModel.Expand({
+            expandIconClass: 'esri-icon-layer-list',
+            view: view,
+            content: layerList,
+            autoCollapse: true,
+            mode: 'floating',
+          });
+          view.ui.add(layerListExpand, 'top-left');
+
+          const fullscreen = new globalStateModel.Fullscreen({
+            view: view,
+          });
+          view.ui.add(fullscreen, 'top-left');
 
           const onTouchEvent = view.on('pointer-down', (event) => {
             const point = globalStateModel.WebMercatorUtils.webMercatorToGeographic(view.toMap(event));
@@ -73,7 +141,30 @@ const EsriOSMOrienteeringMap = inject('globalStateModel')(
           const onLayerViewCreate = view.on('layerview-create', (event) => {
             if (globalStateModel.map.layers.items.some((l) => l.id === event.layer.id)) {
               event.layerView.visible = visibleViewLayerIds.includes(event.layer.id);
+              if (event.layer.listMode === 'show' && !event.layerView.handleWhenLayerFalse) {
+                event.layerView.handleWhenLayerFalse = globalStateModel.watchUtils.whenFalse(
+                  event.layer,
+                  'visible',
+                  (visible) => {
+                    event.layerView.visible = visible;
+                  }
+                );
+                event.layerView.handleWhenLayerTrue = globalStateModel.watchUtils.whenTrue(
+                  event.layer,
+                  'visible',
+                  (visible) => {
+                    event.layerView.visible = visible;
+                  }
+                );
+              }
             }
+          });
+
+          view.on('layerview-destroy', function (event) {
+            event.layerView.handleWhenLayerFalse && event.layer.handleWhenLayerFalse.remove();
+            event.layerView.handleWhenLayerTrue && event.layer.handleWhenLayerTrue.remove();
+            event.layerView.handleWhenLayerFalse = undefined;
+            event.layerView.handleWhenLayerTrue = undefined;
           });
 
           let newGraphicsLayer = globalStateModel.map.layers.items.find((l) => l.id === containerId);
@@ -81,6 +172,7 @@ const EsriOSMOrienteeringMap = inject('globalStateModel')(
             newGraphicsLayer = new globalStateModel.GraphicsLayer({
               id: containerId,
               title: 'Graphics layer',
+              listMode: 'hide',
             });
 
             globalStateModel.map.add(newGraphicsLayer);
@@ -160,6 +252,7 @@ const EsriOSMOrienteeringMap = inject('globalStateModel')(
           return () => {
             onTouchEvent && onTouchEvent.remove();
             onLayerViewCreate && onLayerViewCreate.remove();
+            layerListTriggerActionEvent && layerListTriggerActionEvent.remove();
           };
         }
       }, [globalStateModel.map, globalStateModel.mapLoading]);
@@ -196,7 +289,7 @@ const EsriOSMOrienteeringMap = inject('globalStateModel')(
                   })
               )
           );
-          mapView.goTo(graphicsLayer.graphics.items);
+          mapView.goTo(graphicsLayer.graphics.items).then(() => {});
         }
       }, [mapView, graphics, graphics.length, graphicsLayer]);
 

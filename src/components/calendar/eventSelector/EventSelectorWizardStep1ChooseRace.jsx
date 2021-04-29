@@ -1,10 +1,10 @@
-import React, { Component } from "react";
-import { withTranslation } from "react-i18next";
-import { Spin, message } from "antd";
-import { SpinnerDiv, StyledTable } from "../../styled/styled";
-import { observer, inject } from "mobx-react";
-import { GetJsonData, PostJsonData } from "../../../utils/api";
-import organisationJson from "./eventorOrganisations2020";
+import React, { Component } from 'react';
+import { withTranslation } from 'react-i18next';
+import { Spin, message } from 'antd';
+import { SpinnerDiv, StyledTable } from '../../styled/styled';
+import { observer, inject } from 'mobx-react';
+import { GetJsonData, PostJsonData } from '../../../utils/api';
+import organisationJson from './eventorOrganisations2020';
 
 const flatten = (list) => list.reduce((a, b) => a.concat(Array.isArray(b) ? flatten(b) : b), []);
 const MakeArray = (object) => (!object ? [] : Array.isArray(object) ? object : [object]);
@@ -23,9 +23,9 @@ const distanceKm = (lat1, lon1, lat2, lon2) => {
 // @inject("clubModel")
 // @observer
 const EventSelectorWizardStep1ChooseRace = inject(
-  "clubModel",
-  "eventSelectorWizardModel",
-  "sessionModel"
+  'clubModel',
+  'eventSelectorWizardModel',
+  'sessionModel'
 )(
   observer(
     class EventSelectorWizardStep1ChooseRace extends Component {
@@ -34,18 +34,18 @@ const EventSelectorWizardStep1ChooseRace = inject(
         this.state = {
           loaded: false,
           events: [],
-          selectedRowKeys: undefined
+          selectedRowKeys: undefined,
         };
       }
 
       componentDidMount() {
         const self = this;
         const { eventSelectorWizardModel, clubModel, sessionModel, onFailed, onValidate } = this.props;
-        const url = clubModel.modules.find((module) => module.name === "Calendar").queryUrl;
+        const url = clubModel.modules.find((module) => module.name === 'Calendar').queryUrl;
         const data = {
-          iType: "EVENTS",
+          iType: 'EVENTS',
           iFromDate: eventSelectorWizardModel.queryStartDate,
-          iToDate: eventSelectorWizardModel.queryEndDate
+          iToDate: eventSelectorWizardModel.queryEndDate,
         };
 
         const alreadySavedEventsPromise = PostJsonData(url, data, true, sessionModel.authorizationHeader);
@@ -53,14 +53,14 @@ const EventSelectorWizardStep1ChooseRace = inject(
           clubModel.corsProxy +
             encodeURIComponent(
               clubModel.eventor.eventsUrl +
-                "?fromDate=" +
+                '?fromDate=' +
                 eventSelectorWizardModel.queryStartDate +
-                "&toDate=" +
+                '&toDate=' +
                 eventSelectorWizardModel.queryEndDate +
-                "&includeAttributes=true&includeOrganisationElement=true"
+                '&includeAttributes=true&includeOrganisationElement=true'
             ) +
-            "&headers=" +
-            encodeURIComponent("ApiKey: " + clubModel.eventor.apiKey),
+            '&headers=' +
+            encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
           true
         );
 
@@ -74,8 +74,8 @@ const EventSelectorWizardStep1ChooseRace = inject(
             }
             let events = [
               ...new Set([
-                ...flatten(eventsJson.Event.map((event) => event.EventRace)).map((eventRace) => eventRace.EventRaceId)
-              ])
+                ...flatten(eventsJson.Event.map((event) => event.EventRace)).map((eventRace) => eventRace.EventRaceId),
+              ]),
             ]
               // eslint-disable-next-line eqeqeq
               .filter((eventRaceId) => eventRaceId != undefined)
@@ -89,16 +89,16 @@ const EventSelectorWizardStep1ChooseRace = inject(
                   Array.isArray(e.EventRace)
                     ? e.EventRace.map((er) => er.EventRaceId).includes(event.EventRaceId)
                     : e.EventRace.EventRaceId === event.EventRaceId
-                )
+                ),
               };
               event.Event = {
-                ...entry.Event
+                ...entry.Event,
               };
               if (Array.isArray(event.Event.EventRace)) {
                 event.Event.EventRace = event.Event.EventRace.find(
                   (eventRace) => eventRace.EventRaceId === event.EventRaceId
                 );
-                event.Event.Name = event.Event.Name + ", " + event.Event.EventRace.Name;
+                event.Event.Name = event.Event.Name + ', ' + event.Event.EventRace.Name;
               }
               const alreadySaved = alreadySavedEventsJson.find(
                 (saved) =>
@@ -110,17 +110,17 @@ const EventSelectorWizardStep1ChooseRace = inject(
                 orgId = orgId.find((id) => true);
               }
               const org = orgId ? organisationJson.find((o) => o.id === orgId) : undefined;
-              event.organisationName = org ? org.name : "";
+              event.organisationName = org ? org.name : '';
               event.calendarEventId = alreadySaved ? alreadySaved.calendarEventId : calendarEventId--;
               event.longitude = event.Event.EventRace.EventCenterPosition
-                ? parseFloat(event.Event.EventRace.EventCenterPosition["@attributes"].x)
+                ? parseFloat(event.Event.EventRace.EventCenterPosition['@attributes'].x)
                 : null;
               event.latitude = event.Event.EventRace.EventCenterPosition
-                ? parseFloat(event.Event.EventRace.EventCenterPosition["@attributes"].y)
+                ? parseFloat(event.Event.EventRace.EventCenterPosition['@attributes'].y)
                 : null;
               event.distanceKm =
-                event.latitude && event.longitude && clubModel.mapCenter
-                  ? distanceKm(clubModel.mapCenter[1], clubModel.mapCenter[0], event.latitude, event.longitude)
+                event.latitude && event.longitude && clubModel.map?.center
+                  ? distanceKm(clubModel.map?.center[1], clubModel.map?.center[0], event.latitude, event.longitude)
                   : null;
             });
             // EventStatusId: 10 Canceled
@@ -128,9 +128,9 @@ const EventSelectorWizardStep1ChooseRace = inject(
             events = events
               .filter(
                 (event) =>
-                  event.Event.EventStatusId !== "10" &&
-                  (["1", "2", "6"].includes(event.Event.EventClassificationId) ||
-                    (event.Event.EventClassificationId === "3" &&
+                  event.Event.EventStatusId !== '10' &&
+                  (['1', '2', '6'].includes(event.Event.EventClassificationId) ||
+                    (event.Event.EventClassificationId === '3' &&
                       event.distanceKm !== null &&
                       event.distanceKm <= eventSelectorWizardModel.maxDistanceDistrict) ||
                     (event.distanceKm !== null &&
@@ -151,20 +151,20 @@ const EventSelectorWizardStep1ChooseRace = inject(
               organiserName: event.organisationName,
               raceDate: event.Event.EventRace.RaceDate.Date,
               raceTime:
-                event.Event.EventRace.RaceDate.Clock === "00:00:00"
-                  ? ""
+                event.Event.EventRace.RaceDate.Clock === '00:00:00'
+                  ? ''
                   : event.Event.EventRace.RaceDate.Clock.substr(0, 5),
               longitude: event.longitude,
               latitude: event.latitude,
-              distanceKm: event.distanceKm
+              distanceKm: event.distanceKm,
             }));
             self.setState({
               loaded: true,
               events: events,
-              selectedRowKeys: events.map((event) => event.calendarEventId).filter((id) => id > 0)
+              selectedRowKeys: events.map((event) => event.calendarEventId).filter((id) => id > 0),
             });
             eventSelectorWizardModel.setValue(
-              "selectedEvents",
+              'selectedEvents',
               events.filter((event) => event.calendarEventId > 0)
             );
             onValidate(true);
@@ -190,7 +190,7 @@ const EventSelectorWizardStep1ChooseRace = inject(
         const { events } = this.state;
         const selected = events.filter((event) => MakeArray(selectedRowKeys).includes(event.calendarEventId));
 
-        eventSelectorWizardModel.setValue("selectedEvents", selected);
+        eventSelectorWizardModel.setValue('selectedEvents', selected);
         this.setState({ selectedRowKeys });
       };
 
@@ -200,34 +200,34 @@ const EventSelectorWizardStep1ChooseRace = inject(
         const { loaded, selectedRowKeys, events } = this.state;
         const rowSelection = {
           selectedRowKeys,
-          onChange: self.onSelectChange
+          onChange: self.onSelectChange,
         };
         const columns = [
           {
-            title: t("results.Date"),
-            dataIndex: "raceDate",
-            key: "raceDate"
+            title: t('results.Date'),
+            dataIndex: 'raceDate',
+            key: 'raceDate',
           },
           {
-            title: t("results.Time"),
-            dataIndex: "raceTime",
-            key: "raceTime"
+            title: t('results.Time'),
+            dataIndex: 'raceTime',
+            key: 'raceTime',
           },
           {
-            title: t("results.Club"),
-            dataIndex: "organiserName",
-            key: "organiserName"
+            title: t('results.Club'),
+            dataIndex: 'organiserName',
+            key: 'organiserName',
           },
           {
-            title: t("results.Name"),
-            dataIndex: "name",
-            key: "name"
+            title: t('results.Name'),
+            dataIndex: 'name',
+            key: 'name',
           },
           {
-            title: t("results.DistanceKm"),
-            dataIndex: "distanceKm",
-            key: "distanceKm"
-          }
+            title: t('results.DistanceKm'),
+            dataIndex: 'distanceKm',
+            key: 'distanceKm',
+          },
         ];
 
         return loaded && visible ? (
@@ -235,7 +235,7 @@ const EventSelectorWizardStep1ChooseRace = inject(
             rowSelection={rowSelection}
             onRow={(record) => {
               return {
-                onClick: () => self.onRowClick(record.key)
+                onClick: () => self.onRowClick(record.key),
               };
             }}
             columns={columns}

@@ -155,15 +155,16 @@ const CalendarEdit = inject(
       const { getFieldValue, setFieldsValue } = form;
       const longitude = getFieldValue('iLongitude');
       const latitude = getFieldValue('iLatitude');
-      const clubLongitude = clubModel.mapCenter ? clubModel.mapCenter[0] : undefined;
-      const clubLatitude = clubModel.mapCenter ? clubModel.mapCenter[1] : undefined;
+      const clubLongitude = clubModel.map?.center ? clubModel.map?.center[0] : undefined;
+      const clubLatitude = clubModel.map?.center ? clubModel.map?.center[1] : undefined;
       const exists = longitude && latitude;
       GetPositionModal(
         t,
         exists ? longitude : clubLongitude,
         exists ? latitude : clubLatitude,
         exists,
-        globalStateModel
+        globalStateModel,
+        clubModel
       ).then((selectedPosition) => {
         if (selectedPosition) {
           setFieldsValue({ iLongitude: selectedPosition.longitude, iLatitude: selectedPosition.latitude });
