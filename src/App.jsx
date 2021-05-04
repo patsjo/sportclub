@@ -1,4 +1,4 @@
-import React, { Component, Suspense } from 'react';
+import React, { useCallback, useRef, useState, useEffect, Suspense } from 'react';
 import clubJson from './models/okorion';
 import { MobxClubModel } from './models/mobxClubModel';
 import { SessionModel, getLocalStorage } from './models/sessionModel';
@@ -99,17 +99,17 @@ const StyledEllipsis = styled.div`
   }
 `;
 
-class App extends Component {
-  constructor(props) {
-    super(props);
-    this.scrollRef = React.createRef();
-    this.state = {
-      scrollTop: 0,
-      stickyPos: 0,
-    };
-    this.sessionModel = SessionModel.create(getLocalStorage());
-    this.clubModel = MobxClubModel.create(clubJson);
-    this.globalStateModel = GlobalStateModel.create({
+const App = () => {
+  const [scroll, setScroll] = useState({ top: 0, stickyPos: 0 });
+  const sessionModel = useRef(SessionModel.create(getLocalStorage()));
+  const clubModel = useRef(MobxClubModel.create(clubJson));
+  const logoHeight = 80;
+  const logoWidth = clubModel.current.logo.width * (80 / clubModel.current.logo.height);
+  const titleWidth = clubModel.current.titleLogo
+    ? clubModel.current.titleLogo.width * (24 / clubModel.current.titleLogo.height)
+    : 0;
+  const globalStateModel = useRef(
+    GlobalStateModel.create({
       news: {
         newsItems: [],
         limit: 12,
@@ -117,52 +117,63 @@ class App extends Component {
         hasMoreItems: true,
       },
       graphics:
-        this.clubModel.map?.center && this.clubModel.logo
+        clubModel.current.map?.center && clubModel.current.logo
           ? [
               {
                 geometry: {
                   type: 'point',
-                  longitude: this.clubModel.map?.center[0],
-                  latitude: this.clubModel.map?.center[1],
+                  longitude: clubModel.current.map?.center[0],
+                  latitude: clubModel.current.map?.center[1],
                 },
-                attributes: { name: this.clubModel.title, type: 'logo' },
+                attributes: { name: clubModel.current.title, type: 'logo' },
                 symbol: {
                   type: 'picture-marker', // autocasts as new PictureMarkerSymbol()
-                  url: this.clubModel.logo.url,
+                  url: clubModel.current.logo.url,
                   width: `${
-                    this.clubModel.logo.width > this.clubModel.logo.height
+                    clubModel.current.logo.width > clubModel.current.logo.height
                       ? 20
-                      : (20 * this.clubModel.logo.width) / this.clubModel.logo.height
+                      : (20 * clubModel.current.logo.width) / clubModel.current.logo.height
                   }px`,
                   height: `${
-                    this.clubModel.logo.height > this.clubModel.logo.width
+                    clubModel.current.logo.height > clubModel.current.logo.width
                       ? 20
-                      : (20 * this.clubModel.logo.height) / this.clubModel.logo.width
+                      : (20 * clubModel.current.logo.height) / clubModel.current.logo.width
                   }px`,
                 },
               },
             ]
           : [],
-    });
+    })
+  );
 
-    document.title = this.clubModel.title;
-    // this.theme = createMuiTheme({
-    //   ...this.clubModel.theme,
-    //   overrides: {
-    //     MuiDrawer: {
-    //       paperAnchorRight: {
-    //         top: 70,
-    //         height: "calc(100% - 70px)"
-    //       }
-    //     }
-    //   }
-    // });
-    if (this.sessionModel.username && this.sessionModel.username.length > 0) {
+  const onScroll = useCallback(() => {
+    setScroll((scroll) => {
+      const oldScrollTop = scroll.top;
+      const newScrollTop = window.scrollY;
+      let newStickyPos = 0;
+
+      if (newScrollTop > oldScrollTop && newScrollTop > 56) {
+        newStickyPos = -56;
+      }
+
+      return { top: newScrollTop, stickyPos: newStickyPos };
+    });
+  }, []);
+
+  useEffect(() => {
+    const htmlEditorModule = clubModel.current.modules.find((module) => module.name === 'HTMLEditor');
+
+    document.title = clubModel.current.title;
+    globalStateModel.current.setMap(clubModel.current).then(() => {});
+    globalStateModel.current.fetchHtmlEditorMenu(htmlEditorModule, sessionModel.current, message);
+    window.addEventListener('scroll', onScroll);
+
+    if (sessionModel.current.username && sessionModel.current.username.length > 0) {
       PostJsonData(
-        this.clubModel.loginUrl,
+        clubModel.current.loginUrl,
         {
-          username: this.sessionModel.username,
-          password: this.sessionModel.password,
+          username: sessionModel.current.username,
+          password: sessionModel.current.password,
         },
         true,
         { 'X-Requested-With': 'XMLHttpRequest' },
@@ -170,93 +181,68 @@ class App extends Component {
       )
         .then((json) => {
           if (json) {
-            this.sessionModel.setSuccessfullyLogin(json.id, json.name, json.isAdmin, json.eventorPersonId);
+            sessionModel.current.setSuccessfullyLogin(json.id, json.name, json.isAdmin, json.eventorPersonId);
           }
         })
         .catch(() => {});
     }
 
-    const htmlEditorModule = this.clubModel.modules.find((module) => module.name === 'HTMLEditor');
-    this.globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, this.sessionModel, message);
-  }
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+    };
+  }, []);
 
-  componentDidMount() {
-    window.addEventListener('scroll', this.onScroll);
-  }
+  const Header = clubModel.current.titleLogo ? (
+    <Link to="/">
+      <StyledTitleLogo
+        src={clubModel.current.titleLogo.url}
+        width={titleWidth}
+        height={24}
+        maxWidth={76 + logoWidth + titleWidth}
+      />
+    </Link>
+  ) : (
+    <Link to="/">
+      <StyledHeader maxWidth={76 + logoWidth}>
+        <StyledEllipsis>{clubModel.current.title}</StyledEllipsis>
+      </StyledHeader>
+    </Link>
+  );
 
-  componentWillUnmount() {
-    window.removeEventListener('scroll', this.onScroll);
-  }
-
-  onScroll = () => {
-    const oldScrollTop = this.state.scrollTop;
-    const newScrollTop = window.scrollY;
-    let stickyPos = 0;
-
-    if (newScrollTop > oldScrollTop && newScrollTop > 56) {
-      stickyPos = -56;
-    }
-
-    this.setState({
-      scrollTop: newScrollTop,
-      stickyPos: stickyPos,
-    });
-  };
-
-  render() {
-    const logoHeight = 80;
-    const logoWidth = this.clubModel.logo.width * (80 / this.clubModel.logo.height);
-    const titleWidth = this.clubModel.titleLogo
-      ? this.clubModel.titleLogo.width * (24 / this.clubModel.titleLogo.height)
-      : 0;
-    const Header = this.clubModel.titleLogo ? (
-      <Link to="/">
-        <StyledTitleLogo
-          src={this.clubModel.titleLogo.url}
-          width={titleWidth}
-          height={24}
-          maxWidth={76 + logoWidth + titleWidth}
-        />
-      </Link>
-    ) : (
-      <Link to="/">
-        <StyledHeader maxWidth={76 + logoWidth}>
-          <StyledEllipsis>{this.clubModel.title}</StyledEllipsis>
-        </StyledHeader>
-      </Link>
-    );
-
-    return (
-      <Provider clubModel={this.clubModel} sessionModel={this.sessionModel} globalStateModel={this.globalStateModel}>
-        <ThemeProvider theme={this.clubModel.theme}>
+  return (
+    <Provider
+      clubModel={clubModel.current}
+      sessionModel={sessionModel.current}
+      globalStateModel={globalStateModel.current}
+    >
+      <ThemeProvider theme={clubModel.current.theme}>
+        <Suspense
+          fallback={
+            <SpinnerDiv>
+              <Spin size="large" />
+            </SpinnerDiv>
+          }
+        >
           <Router>
-            <StyledLayout onScroll={this.onScroll} ref={this.scrollRef}>
-              <StickyHolder top={this.state.stickyPos}>
+            <StyledLayout onScroll={onScroll}>
+              <StickyHolder top={scroll.stickyPos}>
                 <LayoutHeader>
                   <Link to="/">
-                    <StyledLogo src={this.clubModel.logo.url} width={logoWidth} height={logoHeight} />
+                    <StyledLogo src={clubModel.current.logo.url} width={logoWidth} height={logoHeight} />
                   </Link>
                   {Header}
                   <Toolbar />
                 </LayoutHeader>
               </StickyHolder>
               <LayoutContent>
-                <Suspense
-                  fallback={
-                    <SpinnerDiv>
-                      <Spin size="large" />
-                    </SpinnerDiv>
-                  }
-                >
-                  <AppContent />
-                </Suspense>
+                <AppContent />
               </LayoutContent>
             </StyledLayout>
           </Router>
-        </ThemeProvider>
-      </Provider>
-    );
-  }
-}
+        </Suspense>
+      </ThemeProvider>
+    </Provider>
+  );
+};
 
 export default App;

@@ -209,7 +209,7 @@ const useEventorEntries = (clubModel) => {
   return loaded ? (
     events.map((event, index) => (
       <EventRace
-        key={'entryObject#' + event.eventorRaceId}
+        key={`entryObject#${event.eventId || event.eventorRaceId}`}
         column={-50}
         header={event.name}
         date={event.date}

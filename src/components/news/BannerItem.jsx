@@ -90,10 +90,6 @@ const NewsItem = inject(
         newsObject: PropTypes.object.isRequired,
       };
 
-      constructor(props) {
-        super(props);
-      }
-
       getFile() {
         const { newsObject, clubModel } = this.props;
 

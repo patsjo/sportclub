@@ -20,12 +20,14 @@ const MapContainer = styled.div`
 // @inject("eventSelectorWizardModel")
 // @observer
 const EventSelectorWizardStep0Input = inject(
+  'globalStateModel',
   'clubModel',
   'eventSelectorWizardModel'
 )(
   observer(
     class EventSelectorWizardStep0Input extends Component {
       static propTypes = {
+        globalStateModel: PropTypes.object.isRequired,
         clubModel: PropTypes.object.isRequired,
         eventSelectorWizardModel: PropTypes.object.isRequired,
         onMount: PropTypes.func.isRequired,
@@ -48,7 +50,7 @@ const EventSelectorWizardStep0Input = inject(
 
       render() {
         const self = this;
-        const { t, clubModel, eventSelectorWizardModel } = self.props;
+        const { t, globalStateModel, clubModel, eventSelectorWizardModel } = self.props;
         const { formId } = self.state;
 
         return (
@@ -130,6 +132,8 @@ const EventSelectorWizardStep0Input = inject(
                 <MapContainer>
                   <EsriOSMOrienteeringMap
                     key="eventSelector#maxDistanceMap"
+                    globalStateModel={globalStateModel}
+                    clubModel={clubModel}
                     containerId="maxDistanceMap"
                     mapCenter={clubModel.map?.center}
                     graphics={[

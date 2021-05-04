@@ -17,6 +17,8 @@ export const GetPositionModal = (t, longitude, latitude, exists, globalStateMode
           <Provider clubModel={clubModel} globalStateModel={globalStateModel}>
             <EsriOSMOrienteeringMap
               key="confirm#getPositionMap"
+              globalStateModel={globalStateModel}
+              clubModel={clubModel}
               containerId="getPositionMap"
               mapCenter={mapCenter}
               graphics={

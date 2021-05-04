@@ -14,9 +14,9 @@
     }
   }
 */
-import React, { useLayoutEffect, useState, useRef } from 'react';
+import React, { useLayoutEffect, useRef } from 'react';
 const ColumnItem = ({ onHeightChange, children }) => {
-  const ref = React.createRef();
+  const ref = useRef();
   useLayoutEffect(() => {
     const newHeight = !ref.current || !ref.current.clientHeight ? 0 : ref.current.clientHeight;
     onHeightChange(newHeight);

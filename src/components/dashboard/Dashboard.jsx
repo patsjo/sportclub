@@ -2,7 +2,6 @@ import React, { lazy } from 'react';
 import styled from 'styled-components';
 import useBanners from '../news/useBanners';
 import useNews from '../news/useNews';
-import useEsriMap from '../map/useEsriMap';
 import useEventorEntries from '../eventor/useEventorEntries';
 import EsriOSMOrienteeringMap from '../map/EsriOSMOrienteeringMap';
 import WeeklyCalendar from '../calendar/weekly/WeeklyCalendar';
@@ -29,7 +28,6 @@ const Dashboard = inject(
     const eventorEntries = useEventorEntries(clubModel);
     const { loadMoreCallback, newsItems } = useNews(globalStateModel, clubModel);
     const bannerItems = useBanners(clubModel);
-    const esriMapIsLoaded = useEsriMap(globalStateModel, clubModel);
     const showSponsors = clubModel.sponsors ? clubModel.sponsors.some((s) => s.active) : false;
 
     const Content = (
@@ -52,26 +50,27 @@ const Dashboard = inject(
           </div>
           {clubModel.map?.center ? (
             <div key="dashboard#homeMapContainer" column={-1} style={{ height: 400, marginBottom: 12 }}>
-              {esriMapIsLoaded ? (
-                <EsriOSMOrienteeringMap
-                  key="dashboard#homeMap"
-                  containerId="homeMap"
-                  mapCenter={clubModel.map?.center}
-                  graphics={getSnapshot(globalStateModel.graphics)}
-                  nofGraphics={globalStateModel.graphics.length}
-                  onHighlightClick={(graphicLayer, graphic) => {
-                    const longitude = graphic.geometry.longitude;
-                    const latitude = graphic.geometry.latitude;
-                    const win = window.open(
-                      `http://maps.google.com/maps?saddr=&daddr=N${latitude},E${longitude}`,
-                      '_blank'
-                    );
-                    if (win) {
-                      win.focus();
-                    }
-                  }}
-                />
-              ) : null}
+              <EsriOSMOrienteeringMap
+                key="dashboard#homeMap"
+                useAllWidgets
+                globalStateModel={globalStateModel}
+                clubModel={clubModel}
+                containerId="homeMap"
+                mapCenter={clubModel.map?.center}
+                graphics={getSnapshot(globalStateModel.graphics)}
+                nofGraphics={globalStateModel.graphics.length}
+                onHighlightClick={(graphic) => {
+                  const longitude = graphic.geometry.longitude;
+                  const latitude = graphic.geometry.latitude;
+                  const win = window.open(
+                    `http://maps.google.com/maps?saddr=&daddr=N${latitude},E${longitude}`,
+                    '_blank'
+                  );
+                  if (win) {
+                    win.focus();
+                  }
+                }}
+              />
             </div>
           ) : null}
           {newsItems.slice(2, 5)}

@@ -1,9 +1,10 @@
-import { types } from "mobx-state-tree";
+import { types, flow } from "mobx-state-tree";
 import { NewsModel } from "./newsModel";
 import { Graphic } from "./graphic";
 import { Menu } from "./htmlEditorModel";
 import { PostJsonData } from '../utils/api';
 import { getMenus } from '../utils/htmlEditorMenuHelper';
+import { getEsriMap } from '../components/map/EsriMapHelper.js';
 
 export const GlobalStateModel = types
   .model({
@@ -17,43 +18,15 @@ export const GlobalStateModel = types
   })
   .volatile(self => ({
     map: undefined,
-    MapView: undefined,
-    GraphicsLayer: undefined,
-    Graphic: undefined,
-    Circle: undefined,
-    WebMercatorUtils: undefined,
-    Extent: undefined,
-    geometryEngine: undefined,
-    watchUtils: undefined,
-    Home: undefined,
-    Fullscreen: undefined,
-    Expand: undefined,
-    mapLoading: false
   }))
   .actions((self) => {
     return {
       setValue(key, value) {
         self[key] = value;
       },
-      setMap(map, MapView, GraphicsLayer, Graphic, Circle, WebMercatorUtils, Extent, geometryEngine, watchUtils, Home, Fullscreen, LayerList, Expand) {
-        self.map = map;
-        self.MapView = MapView;
-        self.GraphicsLayer = GraphicsLayer;
-        self.Graphic = Graphic;
-        self.Circle = Circle;
-        self.WebMercatorUtils = WebMercatorUtils;
-        self.Extent = Extent;
-        self.geometryEngine = geometryEngine;
-        self.watchUtils = watchUtils;
-        self.Home = Home;
-        self.Fullscreen = Fullscreen;
-        self.LayerList = LayerList;
-        self.Expand = Expand;
-        self.mapLoading = false;
-      },
-      setMapLoading() {
-        self.mapLoading = true;
-      },
+      setMap: flow(function* setEsriMap(clubModel) {
+        self.map = yield getEsriMap(self, clubModel);
+      }),
       setRoute(history, path) {
         history.replace({ pathname: path });
       },
