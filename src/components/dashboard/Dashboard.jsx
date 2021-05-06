@@ -49,29 +49,27 @@ const Dashboard = inject(
             <WeeklyCalendar />
           </div>
           {clubModel.map?.center ? (
-            <div key="dashboard#homeMapContainer" column={-1} style={{ height: 400, marginBottom: 12 }}>
-              <EsriOSMOrienteeringMap
-                key="dashboard#homeMap"
-                useAllWidgets
-                globalStateModel={globalStateModel}
-                clubModel={clubModel}
-                containerId="homeMap"
-                mapCenter={clubModel.map?.center}
-                graphics={getSnapshot(globalStateModel.graphics)}
-                nofGraphics={globalStateModel.graphics.length}
-                onHighlightClick={(graphic) => {
-                  const longitude = graphic.geometry.longitude;
-                  const latitude = graphic.geometry.latitude;
-                  const win = window.open(
-                    `http://maps.google.com/maps?saddr=&daddr=N${latitude},E${longitude}`,
-                    '_blank'
-                  );
-                  if (win) {
-                    win.focus();
-                  }
-                }}
-              />
-            </div>
+            <EsriOSMOrienteeringMap
+              key="dashboard#homeMap"
+              column={-1}
+              height="400px"
+              width="100%"
+              useAllWidgets
+              globalStateModel={globalStateModel}
+              clubModel={clubModel}
+              containerId="homeMap"
+              onHighlightClick={(graphic) => {
+                const longitude = graphic.geometry.longitude;
+                const latitude = graphic.geometry.latitude;
+                const win = window.open(
+                  `http://maps.google.com/maps?saddr=&daddr=N${latitude},E${longitude}`,
+                  '_blank'
+                );
+                if (win) {
+                  win.focus();
+                }
+              }}
+            />
           ) : null}
           {newsItems.slice(2, 5)}
           {clubModel.facebookUrl ? (

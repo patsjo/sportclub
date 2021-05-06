@@ -21,7 +21,7 @@ export const GetPositionModal = (t, longitude, latitude, exists, globalStateMode
               clubModel={clubModel}
               containerId="getPositionMap"
               mapCenter={mapCenter}
-              graphics={
+              defaultGraphics={
                 exists ? [{ geometry: { type: 'point', longitude: longitude, latitude: latitude } }] : undefined
               }
               onClick={(graphicLayer, graphic) => {

@@ -136,7 +136,7 @@ const EventSelectorWizardStep0Input = inject(
                     clubModel={clubModel}
                     containerId="maxDistanceMap"
                     mapCenter={clubModel.map?.center}
-                    graphics={[
+                    defaultGraphics={[
                       {
                         geometry: {
                           type: 'circle',

@@ -18,6 +18,7 @@ export const GlobalStateModel = types
   })
   .volatile(self => ({
     map: undefined,
+    updateGraphics: async() => {}
   }))
   .actions((self) => {
     return {
@@ -27,6 +28,9 @@ export const GlobalStateModel = types
       setMap: flow(function* setEsriMap(clubModel) {
         self.map = yield getEsriMap(self, clubModel);
       }),
+      setUpdateGraphicCallback(callbackFunc) {
+        self.updateGraphics = callbackFunc;
+      },
       setRoute(history, path) {
         history.replace({ pathname: path });
       },
@@ -44,6 +48,7 @@ export const GlobalStateModel = types
       setGraphics(type, graphics) {
         self.graphics = self.graphics.filter((gr) => gr.attributes.type !== type);
         self.graphics = self.graphics.concat(graphics);
+        self.updateGraphics(self.graphics).then(() => {});
       },
       setHtmlEditorMenu(menu) {
         self.htmlEditorMenu = menu;

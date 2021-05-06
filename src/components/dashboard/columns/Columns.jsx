@@ -1,7 +1,11 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import Column from './Column';
 import ColumnItem from './ColumnItem';
-import { mapNodesToColumns } from './mapNodesToColumns';
+import { maxColumns, getDefaultChild, recalculateChildDistribution } from './mapNodesToColumns';
 import styled from 'styled-components';
+import { createReparentableSpace } from 'react-reparenting';
+
+const { Reparentable, sendReparentableChild } = createReparentableSpace();
 
 const flatten = (list) => list.reduce((a, b) => a.concat(Array.isArray(b) ? flatten(b) : b), []);
 
@@ -25,39 +29,26 @@ const StyledColumns = styled.div`
   }
 `;
 
-const StyledColumn = styled.div`
-  border-left: ${(props) => (props.column > 0 ? '#808080 dotted 1px' : 'unset')};
-  box-sizing: border-box;
-  float: left;
-  width: ${(props) => (1 / props.columns) * 100}%;
-  padding-left: ${(props) => (props.column > 0 ? props.gap : 0)}px;
-  padding-right: ${(props) => (props.column < props.columns - 1 ? props.gap : 0)}px;
-`;
-
 const Columns = ({ children }) => {
-  const allChildren = flatten(children).filter((child) => child);
-  const [renderTrigger, setRenderTrigger] = useState(false);
-  const [columns, setColumns] = useState(getColumns(getWidth()));
-  const childItems = useRef([]);
+  const allReactChildren = flatten(children).filter((child) => child);
+  const oldColumns = useRef(getColumns(getWidth()));
+  const [columns, setColumns] = useState(oldColumns.current);
+  const [childHeights, setChildHeights] = useState({});
+  const [childDistribution, setChildDistribution] = useState([...Array(maxColumns)].map(() => []));
 
-  const onHeightChange = useCallback(
-    (key, height) => {
-      const child = childItems.current.find((c) => c.key === key);
-
-      if (child && child.height !== height) {
-        child.height = height;
-        mapNodesToColumns(childItems.current, columns);
-        setRenderTrigger(!renderTrigger);
-      }
-    },
-    [columns]
-  );
+  const onHeightChange = useCallback((key, height) => {
+    setChildHeights((oldHeights) => {
+      const newHeights = { ...oldHeights };
+      newHeights[key] = height;
+      return newHeights;
+    });
+  }, []);
 
   useEffect(() => {
     const resizeListener = () => {
       const newColumns = getColumns(getWidth());
       if (columns != newColumns) {
-        mapNodesToColumns(childItems.current, newColumns);
+        oldColumns.current = columns;
         setColumns(newColumns);
       }
     };
@@ -70,48 +61,33 @@ const Columns = ({ children }) => {
   }, [columns]);
 
   useEffect(() => {
-    childItems.current = allChildren.map((child) => {
-      const existingChild = childItems.current.find((c) => c.key === child.key);
-      return existingChild
-        ? existingChild
-        : { key: child.key, height: 70, preferredColumn: child.props.column, column: 0 };
-    });
-    mapNodesToColumns(childItems.current, columns);
-    setRenderTrigger(!renderTrigger);
-  }, [allChildren.length, columns]);
+    setChildDistribution((oldChildDistribution) => {
+      const updatedChilds = allReactChildren.map((reactChild) => {
+        const existingChild = flatten(oldChildDistribution).find((c) => c.key === reactChild.key);
+        return existingChild ? existingChild : getDefaultChild(reactChild, columns);
+      });
 
-  let renderColumns = [];
-  if (columns > 1) {
-    const columnContent = [];
-    for (let i = 0; i < columns; i++) {
-      columnContent[i] = [];
-    }
-    React.Children.forEach(allChildren, (reactChild) => {
-      const child = childItems.current.find((c) => c.key === reactChild.key);
-      const column = child ? (child.column < columns ? child.column : columns - 1) : 0;
-      columnContent[column].push(React.cloneElement(reactChild));
+      return recalculateChildDistribution(
+        updatedChilds,
+        childHeights,
+        columns,
+        columns !== oldColumns.current,
+        sendReparentableChild
+      );
     });
-    const renderedColumns = columnContent.map((column, i) => (
-      <StyledColumn key={`numberOfColumns#${columns}#column${i}`} column={i} columns={columns} gap={18}>
-        {column.map((child) => (
-          <ColumnItem
-            key={`columnItem#${child.key}#column${i}`}
-            onHeightChange={(height) => onHeightChange(child.key, height)}
-          >
-            {child}
-          </ColumnItem>
-        ))}
-      </StyledColumn>
-    ));
-    renderColumns = renderedColumns;
-  } else {
-    renderColumns = children;
-  }
+  }, [allReactChildren.map((child) => child.key).join(','), JSON.stringify(childHeights), columns]);
 
   return (
-    <StyledColumns key={`numberOfColumns#${columns}`}>
-      {renderTrigger && null}
-      {renderColumns}
+    <StyledColumns key="columns">
+      {childDistribution.map((column, i) => (
+        <Column Reparentable={Reparentable} columns={columns} index={i}>
+          {column.map((child) => (
+            <ColumnItem key={`columnItem#${child.key}`} onHeightChange={(height) => onHeightChange(child.key, height)}>
+              {child.reactChild}
+            </ColumnItem>
+          ))}
+        </Column>
+      ))}
       <div style={{ clear: 'both' }}></div>
     </StyledColumns>
   );
