@@ -5,11 +5,13 @@ import { loadModules } from 'esri-loader';
 import { backgroundLayerIds } from './EsriMapHelper.js';
 import { useTranslation } from 'react-i18next';
 import { observer } from 'mobx-react';
+import Loader from './Loader';
 
 const MapDiv = styled.div`
   height: ${(props) => props.height};
   width: ${(props) => props.width};
   marginbottom: 12px;
+  position: relative;
 `;
 const MapContainerDiv = styled.div`
   height: 100%;
@@ -344,6 +346,7 @@ const EsriOSMOrienteeringMap = observer(
 
     return (
       <MapDiv key="map" height={height} width={width}>
+        <Loader view={mapView} />
         <MapContainerDiv key={containerId} id={containerId} />
         <MapInfo key={`${containerId}#orienteeringMapInfo`} id={`${containerId}#orienteeringMapInfo`}>
           <div id={`${containerId}#orienteeringMapInfoText`} />

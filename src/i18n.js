@@ -109,6 +109,8 @@ i18next
             RequiredField: "Please input your"
           },
           map: {
+            Map: "map",
+            Loading: "Loading",
             SelectPosition: "Click in map to select position",
             ChooseMapPosition: "Choose in map",
             Longitude: "Longitude",
@@ -348,6 +350,8 @@ i18next
             RequiredField: "Vänligen ange"
           },
           map: {
+            Map: "karta",
+            Loading: "Laddar",
             SelectPosition: "Klicka i kartan för att välja position",
             ChooseMapPosition: "Välj i karta",
             Longitude: "Longitud",
