@@ -194,6 +194,9 @@ const RaceTeamResult = types
     totalTimeBehind: types.maybeNull(types.string),
     points1000: types.maybeNull(types.integer),
     ranking: types.maybeNull(types.number),
+    missingTime: types.maybeNull(types.string),
+    speedRanking: types.maybeNull(types.number),
+    technicalRanking: types.maybeNull(types.number),
     serviceFeeToClub: types.optional(types.number, 0),
     serviceFeeDescription: types.maybeNull(types.string)
   })
@@ -264,7 +267,10 @@ const RaceResult = types
     points: types.maybeNull(types.integer),
     pointsOld: types.maybeNull(types.integer),
     points1000: types.maybeNull(types.integer),
-    ranking: types.maybeNull(types.number)
+    ranking: types.maybeNull(types.number),
+    missingTime: types.maybeNull(types.string),
+    speedRanking: types.maybeNull(types.number),
+    technicalRanking: types.maybeNull(types.number)
   })
   .volatile(self => ({
     isAwardTouched: false

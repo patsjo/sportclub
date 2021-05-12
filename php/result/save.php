@@ -11,6 +11,8 @@
 //# Date        By      Description                          #
 //# ----------  ------  ------------------------------------ #
 //# 2019-12-26  PatSjo  Initial version                      #
+//# 2021-05-12  PatSjo  Added missingTime, speedRanking and  #
+//#                     technicalRanking                     #
 //############################################################
 
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/db.php");
@@ -256,11 +258,12 @@ elseif ($iType == "EVENT")
                     "  NOF_STARTS_IN_CLASS, ORIGINAL_FEE, LATE_FEE," .
                     "  FEE_TO_CLUB, AWARD, POINTS," .
                     "  POINTS_OLD, POINTS_1000, RANKING," .
+                    "  MISSING_TIME, SPEED_RANKING, TECHNICAL_RANKING," .
                     "  SERVICEFEE_TO_CLUB, SERVICEFEE_DESCRIPTION" .
                     ")" .
                     " VALUES " .
                     "(" .
-                    "  %d, %d, '%s', %s, %d, %s, %s, %s, %s, %s, %s, %s, %s, %f, %f, %f, %s, %s, %s, %s, %s, %f, %s" .
+                    "  %d, %d, '%s', %s, %d, %s, %s, %s, %s, %s, %s, %s, %s, %f, %f, %f, %s, %s, %s, %s, %s, %s, %s, %s, %f, %s" .
                     ")",
                     $x->eventId, $result->competitorId, $result->className,
                     is_null($result->deviantEventClassificationId) ? "NULL" : "'" . $result->deviantEventClassificationId . "'",
@@ -279,6 +282,9 @@ elseif ($iType == "EVENT")
                     is_null($result->pointsOld) ? "NULL" : $result->pointsOld,
                     is_null($result->points1000) ? "NULL" : $result->points1000,
                     is_null($result->ranking) ? "NULL" : $result->ranking,
+                    (!isset($result->missingTime) || is_null($result->missingTime)) ? "NULL" : "'" . $result->missingTime . "'",
+                    (!isset($result->speedRanking) || is_null($result->speedRanking)) ? "NULL" : $result->speedRanking,
+                    (!isset($result->technicalRanking) || is_null($result->technicalRanking)) ? "NULL" : $result->technicalRanking,
                     (!isset($result->serviceFeeToClub) || is_null($result->serviceFeeToClub)) ? 0.0 : $result->serviceFeeToClub,
                     (!isset($result->serviceFeeDescription) || is_null($result->serviceFeeDescription)) ? "NULL" : "'" . $result->serviceFeeDescription . "'");
 
@@ -325,11 +331,12 @@ elseif ($iType == "EVENT")
                     "  TOTAL_STAGES, DEVIANT_RACE_LIGHT_CONDITION, DELTA_POSITIONS," .
                     "  DELTA_TIME_BEHIND, TOTAL_STAGE_POSITION, TOTAL_STAGE_TIME_BEHIND," .
                     "  TOTAL_POSITION, TOTAL_NOF_STARTS_IN_CLASS, TOTAL_TIME_BEHIND, POINTS_1000, RANKING," .
+                    "  MISSING_TIME, SPEED_RANKING, TECHNICAL_RANKING," .
                     "  SERVICEFEE_TO_CLUB, SERVICEFEE_DESCRIPTION" .
                     ")" .
                     " VALUES " .
                     "(" .
-                    "  %d, '%s', '%s', %s, %d, %s, %d, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %f, %s" .
+                    "  %d, '%s', '%s', %s, %d, %s, %d, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %f, %s" .
                     ")",
                     $x->eventId,
                     $result->className,
@@ -358,6 +365,9 @@ elseif ($iType == "EVENT")
                     is_null($result->totalTimeBehind) ? "NULL" : "'" . $result->totalTimeBehind . "'",
                     is_null($result->points1000) ? "NULL" : $result->points1000,
                     is_null($result->ranking) ? "NULL" : $result->ranking,
+                    (!isset($result->missingTime) || is_null($result->missingTime)) ? "NULL" : "'" . $result->missingTime . "'",
+                    (!isset($result->speedRanking) || is_null($result->speedRanking)) ? "NULL" : $result->speedRanking,
+                    (!isset($result->technicalRanking) || is_null($result->technicalRanking)) ? "NULL" : $result->technicalRanking,
                     (!isset($result->serviceFeeToClub) || is_null($result->serviceFeeToClub)) ? 0.0 : $result->serviceFeeToClub,
                     (!isset($result->serviceFeeDescription) || is_null($result->serviceFeeDescription)) ? "NULL" : "'" . $result->serviceFeeDescription . "'");
 

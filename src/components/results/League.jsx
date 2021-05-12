@@ -41,7 +41,17 @@ const getColumns = (t, nofPoints, isTotal = false) => [
     title: isTotal
       ? t(
           `results.${
-            i === 0 ? 'RankingLeague' : i === 1 ? 'RankingRelayLeague' : i === 2 ? 'Points1000League' : 'PointsLeague'
+            i === 0
+              ? 'RankingLeague'
+              : i === 1
+              ? 'RankingRelayLeague'
+              : i === 2
+              ? 'RankingSpeedLeague'
+              : i === 3
+              ? 'RankingTechnicalLeague'
+              : i === 4
+              ? 'Points1000League'
+              : 'PointsLeague'
           }`
         )
       : (i + 1).toString(),
@@ -68,6 +78,8 @@ const League = inject('clubModel')(
           grandSlam: [],
           rankingLeague: [],
           rankingRelayLeague: [],
+          rankingSpeedLeague: [],
+          rankingTechnicalLeague: [],
           points1000League: [],
           pointsLeague: [],
           pointsOldLeague: [],
@@ -182,6 +194,60 @@ const League = inject('clubModel')(
                 return { ...c, position: prevPos, ...c.ranking.reduce((ac, a, i) => ({ ...ac, [`p${i}`]: a }), {}) };
               });
 
+            prevRanking = [];
+            prevPos = 1;
+            const rankingSpeedLeague = rankingJson
+              .filter(
+                (c) =>
+                  c.speedRanking.length > 0 &&
+                  (!gender || gender === c.gender) &&
+                  (league.rankingLeagueAgeLimit === 0 || searchYear - c.birthYear >= league.rankingLeagueAgeLimit)
+              )
+              .map((c) => {
+                const ranking = c.speedRanking.slice(0, 6);
+                return {
+                  competitorId: c.competitorId,
+                  name: c.name,
+                  ranking: ranking,
+                  total: Math.round((100 * ranking.reduce((a, b) => a + b, 0)) / ranking.length) / 100,
+                };
+              })
+              .sort((a, b) => (a.total > b.total ? 1 : -1))
+              .map((c, i) => {
+                if (JSON.stringify(prevRanking) !== JSON.stringify(c.ranking)) {
+                  prevPos = i + 1;
+                }
+                prevRanking = c.ranking;
+                return { ...c, position: prevPos, ...c.ranking.reduce((ac, a, i) => ({ ...ac, [`p${i}`]: a }), {}) };
+              });
+
+            prevRanking = [];
+            prevPos = 1;
+            const rankingTechnicalLeague = rankingJson
+              .filter(
+                (c) =>
+                  c.technicalRanking.length > 0 &&
+                  (!gender || gender === c.gender) &&
+                  (league.rankingLeagueAgeLimit === 0 || searchYear - c.birthYear >= league.rankingLeagueAgeLimit)
+              )
+              .map((c) => {
+                const ranking = c.technicalRanking.slice(0, 6);
+                return {
+                  competitorId: c.competitorId,
+                  name: c.name,
+                  ranking: ranking,
+                  total: Math.round((100 * ranking.reduce((a, b) => a + b, 0)) / ranking.length) / 100,
+                };
+              })
+              .sort((a, b) => (a.total > b.total ? 1 : -1))
+              .map((c, i) => {
+                if (JSON.stringify(prevRanking) !== JSON.stringify(c.ranking)) {
+                  prevPos = i + 1;
+                }
+                prevRanking = c.ranking;
+                return { ...c, position: prevPos, ...c.ranking.reduce((ac, a, i) => ({ ...ac, [`p${i}`]: a }), {}) };
+              });
+
             let prevPoints = [];
             prevPos = 1;
             let prevNumberOf100 = -1;
@@ -272,7 +338,10 @@ const League = inject('clubModel')(
             rankingJson
               .filter(
                 (c) =>
-                  (c.ranking.length > 0 || c.rankingRelay.length > 0) &&
+                  (c.ranking.length > 0 ||
+                    c.rankingRelay.length > 0 ||
+                    c.speedRanking.length > 0 ||
+                    c.technicalRanking.length > 0) &&
                   (!gender || gender === c.gender) &&
                   (league.rankingLeagueAgeLimit === 0 ||
                     searchYear - c.birthYear >= league.rankingLeagueAgeLimit ||
@@ -299,17 +368,21 @@ const League = inject('clubModel')(
                 const pos1 = c1 !== undefined ? c1.position : rankingLeague.length + 1;
                 const c2 = rankingRelayLeague.find((cc) => cc.competitorId === c.competitorId);
                 const pos2 = c2 !== undefined ? c2.position : rankingRelayLeague.length + 1;
-                const c3 = points1000League.find((cc) => cc.competitorId === c.competitorId);
-                const pos3 = c3 !== undefined ? c3.position : points1000League.length + 1;
-                let pos4;
+                const c3 = rankingSpeedLeague.find((cc) => cc.competitorId === c.competitorId);
+                const pos3 = c3 !== undefined ? c3.position : rankingSpeedLeague.length + 1;
+                const c4 = rankingTechnicalLeague.find((cc) => cc.competitorId === c.competitorId);
+                const pos4 = c4 !== undefined ? c4.position : rankingTechnicalLeague.length + 1;
+                const c5 = points1000League.find((cc) => cc.competitorId === c.competitorId);
+                const pos5 = c5 !== undefined ? c5.position : points1000League.length + 1;
+                let pos6;
                 if (year > 1900 && year < 2003) {
-                  const c4 = pointsOldLeague.find((cc) => cc.competitorId === c.competitorId);
-                  pos4 = c4 !== undefined ? c4.position : pointsOldLeague.length + 1;
+                  const c6 = pointsOldLeague.find((cc) => cc.competitorId === c.competitorId);
+                  pos6 = c6 !== undefined ? c6.position : pointsOldLeague.length + 1;
                 } else {
-                  const c4 = pointsLeague.find((cc) => cc.competitorId === c.competitorId);
-                  pos4 = c4 !== undefined ? c4.position : pointsLeague.length + 1;
+                  const c6 = pointsLeague.find((cc) => cc.competitorId === c.competitorId);
+                  pos6 = c6 !== undefined ? c6.position : pointsLeague.length + 1;
                 }
-                const positions = [pos1, pos2, pos3, pos4];
+                const positions = [pos1, pos2, pos3, pos4, pos5, pos6];
 
                 return {
                   competitorId: c.competitorId,
@@ -318,6 +391,8 @@ const League = inject('clubModel')(
                   p1: pos2,
                   p2: pos3,
                   p3: pos4,
+                  p4: pos5,
+                  p5: pos6,
                   total: positions.reduce((a, b) => a + b, 0),
                   positions: positions,
                 };
@@ -337,6 +412,8 @@ const League = inject('clubModel')(
               grandSlam: grandSlam,
               rankingLeague: rankingLeague,
               rankingRelayLeague: rankingRelayLeague,
+              rankingSpeedLeague: rankingSpeedLeague,
+              rankingTechnicalLeague: rankingTechnicalLeague,
               points1000League: points1000League,
               pointsLeague: pointsLeague,
               pointsOldLeague: pointsOldLeague,
@@ -352,6 +429,8 @@ const League = inject('clubModel')(
               gender: undefined,
               rankingLeague: [],
               rankingRelayLeague: [],
+              rankingSpeedLeague: [],
+              rankingTechnicalLeague: [],
               points1000League: [],
               pointsLeague: [],
               pointsOldLeague: [],
@@ -369,6 +448,8 @@ const League = inject('clubModel')(
           grandSlam,
           rankingLeague,
           rankingRelayLeague,
+          rankingSpeedLeague,
+          rankingTechnicalLeague,
           points1000League,
           pointsLeague,
           pointsOldLeague,
@@ -439,6 +520,40 @@ const League = inject('clubModel')(
                 <StyledTable
                   columns={getColumns(t, 3)}
                   dataSource={rankingRelayLeague}
+                  size="middle"
+                  pagination={false}
+                  scroll={{ x: true }}
+                />
+              ) : (
+                Spinner
+              )}
+            </TabPane>
+            <TabPane tab={t('results.RankingSpeedLeague')} key="rankingSpeedLeague">
+              Antal minuter efter sveriges bästa herrsenior på en 75 minuters bana i ren löphastighet. Bomtiden räknas
+              bort och sen beräknas rankingen på den nya tiden. Även samma rankinglista för damer och herrar. En ren
+              löphastighetsranking.
+              {league.rankingLeagueAgeLimit > 0 ? ` Åldersgräns ${league.rankingLeagueAgeLimit} år.` : ''}
+              {!loading ? (
+                <StyledTable
+                  columns={getColumns(t, 3)}
+                  dataSource={rankingSpeedLeague}
+                  size="middle"
+                  pagination={false}
+                  scroll={{ x: true }}
+                />
+              ) : (
+                Spinner
+              )}
+            </TabPane>
+            <TabPane tab={t('results.RankingTechnicalLeague')} key="rankingTechnicalLeague">
+              Antal minuter efter sveriges bästa herrsenior på en 75 minuters bana i ren orienteringsteknik. Antal
+              bomminuter + ett teknikpåslag på 10% av löphastighetsrankingen. Även samma rankinglista för damer och
+              herrar. En ren teknik ranking.
+              {league.rankingLeagueAgeLimit > 0 ? ` Åldersgräns ${league.rankingLeagueAgeLimit} år.` : ''}
+              {!loading ? (
+                <StyledTable
+                  columns={getColumns(t, 3)}
+                  dataSource={rankingTechnicalLeague}
                   size="middle"
                   pagination={false}
                   scroll={{ x: true }}

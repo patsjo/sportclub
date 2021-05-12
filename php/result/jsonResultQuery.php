@@ -13,6 +13,8 @@
 //# Date        By      Description                          #
 //# ----------  ------  ------------------------------------ #
 //# 2019-12-25  PatSjo  Initial version                      #
+//# 2021-05-12  PatSjo  Added missingTime, speedRanking and  #
+//#                     technicalRanking                     #
 //############################################################
 
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/db.php");
@@ -207,6 +209,9 @@ if ($iType == "EVENT" || $iType == "COMPETITOR")
       $x->pointsOld                    = is_null($row['POINTS_OLD']) ? NULL : intval($row['POINTS_OLD']);
       $x->points1000                   = is_null($row['POINTS_1000']) ? NULL : intval($row['POINTS_1000']);
       $x->ranking                      = is_null($row['RANKING']) ? NULL : floatval($row['RANKING']);
+      $x->missingTime                  = is_null($row['MISSING_TIME']) ? NULL : time2StringWithSeconds(strtotime($row['MISSING_TIME']));
+      $x->speedRanking                 = is_null($row['SPEED_RANKING']) ? NULL : floatval($row['SPEED_RANKING']);
+      $x->technicalRanking             = is_null($row['TECHNICAL_RANKING']) ? NULL : floatval($row['TECHNICAL_RANKING']);
       if (is_null($row['MULTI_DAY_RESULT_ID']))
       {
         $x->resultMultiDay = NULL;
@@ -290,6 +295,9 @@ if ($iType == "EVENT" || $iType == "COMPETITOR")
       $x->totalTimeBehind              = is_null($row['TOTAL_TIME_BEHIND']) ? NULL : time2StringWithSeconds(strtotime($row['TOTAL_TIME_BEHIND']));
       $x->points1000                   = is_null($row['POINTS_1000']) ? NULL : intval($row['POINTS_1000']);
       $x->ranking                      = is_null($row['RANKING']) ? NULL : floatval($row['RANKING']);
+      $x->missingTime                  = is_null($row['MISSING_TIME']) ? NULL : time2StringWithSeconds(strtotime($row['MISSING_TIME']));
+      $x->speedRanking                 = is_null($row['SPEED_RANKING']) ? NULL : floatval($row['SPEED_RANKING']);
+      $x->technicalRanking             = is_null($row['TECHNICAL_RANKING']) ? NULL : floatval($row['TECHNICAL_RANKING']);
       $x->serviceFeeToClub             = floatval($row['SERVICEFEE_TO_CLUB']);
       $x->serviceFeeDescription        = $row['SERVICEFEE_DESCRIPTION'];
       array_push($rows->teamResults, $x);
@@ -495,12 +503,14 @@ elseif ($iType == "POINTS")
     "   GROUP_CONCAT(POINTS_OLD SEPARATOR ',') AS POINTS_OLD," .
     "   GROUP_CONCAT(POINTS_1000 SEPARATOR ',') AS POINTS_1000," .
     "   GROUP_CONCAT(RANKING SEPARATOR ',') AS RANKING," .
+    "   GROUP_CONCAT(SPEED_RANKING SEPARATOR ',') AS SPEED_RANKING," .
+    "   GROUP_CONCAT(TECHNICAL_RANKING SEPARATOR ',') AS TECHNICAL_RANKING," .
     "   GROUP_CONCAT(RANKING_RELAY SEPARATOR ',') AS RANKING_RELAY " .
-    "FROM (SELECT COMPETITOR_ID, POINTS, POINTS_OLD, POINTS_1000, RANKING, NULL AS RANKING_RELAY FROM RACE_EVENT " .
+    "FROM (SELECT COMPETITOR_ID, POINTS, POINTS_OLD, POINTS_1000, RANKING, SPEED_RANKING, TECHNICAL_RANKING, NULL AS RANKING_RELAY FROM RACE_EVENT " .
     "      INNER JOIN RACE_EVENT_RESULTS ON (RACE_EVENT.EVENT_ID = RACE_EVENT_RESULTS.EVENT_ID) ".
     "      WHERE (POINTS IS NOT NULL OR POINTS_OLD IS NOT NULL OR POINTS_1000 IS NOT NULL OR RANKING IS NOT NULL)" . $whereStartDate . $whereEndDate . " " .
     "      UNION ALL " .
-    "      SELECT COMPETITOR_ID, NULL AS POINTS, NULL AS POINTS_OLD, POINTS_1000, RANKING, RANKING AS RANKING_RELAY FROM RACE_EVENT " .
+    "      SELECT COMPETITOR_ID, NULL AS POINTS, NULL AS POINTS_OLD, POINTS_1000, RANKING, SPEED_RANKING, TECHNICAL_RANKING, RANKING AS RANKING_RELAY FROM RACE_EVENT " .
     "      INNER JOIN RACE_EVENT_RESULTS_TEAM ON (RACE_EVENT.EVENT_ID = RACE_EVENT_RESULTS_TEAM.EVENT_ID) ".
     "      WHERE (POINTS_1000 IS NOT NULL OR RANKING IS NOT NULL)" . $whereStartDate . $whereEndDate . ") RACE_EVENT_RESULTS " .
     "INNER JOIN RACE_COMPETITORS ON (RACE_EVENT_RESULTS.COMPETITOR_ID = RACE_COMPETITORS.COMPETITOR_ID) ".
@@ -525,11 +535,15 @@ elseif ($iType == "POINTS")
       $x->pointsOld             = is_null($row['POINTS_OLD']) ? array() : array_map('intval', explode(",", $row['POINTS_OLD']));
       $x->points1000            = is_null($row['POINTS_1000']) ? array() : array_map('intval', explode(",", $row['POINTS_1000']));
       $x->ranking               = is_null($row['RANKING']) ? array() : array_map('floatval', explode(",", $row['RANKING']));
+      $x->speedRanking          = is_null($row['SPEED_RANKING']) ? array() : array_map('floatval', explode(",", $row['SPEED_RANKING']));
+      $x->technicalRanking      = is_null($row['TECHNICAL_RANKING']) ? array() : array_map('floatval', explode(",", $row['TECHNICAL_RANKING']));
       $x->rankingRelay          = is_null($row['RANKING_RELAY']) ? array() : array_map('floatval', explode(",", $row['RANKING_RELAY']));
       rsort($x->points);
       rsort($x->pointsOld);
       rsort($x->points1000);
       sort($x->ranking);
+      sort($x->speedRanking);
+      sort($x->technicalRanking);
       sort($x->rankingRelay);
       array_push($rows, $x);
     }

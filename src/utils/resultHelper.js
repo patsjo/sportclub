@@ -2,6 +2,9 @@ import moment from "moment";
 import { timeFormat } from "./formHelper";
 import { payments, failedReasons, difficulties, distances, lightConditions } from "../utils/resultConstants";
 
+const minMissingPercentageQuota = 0.05;
+const minMissingTimeSeconds = 4;
+
 export const GetTimeWithHour = (timeString) => {
   if (!timeString || timeString.length < 4) {
     return null;
@@ -26,7 +29,7 @@ export const FormatTime = (timeString) => {
   return time.format("H:mm:ss");
 };
 
-const ConvertTimeToSeconds = (timeString) => {
+export const ConvertTimeToSeconds = (timeString) => {
   try {
     if (!timeString || timeString.length < 4) {
       return 0;
@@ -68,7 +71,7 @@ export const ConvertSecondsToTime = (timeInSeconds) => {
   const minutes = Math.floor((timeInSeconds - hours * 3600) / 60);
   const seconds = Math.floor(timeInSeconds - hours * 3600 - minutes * 60);
   const time = moment({ hours: hours, minutes: minutes, seconds: seconds });
-  return time.format("HH:mm:ss.SSS");
+  return time.format("HH:mm:ss");
 };
 
 export const ConvertSecondsWithFractionsToTime = (timeInSeconds) => {
@@ -657,3 +660,179 @@ export const GetRanking = (rankingBasetimePerKilometer, rankingBasepoint, result
   }
   return (secondsPerMeter * baseLengthInMeter - 4500) / 60;
 };
+
+const GetBestSplitTimes = (splitTimes) => {
+  let bestSplitTimes = [];
+  let secondBestSplitTimes = [];
+  if (
+    splitTimes &&
+    Array.isArray(splitTimes) &&
+    splitTimes.length >= 3
+  ) {
+    const allSplitTimes = splitTimes.reduce((a, b) => a.concat(b.splitTimes), []);
+    const uniqueSplitTimes = allSplitTimes
+      .map(st => st.controlCode)
+      .filter((value, index, self) => self.indexOf(value) === index);
+    bestSplitTimes = uniqueSplitTimes.map((controlCode) => ({
+      controlCode: controlCode,
+      time: Math.min(...allSplitTimes.filter(ast => ast.controlCode === controlCode).map(ast => ast.time)),
+      nofTimes: allSplitTimes.filter(ast => ast.controlCode === controlCode).length
+    }));
+    secondBestSplitTimes = uniqueSplitTimes.map((controlCode) => ({
+      controlCode: controlCode,
+      time: allSplitTimes.filter(ast => ast.controlCode === controlCode).map(ast => ast.time).sort((a, b) => a - b)[1]
+    }));
+  }
+  return { bestSplitTimes, secondBestSplitTimes };
+}
+
+export const GetSplitTimes = (personResults) => {
+  const splitTimes = personResults
+    .filter(pr => {
+      const didNotStart = pr.Result.CompetitorStatus['@attributes'].value === 'DidNotStart';
+      const misPunch = pr.Result.CompetitorStatus['@attributes'].value === 'MisPunch';
+      const ok = pr.Result.CompetitorStatus['@attributes'].value === 'OK';
+      const hasSplitTimes = pr.Result.SplitTime && Array.isArray(pr.Result.SplitTime) &&
+        pr.Result.SplitTime.filter(st => st.Time).length > 0;
+      return ok && !didNotStart && !misPunch && pr.Person?.PersonId && hasSplitTimes;
+    })
+    .map((pr) => ({
+      personId: pr.Person.PersonId,
+      splitTimes: pr.Result.SplitTime
+        .filter(st => st.Time)
+        .map((st) => ({
+          controlCode: st.ControlCode,
+          sequence: st['@attributes'].sequence,
+          time: ConvertTimeToSeconds(st.Time),
+        }))
+        .map((st, i, stArray) => ({
+          controlCode: `${i === 0 ? 'S' : stArray[i - 1].controlCode}-${st.controlCode}`,
+          controlOrder: parseInt(st.sequence),
+          time: i === 0 ? st.time : st.time - stArray[i - 1].time,
+        }))
+        .sort((a, b) => (a.controlCode > b.controlCode ? 1 : b.controlCode > a.controlCode ? -1 : 0)),
+    }));
+  return { splitTimes, ...GetBestSplitTimes(splitTimes) };
+}
+
+export const GetRelaySplitTimes = (teamResults) => {
+  const allTeamMemberResult = teamResults.reduce((a, b) => a.concat(b.TeamMemberResult), []);
+  const allLegsSplitTimes = allTeamMemberResult
+    .map(r => r.Leg)
+    .filter((value, index, self) => self.indexOf(value) === index)
+    .map(leg => ({leg: leg, splitTimes: []}));
+
+  allLegsSplitTimes.forEach(legSplitTimes => {
+    legSplitTimes.splitTimes = allTeamMemberResult
+      .filter(pr => pr.Leg === legSplitTimes.leg)
+      .filter(pr => {
+        const didNotStart = pr.CompetitorStatus['@attributes'].value === 'DidNotStart';
+        const misPunch = pr.CompetitorStatus['@attributes'].value === 'MisPunch';
+        const ok = pr.CompetitorStatus['@attributes'].value === 'OK';
+        const hasSplitTimes = pr.SplitTime && Array.isArray(pr.SplitTime) &&
+          pr.SplitTime.filter(st => st.Time).length > 0;
+        return ok && !didNotStart && !misPunch && pr.Person?.PersonId && hasSplitTimes;
+      })
+      .map((pr) => ({
+        personId: pr.Person.PersonId,
+        splitTimes: pr.SplitTime
+          .filter(st => st.Time)
+          .map((st) => ({
+            controlCode: st.ControlCode,
+            sequence: st['@attributes'].sequence,
+            time: ConvertTimeToSeconds(st.Time),
+          }))
+          .map((st, i, stArray) => ({
+            controlCode: `${i === 0 ? 'S' : stArray[i - 1].controlCode}-${st.controlCode}`,
+            controlOrder: parseInt(st.sequence),
+            time: i === 0 ? st.time : st.time - stArray[i - 1].time,
+          }))
+          .sort((a, b) => (a.controlCode > b.controlCode ? 1 : b.controlCode > a.controlCode ? -1 : 0)),
+      }));
+
+    const { bestSplitTimes, secondBestSplitTimes } = GetBestSplitTimes(legSplitTimes.splitTimes);
+    legSplitTimes.bestSplitTimes = bestSplitTimes;
+    legSplitTimes.secondBestSplitTimes = secondBestSplitTimes;
+  });
+  return allLegsSplitTimes;
+}
+
+export const GetMissingTime = (personId, splitTimes, bestSplitTimes, secondBestSplitTimes) => {
+  let totalMissingTimeSeconds = 0;
+
+  if (bestSplitTimes.length >= 4) {
+    let personSplitTimes = splitTimes
+      .find((st) => st.personId === personId)
+      ?.splitTimes;
+
+    if (!personSplitTimes|| !Array.isArray(personSplitTimes)) {
+      return null;
+    }
+
+    personSplitTimes.forEach((pst) => {
+      pst.bestSplitTime = bestSplitTimes.find(bst => bst.controlCode === pst.controlCode);
+      pst.secondBestSplitTime = secondBestSplitTimes.find(bst => bst.controlCode === pst.controlCode);
+      if (pst.bestSplitTime && pst.secondBestSplitTime && pst.bestSplitTime.nofTimes >= 4) {
+        pst.diffQuota = pst.time === pst.bestSplitTime.time
+          ? (pst.time - pst.secondBestSplitTime.time) / pst.secondBestSplitTime.time
+          : (pst.time - pst.bestSplitTime.time) / pst.bestSplitTime.time;
+      }
+    });
+    personSplitTimes = personSplitTimes.filter(pst => pst.diffQuota !== undefined);
+    let countTop25Percentage = Math.round(personSplitTimes.length / 4);
+    const shortTimeLimit = personSplitTimes.map(ast => ast.bestSplitTime.time).sort((a, b) => a - b)[countTop25Percentage];
+    const personSplitTimesWithoutTheShortest = personSplitTimes
+      .filter(pst => pst.bestSplitTime.time >= shortTimeLimit &&
+        pst.bestSplitTime.nofTimes >= Math.round(personSplitTimes.length / 2));
+    countTop25Percentage = Math.round(personSplitTimesWithoutTheShortest.length / 4);
+
+    const top25PercentageSplitTimes =
+      [...personSplitTimesWithoutTheShortest]
+      .sort((a, b) => a.diffQuota - b.diffQuota)
+      .slice(0, countTop25Percentage);
+    let baseLineM =
+      top25PercentageSplitTimes
+        .map(pst => pst.diffQuota)
+        .reduce((a, b) => a + b, 0) / countTop25Percentage;
+    let baseLineK = 0.0;
+
+    if (personSplitTimesWithoutTheShortest.length >= 6) {
+      const orderedSplitTimes = personSplitTimesWithoutTheShortest
+        .sort((a, b) => a.controlOrder - b.controlOrder);
+      const countHalf = Math.round(orderedSplitTimes.length / 2);
+      const firstHalfSplitTimes = orderedSplitTimes.slice(0, countHalf);
+      const secondHalfSplitTimes = orderedSplitTimes.slice(countHalf, orderedSplitTimes.length - 1);
+      const firstHalfBestSplitTime = [...firstHalfSplitTimes]
+        .sort((a, b) => a.diffQuota - b.diffQuota)[0];
+      const secondHalfBestSplitTime = [...secondHalfSplitTimes]
+        .sort((a, b) => a.diffQuota - b.diffQuota)[0];
+      
+      baseLineK = (secondHalfBestSplitTime.diffQuota - firstHalfBestSplitTime.diffQuota) /
+        (Math.max(...secondHalfSplitTimes.map(st => st.controlOrder))
+         - Math.min(...firstHalfSplitTimes.map(st => st.controlOrder)));
+      const firstDiff = firstHalfBestSplitTime.diffQuota - (baseLineM + baseLineK * firstHalfBestSplitTime.controlOrder);
+      const secondDiff = secondHalfBestSplitTime.diffQuota - (baseLineM + baseLineK * secondHalfBestSplitTime.controlOrder);
+      const top25PercentageDiff = top25PercentageSplitTimes
+        .map(st => st.diffQuota - (baseLineM + baseLineK * st.controlOrder))
+        .reduce((a, b) => a + b, 0);
+      baseLineM += (firstDiff + secondDiff + top25PercentageDiff) / (2 + countTop25Percentage);
+    }
+
+    personSplitTimes.forEach((pst, i) => {
+      const top25TimeSecondsBehind = Math.trunc(
+        pst.time -
+          (pst.time === pst.bestSplitTime.time ? pst.secondBestSplitTime.time : pst.bestSplitTime.time) *
+            (1.0 + baseLineM + baseLineK * pst.controlOrder)
+      );
+
+      if (
+        pst.diffQuota > baseLineM + baseLineK * pst.controlOrder + minMissingPercentageQuota &&
+        top25TimeSecondsBehind > minMissingTimeSeconds
+      ) {
+        totalMissingTimeSeconds += top25TimeSecondsBehind;
+      }
+    });
+    return ConvertSecondsToTime(totalMissingTimeSeconds);
+  }
+  return null;
+}

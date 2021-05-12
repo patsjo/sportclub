@@ -21,6 +21,9 @@ import {
   TimeDiff,
   WinnerTime,
   FormatTime,
+  GetSplitTimes,
+  GetRelaySplitTimes,
+  GetMissingTime,
   GetLength,
   GetAge,
   GetFees,
@@ -150,7 +153,7 @@ const ResultWizardStep2EditRace = inject(
                     raceWizardModel.selectedEventorId +
                     '&organisationIds=' +
                     clubModel.raceClubs.selectedClub.eventorOrganisationId +
-                    '&top=2&includeSplitTimes=false'
+                    '&top=50&includeSplitTimes=true'
                 ) +
                 '&headers=' +
                 encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
@@ -316,6 +319,7 @@ const ResultWizardStep2EditRace = inject(
                         personResult.Result = personResult.RaceResult.Result;
                       }
                     });
+                    const { splitTimes, bestSplitTimes, secondBestSplitTimes } = GetSplitTimes(personResults);
                     const shortClassName = GetClassShortName(currentClass.ClassShortName);
                     const classLevel = clubModel.raceClubs.classLevels
                       .filter((cl) => shortClassName.indexOf(cl.classShortName) >= 0)
@@ -489,6 +493,12 @@ const ResultWizardStep2EditRace = inject(
                           points: 0,
                           pointsOld: 0,
                           points1000: 0,
+                          missingTime: GetMissingTime(
+                            personResult.Person?.PersonId,
+                            splitTimes,
+                            bestSplitTimes,
+                            secondBestSplitTimes
+                          ),
                         };
                         raceEvent.results.push(raceResult);
                       }
@@ -543,6 +553,7 @@ const ResultWizardStep2EditRace = inject(
                         teamResult.TeamMemberResult = teamResult.RaceResult.TeamMemberResult;
                       }
                     });
+                    const allLegsSplitTimes = GetRelaySplitTimes(teamResults);
                     const numberOfLegs = parseInt(currentClass['@attributes'].numberOfLegs);
                     const shortClassName = GetClassShortName(currentClass.ClassShortName);
                     const classLevel = clubModel.raceClubs.classLevels
@@ -695,6 +706,7 @@ const ResultWizardStep2EditRace = inject(
                           : null;
                       }
 
+                      const legSplitTimes = allLegsSplitTimes.find((lst) => lst.leg === teamMemberResult.Leg);
                       const raceTeamResult = {
                         teamResultId: -1 - raceEvent.teamResults.length,
                         competitorId: competitor.competitorId,
@@ -746,6 +758,12 @@ const ResultWizardStep2EditRace = inject(
                         totalNofStartsInClass: currentClass.numberOfStarts,
                         totalTimeBehind: teamValid ? GetTimeWithHour(teamMemberResult.TeamTimeDiff) : null,
                         points1000: 0,
+                        missingTime: GetMissingTime(
+                          teamMemberResult.Person.PersonId,
+                          legSplitTimes.splitTimes,
+                          legSplitTimes.bestSplitTimes,
+                          legSplitTimes.secondBestSplitTimes
+                        ),
                       };
                       raceEvent.teamResults.push(raceTeamResult);
                     }
