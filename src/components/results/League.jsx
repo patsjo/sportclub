@@ -535,7 +535,7 @@ const League = inject('clubModel')(
               {league.rankingLeagueAgeLimit > 0 ? ` Åldersgräns ${league.rankingLeagueAgeLimit} år.` : ''}
               {!loading ? (
                 <StyledTable
-                  columns={getColumns(t, 3)}
+                  columns={getColumns(t, 6)}
                   dataSource={rankingSpeedLeague}
                   size="middle"
                   pagination={false}
@@ -552,7 +552,7 @@ const League = inject('clubModel')(
               {league.rankingLeagueAgeLimit > 0 ? ` Åldersgräns ${league.rankingLeagueAgeLimit} år.` : ''}
               {!loading ? (
                 <StyledTable
-                  columns={getColumns(t, 3)}
+                  columns={getColumns(t, 6)}
                   dataSource={rankingTechnicalLeague}
                   size="middle"
                   pagination={false}

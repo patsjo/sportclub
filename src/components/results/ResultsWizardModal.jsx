@@ -24,6 +24,7 @@ import {
   GetPointRunTo1000,
 } from '../../utils/resultHelper';
 import { ConfirmOverwriteOrEdit } from './ConfirmOverwriteOrEditPromise';
+import { difficulties } from '../../utils/resultConstants';
 
 const { info } = Modal;
 const StyledModalContent = styled.div``;
@@ -161,6 +162,7 @@ const ResultsWizardModal = inject(
                 competitorTime: ConvertSecondsToTime(
                   ConvertTimeToSeconds(result.competitorTime) - ConvertTimeToSeconds(result.missingTime)
                 ),
+                difficulty: difficulties.black,
               },
               raceEvent.sportCode,
               raceEvent.raceLightCondition
@@ -204,6 +206,7 @@ const ResultsWizardModal = inject(
                 competitorTime: ConvertSecondsToTime(
                   ConvertTimeToSeconds(result.competitorTime) - ConvertTimeToSeconds(result.missingTime)
                 ),
+                difficulty: difficulties.black,
               },
               raceEvent.sportCode,
               raceEvent.raceLightCondition

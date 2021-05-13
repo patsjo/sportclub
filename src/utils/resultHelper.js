@@ -9,9 +9,11 @@ export const GetTimeWithHour = (timeString) => {
   if (!timeString || timeString.length < 4) {
     return null;
   } else if (timeString.length === 4) {
-    return `0:0${timeString}`;
+    return `00:0${timeString}`;
   } else if (timeString.length === 5) {
-    return `0:${timeString}`;
+    return `00:${timeString}`;
+  } else if (timeString.length === 7) {
+    return `0${timeString}`;
   } else {
     return timeString;
   }
