@@ -2,7 +2,7 @@ import moment from "moment";
 import { timeFormat } from "./formHelper";
 import { payments, failedReasons, difficulties, distances, lightConditions } from "../utils/resultConstants";
 
-const minMissingPercentageQuota = 0.05;
+const minMissingPercentageQuota = 0.04;
 const minMissingTimeSeconds = 4;
 
 export const GetTimeWithHour = (timeString) => {
@@ -680,10 +680,30 @@ const GetBestSplitTimes = (splitTimes) => {
       time: Math.min(...allSplitTimes.filter(ast => ast.controlCode === controlCode).map(ast => ast.time)),
       nofTimes: allSplitTimes.filter(ast => ast.controlCode === controlCode).length
     }));
-    secondBestSplitTimes = uniqueSplitTimes.map((controlCode) => ({
-      controlCode: controlCode,
-      time: allSplitTimes.filter(ast => ast.controlCode === controlCode).map(ast => ast.time).sort((a, b) => a - b)[1]
-    }));
+    secondBestSplitTimes = uniqueSplitTimes.map((controlCode) => {
+      const firstTime = Math.min(...allSplitTimes.filter(ast => ast.controlCode === controlCode).map(ast => ast.time));
+      const secondTime = allSplitTimes.filter(ast => ast.controlCode === controlCode).map(ast => ast.time).sort((a, b) => a - b)[1];
+      return {
+        controlCode: controlCode,
+        time: secondTime,
+        diffQuota: secondTime / firstTime
+      }
+    });
+
+    if (secondBestSplitTimes.length >= 4) {
+      const avgDiffQuota = [...secondBestSplitTimes]
+        .sort((a, b) => a.diffQuota - b.diffQuota)
+        .slice(0, secondBestSplitTimes.length - 2)
+        .map(pst => pst.diffQuota)
+        .reduce((a, b) => a + b, 0) / (secondBestSplitTimes.length - 2);
+      const avgDiffQuotaLimit = 1.01 * avgDiffQuota;
+      secondBestSplitTimes.forEach(st => {
+        if (st.diffQuota > avgDiffQuotaLimit) {
+          st.time = Math.round(st.time * avgDiffQuotaLimit / st.diffQuota);
+        }
+        st.diffQuota = undefined;
+      });
+    }
   }
   return { bestSplitTimes, secondBestSplitTimes };
 }
@@ -707,6 +727,7 @@ export const GetSplitTimes = (personResults) => {
           sequence: st['@attributes'].sequence,
           time: ConvertTimeToSeconds(st.Time),
         }))
+        .filter((st, i, stArray) => i === 0 || st.controlCode !== stArray[i - 1].controlCode)
         .map((st, i, stArray) => ({
           controlCode: `${i === 0 ? 'S' : stArray[i - 1].controlCode}-${st.controlCode}`,
           controlOrder: parseInt(st.sequence),
@@ -785,17 +806,25 @@ export const GetMissingTime = (personId, splitTimes, bestSplitTimes, secondBestS
     const shortTimeLimit = personSplitTimes.map(ast => ast.bestSplitTime.time).sort((a, b) => a - b)[countTop25Percentage];
     const personSplitTimesWithoutTheShortest = personSplitTimes
       .filter(pst => pst.bestSplitTime.time >= shortTimeLimit &&
-        pst.bestSplitTime.nofTimes >= Math.round(personSplitTimes.length / 2));
+        pst.bestSplitTime.nofTimes >= Math.round(splitTimes.length / 2));
     countTop25Percentage = Math.round(personSplitTimesWithoutTheShortest.length / 4);
 
-    const top25PercentageSplitTimes =
+    if (personSplitTimesWithoutTheShortest.length < 4) {
+      return null;
+    }
+
+    let top25PercentageSplitTimes =
       [...personSplitTimesWithoutTheShortest]
       .sort((a, b) => a.diffQuota - b.diffQuota)
+      .slice(0, countTop25Percentage + 2);
+    let baseLineM = top25PercentageSplitTimes
+      .map(pst => pst.diffQuota)
+      .reduce((a, b) => a + b, 0) / (countTop25Percentage + 2);
+    top25PercentageSplitTimes =top25PercentageSplitTimes.sort((a, b) => Math.abs(a.diffQuota - baseLineM) - Math.abs(b.diffQuota - baseLineM))
       .slice(0, countTop25Percentage);
-    let baseLineM =
-      top25PercentageSplitTimes
-        .map(pst => pst.diffQuota)
-        .reduce((a, b) => a + b, 0) / countTop25Percentage;
+    baseLineM = top25PercentageSplitTimes
+      .map(pst => pst.diffQuota)
+      .reduce((a, b) => a + b, 0) / countTop25Percentage;
     let baseLineK = 0.0;
 
     if (personSplitTimesWithoutTheShortest.length >= 6) {
@@ -805,19 +834,25 @@ export const GetMissingTime = (personId, splitTimes, bestSplitTimes, secondBestS
       const firstHalfSplitTimes = orderedSplitTimes.slice(0, countHalf);
       const secondHalfSplitTimes = orderedSplitTimes.slice(countHalf, orderedSplitTimes.length - 1);
       const firstHalfBestSplitTime = [...firstHalfSplitTimes]
-        .sort((a, b) => a.diffQuota - b.diffQuota)[0];
+        .sort((a, b) => a.diffQuota - b.diffQuota).slice(0,2);
       const secondHalfBestSplitTime = [...secondHalfSplitTimes]
-        .sort((a, b) => a.diffQuota - b.diffQuota)[0];
+        .sort((a, b) => a.diffQuota - b.diffQuota).slice(0,2);
+      const t1 = firstHalfBestSplitTime[0];
+      const t2 = firstHalfBestSplitTime[1];
+      const t3 = secondHalfBestSplitTime[0];
+      const t4 = secondHalfBestSplitTime[1];
       
-      baseLineK = (secondHalfBestSplitTime.diffQuota - firstHalfBestSplitTime.diffQuota) /
+      baseLineK = ((t3.diffQuota + t4.diffQuota)/2 - (t1.diffQuota + t2.diffQuota)/2) /
         (Math.max(...secondHalfSplitTimes.map(st => st.controlOrder))
          - Math.min(...firstHalfSplitTimes.map(st => st.controlOrder)));
-      const firstDiff = firstHalfBestSplitTime.diffQuota - (baseLineM + baseLineK * firstHalfBestSplitTime.controlOrder);
-      const secondDiff = secondHalfBestSplitTime.diffQuota - (baseLineM + baseLineK * secondHalfBestSplitTime.controlOrder);
+      const t1Diff = t1.diffQuota - (baseLineM + baseLineK * t1.controlOrder);
+      const t2Diff = t2.diffQuota - (baseLineM + baseLineK * t2.controlOrder);
+      const t3Diff = t3.diffQuota - (baseLineM + baseLineK * t3.controlOrder);
+      const t4Diff = t4.diffQuota - (baseLineM + baseLineK * t4.controlOrder);
       const top25PercentageDiff = top25PercentageSplitTimes
         .map(st => st.diffQuota - (baseLineM + baseLineK * st.controlOrder))
         .reduce((a, b) => a + b, 0);
-      baseLineM += (firstDiff + secondDiff + top25PercentageDiff) / (2 + countTop25Percentage);
+      baseLineM += (t1Diff + t2Diff + t3Diff + t4Diff + top25PercentageDiff) / (4 + countTop25Percentage);
     }
 
     personSplitTimes.forEach((pst, i) => {

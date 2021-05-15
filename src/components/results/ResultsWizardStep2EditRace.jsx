@@ -153,7 +153,7 @@ const ResultWizardStep2EditRace = inject(
                     raceWizardModel.selectedEventorId +
                     '&organisationIds=' +
                     clubModel.raceClubs.selectedClub.eventorOrganisationId +
-                    '&top=50&includeSplitTimes=true'
+                    `&top=${raceWizardModel.selectedIsRelay ? 30 : 15}&includeSplitTimes=true`
                 ) +
                 '&headers=' +
                 encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),

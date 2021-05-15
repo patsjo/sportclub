@@ -240,6 +240,11 @@ const ResultWizardStep1ChooseRace = inject(
                   saved.eventorRaceId.toString() === event.EventRaceId
               );
               event.alreadySavedEventId = alreadySaved ? alreadySaved.eventId : -1;
+              event.isRelay =
+                event.Event &&
+                event.Event['@attributes'] &&
+                event.Event['@attributes'].eventForm &&
+                event.Event['@attributes'].eventForm.toLowerCase().indexOf('relay') >= 0;
             });
             // EventStatusId:
             // 1 Applied
@@ -320,6 +325,7 @@ const ResultWizardStep1ChooseRace = inject(
           'selectedEventorRaceId',
           selected.selectedEventorRaceId ? parseInt(selected.selectedEventorRaceId) : null
         );
+        raceWizardModel.setValue('selectedIsRelay', selected.isRelay ? true : false);
         raceWizardModel.setValue('overwrite', selected.existInEventor);
         this.setState({ selectedRowKeys });
         onValidate(true);

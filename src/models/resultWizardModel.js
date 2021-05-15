@@ -65,6 +65,7 @@ export const RaceWizard = types
     selectedEventId: types.maybeNull(types.integer),
     selectedEventorId: types.maybeNull(types.integer),
     selectedEventorRaceId: types.maybeNull(types.integer),
+    selectedIsRelay: types.optional(types.boolean, false),
     raceEvent: types.maybeNull(RaceEvent),
     raceWinnerResults: types.array(WinnerResult)
   })

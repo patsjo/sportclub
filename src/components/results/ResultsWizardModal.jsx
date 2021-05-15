@@ -10,6 +10,7 @@ import { RaceWizard, getLocalStorage } from '../../models/resultWizardModel';
 import { PostJsonData } from '../../utils/api';
 import ResultWizardStep0Input from './ResultsWizardStep0Input';
 import ResultWizardStep1ChooseRace from './ResultsWizardStep1ChooseRace';
+import ResultWizardStep1ChooseRaceRerun from './ResultsWizardStep1ChooseRaceRerun';
 import ResultWizardStep2EditRace from './ResultsWizardStep2EditRace';
 import ResultWizardStep3Ranking from './ResultsWizardStep3Ranking';
 import { SpinnerDiv, StyledIcon } from '../styled/styled';
@@ -88,10 +89,12 @@ const ResultsWizardModal = inject(
           });
       }
 
-      next() {
+      next(e) {
         const self = this;
         let wizardStep = this.state.wizardStep + 1;
-        if (wizardStep === 1 && !this.raceWizardModel.existInEventor) {
+        if (wizardStep === 1 && e.altKey && e.ctrlKey) {
+          wizardStep = -100;
+        } else if (wizardStep === 1 && !this.raceWizardModel.existInEventor) {
           wizardStep++;
         }
         if (wizardStep === 2 && this.raceWizardModel.overwrite && this.raceWizardModel.selectedEventId > 0) {
@@ -122,7 +125,7 @@ const ResultsWizardModal = inject(
         this.setState({ nextStepValid: valid });
       }
 
-      save() {
+      save(shouldClose = true) {
         const self = this;
         this.setState({ saving: true });
         const { clubModel, sessionModel } = this.props;
@@ -154,7 +157,7 @@ const ResultsWizardModal = inject(
             )
           );
           if (result.missingTime) {
-            const speedRanking = GetRanking(
+            let speedRanking = GetRanking(
               raceEvent.rankingBasetimePerKilometer,
               raceEvent.rankingBasepoint,
               {
@@ -167,10 +170,29 @@ const ResultsWizardModal = inject(
               raceEvent.sportCode,
               raceEvent.raceLightCondition
             );
-            const technicalRanking = result.ranking - 0.9 * speedRanking;
-
             result.setValue('speedRanking', speedRanking);
+
+            if (raceEvent.sportCode !== 'OL') {
+              speedRanking = GetRanking(
+                raceEvent.rankingBasetimePerKilometer,
+                raceEvent.rankingBasepoint,
+                {
+                  ...result,
+                  competitorTime: ConvertSecondsToTime(
+                    ConvertTimeToSeconds(result.competitorTime) - ConvertTimeToSeconds(result.missingTime)
+                  ),
+                  difficulty: difficulties.red,
+                },
+                raceEvent.sportCode,
+                raceEvent.raceLightCondition
+              );
+            }
+
+            const technicalRanking = result.ranking - 0.9 * speedRanking;
             result.setValue('technicalRanking', technicalRanking);
+          } else {
+            result.setValue('speedRanking', null);
+            result.setValue('technicalRanking', null);
           }
           result.setValue('points', GetRacePoint(eventClassification, raceClassClassification, result));
           result.setValue('pointsOld', GetRaceOldPoint(eventClassification, raceClassClassification, result));
@@ -198,7 +220,7 @@ const ResultsWizardModal = inject(
             )
           );
           if (result.missingTime) {
-            const speedRanking = GetRanking(
+            let speedRanking = GetRanking(
               raceEvent.rankingBasetimePerKilometer,
               raceEvent.rankingBasepoint,
               {
@@ -211,10 +233,29 @@ const ResultsWizardModal = inject(
               raceEvent.sportCode,
               raceEvent.raceLightCondition
             );
-            const technicalRanking = result.ranking - 0.9 * speedRanking;
-
             result.setValue('speedRanking', speedRanking);
+
+            if (raceEvent.sportCode !== 'OL') {
+              speedRanking = GetRanking(
+                raceEvent.rankingBasetimePerKilometer,
+                raceEvent.rankingBasepoint,
+                {
+                  ...result,
+                  competitorTime: ConvertSecondsToTime(
+                    ConvertTimeToSeconds(result.competitorTime) - ConvertTimeToSeconds(result.missingTime)
+                  ),
+                  difficulty: difficulties.red,
+                },
+                raceEvent.sportCode,
+                raceEvent.raceLightCondition
+              );
+            }
+
+            const technicalRanking = result.ranking - 0.9 * speedRanking;
             result.setValue('technicalRanking', technicalRanking);
+          } else {
+            result.setValue('speedRanking', null);
+            result.setValue('technicalRanking', null);
           }
           result.setValue('points1000', GetPointRunTo1000(eventClassification, raceClassClassification, result));
         });
@@ -239,7 +280,7 @@ const ResultsWizardModal = inject(
           sessionModel.authorizationHeader
         )
           .then(() => {
-            self.props.onClose();
+            shouldClose && self.props.onClose();
           })
           .catch((e) => {
             message.error(e.message);
@@ -337,7 +378,7 @@ const ResultsWizardModal = inject(
                   variant="contained"
                   disabled={!loaded || !nextStepValid}
                   loading={saving}
-                  onClick={() => (wizardStep === 3 ? self.save() : self.next())}
+                  onClick={(e) => (wizardStep === 3 ? self.save(true) : self.next(e))}
                 >
                   {wizardStep === 3 ? t('common.Save') : t('common.Next')}
                   {wizardStep === 3 ? null : <RightOutlined />}
@@ -362,6 +403,14 @@ const ResultsWizardModal = inject(
                     onValidate={self.onValidate.bind(self)}
                     visible={wizardStep === 1}
                     onFailed={() => self.prev()}
+                  />
+                ) : null}
+                {wizardStep === -100 ? (
+                  <ResultWizardStep1ChooseRaceRerun
+                    onValidate={self.onValidate.bind(self)}
+                    onFailed={() => self.prev()}
+                    onSave={() => self.save(false)}
+                    onClose={() => self.props.onClose()}
                   />
                 ) : null}
                 {wizardStep >= 2 ? (

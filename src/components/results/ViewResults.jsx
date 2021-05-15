@@ -154,10 +154,28 @@ const columns = (t, clubModel, isIndividual) =>
       key: 'nofStartsInClass',
     },
     {
+      title: t('results.MissingTime'),
+      selected: true,
+      dataIndex: 'missingTime',
+      key: 'missingTime',
+    },
+    {
       title: t('results.RankingLeague'),
       selected: true,
       dataIndex: 'ranking',
       key: 'ranking',
+    },
+    {
+      title: t('results.RankingSpeedLeague'),
+      selected: true,
+      dataIndex: 'speedRanking',
+      key: 'speedRanking',
+    },
+    {
+      title: t('results.RankingTechnicalLeague'),
+      selected: true,
+      dataIndex: 'technicalRanking',
+      key: 'technicalRanking',
     },
     {
       title: t('results.Points1000League'),
