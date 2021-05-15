@@ -484,7 +484,7 @@ const League = inject('clubModel')(
               {league.grandSlamAgeLimit > 0 ? ` Åldersgräns ${league.grandSlamAgeLimit} år.` : ''}
               {!loading ? (
                 <StyledTable
-                  columns={getColumns(t, 4, true)}
+                  columns={getColumns(t, 6, true)}
                   dataSource={grandSlam}
                   size="middle"
                   pagination={false}
