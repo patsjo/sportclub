@@ -520,4 +520,6 @@ i18next
     }
   });
 
+document.documentElement.lang = i18next.language;
+
 export default i18next;

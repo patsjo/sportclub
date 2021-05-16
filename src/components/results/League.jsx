@@ -157,9 +157,19 @@ const League = inject('clubModel')(
                   total: Math.round((100 * ranking.reduce((a, b) => a + b, 0)) / ranking.length) / 100,
                 };
               })
-              .sort((a, b) => (a.total > b.total ? 1 : -1))
+              .sort((a, b) =>
+                a.total === b.total
+                  ? JSON.stringify(a.ranking.map((v) => v.toFixed(2).padStart(6, '0'))) >
+                    JSON.stringify(b.ranking.map((v) => v.toFixed(2).padStart(6, '0')))
+                    ? 1
+                    : -1
+                  : a.total > b.total
+                  ? 1
+                  : -1
+              )
               .map((c, i) => {
-                if (JSON.stringify(prevRanking) !== JSON.stringify(c.ranking)) {
+                const minLength = Math.min(prevRanking.length, c.ranking.length);
+                if (JSON.stringify(prevRanking.slice(0, minLength)) !== JSON.stringify(c.ranking.slice(0, minLength))) {
                   prevPos = i + 1;
                 }
                 prevRanking = c.ranking;
@@ -185,9 +195,19 @@ const League = inject('clubModel')(
                   total: Math.round((100 * ranking.reduce((a, b) => a + b, 0)) / ranking.length) / 100,
                 };
               })
-              .sort((a, b) => (a.total > b.total ? 1 : -1))
+              .sort((a, b) =>
+                a.total === b.total
+                  ? JSON.stringify(a.ranking.map((v) => v.toFixed(2).padStart(6, '0'))) >
+                    JSON.stringify(b.ranking.map((v) => v.toFixed(2).padStart(6, '0')))
+                    ? 1
+                    : -1
+                  : a.total > b.total
+                  ? 1
+                  : -1
+              )
               .map((c, i) => {
-                if (JSON.stringify(prevRanking) !== JSON.stringify(c.ranking)) {
+                const minLength = Math.min(prevRanking.length, c.ranking.length);
+                if (JSON.stringify(prevRanking.slice(0, minLength)) !== JSON.stringify(c.ranking.slice(0, minLength))) {
                   prevPos = i + 1;
                 }
                 prevRanking = c.ranking;
@@ -212,9 +232,19 @@ const League = inject('clubModel')(
                   total: Math.round((100 * ranking.reduce((a, b) => a + b, 0)) / ranking.length) / 100,
                 };
               })
-              .sort((a, b) => (a.total > b.total ? 1 : -1))
+              .sort((a, b) =>
+                a.total === b.total
+                  ? JSON.stringify(a.ranking.map((v) => v.toFixed(2).padStart(6, '0'))) >
+                    JSON.stringify(b.ranking.map((v) => v.toFixed(2).padStart(6, '0')))
+                    ? 1
+                    : -1
+                  : a.total > b.total
+                  ? 1
+                  : -1
+              )
               .map((c, i) => {
-                if (JSON.stringify(prevRanking) !== JSON.stringify(c.ranking)) {
+                const minLength = Math.min(prevRanking.length, c.ranking.length);
+                if (JSON.stringify(prevRanking.slice(0, minLength)) !== JSON.stringify(c.ranking.slice(0, minLength))) {
                   prevPos = i + 1;
                 }
                 prevRanking = c.ranking;
@@ -239,9 +269,19 @@ const League = inject('clubModel')(
                   total: Math.round((100 * ranking.reduce((a, b) => a + b, 0)) / ranking.length) / 100,
                 };
               })
-              .sort((a, b) => (a.total > b.total ? 1 : -1))
+              .sort((a, b) =>
+                a.total === b.total
+                  ? JSON.stringify(a.ranking.map((v) => v.toFixed(2).padStart(6, '0'))) >
+                    JSON.stringify(b.ranking.map((v) => v.toFixed(2).padStart(6, '0')))
+                    ? 1
+                    : -1
+                  : a.total > b.total
+                  ? 1
+                  : -1
+              )
               .map((c, i) => {
-                if (JSON.stringify(prevRanking) !== JSON.stringify(c.ranking)) {
+                const minLength = Math.min(prevRanking.length, c.ranking.length);
+                if (JSON.stringify(prevRanking.slice(0, minLength)) !== JSON.stringify(c.ranking.slice(0, minLength))) {
                   prevPos = i + 1;
                 }
                 prevRanking = c.ranking;
@@ -270,7 +310,18 @@ const League = inject('clubModel')(
                 };
               })
               .sort((a, b) =>
-                a.total === b.total ? (a.numberOf100 > b.numberOf100 ? -1 : 1) : a.total > b.total ? -1 : 1
+                a.total === b.total && a.numberOf100 === b.numberOf100
+                  ? JSON.stringify(a.points1000.map((v) => v.toString().padStart(3, '0'))) >
+                    JSON.stringify(b.points1000.map((v) => v.toString().padStart(3, '0')))
+                    ? -1
+                    : 1
+                  : a.total === b.total
+                  ? a.numberOf100 > b.numberOf100
+                    ? -1
+                    : 1
+                  : a.total > b.total
+                  ? -1
+                  : 1
               )
               .map((c, i) => {
                 if (prevNumberOf100 !== c.numberOf100 || JSON.stringify(prevPoints) !== JSON.stringify(c.points1000)) {
@@ -299,7 +350,16 @@ const League = inject('clubModel')(
                   total: points.reduce((a, b) => a + b, 0),
                 };
               })
-              .sort((a, b) => (a.total > b.total ? -1 : 1))
+              .sort((a, b) =>
+                a.total === b.total
+                  ? JSON.stringify(a.points.map((v) => v.toString().padStart(3, '0'))) >
+                    JSON.stringify(b.points.map((v) => v.toString().padStart(3, '0')))
+                    ? -1
+                    : 1
+                  : a.total > b.total
+                  ? -1
+                  : 1
+              )
               .map((c, i) => {
                 if (JSON.stringify(prevPoints) !== JSON.stringify(c.points)) {
                   prevPos = i + 1;
@@ -326,7 +386,16 @@ const League = inject('clubModel')(
                   total: pointsOld.reduce((a, b) => a + b, 0),
                 };
               })
-              .sort((a, b) => (a.total > b.total ? -1 : 1))
+              .sort((a, b) =>
+                a.total === b.total
+                  ? JSON.stringify(a.pointsOld.map((v) => v.toString().padStart(3, '0'))) >
+                    JSON.stringify(b.pointsOld.map((v) => v.toString().padStart(3, '0')))
+                    ? -1
+                    : 1
+                  : a.total > b.total
+                  ? -1
+                  : 1
+              )
               .map((c, i) => {
                 if (JSON.stringify(prevPoints) !== JSON.stringify(c.pointsOld)) {
                   prevPos = i + 1;
