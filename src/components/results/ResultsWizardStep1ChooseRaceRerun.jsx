@@ -264,7 +264,6 @@ const ResultWizardStep1ChooseRace = inject(
               processed: savedIndex,
               currentEvent: `${saved.date} ${saved.name}`,
             });
-            let shouldSave = false;
             raceWizardModel.setValue('selectedEventId', saved.eventId);
             raceWizardModel.setValue('selectedEventorId', saved.eventorId);
             raceWizardModel.setValue('selectedEventorRaceId', saved.eventorRaceId);
@@ -425,7 +424,6 @@ const ResultWizardStep1ChooseRace = inject(
                       );
                       if (result && result.missingTime !== missingTime) {
                         result.setValue('missingTime', missingTime);
-                        shouldSave = true;
                       }
                     }
                   }
@@ -573,15 +571,12 @@ const ResultWizardStep1ChooseRace = inject(
                       );
                       if (result && result.missingTime !== missingTime) {
                         result.setValue('missingTime', missingTime);
-                        shouldSave = true;
                       }
                     }
                   }
                 }
               }
-              if (shouldSave) {
-                onSave();
-              }
+              onSave();
             }
           }
           onClose();

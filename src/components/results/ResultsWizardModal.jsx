@@ -25,7 +25,7 @@ import {
   GetPointRunTo1000,
 } from '../../utils/resultHelper';
 import { ConfirmOverwriteOrEdit } from './ConfirmOverwriteOrEditPromise';
-import { difficulties } from '../../utils/resultConstants';
+import { difficulties, distances } from '../../utils/resultConstants';
 
 const { info } = Modal;
 const StyledModalContent = styled.div``;
@@ -157,7 +157,7 @@ const ResultsWizardModal = inject(
             )
           );
           if (result.missingTime) {
-            let speedRanking = GetRanking(
+            const speedRanking = GetRanking(
               raceEvent.rankingBasetimePerKilometer,
               raceEvent.rankingBasepoint,
               {
@@ -171,24 +171,36 @@ const ResultsWizardModal = inject(
               raceEvent.raceLightCondition
             );
             result.setValue('speedRanking', speedRanking);
+            let ranking = result.ranking;
 
-            if (raceEvent.sportCode !== 'OL') {
-              speedRanking = GetRanking(
+            if (
+              raceEvent.sportCode !== 'OL' ||
+              (raceEvent.raceDistance === distances.sprint &&
+                [difficulties.black, difficulties.blue, difficulties.purple].includes(result.difficulty))
+            ) {
+              ranking =
+                5.0 +
+                GetRanking(
+                  raceEvent.rankingBasetimePerKilometer,
+                  raceEvent.rankingBasepoint,
+                  { ...result, difficulty: difficulties.black },
+                  raceEvent.sportCode,
+                  raceEvent.raceLightCondition
+                );
+            } else if (
+              raceEvent.sportCode === 'OL' &&
+              [difficulties.blue, difficulties.purple].includes(result.difficulty)
+            ) {
+              ranking = GetRanking(
                 raceEvent.rankingBasetimePerKilometer,
                 raceEvent.rankingBasepoint,
-                {
-                  ...result,
-                  competitorTime: ConvertSecondsToTime(
-                    ConvertTimeToSeconds(result.competitorTime) - ConvertTimeToSeconds(result.missingTime)
-                  ),
-                  difficulty: difficulties.red,
-                },
+                { ...result, difficulty: difficulties.black },
                 raceEvent.sportCode,
                 raceEvent.raceLightCondition
               );
             }
 
-            const technicalRanking = result.ranking - 0.9 * speedRanking;
+            const technicalRanking = ranking - 0.9 * speedRanking;
             result.setValue('technicalRanking', technicalRanking);
           } else {
             result.setValue('speedRanking', null);
@@ -220,7 +232,7 @@ const ResultsWizardModal = inject(
             )
           );
           if (result.missingTime) {
-            let speedRanking = GetRanking(
+            const speedRanking = GetRanking(
               raceEvent.rankingBasetimePerKilometer,
               raceEvent.rankingBasepoint,
               {
@@ -234,24 +246,36 @@ const ResultsWizardModal = inject(
               raceEvent.raceLightCondition
             );
             result.setValue('speedRanking', speedRanking);
+            let ranking = result.ranking;
 
-            if (raceEvent.sportCode !== 'OL') {
-              speedRanking = GetRanking(
+            if (
+              raceEvent.sportCode !== 'OL' ||
+              (raceEvent.raceDistance === distances.sprint &&
+                [difficulties.black, difficulties.blue, difficulties.purple].includes(result.difficulty))
+            ) {
+              ranking =
+                5.0 +
+                GetRanking(
+                  raceEvent.rankingBasetimePerKilometer,
+                  raceEvent.rankingBasepoint,
+                  { ...result, difficulty: difficulties.black },
+                  raceEvent.sportCode,
+                  raceEvent.raceLightCondition
+                );
+            } else if (
+              raceEvent.sportCode === 'OL' &&
+              [difficulties.blue, difficulties.purple].includes(result.difficulty)
+            ) {
+              ranking = GetRanking(
                 raceEvent.rankingBasetimePerKilometer,
                 raceEvent.rankingBasepoint,
-                {
-                  ...result,
-                  competitorTime: ConvertSecondsToTime(
-                    ConvertTimeToSeconds(result.competitorTime) - ConvertTimeToSeconds(result.missingTime)
-                  ),
-                  difficulty: difficulties.red,
-                },
+                { ...result, difficulty: difficulties.black },
                 raceEvent.sportCode,
                 raceEvent.raceLightCondition
               );
             }
 
-            const technicalRanking = result.ranking - 0.9 * speedRanking;
+            const technicalRanking = ranking - 0.9 * speedRanking;
             result.setValue('technicalRanking', technicalRanking);
           } else {
             result.setValue('speedRanking', null);
