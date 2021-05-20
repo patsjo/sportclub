@@ -80,6 +80,8 @@ const MaterialIcon = ({ icon, fontSize, marginRight }) => {
       return <PictureOutlined style={{ verticalAlign: 'middle', fontSize: fontSize }} />;
     case 'ScoringBoardIcon':
       return <TrophyOutlined style={{ verticalAlign: 'middle', fontSize: fontSize }} />;
+    case 'StarsIcon':
+      return <StarOutlined style={{ verticalAlign: 'middle', fontSize: fontSize }} />;
     case 'EventorIcon':
       return (
         <StyledImg

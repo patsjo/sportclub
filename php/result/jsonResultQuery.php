@@ -496,6 +496,54 @@ elseif ($iType == "CLUBS")
     $rows->sports               = $sports->values;
   }
 }
+elseif ($iType == "TOP")
+{
+  $iBirthDate = mktime(0, 0, 0, 1, 1, 1900);
+  if(isset($_REQUEST['iBirthDate']) && $_REQUEST['iBirthDate']!="")
+  {
+    $iBirthDate = string2Date($_REQUEST['iBirthDate']);
+  }
+  $sql = "SELECT COMPETITOR_ID, FIRST_NAME, LAST_NAME, GENDER, BIRTHDAY, AVG(RANKING) AS AVG_RANKING " .
+    "FROM (SELECT RACE_EVENT_RESULTS.COMPETITOR_ID, FIRST_NAME, LAST_NAME, GENDER, BIRTHDAY, " .
+    "             rank() OVER ( partition by COMPETITOR_ID order by RANKING ASC ) AS ranking_order, RANKING " .
+    "      FROM (SELECT COMPETITOR_ID, LEAST(RANKING, 150.0) AS RANKING " .
+    "            FROM RACE_EVENT  " .
+    "            INNER JOIN RACE_EVENT_RESULTS ON (RACE_EVENT.EVENT_ID = RACE_EVENT_RESULTS.EVENT_ID) " .
+    "            WHERE RANKING IS NOT NULL " . $whereStartDate . $whereEndDate .
+    "            UNION ALL " .
+    "            SELECT COMPETITOR_ID, LEAST(RANKING, 150.0) AS RANKING " .
+    "            FROM RACE_EVENT " .
+    "            INNER JOIN RACE_EVENT_RESULTS_TEAM ON (RACE_EVENT.EVENT_ID = RACE_EVENT_RESULTS_TEAM.EVENT_ID) " .
+    "            WHERE RANKING IS NOT NULL " . $whereStartDate . $whereEndDate . ") RACE_EVENT_RESULTS " .
+    "      INNER JOIN RACE_COMPETITORS ON (RACE_EVENT_RESULTS.COMPETITOR_ID = RACE_COMPETITORS.COMPETITOR_ID) " .
+    "      INNER JOIN RACE_COMPETITORS_CLUB ON (RACE_COMPETITORS.COMPETITOR_ID = RACE_COMPETITORS_CLUB.COMPETITOR_ID) " .
+    "      WHERE (END_DATE > CURDATE() OR END_DATE IS NULL) AND DATE_FORMAT(BIRTHDAY, '%Y-%m-%d') <= '" . date2String($iBirthDate) . "' " .
+    ") ALL_RESULTS " .
+    "WHERE ranking_order <= 6 " .
+    "GROUP BY COMPETITOR_ID, FIRST_NAME, LAST_NAME, GENDER, BIRTHDAY " .
+    "HAVING AVG(RANKING) < 150.0 " .
+    "ORDER BY AVG(RANKING) ASC";
+
+  $result = \db\mysql_query($sql);
+  if (!$result)
+  {
+    die('SQL Error: ' . \db\mysql_error());
+  }
+
+  if (\db\mysql_num_rows($result) > 0)
+  {
+    while($row = \db\mysql_fetch_assoc($result))
+    {
+      $x = new stdClass();
+      $x->competitorId          = intval($row['COMPETITOR_ID']);
+      $x->name                  = $row['FIRST_NAME'] . " " . $row['LAST_NAME'];
+      $x->gender                = $row['GENDER'];
+      $x->birthYear             = intval(date("Y", strtotime($row['BIRTHDAY'])));
+      $x->ranking               = is_null($row['AVG_RANKING']) ? NULL : floatval($row['AVG_RANKING']);
+      array_push($rows, $x);
+    }
+  }
+}
 elseif ($iType == "POINTS")
 {
   $sql = "SELECT RACE_EVENT_RESULTS.COMPETITOR_ID, FIRST_NAME, LAST_NAME, GENDER, BIRTHDAY, " .
@@ -581,6 +629,30 @@ elseif ($iType == "FEES")
       $x->feeToClub             = is_null($row['FEE_TO_CLUB']) ? NULL : floatval($row['FEE_TO_CLUB']);
       $x->serviceFeeToClub      = is_null($row['SERVICEFEE_TO_CLUB']) ? NULL : floatval($row['SERVICEFEE_TO_CLUB']);
       array_push($rows, $x);
+    }
+  }
+}
+elseif ($iType == "COMPETITOR_INFO")
+{
+  $iCompetitorId = intval($_REQUEST['iCompetitorId']);
+  $sql = "SELECT * FROM RACE_COMPETITORS WHERE COMPETITOR_ID = " . $iCompetitorId;
+  $result = \db\mysql_query($sql);
+  if (!$result)
+  {
+    die('SQL Error: ' . \db\mysql_error());
+  }
+
+  $rows = new stdClass();
+
+  if (\db\mysql_num_rows($result) > 0)
+  {
+    while($row = \db\mysql_fetch_assoc($result))
+    {
+      $rows->competitorId = $iCompetitorId;
+      $rows->seniorAchievements = $row['SENIOR_ACHIEVEMENTS'];
+      $rows->juniorAchievements = $row['JUNIOR_ACHIEVEMENTS'];
+      $rows->youthAchievements = $row['YOUTH_ACHIEVEMENTS'];
+      $rows->thumbnail = $row['THUMBNAIL'];
     }
   }
 }

@@ -1,18 +1,19 @@
-import React, { Component } from "react";
-import PropTypes from "prop-types";
-import { withTranslation } from "react-i18next";
-import { Upload, message } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
-import styled from "styled-components";
-import FileIcon from "../materialIcon/FileIcon";
-import MaterialIcon from "../materialIcon/MaterialIcon";
-import { getFileType } from "../../utils/fileHelper";
-import FormItem from "./FormItem";
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import { withTranslation } from 'react-i18next';
+import { Upload, message } from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
+import styled from 'styled-components';
+import FileIcon from '../materialIcon/FileIcon';
+import MaterialIcon from '../materialIcon/MaterialIcon';
+import { getFileType } from '../../utils/fileHelper';
+import FormItem from './FormItem';
+import ImgCrop from 'antd-img-crop';
 
 const StyledUploadDragger = styled(Upload.Dragger)`
   &&&.ant-upload.ant-upload-drag {
     margin-top: 5px;
-    display: ${(props) => (props.visible ? "block" : "none")};
+    display: ${(props) => (props.visible ? 'block' : 'none')};
   }
   &.upload-list-inline .ant-upload-list-item {
     float: left;
@@ -60,7 +61,9 @@ class UploadDragger extends Component {
     fieldName: PropTypes.string.isRequired,
     maxByteSize: PropTypes.number.isRequired,
     multiple: PropTypes.bool.isRequired,
-    t: PropTypes.func
+    asThumbnail: PropTypes.bool,
+    allowedFileTypes: PropTypes.arrayOf(PropTypes.string),
+    t: PropTypes.func,
   };
 
   constructor(props) {
@@ -71,13 +74,13 @@ class UploadDragger extends Component {
     const files = getFieldValue(fieldName) || [];
 
     this.state = {
-      files: files
+      files: files,
     };
   }
 
   addFile = ({ onSuccess }) => {
     setTimeout(() => {
-      onSuccess("ok");
+      onSuccess('ok');
     }, 0);
   };
 
@@ -97,9 +100,30 @@ class UploadDragger extends Component {
   };
 
   beforeUpload = (file) => {
-    const { maxByteSize } = this.props;
+    const { maxByteSize, asThumbnail } = this.props;
     const validFile = this.validFile(file);
     const validSize = file.size <= maxByteSize;
+    if (validFile && validSize && asThumbnail) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const img = document.createElement('img');
+          img.src = reader.result;
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 150;
+            canvas.height = 150;
+            const size = Math.min(img.naturalWidth, img.naturalHeight);
+            const x = img.naturalWidth > img.naturalHeight ? Math.round((img.naturalWidth - img.naturalHeight) / 2) : 0;
+            const y = img.naturalHeight > img.naturalWidth ? Math.round((img.naturalHeight - img.naturalWidth) / 2) : 0;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, x, y, size, size, 0, 0, 150, 150);
+            canvas.toBlob(resolve);
+          };
+        };
+        reader.readAsDataURL(file);
+      });
+    }
     return validFile && validSize;
   };
 
@@ -119,18 +143,21 @@ class UploadDragger extends Component {
     const validFile = this.validFile(file);
     const validSize = file.size <= maxByteSize;
     if (!validFile) {
-      message.error(t("error.FileTypeNotSupported"));
+      message.error(t('error.FileTypeNotSupported'));
     }
     if (!validSize) {
       const maxByteSizeMegaByte = Math.round(maxByteSize / 1024 / 1024);
-      message.error(t("error.FileSizeTooLarge").replace("{0}", maxByteSizeMegaByte));
+      message.error(t('error.FileSizeTooLarge').replace('{0}', maxByteSizeMegaByte));
     }
     if (!this.props.multiple && fileList.length > 1) {
       while (fileList.length > 1) {
         fileList.pop();
       }
     }
-    if (!fileList.some((f) => f.status === "uploading")) {
+    if (!validSize || !validFile) {
+      fileList = fileList.filter((f) => f.uid !== file.uid);
+    }
+    if (!fileList.some((f) => f.status === 'uploading')) {
       setFieldsValue({ [fieldName]: fileList });
       this.setState({ files: fileList });
     }
@@ -138,25 +165,29 @@ class UploadDragger extends Component {
 
   validFile = (file) => {
     const fileType = getFileType(file);
+
+    if (Array.isArray(this.props.allowedFileTypes) && this.props.allowedFileTypes.length > 0) {
+      return this.props.allowedFileTypes.includes(fileType);
+    }
     // eslint-disable-next-line eqeqeq
     const isImage = fileType.match(/^image\/.*$/) != null;
-    const isPdf = fileType === "application/pdf";
+    const isPdf = fileType === 'application/pdf';
     const isWord =
-      fileType === "application/msword" ||
-      fileType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+      fileType === 'application/msword' ||
+      fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
     const isExcel =
-      fileType === "application/vnd.ms-excel" ||
-      fileType === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+      fileType === 'application/vnd.ms-excel' ||
+      fileType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
     const isPowerpoint =
-      fileType === "application/vnd.ms-powerpoint" ||
-      fileType === "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+      fileType === 'application/vnd.ms-powerpoint' ||
+      fileType === 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
 
     return isImage || isPdf || isWord || isExcel || isPowerpoint;
   };
 
   render() {
     const self = this;
-    const { t, fieldName, multiple } = this.props;
+    const { t, fieldName, multiple, allowedFileTypes, maxByteSize, asThumbnail } = this.props;
     const { files } = this.state;
     const nofFiles = files ? files.length : 0;
 
@@ -175,26 +206,62 @@ class UploadDragger extends Component {
 
     return (
       <FormItem name={fieldName} valuePropName="fileList" getValueFromEvent={self.onNormFiles}>
-        <StyledUploadDragger
-          type="drag"
-          customRequest={self.addFile}
-          listType="picture"
-          className="upload-list-inline"
-          multiple={multiple}
-          visible={multiple || nofFiles === 0}
-          accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.pps,.ppsx,.ppt,.pptx"
-          beforeUpload={self.beforeUpload}
-          showUploadList={multiple ? { showPreviewIcon: false } : false}
-          onChange={self.onChange}
-          onRemove={self.onDelete}
-          data-testid="attachmentsInput"
-        >
-          <StyledP className="ant-upload-drag-icon">
-            <StyledUploadIcon />
-          </StyledP>
-          <p className="ant-upload-text">{t("common.Upload")}</p>
-        </StyledUploadDragger>
-        {FormDeleteFile}{" "}
+        {asThumbnail ? (
+          <ImgCrop
+            rotate
+            quality={0.9}
+            beforeCrop={(file) => self.validFile(file) && file.size <= maxByteSize && asThumbnail}
+          >
+            <StyledUploadDragger
+              type="drag"
+              customRequest={self.addFile}
+              listType="picture"
+              className="upload-list-inline"
+              multiple={multiple}
+              visible={multiple || nofFiles === 0}
+              accept={
+                Array.isArray(allowedFileTypes) && allowedFileTypes.length > 0
+                  ? allowedFileTypes.join(',')
+                  : 'image/*,.pdf,.doc,.docx,.xls,.xlsx,.pps,.ppsx,.ppt,.pptx'
+              }
+              beforeUpload={self.beforeUpload}
+              showUploadList={multiple ? { showPreviewIcon: false } : false}
+              onChange={self.onChange}
+              onRemove={self.onDelete}
+              data-testid="attachmentsInput"
+            >
+              <StyledP className="ant-upload-drag-icon">
+                <StyledUploadIcon />
+              </StyledP>
+              <p className="ant-upload-text">{t('common.Upload')}</p>
+            </StyledUploadDragger>
+          </ImgCrop>
+        ) : (
+          <StyledUploadDragger
+            type="drag"
+            customRequest={self.addFile}
+            listType="picture"
+            className="upload-list-inline"
+            multiple={multiple}
+            visible={multiple || nofFiles === 0}
+            accept={
+              Array.isArray(allowedFileTypes) && allowedFileTypes.length > 0
+                ? allowedFileTypes.join(',')
+                : 'image/*,.pdf,.doc,.docx,.xls,.xlsx,.pps,.ppsx,.ppt,.pptx'
+            }
+            beforeUpload={self.beforeUpload}
+            showUploadList={multiple ? { showPreviewIcon: false } : false}
+            onChange={self.onChange}
+            onRemove={self.onDelete}
+            data-testid="attachmentsInput"
+          >
+            <StyledP className="ant-upload-drag-icon">
+              <StyledUploadIcon />
+            </StyledP>
+            <p className="ant-upload-text">{t('common.Upload')}</p>
+          </StyledUploadDragger>
+        )}
+        {FormDeleteFile}
       </FormItem>
     );
   }

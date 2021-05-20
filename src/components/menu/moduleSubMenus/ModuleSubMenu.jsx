@@ -43,6 +43,18 @@ const ModuleSubMenu = inject(
             }}
           />
         );
+      case 'Stars':
+        return (
+          <MenuItem
+            key={'menuItem#stars'}
+            icon={module.name + 'Icon'}
+            name={t('modules.Stars')}
+            onClick={() => {
+              globalStateModel.setValue('rightMenuVisible', false);
+              globalStateModel.setDashboard(history, '/competitor/presentation');
+            }}
+          />
+        );
       case 'Calendar':
         return <CalendarSubMenus />;
       case 'News':

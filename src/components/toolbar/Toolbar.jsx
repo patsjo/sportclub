@@ -39,7 +39,12 @@ const Toolbar = inject(
               key={'toolbarItem#' + module.name + index}
               icon={module.name + 'Icon'}
               name={t('modules.' + module.name)}
-              disabled={module.name !== 'News' && module.name !== 'Eventor' && module.name !== 'ScoringBoard'}
+              disabled={
+                module.name !== 'News' &&
+                module.name !== 'Eventor' &&
+                module.name !== 'ScoringBoard' &&
+                module.name !== 'Stars'
+              }
               onClick={() => {
                 switch (module.name) {
                   case 'Eventor':
@@ -51,6 +56,9 @@ const Toolbar = inject(
                     break;
                   case 'ScoringBoard':
                     globalStateModel.setDashboard(history, '/league');
+                    break;
+                  case 'Stars':
+                    globalStateModel.setDashboard(history, '/competitor/presentation');
                     break;
                   default:
                     return null;

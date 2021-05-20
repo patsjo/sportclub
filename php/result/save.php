@@ -13,6 +13,7 @@
 //# 2019-12-26  PatSjo  Initial version                      #
 //# 2021-05-12  PatSjo  Added missingTime, speedRanking and  #
 //#                     technicalRanking                     #
+//# 2021-05-20  PatSjo  Added COMPETITOR_INFO                #
 //############################################################
 
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/db.php");
@@ -155,6 +156,38 @@ if ($iType == "COMPETITOR")
         }
       }
       \db\mysql_free_result($result2);
+}
+elseif ($iType == "COMPETITOR_INFO")
+{
+  $iCompetitorId = intval($_REQUEST['iCompetitorId']);
+  $iSeniorAchievements = stripslashes($_REQUEST['iSeniorAchievements']);
+  if (empty($_REQUEST['iSeniorAchievements']) || $_REQUEST['iSeniorAchievements'] == "null" || $_REQUEST['iSeniorAchievements'] == "undefined") $iSeniorAchievements = null;
+  $iJuniorAchievements = stripslashes($_REQUEST['iJuniorAchievements']);
+  if (empty($_REQUEST['iJuniorAchievements']) || $_REQUEST['iJuniorAchievements'] == "null" || $_REQUEST['iJuniorAchievements'] == "undefined") $iJuniorAchievements = null;
+  $iYouthAchievements = stripslashes($_REQUEST['iYouthAchievements']);
+  if (empty($_REQUEST['iYouthAchievements']) || $_REQUEST['iYouthAchievements'] == "null" || $_REQUEST['iYouthAchievements'] == "undefined") $iYouthAchievements = null;
+  $iThumbnail = $_REQUEST['iThumbnail'];
+  if (empty($_REQUEST['iThumbnail']) || $_REQUEST['iThumbnail'] == "null" || $_REQUEST['iThumbnail'] == "undefined") $iThumbnail = null;
+
+  $query = sprintf("UPDATE RACE_COMPETITORS " .
+                   "SET SENIOR_ACHIEVEMENTS = %s, " .
+                   "    JUNIOR_ACHIEVEMENTS = %s, " .
+                   "    YOUTH_ACHIEVEMENTS = %s, " .
+                   "    THUMBNAIL = %s " .
+                   "WHERE COMPETITOR_ID = " . $iCompetitorId,
+                   is_null($iSeniorAchievements) ? "NULL" : "'" . \db\mysql_real_escape_string($iSeniorAchievements) . "'",
+                   is_null($iJuniorAchievements) ? "NULL" : "'" . \db\mysql_real_escape_string($iJuniorAchievements) . "'",
+                   is_null($iYouthAchievements) ? "NULL" : "'" . \db\mysql_real_escape_string($iYouthAchievements) . "'",
+                   is_null($iThumbnail) ? "NULL" : "'" . \db\mysql_real_escape_string($iThumbnail) . "'");
+
+  \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
+
+  $x = new stdClass();
+  $x->competitorId = $iCompetitorId;
+  $x->seniorAchievements = $iSeniorAchievements;
+  $x->juniorAchievements = $iJuniorAchievements;
+  $x->youthAchievements = $iYouthAchievements;
+  $x->thumbnail = $iThumbnail;
 }
 elseif ($iType == "EVENTOR_COMPETITOR_ID")
 {

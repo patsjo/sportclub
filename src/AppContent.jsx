@@ -11,6 +11,7 @@ const WeeklyCalendar = lazy(() => import('./components/calendar/weekly/WeeklyCal
 const MonthlyCalendar = lazy(() => import('./components/calendar/monthly/MonthlyCalendar'));
 const AllSponsors = lazy(() => import('./components/sponsors/AllSponsors'));
 const HtmlEditor = lazy(() => import('./components/htmlEditor/HtmlEditor'));
+const AllCompetitorsPresentation = lazy(() => import('./components/competitor/AllCompetitorsPresentation'));
 
 const NoMonthlyContainer = styled.div`
   & {
@@ -52,6 +53,9 @@ const AppContent = inject(
           </Route>
           <Route exact path="/league">
             <League />
+          </Route>
+          <Route exact path="/competitor/presentation">
+            <AllCompetitorsPresentation />
           </Route>
           <Route exact path="/results/individual">
             <ViewResults key="individualViewResult" isIndividual={true} />

@@ -15,3 +15,13 @@ export const getFileType = file => {
     return "application/vnd.openxmlformats-officedocument.presentationml.presentation";
   }
 };
+
+export const fileAsUrl = file => {
+  return new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      resolve(reader.result);
+    };
+    reader.readAsDataURL(file);
+  });
+}

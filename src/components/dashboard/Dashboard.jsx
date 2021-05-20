@@ -7,7 +7,6 @@ import EsriOSMOrienteeringMap from '../map/EsriOSMOrienteeringMap';
 import WeeklyCalendar from '../calendar/weekly/WeeklyCalendar';
 import SponsorsSlideshow from '../sponsors/SponsorsSlideshow';
 import { observer, inject } from 'mobx-react';
-import { getSnapshot } from 'mobx-state-tree';
 import Columns from './columns/Columns';
 import InfiniteScroll from '../../utils/infinityScroll';
 import { Spin } from 'antd';
