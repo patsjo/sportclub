@@ -8,12 +8,33 @@ import CompetitorPresentationModal from './CompetitorPresentationModal';
 import { PostJsonData } from '../../utils/api';
 
 const StyledAvatar = styled(Avatar)`
-  &&& {
-    display: block;
-    float: left;
-    background-color: #808080;
-    border-radius: 0px;
-    margin-right: 16px;
+  display: block;
+  float: left;
+  background-color: #808080;
+  border-radius: 0px;
+  margin-right: 16px;
+  height: 92px;
+  width: 92px;
+  &&& .anticon svg {
+    height: 88px;
+    width: 70px;
+  }
+
+  @media screen and (min-width: 800px) {
+    height: 64px;
+    width: 64px;
+    &&& .anticon svg {
+      height: 60px;
+      width: 44px;
+    }
+  }
+  @media screen and (max-width: 400px) {
+    height: 88px;
+    width: 88px;
+    &&& .anticon svg {
+      height: 84px;
+      width: 66px;
+    }
   }
 `;
 
@@ -21,27 +42,58 @@ const StyledImage = styled.img`
   display: block;
   float: left;
   margin-right: 16px;
-  width: 64px;
-  height: 64px;
+  height: 92px;
+  width: 92px;
+
+  @media screen and (min-width: 800px) {
+    height: 64px;
+    width: 64px;
+  }
+  @media screen and (max-width: 400px) {
+    height: 88px;
+    width: 88px;
+  }
 `;
 
 const StyledTitle = styled.div`
   display: block;
-  font-size: 32px;
-  line-height: 60px;
+  font-size: 24px;
+  line-height: 36px;
+
+  @media screen and (min-width: 800px) {
+    float: left;
+    font-size: 32px;
+    line-height: 60px;
+  }
+  @media screen and (max-width: 400px) {
+    font-size: 20px;
+    line-height: 32px;
+  }
 `;
 
 const StyledAchievements = styled.div`
   display: block;
-  float: right;
   font-size: 10px;
   font-style: italic;
-  padding-right: ${(props) => (props.canEdit ? 40 : 4)}px;
-  padding-top: 3px;
-
+  line-height: 12px;
+  padding-left: 15px;
   &&& > ul {
     margin-bottom: 0;
-    padding-inline-start: 15px;
+    padding-inline-start: 108px;
+  }
+
+  @media screen and (min-width: 800px) {
+    float: right;
+    padding-right: ${(props) => (props.canEdit ? 42 : 6)}px;
+    padding-top: 4px;
+    &&& > ul {
+      padding-inline-start: 15px;
+    }
+  }
+  @media screen and (max-width: 400px) {
+    &&& > ul {
+      padding-inline-start: 104px;
+    }
   }
 `;
 
@@ -89,8 +141,9 @@ const CompetitorTitle = inject(
         {competitorInfo?.thumbnail ? (
           <StyledImage src={competitorInfo.thumbnail} />
         ) : (
-          <StyledAvatar size={64} icon={<UserOutlined />} />
+          <StyledAvatar icon={<UserOutlined />} />
         )}
+        <StyledTitle>{competitor.name}</StyledTitle>
         <StyledAchievements canEdit={canEdit}>
           <div>{t('competitor.Achievements')}</div>
           {competitorInfo ? (
@@ -115,7 +168,6 @@ const CompetitorTitle = inject(
             <Skeleton.Button active shape="round" />
           )}
         </StyledAchievements>
-        <StyledTitle>{competitor.name}</StyledTitle>
         {canEdit ? <StyledButton icon={<EditOutlined />} onClick={() => setEditModalIsOpen(true)} /> : null}
         {editModalIsOpen ? (
           <CompetitorPresentationModal

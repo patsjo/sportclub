@@ -16,7 +16,11 @@ const StyledCard = styled(Card)`
   }
   &&& .ant-card-head {
     border-bottom-color: #808080;
+    margin-bottom: -1px;
     padding: 0;
+  }
+  &&& .ant-card-head-wrapper {
+    margin-bottom: -1px;
   }
   &&& .ant-card-head-title {
     padding: 0;
