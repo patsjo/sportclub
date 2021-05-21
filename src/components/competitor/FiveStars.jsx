@@ -18,6 +18,9 @@ export const StarsDiv = styled.div`
   white-space: nowrap;
   height: 40px;
 `;
+export const OnlyStarsDiv = styled.div`
+  white-space: nowrap;
+`;
 export const InfoDiv = styled.div`
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -38,19 +41,29 @@ export const Loader = () => (
   </SkeletonsDiv>
 );
 
-const FiveStars = ({ label, stars }) => (
-  <ContainerDiv>
-    <LabelDiv>{label}</LabelDiv>
-    <StarsDiv>
+const FiveStars = ({ label, stars, size = 40 }) =>
+  label ? (
+    <ContainerDiv>
+      <LabelDiv>{label}</LabelDiv>
+      <StarsDiv>
+        {stars === undefined ? (
+          <Loader />
+        ) : stars < 0 ? (
+          <InfoDiv>-</InfoDiv>
+        ) : (
+          [1, 2, 3, 4, 5].map((star) => <Star key={`star${star}`} filled={star <= stars} size={size} />)
+        )}
+      </StarsDiv>
+    </ContainerDiv>
+  ) : (
+    <OnlyStarsDiv>
       {stars === undefined ? (
         <Loader />
       ) : stars < 0 ? (
-        <InfoDiv>-</InfoDiv>
+        '-'
       ) : (
-        [1, 2, 3, 4, 5].map((star) => <Star key={`star${star}`} filled={star <= stars} size={40} />)
+        [1, 2, 3, 4, 5].map((star) => <Star key={`star${star}`} filled={star <= stars} size={size} />)
       )}
-    </StarsDiv>
-  </ContainerDiv>
-);
-
+    </OnlyStarsDiv>
+  );
 export default FiveStars;

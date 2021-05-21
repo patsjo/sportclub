@@ -144,6 +144,7 @@ i18next
             UpdateModificationDate: "Update modification date"
           },
           competitor: {
+            Info: "Rules behind the stars",
             Achievements: "Achievements",
             Senior: "Senior",
             Junior: "Junior",
@@ -405,6 +406,7 @@ i18next
             UpdateModificationDate: "Uppdatera senaste ändringsdatum"
           },
           competitor: {
+            Info: "Regelverk bakom stjärnorna",
             Achievements: "Meriter",
             Senior: "Senior",
             Junior: "Junior",

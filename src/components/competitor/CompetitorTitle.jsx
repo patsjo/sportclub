@@ -80,6 +80,8 @@ const StyledAchievements = styled.div`
   &&& > ul {
     margin-bottom: 0;
     padding-inline-start: 108px;
+    padding-inline-end: 4px;
+    white-space: normal;
   }
 
   @media screen and (min-width: 800px) {

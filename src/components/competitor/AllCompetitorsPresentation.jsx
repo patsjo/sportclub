@@ -2,13 +2,21 @@ import React, { useState, useEffect, useCallback } from 'react';
 import CompetitorPresentation from './CompetitorPresentation';
 import { useTranslation } from 'react-i18next';
 import { observer, inject } from 'mobx-react';
-import { Spin, Tabs, message } from 'antd';
+import { Spin, Tabs, message, Button } from 'antd';
 import { SpinnerDiv } from '../styled/styled';
 import InfiniteScroll from '../../utils/infinityScroll';
 import moment from 'moment';
 import { PostJsonData } from '../../utils/api';
+import { StarsInfoModal } from './StarsInfoModal';
+import styled from 'styled-components';
 
 const { TabPane } = Tabs;
+
+const StyledTabs = styled(Tabs)`
+  &&& {
+    max-width: 1160px;
+  }
+`;
 
 const Spinner = (
   <SpinnerDiv>
@@ -26,6 +34,7 @@ const AllCompetitorsPresentation = inject(
     const [maleCompetitors, setMaleCompetitors] = useState([]);
     const [femaleCompetitors, setFemaleCompetitors] = useState([]);
     const [viewNumberOf, setViewNumberOf] = useState(0);
+    const [gender, setGender] = useState('MALE');
 
     useEffect(() => {
       const currentYear = parseInt(moment().format('YYYY'));
@@ -61,6 +70,8 @@ const AllCompetitorsPresentation = inject(
       return new Promise((resolve) => resolve());
     }, []);
 
+    const infoButton = <Button onClick={() => StarsInfoModal(t, gender)}>Info</Button>;
+
     return (
       <InfiniteScroll
         key="InfiniteScroll#competitorPresentation"
@@ -73,7 +84,7 @@ const AllCompetitorsPresentation = inject(
           </SpinnerDiv>
         }
       >
-        <Tabs defaultActiveKey="MALE">
+        <StyledTabs defaultActiveKey={gender} tabBarExtraContent={infoButton} onChange={setGender}>
           <TabPane tab={t('results.Male')} key="MALE">
             {!loading ? (
               <div>
@@ -104,7 +115,7 @@ const AllCompetitorsPresentation = inject(
               Spinner
             )}
           </TabPane>
-        </Tabs>
+        </StyledTabs>
       </InfiniteScroll>
     );
   })
