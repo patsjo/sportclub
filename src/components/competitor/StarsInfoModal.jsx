@@ -82,7 +82,7 @@ const dataSource = (t, gender) => [
     star2: 'Mindre än 15,0 sämre på natt',
     star1: 'Mindre än 25,0 sämre på natt',
     star0: 'Mer än 25,0 sämre på natt',
-    nodata: 'Saknar individuell/stafett senaste två åren',
+    nodata: 'Saknar dag/natt senaste två åren',
   },
   {
     key: '8',

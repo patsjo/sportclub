@@ -173,7 +173,8 @@ const CompetitorTitle = inject(
         {canEdit ? <StyledButton icon={<EditOutlined />} onClick={() => setEditModalIsOpen(true)} /> : null}
         {editModalIsOpen ? (
           <CompetitorPresentationModal
-            competitor={competitorInfo}
+            name={competitor.name}
+            competitorInfo={competitorInfo}
             open={editModalIsOpen}
             onClose={() => setEditModalIsOpen(false)}
             onChange={setCompetitorInfo}

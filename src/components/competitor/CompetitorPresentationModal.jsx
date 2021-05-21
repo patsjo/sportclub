@@ -25,7 +25,7 @@ const CompetitorPresentationModal = inject(
   'sessionModel'
 )(
   observer((props) => {
-    const { clubModel, sessionModel, competitor, open, onClose, onChange } = props;
+    const { clubModel, sessionModel, name, competitorInfo, open, onClose, onChange } = props;
     const { t } = useTranslation();
     const [form] = Form.useForm();
     const [saving, setSaving] = useState(false);
@@ -72,7 +72,7 @@ const CompetitorPresentationModal = inject(
       <StyledModal
         closable={false}
         maskClosable={false}
-        title={`${t('competitor.Edit')} - ${competitor.name}`}
+        title={`${t('competitor.Edit')} - ${name}`}
         visible={open}
         okText={t('common.Save')}
         okButtonProps={{ loading: saving }}
@@ -93,12 +93,12 @@ const CompetitorPresentationModal = inject(
             id={formId}
             layout="vertical"
             initialValues={{
-              iCompetitorId: competitor.competitorId,
-              iSeniorAchievements: competitor.seniorAchievements || null,
-              iJuniorAchievements: competitor.juniorAchievements || null,
-              iYouthAchievements: competitor.youthAchievements || null,
-              iThumbnail: competitor.thumbnail || null,
-              iFiles: competitor.thumbnail
+              iCompetitorId: competitorInfo.competitorId,
+              iSeniorAchievements: competitorInfo.seniorAchievements || null,
+              iJuniorAchievements: competitorInfo.juniorAchievements || null,
+              iYouthAchievements: competitorInfo.youthAchievements || null,
+              iThumbnail: competitorInfo.thumbnail || null,
+              iFiles: competitorInfo.thumbnail
                 ? [
                     {
                       uid: 1,
