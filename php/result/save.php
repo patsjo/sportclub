@@ -55,18 +55,20 @@ if ($iType == "COMPETITOR")
 {
   $iFirstName = stripslashes($_REQUEST['iFirstName']);
   $iLastName = stripslashes($_REQUEST['iLastName']);
+  $iGender = stripslashes($_REQUEST['iGender']);
   $iBirthDay = string2Date($_REQUEST['iBirthDay']);
 
   $query = sprintf("INSERT INTO RACE_COMPETITORS " .
                    "(" .
-                   "  FIRST_NAME, LAST_NAME, BIRTHDAY" .
+                   "  FIRST_NAME, LAST_NAME, BIRTHDAY, GENDER" .
                    ")" .
                    " VALUES " .
                    "(" .
-                   "  '%s', '%s', " . str_replace("''", "Null", "'" . date2String($iBirthDay) . "'") .
+                   "  '%s', '%s', " . str_replace("''", "Null", "'" . date2String($iBirthDay) . "'") . " ,'%s' " .
                    ")",
                    \db\mysql_real_escape_string($iFirstName),
-                   \db\mysql_real_escape_string($iLastName));
+                   \db\mysql_real_escape_string($iLastName),
+                   \db\mysql_real_escape_string($iGender));
 
   \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
 

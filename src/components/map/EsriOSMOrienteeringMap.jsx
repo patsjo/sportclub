@@ -55,7 +55,7 @@ const EsriOSMOrienteeringMap = observer(
     defaultGraphics = undefined,
     useAllWidgets = false,
     onClick = () => {},
-    onHighlightClick = () => {},
+    onHighlightClick = undefined,
   }) => {
     const { t } = useTranslation();
     const [graphicsLayer, setGraphicsLayer] = React.useState();
@@ -170,6 +170,17 @@ const EsriOSMOrienteeringMap = observer(
             view.ui.add(trackWidget, 'top-left');
           }
 
+          let newGraphicsLayer = globalStateModel.map.layers.items.find((l) => l.id === containerId);
+          if (!newGraphicsLayer) {
+            newGraphicsLayer = new EsriGraphicsLayer({
+              id: containerId,
+              title: 'Graphics layer',
+              listMode: 'hide',
+            });
+
+            globalStateModel.map.add(newGraphicsLayer);
+          }
+
           const onTouchEvent = view.on('pointer-down', (event) => {
             const point = EsriWebMercatorUtils.webMercatorToGeographic(view.toMap(event));
             onClick(
@@ -201,17 +212,6 @@ const EsriOSMOrienteeringMap = observer(
             event.layerView.handleWhenLayerFalse = undefined;
             event.layerView.handleWhenLayerTrue = undefined;
           });
-
-          let newGraphicsLayer = globalStateModel.map.layers.items.find((l) => l.id === containerId);
-          if (!newGraphicsLayer) {
-            newGraphicsLayer = new EsriGraphicsLayer({
-              id: containerId,
-              title: 'Graphics layer',
-              listMode: 'hide',
-            });
-
-            globalStateModel.map.add(newGraphicsLayer);
-          }
 
           view
             .when(() => {
@@ -270,7 +270,7 @@ const EsriOSMOrienteeringMap = observer(
                 const highlightGraphicsClick = (event) => {
                   highlightGraphics(event);
                   const highLightedDirections = highlighted.filter((g) => g.attributes.direction);
-                  if (highLightedDirections.length) {
+                  if (highLightedDirections.length && onHighlightClick !== undefined) {
                     onHighlightClick(highLightedDirections[0]);
                   }
                 };
@@ -315,20 +315,22 @@ const EsriOSMOrienteeringMap = observer(
                 })
             )
           );
-          graphicsLayer.addMany(
-            graphics
-              .filter((graphic) => graphic.geometry.type === 'point')
-              .map(
-                (graphic) =>
-                  new EsriGraphic({
-                    geometry: {
-                      ...graphic.geometry,
-                    },
-                    attributes: { direction: true },
-                    symbol: DirectionSymbol,
-                  })
-              )
-          );
+          if (onHighlightClick !== undefined) {
+            graphicsLayer.addMany(
+              graphics
+                .filter((graphic) => graphic.geometry.type === 'point')
+                .map(
+                  (graphic) =>
+                    new EsriGraphic({
+                      geometry: {
+                        ...graphic.geometry,
+                      },
+                      attributes: { direction: true },
+                      symbol: DirectionSymbol,
+                    })
+                )
+            );
+          }
           mapView.goTo(graphicsLayer.graphics.items).then(() => {});
         };
         if (defaultGraphics && Array.isArray(defaultGraphics)) {
@@ -342,7 +344,7 @@ const EsriOSMOrienteeringMap = observer(
           };
         }
       }
-    }, [mapView, graphicsLayer]);
+    }, [mapView, graphicsLayer, defaultGraphics]);
 
     return (
       <MapDiv key="map" height={height} width={width}>

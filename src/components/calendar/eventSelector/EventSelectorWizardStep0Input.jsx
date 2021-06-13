@@ -132,6 +132,8 @@ const EventSelectorWizardStep0Input = inject(
                 <MapContainer>
                   <EsriOSMOrienteeringMap
                     key="eventSelector#maxDistanceMap"
+                    height="400px"
+                    width="100%"
                     globalStateModel={globalStateModel}
                     clubModel={clubModel}
                     containerId="maxDistanceMap"

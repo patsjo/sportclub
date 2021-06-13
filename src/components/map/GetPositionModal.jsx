@@ -17,12 +17,14 @@ export const GetPositionModal = (t, longitude, latitude, exists, globalStateMode
           <Provider clubModel={clubModel} globalStateModel={globalStateModel}>
             <EsriOSMOrienteeringMap
               key="confirm#getPositionMap"
+              height="400px"
+              width="100%"
               globalStateModel={globalStateModel}
               clubModel={clubModel}
               containerId="getPositionMap"
               mapCenter={mapCenter}
               defaultGraphics={
-                exists ? [{ geometry: { type: 'point', longitude: longitude, latitude: latitude } }] : undefined
+                exists ? [{ geometry: { type: 'point', longitude: longitude, latitude: latitude } }] : []
               }
               onClick={(graphicLayer, graphic) => {
                 selectedPosition = graphic.geometry;
