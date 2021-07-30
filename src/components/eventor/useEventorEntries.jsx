@@ -43,7 +43,7 @@ const useEventorEntries = (clubModel) => {
     };
     const alreadySavedEventsPromise = PostJsonData(url, queryData, true);
     const entriesPromise = GetJsonData(
-      clubModel.corsProxy +
+      clubModel.corsProxyWithCache +
         encodeURIComponent(
           clubModel.eventor.entriesUrl +
             '?organisationIds=' +
@@ -59,7 +59,7 @@ const useEventorEntries = (clubModel) => {
       false
     );
     const oringenEventsPromise = GetJsonData(
-      clubModel.corsProxy +
+      clubModel.corsProxyWithCache +
         encodeURIComponent(
           clubModel.eventor.eventsUrl +
             '?organisationIds=' +

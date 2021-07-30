@@ -179,6 +179,7 @@ export const MobxClubModel = types
     eventor: types.maybe(Eventor),
     raceClubs: types.maybe(RaceClubs),
     corsProxy: types.maybe(types.string),
+    corsProxyWithCache: types.maybe(types.string),
     oldUrl: types.maybe(types.string),
     sponsors: types.array(Sponsor),
     facebookUrl: types.maybe(types.string)

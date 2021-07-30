@@ -120,7 +120,7 @@ const EventRace = inject('clubModel')(
       // 10 Canceled
       // 11 Reported
       const classPromise = GetJsonData(
-        clubModel.corsProxy +
+        clubModel.corsProxyWithCache +
           encodeURIComponent(
             clubModel.eventor.classesUrl + '?eventId=' + eventObject.eventorId + '&includeEntryFees=true'
           ) +
@@ -131,7 +131,7 @@ const EventRace = inject('clubModel')(
       const startPromise =
         eventObject.statusId < 8
           ? GetJsonData(
-              clubModel.corsProxy +
+              clubModel.corsProxyWithCache +
                 encodeURIComponent(
                   clubModel.eventor.startUrl +
                     '?eventId=' +
@@ -147,7 +147,7 @@ const EventRace = inject('clubModel')(
       const resultPromise =
         eventObject.statusId >= 8 && eventObject.statusId !== 10
           ? GetJsonData(
-              clubModel.corsProxy +
+              clubModel.corsProxyWithCache +
                 encodeURIComponent(
                   clubModel.eventor.resultUrl +
                     '?eventId=' +
