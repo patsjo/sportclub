@@ -51,9 +51,10 @@ const ResultWizardStep1ChooseRace = inject(
           };
 
           const alreadySavedEventsPromise = PostJsonData(url, queryData, true, sessionModel.authorizationHeader);
-          const entriesPromise = GetJsonData(
-            clubModel.corsProxy +
-              encodeURIComponent(
+          const entriesPromise = PostJsonData(
+            clubModel.corsProxy,
+            {
+              csurl: encodeURIComponent(
                 clubModel.eventor.entriesUrl +
                   '?organisationIds=' +
                   clubModel.raceClubs.selectedClub.eventorOrganisationId +
@@ -62,22 +63,25 @@ const ResultWizardStep1ChooseRace = inject(
                   '&toEventDate=' +
                   raceWizardModel.queryEndDate +
                   '&includeEntryFees=true&includePersonElement=true&includeOrganisationElement=true&includeEventElement=true'
-              ) +
-              '&headers=' +
-              encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
+              ),
+              requestMethod: 'GET',
+              headers: encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
+            },
             true
           );
           const noEntriesPromise = raceWizardModel.queryForEventWithNoEntry
             ? new Promise((resolve, reject) => {
-                GetJsonData(
-                  clubModel.corsProxy +
-                    encodeURIComponent(
+                PostJsonData(
+                  clubModel.corsProxy,
+                  {
+                    csurl: encodeURIComponent(
                       clubModel.eventor.competitorsUrl +
                         '?organisationId=' +
                         clubModel.raceClubs.selectedClub.eventorOrganisationId
-                    ) +
-                    '&headers=' +
-                    encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
+                    ),
+                    requestMethod: 'GET',
+                    headers: encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
+                  },
                   true
                 )
                   .then((competitorsJson) => {
@@ -86,9 +90,10 @@ const ResultWizardStep1ChooseRace = inject(
                       return;
                     }
                     const competitorsPromiseis = competitorsJson.Competitor.map((c) =>
-                      GetJsonData(
-                        clubModel.corsProxy +
-                          encodeURIComponent(
+                      PostJsonData(
+                        clubModel.corsProxy,
+                        {
+                          csurl: encodeURIComponent(
                             clubModel.eventor.personResultUrl +
                               '?personId=' +
                               c.Person.PersonId +
@@ -96,9 +101,10 @@ const ResultWizardStep1ChooseRace = inject(
                               raceWizardModel.queryStartDate +
                               '&toDate=' +
                               raceWizardModel.queryEndDate
-                          ) +
-                          '&headers=' +
-                          encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
+                          ),
+                          requestMethod: 'GET',
+                          headers: encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
+                        },
                         true
                       )
                     );
@@ -164,9 +170,10 @@ const ResultWizardStep1ChooseRace = inject(
               })
             : new Promise((resolve) => resolve(undefined));
 
-          const oringenEventsPromise = GetJsonData(
-            clubModel.corsProxy +
-              encodeURIComponent(
+          const oringenEventsPromise = PostJsonData(
+            clubModel.corsProxy,
+            {
+              csurl: encodeURIComponent(
                 clubModel.eventor.eventsUrl +
                   '?organisationIds=' +
                   self.props.clubModel.eventor.oRingenOrganisationId +
@@ -175,9 +182,10 @@ const ResultWizardStep1ChooseRace = inject(
                   '&toDate=' +
                   raceWizardModel.queryEndDate +
                   '&includeAttributes=true'
-              ) +
-              '&headers=' +
-              encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
+              ),
+              requestMethod: 'GET',
+              headers: encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
+            },
             true
           );
           let [alreadySavedEventsJson, entriesJson, noEntriesJson, oringenEventsJson] = await Promise.all([
@@ -277,18 +285,20 @@ const ResultWizardStep1ChooseRace = inject(
             );
 
             const resultPromise = saved.eventorId
-              ? GetJsonData(
-                  clubModel.corsProxy +
-                    encodeURIComponent(
+              ? PostJsonData(
+                  clubModel.corsProxy,
+                  {
+                    csurl: encodeURIComponent(
                       clubModel.eventor.resultUrl +
                         '?eventId=' +
                         saved.eventorId +
                         '&organisationIds=' +
                         clubModel.raceClubs.selectedClub.eventorOrganisationId +
                         `&top=${saved.isRelay ? 30 : 15}&includeSplitTimes=true`
-                    ) +
-                    '&headers=' +
-                    encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
+                    ),
+                    requestMethod: 'GET',
+                    headers: encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
+                  },
                   false
                 )
               : new Promise((resolve) => resolve(undefined));

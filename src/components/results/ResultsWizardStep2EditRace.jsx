@@ -115,73 +115,84 @@ const ResultWizardStep2EditRace = inject(
           : new Promise((resolve) => resolve(undefined));
 
         const entriesPromise = raceWizardModel.selectedEventorId
-          ? GetJsonData(
-              clubModel.corsProxy +
-                encodeURIComponent(
+          ? PostJsonData(
+              clubModel.corsProxy,
+              {
+                csurl: encodeURIComponent(
                   clubModel.eventor.entriesUrl +
                     '?eventIds=' +
                     raceWizardModel.selectedEventorId +
                     '&organisationIds=' +
                     clubModel.raceClubs.selectedClub.eventorOrganisationId +
                     '&includeEntryFees=true'
-                ) +
-                '&headers=' +
-                encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
+                ),
+                requestMethod: 'GET',
+                headers: encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
+              },
               true
             )
           : new Promise((resolve) => resolve(undefined));
         const classPromise = raceWizardModel.selectedEventorId
-          ? GetJsonData(
-              clubModel.corsProxy +
-                encodeURIComponent(
+          ? PostJsonData(
+              clubModel.corsProxy,
+              {
+                csurl: encodeURIComponent(
                   clubModel.eventor.classesUrl +
                     '?eventId=' +
                     raceWizardModel.selectedEventorId +
                     '&includeEntryFees=true'
-                ) +
-                '&headers=' +
-                encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
+                ),
+                requestMethod: 'GET',
+                headers: encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
+              },
               false
             )
           : new Promise((resolve) => resolve(undefined));
         const resultPromise = raceWizardModel.selectedEventorId
-          ? GetJsonData(
-              clubModel.corsProxy +
-                encodeURIComponent(
+          ? PostJsonData(
+              clubModel.corsProxy,
+              {
+                csurl: encodeURIComponent(
                   clubModel.eventor.resultUrl +
                     '?eventId=' +
                     raceWizardModel.selectedEventorId +
                     '&organisationIds=' +
                     clubModel.raceClubs.selectedClub.eventorOrganisationId +
                     `&top=${raceWizardModel.selectedIsRelay ? 30 : 15}&includeSplitTimes=true`
-                ) +
-                '&headers=' +
-                encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
+                ),
+                requestMethod: 'GET',
+                headers: encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
+              },
               false
             )
           : new Promise((resolve) => resolve(undefined));
         const lengthPromise = raceWizardModel.selectedEventorId
-          ? GetJsonData(
-              clubModel.corsProxy +
-                encodeURIComponent(
+          ? PostJsonData(
+              clubModel.corsProxy,
+              {
+                csurl: encodeURIComponent(
                   clubModel.eventor.lengthUrl +
                     '?eventId=' +
                     raceWizardModel.selectedEventorId +
                     '&eventRaceId=' +
                     raceWizardModel.selectedEventorRaceId +
                     '&groupBy=EventClass'
-                ) +
-                '&noJsonConvert=true&headers=' +
-                encodeURIComponent('ApiKey: ' + self.props.clubModel.eventor.apiKey),
+                ),
+                noJsonConvert: true,
+                requestMethod: 'GET',
+                headers: encodeURIComponent('ApiKey: ' + self.props.clubModel.eventor.apiKey),
+              },
               false
             )
           : new Promise((resolve) => resolve(undefined));
         const entryFeePromise = raceWizardModel.selectedEventorId
-          ? GetJsonData(
-              clubModel.corsProxy +
-                encodeURIComponent(clubModel.eventor.entryFeeUrl + raceWizardModel.selectedEventorId) +
-                '&headers=' +
-                encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
+          ? PostJsonData(
+              clubModel.corsProxy,
+              {
+                csurl: encodeURIComponent(clubModel.eventor.entryFeeUrl + raceWizardModel.selectedEventorId),
+                requestMethod: 'GET',
+                headers: encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
+              },
               true
             )
           : new Promise((resolve) => resolve(undefined));

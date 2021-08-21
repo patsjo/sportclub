@@ -49,18 +49,20 @@ const EventSelectorWizardStep1ChooseRace = inject(
         };
 
         const alreadySavedEventsPromise = PostJsonData(url, data, true, sessionModel.authorizationHeader);
-        const eventsPromise = GetJsonData(
-          clubModel.corsProxy +
-            encodeURIComponent(
+        const eventsPromise = PostJsonData(
+          clubModel.corsProxy,
+          {
+            csurl: encodeURIComponent(
               clubModel.eventor.eventsUrl +
                 '?fromDate=' +
                 eventSelectorWizardModel.queryStartDate +
                 '&toDate=' +
                 eventSelectorWizardModel.queryEndDate +
                 '&includeAttributes=true&includeOrganisationElement=true'
-            ) +
-            '&headers=' +
-            encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
+            ),
+            requestMethod: 'GET',
+            headers: encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
+          },
           true
         );
 

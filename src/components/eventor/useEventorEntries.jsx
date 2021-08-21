@@ -42,9 +42,10 @@ const useEventorEntries = (clubModel) => {
       iToDate: toDate,
     };
     const alreadySavedEventsPromise = PostJsonData(url, queryData, true);
-    const entriesPromise = GetJsonData(
-      clubModel.corsProxyWithCache +
-        encodeURIComponent(
+    const entriesPromise = PostJsonData(
+      clubModel.corsProxyWithCache,
+      {
+        csurl: encodeURIComponent(
           clubModel.eventor.entriesUrl +
             '?organisationIds=' +
             clubModel.eventor.organisationId +
@@ -53,14 +54,16 @@ const useEventorEntries = (clubModel) => {
             '&toEventDate=' +
             toDate +
             '&includeEntryFees=true&includePersonElement=true&includeOrganisationElement=true&includeEventElement=true'
-        ) +
-        '&headers=' +
-        encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
+        ),
+        requestMethod: 'GET',
+        headers: encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
+      },
       false
     );
-    const oringenEventsPromise = GetJsonData(
-      clubModel.corsProxyWithCache +
-        encodeURIComponent(
+    const oringenEventsPromise = PostJsonData(
+      clubModel.corsProxyWithCache,
+      {
+        csurl: encodeURIComponent(
           clubModel.eventor.eventsUrl +
             '?organisationIds=' +
             clubModel.eventor.oRingenOrganisationId +
@@ -69,9 +72,10 @@ const useEventorEntries = (clubModel) => {
             '&toDate=' +
             toOringenDate +
             '&includeAttributes=true'
-        ) +
-        '&headers=' +
-        encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
+        ),
+        requestMethod: 'GET',
+        headers: encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
+      },
       false
     );
     Promise.all([alreadySavedEventsPromise, entriesPromise, oringenEventsPromise]).then(

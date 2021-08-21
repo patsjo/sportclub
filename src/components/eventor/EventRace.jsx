@@ -119,45 +119,51 @@ const EventRace = inject('clubModel')(
       // 9 Completed
       // 10 Canceled
       // 11 Reported
-      const classPromise = GetJsonData(
-        clubModel.corsProxyWithCache +
-          encodeURIComponent(
+      const classPromise = PostJsonData(
+        clubModel.corsProxyWithCache,
+        {
+          csurl: encodeURIComponent(
             clubModel.eventor.classesUrl + '?eventId=' + eventObject.eventorId + '&includeEntryFees=true'
-          ) +
-          '&headers=' +
-          encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
+          ),
+          requestMethod: 'GET',
+          headers: encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
+        },
         false
       );
       const startPromise =
         eventObject.statusId < 8
-          ? GetJsonData(
-              clubModel.corsProxyWithCache +
-                encodeURIComponent(
+          ? PostJsonData(
+              clubModel.corsProxyWithCache,
+              {
+                csurl: encodeURIComponent(
                   clubModel.eventor.startUrl +
                     '?eventId=' +
                     eventObject.eventorId +
                     '&organisationIds=' +
                     clubModel.eventor.organisationId
-                ) +
-                '&headers=' +
-                encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
+                ),
+                requestMethod: 'GET',
+                headers: encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
+              },
               false
             )
           : new Promise((resolve) => resolve(undefined));
       const resultPromise =
         eventObject.statusId >= 8 && eventObject.statusId !== 10
-          ? GetJsonData(
-              clubModel.corsProxyWithCache +
-                encodeURIComponent(
+          ? PostJsonData(
+              clubModel.corsProxyWithCache,
+              {
+                csurl: encodeURIComponent(
                   clubModel.eventor.resultUrl +
                     '?eventId=' +
                     eventObject.eventorId +
                     '&organisationIds=' +
                     clubModel.eventor.organisationId +
                     '&top=0&includeSplitTimes=true'
-                ) +
-                '&headers=' +
-                encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
+                ),
+                requestMethod: 'GET',
+                headers: encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
+              },
               false
             )
           : new Promise((resolve) => resolve(undefined));
