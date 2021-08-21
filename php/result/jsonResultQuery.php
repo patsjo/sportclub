@@ -15,6 +15,7 @@
 //# 2019-12-25  PatSjo  Initial version                      #
 //# 2021-05-12  PatSjo  Added missingTime, speedRanking and  #
 //#                     technicalRanking                     #
+//# 2021-08-21  PatSjo  Change to JSON in and out            #
 //############################################################
 
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/db.php");
@@ -23,65 +24,69 @@ include_once($_SERVER["DOCUMENT_ROOT"] . "/include/users.php");
 
 cors();
 
-$offset = 0;
-$limit = 10000;
-$iType = "";
-$iFromDate = NULL;
-$iToDate = NULL;
+// Takes raw data from the request
+$json = file_get_contents('php://input');
+// Converts it into a PHP object
+$input = json_decode($json);
+
+if(!isset($input->offset))
+{
+  $input->offset = 0;
+}
+if(!isset($input->limit))
+{
+  $input->limit = 10000;
+}
+if(!isset($input->iType))
+{
+  $input->iType = "";
+}
+if(!isset($input->iFromDate) || $input->iFromDate == "")
+{
+  $input->iFromDate = null;
+}
+else
+{
+  $input->iFromDate = string2Date($input->iFromDate);
+}
+if(!isset($input->iToDate) || $input->iToDate == "")
+{
+  $input->iToDate = null;
+}
+else
+{
+  $input->iToDate = string2Date($input->iToDate);
+}
+
 $rows = array();
 
-if(isset($_REQUEST['offset']) && $_REQUEST['offset']!="")
-{
-  $offset = intval($_REQUEST['offset']);
-}
-if(isset($_REQUEST['limit']) && $_REQUEST['limit']!="")
-{
-  $limit = intval($_REQUEST['limit']);
-}
-if(isset($_REQUEST['iType']) && $_REQUEST['iType']!="")
-{
-  $iType = $_REQUEST['iType'];
-}
-if(isset($_REQUEST['iFromDate']) && $_REQUEST['iFromDate']!="")
-{
-  $iFromDate = string2Date($_REQUEST['iFromDate']);
-}
-if(isset($_REQUEST['iToDate']) && $_REQUEST['iToDate']!="")
-{
-  $iToDate = string2Date($_REQUEST['iToDate']);
-}
-
-if ($iType == "CLUBS" || $iType == "FEES")
+if ($input->iType == "CLUBS" || $input->iType == "FEES")
 {
   ValidLogin();
 }
 
 OpenDatabase();
-if (!$db_conn->set_charset('utf8')) {
-  die('Could not set character set to latin1_swedish_ci');
-}
-if (is_null($iFromDate))
+
+if (is_null($input->iFromDate))
 {
   $whereStartDate = "";
 }
 else
 {
-  $whereStartDate = " AND DATE_FORMAT(RACEDATE, '%Y-%m-%d') >= '" . date2String($iFromDate) . "'";
+  $whereStartDate = " AND DATE_FORMAT(RACEDATE, '%Y-%m-%d') >= '" . date2String($input->iFromDate) . "'";
 }
 
-if (is_null($iToDate))
+if (is_null($input->iToDate))
 {
   $whereEndDate = "";
 }
 else
 {
-  $whereEndDate = " AND DATE_FORMAT(RACEDATE, '%Y-%m-%d') <= '" . date2String($iToDate) . "'";
+  $whereEndDate = " AND DATE_FORMAT(RACEDATE, '%Y-%m-%d') <= '" . date2String($input->iToDate) . "'";
 }
 
-if ($iType == "EVENT" || $iType == "COMPETITOR")
+if ($input->iType == "EVENT" || $input->iType == "COMPETITOR")
 {
-  $iEventId = 0;
-  $iCompetitorId = 0;
   $rows = new stdClass();
   $rows->results     = array();
   $rows->teamResults = array();
@@ -90,23 +95,14 @@ if ($iType == "EVENT" || $iType == "COMPETITOR")
   $where = "";
   $orderBy = "";
 
-  if(isset($_REQUEST['iEventId']) && $_REQUEST['iEventId']!="")
+  if ($input->iType == "EVENT")
   {
-    $iEventId = intval($_REQUEST['iEventId']);
-  }
-  if(isset($_REQUEST['iCompetitorId']) && $_REQUEST['iCompetitorId']!="")
-  {
-    $iCompetitorId = intval($_REQUEST['iCompetitorId']);
-  }
-  
-  if ($iType == "EVENT")
-  {
-    $where = "EVENT_ID = " . $iEventId;
+    $where = "EVENT_ID = " . $input->iEventId;
     $sql = "SELECT * FROM RACE_EVENT WHERE " . $where;
     $result = \db\mysql_query($sql);
     if (!$result)
     {
-      die('SQL Error: ' . \db\mysql_error());
+      trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
     }
 
     if (\db\mysql_num_rows($result) > 0)
@@ -142,7 +138,7 @@ if ($iType == "EVENT" || $iType == "COMPETITOR")
   else
   {
     $select = "E.EVENT_ID, E.EVENTOR_ID, E.EVENTOR_RACE_ID, E.NAME, E.ORGANISER_NAME, E.RACEDATE, E.RACETIME, E.SPORT_CODE, E.EVENT_CLASSIFICATION_ID, E.RACE_LIGHT_CONDITION, E.RACE_DISTANCE, ";
-    $where = " COMPETITOR_ID = " . $iCompetitorId . $whereStartDate . $whereEndDate;
+    $where = " COMPETITOR_ID = " . $input->iCompetitorId . $whereStartDate . $whereEndDate;
     $innerJoin = " INNER JOIN RACE_EVENT E ON (R.EVENT_ID = E.EVENT_ID) ";
     $orderBy = " ORDER BY E.RACEDATE, E.RACETIME ";
   }
@@ -158,7 +154,7 @@ if ($iType == "EVENT" || $iType == "COMPETITOR")
 
   if (!$result)
   {
-    die('SQL Error: ' . \db\mysql_error());
+    trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
   }
 
   if (\db\mysql_num_rows($result) > 0)
@@ -166,7 +162,7 @@ if ($iType == "EVENT" || $iType == "COMPETITOR")
     while($row = \db\mysql_fetch_assoc($result))
     {
       $x = new stdClass();
-      if ($iType == "COMPETITOR")
+      if ($input->iType == "COMPETITOR")
       {
         $x->eventId                     = intval($row['EVENT_ID']);
         $x->eventorId                   = intval($row['EVENTOR_ID']);
@@ -182,7 +178,7 @@ if ($iType == "EVENT" || $iType == "COMPETITOR")
       }
       $x->resultId                     = intval($row['RESULT_ID']);
       $x->competitorId                 = intval($row['COMPETITOR_ID']);
-      if ($iType == "EVENT")
+      if ($input->iType == "EVENT")
       {
         $x->firstName                    = $row['FIRST_NAME'];
         $x->lastName                     = $row['LAST_NAME'];
@@ -240,7 +236,7 @@ if ($iType == "EVENT" || $iType == "COMPETITOR")
 
   if (!$result)
   {
-    die('SQL Error: ' . \db\mysql_error());
+    trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
   }
 
   if (\db\mysql_num_rows($result) > 0)
@@ -248,7 +244,7 @@ if ($iType == "EVENT" || $iType == "COMPETITOR")
     while($row = \db\mysql_fetch_assoc($result))
     {
       $x = new stdClass();
-      if ($iType == "COMPETITOR")
+      if ($input->iType == "COMPETITOR")
       {
         $x->eventId                     = intval($row['EVENT_ID']);
         $x->eventorId                   = intval($row['EVENTOR_ID']);
@@ -269,7 +265,7 @@ if ($iType == "EVENT" || $iType == "COMPETITOR")
       $x->difficulty                   = $row['DIFFICULTY'];
       $x->teamName                     = $row['TEAM_NAME'];
       $x->competitorId                 = intval($row['COMPETITOR_ID']);
-      if ($iType == "EVENT")
+      if ($input->iType == "EVENT")
       {
         $x->firstName                    = $row['FIRST_NAME'];
         $x->lastName                     = $row['LAST_NAME'];
@@ -304,13 +300,13 @@ if ($iType == "EVENT" || $iType == "COMPETITOR")
     }
   }
 }
-elseif ($iType == "EVENTS")
+elseif ($input->iType == "EVENTS")
 {
   $sql = "SELECT * FROM RACE_EVENT WHERE 1=1" . $whereStartDate . $whereEndDate . " ORDER BY RACEDATE ASC";
   $result = \db\mysql_query($sql);
   if (!$result)
   {
-    die('SQL Error: ' . \db\mysql_error());
+    trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
   }
 
   if (\db\mysql_num_rows($result) > 0)
@@ -329,7 +325,7 @@ elseif ($iType == "EVENTS")
     }
   }
 }
-elseif ($iType == "CLUBS")
+elseif ($input->iType == "CLUBS")
 {
   $eventClassifications = array();
   $clubs = array();
@@ -338,7 +334,7 @@ elseif ($iType == "CLUBS")
   $result = \db\mysql_query($sql);
   if (!$result)
   {
-    die('SQL Error: ' . \db\mysql_error());
+    trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
   }
 
   if (\db\mysql_num_rows($result) > 0)
@@ -358,7 +354,7 @@ elseif ($iType == "CLUBS")
       $result2 = \db\mysql_query($sql2);
       if (!$result2)
       {
-        die('SQL Error: ' . \db\mysql_error());
+        trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
       }
     
       if (\db\mysql_num_rows($result2) > 0)
@@ -388,7 +384,7 @@ elseif ($iType == "CLUBS")
   $result = \db\mysql_query($sql);
   if (!$result)
   {
-    die('SQL Error: ' . \db\mysql_error());
+    trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
   }
 
   if (\db\mysql_num_rows($result) > 0)
@@ -405,7 +401,7 @@ elseif ($iType == "CLUBS")
       $result2 = \db\mysql_query($sql2);
       if (!$result2)
       {
-        die('SQL Error: ' . \db\mysql_error());
+        trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
       }
     
       if (\db\mysql_num_rows($result2) > 0)
@@ -426,7 +422,7 @@ elseif ($iType == "CLUBS")
           $result3 = \db\mysql_query($sql3);
           if (!$result3)
           {
-            die('SQL Error: ' . \db\mysql_error());
+            trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
           }
         
           if (\db\mysql_num_rows($result3) > 0)
@@ -452,7 +448,7 @@ elseif ($iType == "CLUBS")
     $result = \db\mysql_query($sql);
     if (!$result)
     {
-      die('SQL Error: ' . \db\mysql_error());
+      trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
     }
   
     if (\db\mysql_num_rows($result) > 0)
@@ -475,7 +471,7 @@ elseif ($iType == "CLUBS")
     $result = \db\mysql_query($sql);
     if (!$result)
     {
-      die('SQL Error: ' . \db\mysql_error());
+      trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
     }
   
     if (\db\mysql_num_rows($result) > 0)
@@ -496,13 +492,17 @@ elseif ($iType == "CLUBS")
     $rows->sports               = $sports->values;
   }
 }
-elseif ($iType == "TOP")
+elseif ($input->iType == "TOP")
 {
-  $iBirthDate = mktime(0, 0, 0, 1, 1, 1900);
-  if(isset($_REQUEST['iBirthDate']) && $_REQUEST['iBirthDate']!="")
+  if(!isset($input->iBirthDate) || $input->iBirthDate == "" || $input->iBirthDate == "null")
   {
-    $iBirthDate = string2Date($_REQUEST['iBirthDate']);
+    $input->iBirthDate = mktime(0, 0, 0, 1, 1, 1900);
   }
+  else
+  {
+    $input->iBirthDate = string2Date($input->iBirthDate);
+  }
+
   $sql = "SELECT COMPETITOR_ID, FIRST_NAME, LAST_NAME, GENDER, BIRTHDAY, AVG(RANKING) AS AVG_RANKING " .
     "FROM (SELECT RACE_EVENT_RESULTS.COMPETITOR_ID, FIRST_NAME, LAST_NAME, GENDER, BIRTHDAY, " .
     "             rank() OVER ( partition by COMPETITOR_ID order by RANKING ASC ) AS ranking_order, RANKING " .
@@ -517,7 +517,7 @@ elseif ($iType == "TOP")
     "            WHERE RANKING IS NOT NULL " . $whereStartDate . $whereEndDate . ") RACE_EVENT_RESULTS " .
     "      INNER JOIN RACE_COMPETITORS ON (RACE_EVENT_RESULTS.COMPETITOR_ID = RACE_COMPETITORS.COMPETITOR_ID) " .
     "      INNER JOIN RACE_COMPETITORS_CLUB ON (RACE_COMPETITORS.COMPETITOR_ID = RACE_COMPETITORS_CLUB.COMPETITOR_ID) " .
-    "      WHERE (END_DATE > CURDATE() OR END_DATE IS NULL) AND DATE_FORMAT(BIRTHDAY, '%Y-%m-%d') <= '" . date2String($iBirthDate) . "' " .
+    "      WHERE (END_DATE > CURDATE() OR END_DATE IS NULL) AND DATE_FORMAT(BIRTHDAY, '%Y-%m-%d') <= '" . date2String($input->iBirthDate) . "' " .
     ") ALL_RESULTS " .
     "WHERE ranking_order <= 6 " .
     "GROUP BY COMPETITOR_ID, FIRST_NAME, LAST_NAME, GENDER, BIRTHDAY " .
@@ -527,7 +527,7 @@ elseif ($iType == "TOP")
   $result = \db\mysql_query($sql);
   if (!$result)
   {
-    die('SQL Error: ' . \db\mysql_error());
+    trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
   }
 
   if (\db\mysql_num_rows($result) > 0)
@@ -544,7 +544,7 @@ elseif ($iType == "TOP")
     }
   }
 }
-elseif ($iType == "POINTS")
+elseif ($input->iType == "POINTS")
 {
   $sql = "SELECT RACE_EVENT_RESULTS.COMPETITOR_ID, FIRST_NAME, LAST_NAME, GENDER, BIRTHDAY, " .
     "   GROUP_CONCAT(POINTS SEPARATOR ',') AS POINTS," .
@@ -567,7 +567,7 @@ elseif ($iType == "POINTS")
   $result = \db\mysql_query($sql);
   if (!$result)
   {
-    die('SQL Error: ' . \db\mysql_error());
+    trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
   }
 
   if (\db\mysql_num_rows($result) > 0)
@@ -597,7 +597,7 @@ elseif ($iType == "POINTS")
     }
   }
 }
-elseif ($iType == "FEES")
+elseif ($input->iType == "FEES")
 {
   $sql = "SELECT RACE_EVENT_RESULTS.COMPETITOR_ID, FIRST_NAME, LAST_NAME," .
     "   SUM(ORIGINAL_FEE) AS ORIGINAL_FEE," .
@@ -614,7 +614,7 @@ elseif ($iType == "FEES")
   $result = \db\mysql_query($sql);
   if (!$result)
   {
-    die('SQL Error: ' . \db\mysql_error());
+    trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
   }
 
   if (\db\mysql_num_rows($result) > 0)
@@ -632,14 +632,13 @@ elseif ($iType == "FEES")
     }
   }
 }
-elseif ($iType == "COMPETITOR_INFO")
+elseif ($input->iType == "COMPETITOR_INFO")
 {
-  $iCompetitorId = intval($_REQUEST['iCompetitorId']);
-  $sql = "SELECT * FROM RACE_COMPETITORS WHERE COMPETITOR_ID = " . $iCompetitorId;
+  $sql = "SELECT * FROM RACE_COMPETITORS WHERE COMPETITOR_ID = " . $input->iCompetitorId;
   $result = \db\mysql_query($sql);
   if (!$result)
   {
-    die('SQL Error: ' . \db\mysql_error());
+    trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
   }
 
   $rows = new stdClass();
@@ -648,7 +647,7 @@ elseif ($iType == "COMPETITOR_INFO")
   {
     while($row = \db\mysql_fetch_assoc($result))
     {
-      $rows->competitorId = $iCompetitorId;
+      $rows->competitorId = $input->iCompetitorId;
       $rows->seniorAchievements = $row['SENIOR_ACHIEVEMENTS'];
       $rows->juniorAchievements = $row['JUNIOR_ACHIEVEMENTS'];
       $rows->youthAchievements = $row['YOUTH_ACHIEVEMENTS'];
@@ -658,7 +657,7 @@ elseif ($iType == "COMPETITOR_INFO")
 }
 else
 {
-  die('Wrong iType parameter');
+  trigger_error('Wrong iType parameter', E_USER_ERROR);
 }
 
 header("Access-Control-Allow-Credentials: true");
@@ -667,10 +666,10 @@ if (isset($_SERVER['HTTP_ORIGIN']))
   header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);
 }
 header("Access-Control-Allow-Headers: *");
-header("Content-Type: application/json; charset=ISO-8859-1");
+header("Content-Type: application/json");
 ini_set( 'precision', 20 );
 ini_set( 'serialize_precision', 14 );
-echo utf8_decode(json_encode($rows));
+echo json_encode($rows);
 
 \db\mysql_free_result($result);
 

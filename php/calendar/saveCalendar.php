@@ -16,7 +16,33 @@
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/db.php");
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/users.php");
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/functions.php");
-set_error_handler("error_handler");
+
+cors();
+// Takes raw data from the request
+$json = file_get_contents('php://input');
+// Converts it into a PHP object
+$input = json_decode($json);
+
+if(!isset($input->iType))
+{
+  $input->iType = "";
+}
+if(!isset($input->queryStartDate) || $input->queryStartDate == "" || $input->queryStartDate == "null")
+{
+  $input->queryStartDate = null;
+}
+else
+{
+  $input->queryStartDate = string2Date($input->queryStartDate);
+}
+if(!isset($input->queryEndDate) || $input->queryEndDate == "" || $input->queryEndDate == "null")
+{
+  $input->queryEndDate = null;
+}
+else
+{
+  $input->queryEndDate = string2Date($input->queryEndDate);
+}
 
 function dateDifference($start_date, $end_date)
 {
@@ -34,53 +60,36 @@ ValidLogin();
 header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
 header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); // Date in the past
 
-$iType = "";
-
-if (isset($_REQUEST['iType'])) {
-  $iType = $_REQUEST['iType'];
-}
-if(isset($_REQUEST['queryStartDate']) && $_REQUEST['queryStartDate']!="")
-{
-  $queryStartDate = string2Date($_REQUEST['queryStartDate']);
-}
-if(isset($_REQUEST['queryEndDate']) && $_REQUEST['queryEndDate']!="")
-{
-  $queryEndDate = string2Date($_REQUEST['queryEndDate']);
-}
-
 OpenDatabase();
-if (!$db_conn->set_charset('utf8')) {
-  die('Could not set character set to utf8');
-}
   
-if ($iType == "ACTIVITY")
+if ($input->iType == "ACTIVITY")
 {
   $x = new stdClass();
-  $x->activityId            = getRequestInt("iActivityID");
-  $x->activityTypeId        = getRequestInt("iActivityTypeID");
-  $x->groupId               = getRequestInt("iGroupID");
-  $x->date                  = getRequestDate("iActivityDay");
-  $x->time                  = getRequestTime("iActivityTime");
-  $x->activityDurationMinutes = getRequestInt("iActivityDurationMinutes");
-  $x->place                 = getRequestString("iPlace");
-  $x->header                = getRequestString("iHeader");
-  $x->description           = getRequestString("iDescr");
-  $x->url                   = getRequestString("iURL");
-  $x->longitude             = getRequestDecimal("iLongitude");
-  $x->latitude              = getRequestDecimal("iLatitude");
-  $x->responsibleUserId     = getRequestInt("iResponsibleUserID");
-  $x->firstRepeatingDate    = getRequestDate("iNewFirstRepeatingDate");
-  $x->lastRepeatingDate     = getRequestDate("iNewLastRepeatingDate");
-  $x->repeatingGid          = getRequestString("iRepeatingGid");
+  $x->activityId            = getRequestInt($input->iActivityID);
+  $x->activityTypeId        = getRequestInt($input->iActivityTypeID);
+  $x->groupId               = getRequestInt($input->iGroupID);
+  $x->date                  = getRequestDate($input->iActivityDay);
+  $x->time                  = getRequestTime($input->iActivityTime);
+  $x->activityDurationMinutes = getRequestInt($input->iActivityDurationMinutes);
+  $x->place                 = getRequestString($input->iPlace);
+  $x->header                = getRequestString($input->iHeader);
+  $x->description           = getRequestString($input->iDescr);
+  $x->url                   = getRequestString($input->iURL);
+  $x->longitude             = getRequestDecimal($input->iLongitude);
+  $x->latitude              = getRequestDecimal($input->iLatitude);
+  $x->responsibleUserId     = getRequestInt($input->iResponsibleUserID);
+  $x->firstRepeatingDate    = getRequestDate($input->iNewFirstRepeatingDate);
+  $x->lastRepeatingDate     = getRequestDate($input->iNewLastRepeatingDate);
+  $x->repeatingGid          = getRequestString($input->iRepeatingGid);
   if ($x->repeatingGid == "")
   {
     $x->repeatingGid = null;
   }
-  $x->repeatingModified     = getRequestBool("iRepeatingModified");
+  $x->repeatingModified     = getRequestBool($input->iRepeatingModified);
 
-  $isRepeating              = getRequestBool("iIsRepeating");
-  $prevFirstRepeatingDate   = getRequestDate("iFirstRepeatingDate");
-  $prevLastRepeatingDate    = getRequestDate("iLastRepeatingDate");
+  $isRepeating              = getRequestBool($input->iIsRepeating);
+  $prevFirstRepeatingDate   = getRequestDate($input->iFirstRepeatingDate);
+  $prevLastRepeatingDate    = getRequestDate($input->iLastRepeatingDate);
 
   $newDates = array();
   if ($x->activityId == 0 && !$isRepeating)
@@ -194,20 +203,20 @@ if ($iType == "ACTIVITY")
         $queryWhere;
      \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
   }
+  $input = $x;
 }
-elseif ($iType == "EVENTS")
+elseif ($input->iType == "EVENTS")
 {
   if (!(ValidGroup($cADMIN_GROUP_ID)))
   {
     NotAuthorized();
   }
-  $eventId = getRequestInt("eventId");
+  $eventId = getRequestInt($input->eventId);
 
-  $query = "DELETE FROM CALENDAR_RACE_EVENT WHERE DATE_FORMAT(RACEDATE, '%Y-%m-%d') BETWEEN '" . date2String($queryStartDate) . "' AND '" . date2String($queryEndDate) . "'";
+  $query = "DELETE FROM CALENDAR_RACE_EVENT WHERE DATE_FORMAT(RACEDATE, '%Y-%m-%d') BETWEEN '" . date2String($input->queryStartDate) . "' AND '" . date2String($input->queryEndDate) . "'";
   \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
 
-  $x = json_decode($_REQUEST['events']);
-  foreach($x as $event)
+  foreach($input->events as $event)
   {
     $query = sprintf("INSERT INTO CALENDAR_RACE_EVENT " .
                   "(" .
@@ -221,8 +230,8 @@ elseif ($iType == "EVENTS")
                   ")",
                   is_null($event->eventorId) ? "NULL" : $event->eventorId,
                   is_null($event->eventorRaceId) ? "NULL" : $event->eventorRaceId,
-                  getIso88591($event->name),
-                  getIso88591($event->organiserName),
+                  $event->name,
+                  $event->organiserName,
                   $event->raceDate,
                   is_null($event->raceTime) ? "NULL" : "'" . $event->raceDate . " " . $event->raceTime . "'",
                   is_null($event->longitude) ? "NULL" : $event->longitude,
@@ -234,14 +243,19 @@ elseif ($iType == "EVENTS")
 }
 else
 {
-  trigger_error(sprintf('Unsupported type (%s)', $iType), E_USER_ERROR);
+  trigger_error(sprintf('Unsupported type (%s)', $input->iType), E_USER_ERROR);
 }
   
-  header("Access-Control-Allow-Credentials: true");
-  header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);
-  header("Access-Control-Allow-Headers: *");
-  header("Content-Type: application/json; charset=ISO-8859-1");
-  echo utf8_decode(json_encode($x));
-  CloseDatabase();
-  exit();
+CloseDatabase();
+
+header("Access-Control-Allow-Credentials: true");
+header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);
+header("Access-Control-Allow-Headers: *");
+header("Content-Type: application/json");
+
+unset($input->iType);
+unset($input->queryStartDate);
+unset($input->queryEndDate);
+
+echo json_encode($input);
 ?>

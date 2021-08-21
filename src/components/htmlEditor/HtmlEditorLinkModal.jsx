@@ -88,7 +88,6 @@ export const HtmlEditorLinkModal = (t, linkId, menuPath, url, form, globalStateM
                 iLinkID: linkId,
                 username: sessionModel.username,
                 password: sessionModel.password,
-                jsonResponse: true,
               },
               true,
               sessionModel.authorizationHeader
@@ -114,7 +113,6 @@ export const HtmlEditorLinkModal = (t, linkId, menuPath, url, form, globalStateM
                   iLinkID: linkId,
                   username: sessionModel.username,
                   password: sessionModel.password,
-                  jsonResponse: true,
                 },
                 true,
                 sessionModel.authorizationHeader

@@ -285,20 +285,14 @@ const ResultsWizardModal = inject(
         });
 
         const snapshot = getSnapshot(raceEvent);
-        const data = {
-          ...snapshot,
-          results: JSON.stringify(snapshot.results),
-          teamResults: JSON.stringify(snapshot.teamResults),
-        };
 
         PostJsonData(
           saveUrl,
           {
-            ...data,
+            ...snapshot,
             iType: 'EVENT',
             username: sessionModel.username,
             password: sessionModel.password,
-            jsonResponse: true,
           },
           true,
           sessionModel.authorizationHeader

@@ -28,24 +28,12 @@ if (!(ValidGroup($cADMIN_GROUP_ID)))
 header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
 header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); // Date in the past
 
-$title                  = "Spara sida";
-$errCode                = 0;
-$errText                = Null;
-$x = new stdClass();
+// Takes raw data from the request
+$json = file_get_contents('php://input');
+// Converts it into a PHP object
+$input = json_decode($json);
 
-if (isset($_REQUEST['iPageID']) && is_numeric($_REQUEST['iPageID']))
-{
-  $x->pageId = intval($_REQUEST['iPageID']);
-}
-if (isset($_REQUEST['iLinkID']) && is_numeric($_REQUEST['iLinkID']))
-{
-  $x->linkId = intval($_REQUEST['iLinkID']);
-}
-if ($_REQUEST['iMenuPath'])
-{
-  $x->menuPath = getIso88591($_REQUEST['iMenuPath']);
-}
-else
+if(!isset($input->iMenuPath))
 {
   trigger_error('Felaktig parameter "iMenuPath"', E_USER_ERROR);
 }
@@ -53,38 +41,28 @@ else
 OpenDatabase();
 $now = date("Y-m-d G:i:s"); // MySQL DATETIME
 
-if (isset($x->pageId))
+if (isset($input->iPageId))
 {
-  $x->groupIds = json_decode($_REQUEST['iGroupIds']);
-  
-  if (file_exists($_FILES['iData']['tmp_name']))
+  $input->iData = \db\mysql_real_escape_string($input->iData);
+  if (!strlen($input->iData))
   {
-    $x->data = \db\mysql_real_escape_string(fread(fopen($_FILES['iData']['tmp_name'], "r"),$_FILES['iData']['size']));
-    if (!strlen($x->data))
-    {
-      trigger_error('Kunde ej läsa den uppladdade filen.', E_USER_ERROR);
-    }
-  }
-  else
-  {
-    trigger_error('Ingen fil skickad.', E_USER_ERROR);
+    trigger_error('Kunde ej läsa den uppladdade filen.', E_USER_ERROR);
   }
   
-  if ($x->pageId > 0)
+  if ($input->iPageId > 0)
   {
-    $sql = "DELETE FROM HTMLEDITOR_GROUPS WHERE PAGE_ID = " . $x->pageId;
+    $sql = "DELETE FROM HTMLEDITOR_GROUPS WHERE PAGE_ID = " . $input->iPageId;
   
     if (!\db\mysql_query($sql))
     {
-      $errCode = 1;
-      $errText = "<P>Databasfel: " . \db\mysql_error() . "</P>\n";
+      trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
     }
     
     $query = sprintf("UPDATE HTMLEDITOR_PAGES " .
                     "SET MENU_PATH = '%s', DATA = '%s'" .
-                    "WHERE PAGE_ID = " . $x->pageId,
-                    \db\mysql_real_escape_string($x->menuPath),
-                    $x->data);
+                    "WHERE PAGE_ID = " . $input->iPageId,
+                    \db\mysql_real_escape_string($input->iMenuPath),
+                    $input->iData);
     \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
   }
   else
@@ -97,22 +75,22 @@ if (isset($x->pageId))
                     "(" .
                     "  '%s', '%s'" .
                     ")",
-                    \db\mysql_real_escape_string($x->menuPath),
-                    $x->data);
+                    \db\mysql_real_escape_string($input->iMenuPath),
+                    $input->iData);
   
     \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
   
-    $x->pageId = \db\mysql_insert_id();
+    $input->iPageId = \db\mysql_insert_id();
           
-    if ($x->pageId == 0)
+    if ($input->iPageId == 0)
     {
       trigger_error("Can't get the 'page_id' auto_increment value", E_USER_ERROR);
     }
   }
-  unset($x->menuPath);
-  unset($x->data);
+  unset($input->iMenuPath);
+  unset($input->iData);
   
-  foreach($x->groupIds as $groupId)
+  foreach($input->iGroupIds as $groupId)
   {
     $query = sprintf("INSERT INTO HTMLEDITOR_GROUPS " .
                     "(" .
@@ -122,31 +100,27 @@ if (isset($x->pageId))
                     "(" .
                     "  %d, %d" .
                     ")",
-                    $x->pageId,
+                    $input->iPageId,
                     $groupId);
   
     \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
   }
-  unset($x->groupIds);
+  unset($input->iGroupIds);
 }
 else
 {
-  if ($_REQUEST['iUrl'])
-  {
-    $x->url = getIso88591($_REQUEST['iUrl']);
-  }
-  else
+  if(!isset($input->iUrl))
   {
     trigger_error('Felaktig parameter "iUrl"', E_USER_ERROR);
   }
   
-  if ($x->linkId > 0)
+  if ($input->iLinkId > 0)
   {
     $query = sprintf("UPDATE HTMLEDITOR_LINKS " .
                     "SET MENU_PATH = '%s', URL = '%s'" .
-                    "WHERE LINK_ID = " . $x->linkId,
-                    \db\mysql_real_escape_string($x->menuPath),
-                    \db\mysql_real_escape_string($x->url));
+                    "WHERE LINK_ID = " . $input->iLinkId,
+                    \db\mysql_real_escape_string($input->iMenuPath),
+                    \db\mysql_real_escape_string($input->iUrl));
     \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
   }
   else
@@ -159,26 +133,28 @@ else
                     "(" .
                     "  '%s', '%s'" .
                     ")",
-                    \db\mysql_real_escape_string($x->menuPath),
-                    \db\mysql_real_escape_string($x->url));
+                    \db\mysql_real_escape_string($input->iMenuPath),
+                    \db\mysql_real_escape_string($input->iUrl));
   
     \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
   
-    $x->linkId = \db\mysql_insert_id();
+    $input->iLinkId = \db\mysql_insert_id();
           
-    if ($x->linkId == 0)
+    if ($input->iLinkId == 0)
     {
       trigger_error("Can't get the 'link_id' auto_increment value", E_USER_ERROR);
     }
   }
-  unset($x->menuPath);
-  unset($x->url);
+  unset($input->iMenuPath);
+  unset($input->iUrl);
 }
+
+CloseDatabase();
 
 header("Access-Control-Allow-Credentials: true");
 header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);
 header("Access-Control-Allow-Headers: *");
-header("Content-Type: application/json; charset=ISO-8859-1");
-echo utf8_decode(json_encode($x));
-CloseDatabase();
+header("Content-Type: application/json");
+echo json_encode($input);
 exit();
+?>

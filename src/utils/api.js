@@ -12,54 +12,32 @@ const isJSON = input =>
       .replace(rxFour, "")
   );
 
-const isHTML = input =>
-  input.length && (input.toUpperCase().indexOf("<HTML") === 0 || input.toUpperCase().indexOf("<!DOCTYPE HTML>") === 0);
+const fetch_retry = async (url, options, throwError, n) => {
 
-const isHTMLError = input =>
-  input.length &&
-  (input.toUpperCase().indexOf("<TITLE>FELMEDDELANDE</TITLE>") >= 0 ||
-    input.toUpperCase().indexOf("<TITLE>ERROR</TITLE>") >= 0);
+  try {
+    const res = await fetch(url, options);
+    const text = await res.text();
+    let json;
 
-const getHTMLError = input => {
-  const bodyIndex = input.length && input.toUpperCase().indexOf("<BODY>");
+    if (isJSON(text)) {
+      json = JSON.parse(text); // parses response to JSON
+    }
 
-  if (bodyIndex < 0) return undefined;
+    if (!res.ok) {
+        if (json?.message)
+        throw new Error(json.message);
+      throw new Error("Bad response from server " + url);
+    }
 
-  return input
-    .substr(bodyIndex)
-    .replace(/<[^>]*>?/gm, "")
-    .split("\n")
-    .map(line => line.trim())
-    .filter(line => line.length > 0)
-    .join("\n");
-};
-
-const fetch_retry = (url, options, throwError, n) =>
-  fetch(url, options)
-    .then(res => {
-      if (!res.ok) {
-        throw new Error("Bad response from server " + url);
-      }
-      return res.text();
-    })
-    .then(text => {
-      if (!isJSON(text)) {
-        if (isHTML(text)) {
-          if (isHTMLError(text)) {
-            n = 1;
-            throw new Error(getHTMLError(text));
-          }
-          return text;
-        }
-        return undefined;
-      }
-      return JSON.parse(text); // parses response to JSON
-    })
-    .catch(error => {
-      if (n === 1 && throwError) throw new Error(error.message);
-      if (n === 1) return undefined;
-      return fetch_retry(url, options, throwError, n - 1);
-    });
+    if (json) return json;
+    return text;
+  } 
+  catch(error) {
+    if (n === 1 && throwError) throw new Error(error.message);
+    if (n === 1) return undefined;
+    return fetch_retry(url, options, throwError, n - 1);
+  }
+}
 
 export async function GetJsonData(url = "", throwError = true, requestHeaders = {}, retries = RETRIES) {
   // Default options are marked with *
@@ -72,8 +50,7 @@ export async function GetJsonData(url = "", throwError = true, requestHeaders = 
       credentials: "include", // include, *same-origin, omit
       headers: {
         ...requestHeaders,
-        Accept: "application/json,text/html"
-        // DONT USE "Content-Type": "application/x-www-form-urlencoded"
+        Accept: 'application/json',
       }
       // redirect: "follow", // manual, *follow, error
       // referrer: "no-referrer" // no-referrer, *client
@@ -83,11 +60,6 @@ export async function GetJsonData(url = "", throwError = true, requestHeaders = 
   );
 }
 export async function PostJsonData(url = "", data = {}, throwError = true, requestHeaders = {}, retries = RETRIES) {
-  const formData = new FormData();
-  for (var key in data) {
-    formData.append(key, data[key]);
-  }
-
   // Default options are marked with *
   return fetch_retry(
     url,
@@ -98,12 +70,12 @@ export async function PostJsonData(url = "", data = {}, throwError = true, reque
       credentials: "include", // include, *same-origin, omit
       headers: {
         ...requestHeaders,
-        Accept: "application/json,text/html"
-        // DONT USE "Content-Type": "application/x-www-form-urlencoded"
+        Accept: 'application/json',
+        'Content-Type': 'application/json'
       },
       // redirect: "follow", // manual, *follow, error
       // referrer: "no-referrer", // no-referrer, *client
-      body: formData // body data type must match "Content-Type" header
+      body: JSON.stringify(data) // body data type must match "Content-Type" header
     },
     throwError,
     retries

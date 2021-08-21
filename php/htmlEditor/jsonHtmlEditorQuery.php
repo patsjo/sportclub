@@ -23,24 +23,21 @@ session_start();
 global $user_id;
 setUserID();
 
-$iType = "";
+// Takes raw data from the request
+$json = file_get_contents('php://input');
+// Converts it into a PHP object
+$input = json_decode($json);
+
 $rows = array();
 
-if(isset($_REQUEST['iType']) && $_REQUEST['iType']!="")
+if(!isset($input->iType))
 {
-  $iType = $_REQUEST['iType'];
-}
-if(isset($_REQUEST['iPageID']) && $_REQUEST['iPageID']!="")
-{
-  $iPageID = $_REQUEST['iPageID'];
+  $input->iType = "";
 }
 
 OpenDatabase();
-if (!$db_conn->set_charset('utf8')) {
-  die('Could not set character set to latin1_swedish_ci');
-}
 
-if ($iType == "MENUS")
+if ($input->iType == "MENUS")
 {
   $sql = "SELECT HTMLEDITOR_PAGES.PAGE_ID, MENU_PATH," .
     "   GROUP_CONCAT(GROUP_ID SEPARATOR ',') AS GROUP_IDS " .
@@ -51,7 +48,7 @@ if ($iType == "MENUS")
   $result = \db\mysql_query($sql);
   if (!$result)
   {
-    die('SQL Error: ' . \db\mysql_error());
+    trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
   }
 
   if (\db\mysql_num_rows($result) > 0)
@@ -76,7 +73,7 @@ if ($iType == "MENUS")
   $result = \db\mysql_query($sql);
   if (!$result)
   {
-    die('SQL Error: ' . \db\mysql_error());
+    trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
   }
 
   if (\db\mysql_num_rows($result) > 0)
@@ -85,24 +82,24 @@ if ($iType == "MENUS")
     {
       $x = new stdClass();
       $x->linkId     = intval($row['LINK_ID']);
-      $x->menuPath   = isUTF8($row['MENU_PATH']) ? $row['MENU_PATH'] : utf8_encode($row['MENU_PATH']);
-      $x->url        = isUTF8($row['URL']) ? $row['URL'] : utf8_encode($row['URL']);
+      $x->menuPath   = $row['MENU_PATH'];
+      $x->url        = $row['URL'];
       array_push($rows, $x);
     }
   }
   \db\mysql_free_result($result);
 }
-elseif ($iType == "PAGE")
+elseif ($input->iType == "PAGE")
 {
   $rows = new stdClass();
   $sql = "SELECT PAGE_ID, MENU_PATH, DATA " .
     "FROM HTMLEDITOR_PAGES " .
-    "WHERE PAGE_ID = " . $iPageID;
+    "WHERE PAGE_ID = " . $input->iPageID;
 
   $result = \db\mysql_query($sql);
   if (!$result)
   {
-    die('SQL Error: ' . \db\mysql_error());
+    trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
   }
 
   $rows->pageId  = -1;
@@ -121,12 +118,12 @@ elseif ($iType == "PAGE")
   \db\mysql_free_result($result);
   $sql = "SELECT groups.group_id, groups.description, HTMLEDITOR_GROUPS.GROUP_ID AS selected_group_id " .
     "FROM groups " .
-    "LEFT OUTER JOIN HTMLEDITOR_GROUPS ON (groups.group_id = HTMLEDITOR_GROUPS.GROUP_ID AND HTMLEDITOR_GROUPS.PAGE_ID = " . $iPageID . ") ";
+    "LEFT OUTER JOIN HTMLEDITOR_GROUPS ON (groups.group_id = HTMLEDITOR_GROUPS.GROUP_ID AND HTMLEDITOR_GROUPS.PAGE_ID = " . $input->iPageID . ") ";
 
   $result = \db\mysql_query($sql);
   if (!$result)
   {
-    die('SQL Error: ' . \db\mysql_error());
+    trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
   }
 
   if (\db\mysql_num_rows($result) > 0)
@@ -154,11 +151,11 @@ elseif ($iType == "PAGE")
 }
 else
 {
-  die('Wrong iType parameter');
+  trigger_error('Wrong iType parameter', E_USER_ERROR);
 }
 
-header("Content-Type: application/json; charset=ISO-8859-1");
+header("Content-Type: application/json");
 ini_set( 'precision', 20 );
 ini_set( 'serialize_precision', 14 );
-echo utf8_decode(json_encode($rows));
+echo json_encode($rows);
 ?>

@@ -1,16 +1,16 @@
-import React, { Component } from "react";
-import { Button, Modal, Spin, Steps, message } from "antd";
-import { LeftOutlined, RightOutlined } from "@ant-design/icons";
-import PropTypes from "prop-types";
-import { observer, inject, Provider } from "mobx-react";
-import { getSnapshot } from "mobx-state-tree";
-import { withTranslation } from "react-i18next";
-import styled from "styled-components";
-import { EventSelectorWizard, getLocalStorage } from "../../../models/eventSelectorWizardModel";
-import { PostJsonData } from "../../../utils/api";
-import EventSelectorWizardStep0Input from "./EventSelectorWizardStep0Input";
-import EventSelectorWizardStep1ChooseRace from "./EventSelectorWizardStep1ChooseRace";
-import { SpinnerDiv } from "../../styled/styled";
+import React, { Component } from 'react';
+import { Button, Modal, Spin, Steps, message } from 'antd';
+import { LeftOutlined, RightOutlined } from '@ant-design/icons';
+import PropTypes from 'prop-types';
+import { observer, inject, Provider } from 'mobx-react';
+import { getSnapshot } from 'mobx-state-tree';
+import { withTranslation } from 'react-i18next';
+import styled from 'styled-components';
+import { EventSelectorWizard, getLocalStorage } from '../../../models/eventSelectorWizardModel';
+import { PostJsonData } from '../../../utils/api';
+import EventSelectorWizardStep0Input from './EventSelectorWizardStep0Input';
+import EventSelectorWizardStep1ChooseRace from './EventSelectorWizardStep1ChooseRace';
+import { SpinnerDiv } from '../../styled/styled';
 
 const StyledModalContent = styled.div``;
 const StyledSteps = styled(Steps)`
@@ -23,14 +23,14 @@ const { Step } = Steps;
 // @inject("clubModel")
 // @observer
 const EventSelectorWizardModal = inject(
-  "clubModel",
-  "sessionModel"
+  'clubModel',
+  'sessionModel'
 )(
   observer(
     class EventSelectorWizardModal extends Component {
       static propTypes = {
         open: PropTypes.bool.isRequired,
-        onClose: PropTypes.func.isRequired
+        onClose: PropTypes.func.isRequired,
       };
 
       constructor(props) {
@@ -41,19 +41,19 @@ const EventSelectorWizardModal = inject(
           nextStepValid: true,
           inputForm: undefined,
           loaded: false,
-          saving: false
+          saving: false,
         };
       }
 
       componentDidMount() {
         const self = this;
         const { clubModel, sessionModel, onClose } = this.props;
-        const url = clubModel.modules.find((module) => module.name === "Results").queryUrl;
+        const url = clubModel.modules.find((module) => module.name === 'Results').queryUrl;
 
         const clubsPromise = PostJsonData(
           url,
           {
-            iType: "CLUBS"
+            iType: 'CLUBS',
           },
           true,
           sessionModel.authorizationHeader
@@ -64,7 +64,7 @@ const EventSelectorWizardModal = inject(
             clubModel.setRaceClubs(clubsJson);
             self.setState({
               wizardStep: 0,
-              loaded: true
+              loaded: true,
             });
           })
           .catch((e) => {
@@ -82,7 +82,7 @@ const EventSelectorWizardModal = inject(
         let wizardStep = this.state.wizardStep - 1;
         this.setState({
           wizardStep,
-          nextStepValid: true
+          nextStepValid: true,
         });
       }
 
@@ -95,23 +95,22 @@ const EventSelectorWizardModal = inject(
         this.setState({ saving: true });
         const { sessionModel, clubModel } = this.props;
 
-        const calendarModule = clubModel.modules.find((module) => module.name === "Calendar");
+        const calendarModule = clubModel.modules.find((module) => module.name === 'Calendar');
         const saveUrl = calendarModule.addUrl;
         const snapshot = getSnapshot(this.eventSelectorWizardModel);
         const data = {
           queryStartDate: snapshot.queryStartDate,
           queryEndDate: snapshot.queryEndDate,
-          events: JSON.stringify(snapshot.selectedEvents)
+          events: snapshot.selectedEvents,
         };
 
         PostJsonData(
           saveUrl,
           {
             ...data,
-            iType: "EVENTS",
+            iType: 'EVENTS',
             username: sessionModel.username,
             password: sessionModel.password,
-            jsonResponse: true
           },
           true,
           sessionModel.authorizationHeader
@@ -122,7 +121,7 @@ const EventSelectorWizardModal = inject(
           .catch((e) => {
             message.error(e.message);
             self.setState({
-              saving: false
+              saving: false,
             });
           });
       }
@@ -137,7 +136,7 @@ const EventSelectorWizardModal = inject(
             <Modal
               closable={false}
               maskClosable={false}
-              title={t("calendar.EventSelector")}
+              title={t('calendar.EventSelector')}
               visible={self.props.open}
               onCancel={self.props.onClose}
               width="calc(100% - 80px)"
@@ -145,7 +144,7 @@ const EventSelectorWizardModal = inject(
               footer={[
                 <Button variant="contained" disabled={wizardStep < 1} onClick={() => self.prev()}>
                   <LeftOutlined />
-                  {t("common.Previous")}
+                  {t('common.Previous')}
                 </Button>,
                 <Button
                   variant="contained"
@@ -153,18 +152,18 @@ const EventSelectorWizardModal = inject(
                   loading={saving}
                   onClick={() => (wizardStep === 1 ? self.save() : self.next())}
                 >
-                  {wizardStep === 1 ? t("common.Save") : t("common.Next")}
+                  {wizardStep === 1 ? t('common.Save') : t('common.Next')}
                   {wizardStep === 1 ? null : <RightOutlined />}
                 </Button>,
                 <Button variant="contained" onClick={self.props.onClose} loading={false}>
-                  {t("common.Cancel")}
-                </Button>
+                  {t('common.Cancel')}
+                </Button>,
               ]}
             >
               <StyledModalContent>
                 <StyledSteps current={wizardStep}>
-                  <Step key="EventSelectorWizardModalStep0" title={t("results.Step0Input")} />
-                  <Step key="EventSelectorWizardModalStep1" title={t("results.Step1ChooseRace")} />
+                  <Step key="EventSelectorWizardModalStep0" title={t('results.Step0Input')} />
+                  <Step key="EventSelectorWizardModalStep1" title={t('results.Step1ChooseRace')} />
                 </StyledSteps>
                 {wizardStep === 0 ? (
                   <EventSelectorWizardStep0Input onMount={(form) => self.setState({ inputForm: form })} />

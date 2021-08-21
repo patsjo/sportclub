@@ -101,20 +101,14 @@ const InvoiceWizardModal = inject(
         const resultsModule = clubModel.modules.find((module) => module.name === 'Results');
         const saveUrl = raceEvent.eventId === -1 ? resultsModule.addUrl : resultsModule.updateUrl;
         const snapshot = getSnapshot(raceEvent);
-        const data = {
-          ...snapshot,
-          results: JSON.stringify(snapshot.results),
-          teamResults: JSON.stringify(snapshot.teamResults),
-        };
 
         PostJsonData(
           saveUrl,
           {
-            ...data,
+            ...snapshot,
             iType: 'EVENT_VERIFY',
             username: sessionModel.username,
             password: sessionModel.password,
-            jsonResponse: true,
           },
           true,
           sessionModel.authorizationHeader

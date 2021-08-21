@@ -13,25 +13,27 @@
 //# 2005-09-24  PatSjo  Initial version                      #
 //# 2013-12-15  PatSjo  Changed from ASP to PHP              #
 //# 2020-11-24  PatSjo  Added iRepeatingGid                  #
+//# 2021-08-21  PatSjo  Change to JSON in and out            #
 //############################################################
 
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/db.php");
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/functions.php");
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/users.php");
 
-$iActivityID         = 0;
-$iRepeatingGid       = null;
-$sql                 = "";
+// Takes raw data from the request
+$json = file_get_contents('php://input');
+// Converts it into a PHP object
+$input = json_decode($json);
 
-$title                  = "Kalender (Radera aktivitet)";
+$sql = "";
 
-if(isset($_REQUEST['iActivityID']) && $_REQUEST['iActivityID']!="")
+if(!isset($input->iActivityID) || $input->iActivityID == "")
 {
-  $iActivityID = intval($_REQUEST['iActivityID']);
+  $input->iActivityID = 0;
 }
-if(isset($_REQUEST['iRepeatingGid']) && $_REQUEST['iRepeatingGid']!="")
+if(!isset($input->iRepeatingGid) || $input->iRepeatingGid == "")
 {
-  $iRepeatingGid = $_REQUEST['iRepeatingGid'];
+  $input->iRepeatingGid = null;
 }
 
 ValidLogin();
@@ -40,42 +42,22 @@ if (!ValidGroup(8888)) //Not a admin user
   NotAuthorized();
 }
 
-htmlHeader("Värend GN, Radera aktivitet");
-
-echo "<TABLE class=\"body\">\n";
-echo "  <TR>\n";
-echo "    <TD><H1>Radera aktivitet</H1></TD>\n";
-echo "  </TR>\n";
-
 OpenDatabase();
 
-if (is_null($iRepeatingGid)) {
+if (is_null($input->iRepeatingGid)) {
   $sql = "DELETE FROM activity " .
-         "WHERE activity_id = " . $iActivityID;
+         "WHERE activity_id = " . $input->iActivityID;
 } else {
   $sql = "DELETE FROM activity " .
-         "WHERE repeating_gid = '" . $iRepeatingGid . "'";
+         "WHERE repeating_gid = '" . $input->iRepeatingGid . "'";
 }
 
 if (!\db\mysql_query($sql))
 {
-  echo "  <TR>\n";
-  echo "    <TD>Databasfel: " . \db\mysql_error() . "</TD>\n";
-  echo "  </TR>\n";
-  echo "</TABLE>\n";
-  echo "</BODY>\n";
-  echo "</HTML>\n";
-  exit(0);
+  trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
 }
 
 \db\mysql_query("COMMIT");
 
 CloseDatabase();
-
-echo "  <TR>\n";
-echo "    <TD>Posten raderad från databasen.</TD>\n";
-echo "  </TR>\n";
-echo "</TABLE>\n";
-echo "</BODY>\n";
-echo "</HTML>\n";
 ?>

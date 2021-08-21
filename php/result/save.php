@@ -14,19 +14,12 @@
 //# 2021-05-12  PatSjo  Added missingTime, speedRanking and  #
 //#                     technicalRanking                     #
 //# 2021-05-20  PatSjo  Added COMPETITOR_INFO                #
+//# 2021-08-21  PatSjo  Change to JSON in and out            #
 //############################################################
 
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/db.php");
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/users.php");
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/functions.php");
-
-function error_rollback($errno, $errstr, $errfile, $errline)
-{
-  mysqli_rollback($db_conn);
-  error_handler($errno, $errstr, $errfile, $errline);
-}
-
-set_error_handler("error_rollback");
 
 ValidLogin();
 if (!(ValidGroup($cADMIN_GROUP_ID)))
@@ -40,23 +33,24 @@ header("Access-Control-Allow-Headers: *");
 header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
 header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); // Date in the past
 
-$iType = "";
+// Takes raw data from the request
+$json = file_get_contents('php://input');
+// Converts it into a PHP object
+$input = json_decode($json);
 
-if (isset($_REQUEST['iType'])) {
-  $iType = $_REQUEST['iType'];
+if(!isset($input->iType))
+{
+  $input->iType = "";
 }
 
 OpenDatabase();
-if (!$db_conn->set_charset('utf8')) {
-  die('Could not set character set to utf8');
-}
   
-if ($iType == "COMPETITOR")
+if ($input->iType == "COMPETITOR")
 {
-  $iFirstName = stripslashes($_REQUEST['iFirstName']);
-  $iLastName = stripslashes($_REQUEST['iLastName']);
-  $iGender = stripslashes($_REQUEST['iGender']);
-  $iBirthDay = string2Date($_REQUEST['iBirthDay']);
+  $input->iFirstName = stripslashes($input->iFirstName);
+  $input->iLastName = stripslashes($input->iLastName);
+  $input->iGender = stripslashes($input->iGender);
+  $input->iBirthDay = string2Date($input->iBirthDay);
 
   $query = sprintf("INSERT INTO RACE_COMPETITORS " .
                    "(" .
@@ -64,11 +58,11 @@ if ($iType == "COMPETITOR")
                    ")" .
                    " VALUES " .
                    "(" .
-                   "  '%s', '%s', " . str_replace("''", "Null", "'" . date2String($iBirthDay) . "'") . " ,'%s' " .
+                   "  '%s', '%s', " . str_replace("''", "Null", "'" . date2String($input->iBirthDay) . "'") . " ,'%s' " .
                    ")",
-                   \db\mysql_real_escape_string($iFirstName),
-                   \db\mysql_real_escape_string($iLastName),
-                   \db\mysql_real_escape_string($iGender));
+                   \db\mysql_real_escape_string($input->iFirstName),
+                   \db\mysql_real_escape_string($input->iLastName),
+                   \db\mysql_real_escape_string($input->iGender));
 
   \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
 
@@ -79,13 +73,21 @@ if ($iType == "COMPETITOR")
     trigger_error("Can't get the 'competitor_id' auto_increment value", E_USER_ERROR);
   }
 
-  $iClubId = intval($_REQUEST['iClubId']);
-  $iStartDate = string2Date($_REQUEST['iStartDate']);
-  if (is_null($_REQUEST['iEndDate']) || $_REQUEST['iEndDate'] == "null")
+  if(!isset($input->iStartDate) || $input->iStartDate == "" || $input->iStartDate == "null")
   {
-    $iEndDate = NULL;
-  } else {
-    $iEndDate = string2Date($_REQUEST['iEndDate']);
+    $input->iStartDate = null;
+  }
+  else
+  {
+    $input->iStartDate = string2Date($input->iStartDate);
+  }
+  if(!isset($input->iEndDate) || $input->iEndDate == "" || $input->iEndDate == "null")
+  {
+    $input->iEndDate = null;
+  }
+  else
+  {
+    $input->iEndDate = string2Date($input->iEndDate);
   }
 
   $query = sprintf("INSERT INTO RACE_COMPETITORS_CLUB " .
@@ -95,17 +97,15 @@ if ($iType == "COMPETITOR")
                    " VALUES " .
                    "(" .
                    "  %d, %d, " .
-                   str_replace("''", "Null", "'" . date2String($iStartDate) . "'") . ", " .
-                   str_replace("''", "Null", "'" . date2String($iEndDate) . "'") .
+                   str_replace("''", "Null", "'" . date2String($input->iStartDate) . "'") . ", " .
+                   str_replace("''", "Null", "'" . date2String($input->iEndDate) . "'") .
                    ")",
                    $competitorId,
-                   $iClubId);
+                   $input->iClubId);
                
   \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
 
-  if (isset($_REQUEST['iEventorCompetitorId']) && !(is_null($_REQUEST['iEventorCompetitorId']) || $_REQUEST['iEventorCompetitorId'] == "null")) {
-    $iEventorCompetitorId = intval($_REQUEST['iEventorCompetitorId']);
-
+  if (isset($input->iEventorCompetitorId) && !(is_null($input->iEventorCompetitorId) || $input->iEventorCompetitorId == "null")) {
     $query = sprintf("INSERT INTO RACE_COMPETITORS_EVENTOR " .
                    "(" .
                    "  EVENTOR_COMPETITOR_ID, COMPETITOR_ID" .
@@ -114,88 +114,83 @@ if ($iType == "COMPETITOR")
                    "(" .
                    "  %d, %d" .
                    ")",
-                   $iEventorCompetitorId,
+                   $input->iEventorCompetitorId,
                    $competitorId);
 
     \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
   }
 
-      $sql2 = "SELECT * FROM RACE_COMPETITORS INNER JOIN RACE_COMPETITORS_CLUB ON (RACE_COMPETITORS.COMPETITOR_ID = RACE_COMPETITORS_CLUB.COMPETITOR_ID) WHERE RACE_COMPETITORS.COMPETITOR_ID = " . $competitorId;
-      $result2 = \db\mysql_query($sql2);
-      if (!$result2)
-      {
-        die('SQL Error: ' . \db\mysql_error());
-      }
+  $sql2 = "SELECT * FROM RACE_COMPETITORS INNER JOIN RACE_COMPETITORS_CLUB ON (RACE_COMPETITORS.COMPETITOR_ID = RACE_COMPETITORS_CLUB.COMPETITOR_ID) WHERE RACE_COMPETITORS.COMPETITOR_ID = " . $competitorId;
+  $result2 = \db\mysql_query($sql2);
+  if (!$result2)
+  {
+    trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
+  }
     
-      if (\db\mysql_num_rows($result2) > 0)
-      {
-        while($row2 = \db\mysql_fetch_assoc($result2))
-        {
-          $x = new stdClass();
-          $x->competitorId         = intval($row2['COMPETITOR_ID']);
-          $x->firstName            = $row2['FIRST_NAME'];
-          $x->lastName             = $row2['LAST_NAME'];
-          $x->birthDay             = $row2['BIRTHDAY'];
-          $x->startDate            = is_null($row2['START_DATE']) ? NULL : date2String(strtotime($row2['START_DATE']));
-          $x->endDate              = is_null($row2['END_DATE']) ? NULL : date2String(strtotime($row2['END_DATE']));
-          $x->eventorCompetitorIds = array();
+  if (\db\mysql_num_rows($result2) > 0)
+  {
+    while($row2 = \db\mysql_fetch_assoc($result2))
+    {
+      $x = new stdClass();
+      $x->competitorId         = intval($row2['COMPETITOR_ID']);
+      $x->firstName            = $row2['FIRST_NAME'];
+      $x->lastName             = $row2['LAST_NAME'];
+      $x->birthDay             = $row2['BIRTHDAY'];
+      $x->startDate            = is_null($row2['START_DATE']) ? NULL : date2String(strtotime($row2['START_DATE']));
+      $x->endDate              = is_null($row2['END_DATE']) ? NULL : date2String(strtotime($row2['END_DATE']));
+      $x->eventorCompetitorIds = array();
 
-          $sql3 = "SELECT * FROM RACE_COMPETITORS_EVENTOR WHERE COMPETITOR_ID = " . $competitorId;
-          $result3 = \db\mysql_query($sql3);
-          if (!$result3)
-          {
-            die('SQL Error: ' . \db\mysql_error());
-          }
-        
-          if (\db\mysql_num_rows($result3) > 0)
-          {
-            while($row3 = \db\mysql_fetch_assoc($result3))
-            {
-              array_push($x->eventorCompetitorIds, intval($row3['EVENTOR_COMPETITOR_ID']));
-            }    
-          }
-          \db\mysql_free_result($result3);
-        }
+      $sql3 = "SELECT * FROM RACE_COMPETITORS_EVENTOR WHERE COMPETITOR_ID = " . $competitorId;
+      $result3 = \db\mysql_query($sql3);
+      if (!$result3)
+      {
+        trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
       }
-      \db\mysql_free_result($result2);
+        
+      if (\db\mysql_num_rows($result3) > 0)
+      {
+        while($row3 = \db\mysql_fetch_assoc($result3))
+        {
+          array_push($x->eventorCompetitorIds, intval($row3['EVENTOR_COMPETITOR_ID']));
+        }    
+      }
+      \db\mysql_free_result($result3);
+    }
+  }
+  \db\mysql_free_result($result2);
 }
-elseif ($iType == "COMPETITOR_INFO")
+elseif ($input->iType == "COMPETITOR_INFO")
 {
-  $iCompetitorId = intval($_REQUEST['iCompetitorId']);
-  $iSeniorAchievements = stripslashes($_REQUEST['iSeniorAchievements']);
-  if (empty($_REQUEST['iSeniorAchievements']) || $_REQUEST['iSeniorAchievements'] == "null" || $_REQUEST['iSeniorAchievements'] == "undefined") $iSeniorAchievements = null;
-  $iJuniorAchievements = stripslashes($_REQUEST['iJuniorAchievements']);
-  if (empty($_REQUEST['iJuniorAchievements']) || $_REQUEST['iJuniorAchievements'] == "null" || $_REQUEST['iJuniorAchievements'] == "undefined") $iJuniorAchievements = null;
-  $iYouthAchievements = stripslashes($_REQUEST['iYouthAchievements']);
-  if (empty($_REQUEST['iYouthAchievements']) || $_REQUEST['iYouthAchievements'] == "null" || $_REQUEST['iYouthAchievements'] == "undefined") $iYouthAchievements = null;
-  $iThumbnail = $_REQUEST['iThumbnail'];
-  if (empty($_REQUEST['iThumbnail']) || $_REQUEST['iThumbnail'] == "null" || $_REQUEST['iThumbnail'] == "undefined") $iThumbnail = null;
+  $input->iSeniorAchievements = stripslashes($input->iSeniorAchievements);
+  if (empty($input->iSeniorAchievements) || $input->iSeniorAchievements == "null" || $input->iSeniorAchievements == "undefined") $input->iSeniorAchievements = null;
+  $input->iJuniorAchievements = stripslashes($input->iJuniorAchievements);
+  if (empty($input->iJuniorAchievements) || $input->iJuniorAchievements == "null" || $input->iJuniorAchievements == "undefined") $input->iJuniorAchievements = null;
+  $input->iYouthAchievements = stripslashes($input->iYouthAchievements);
+  if (empty($input->iYouthAchievements) || $input->iYouthAchievements == "null" || $input->iYouthAchievements == "undefined") $input->iYouthAchievements = null;
+  if (empty($input->iThumbnail) || $input->iThumbnail == "null" || $input->iThumbnail == "undefined") $input->iThumbnail = null;
 
   $query = sprintf("UPDATE RACE_COMPETITORS " .
                    "SET SENIOR_ACHIEVEMENTS = %s, " .
                    "    JUNIOR_ACHIEVEMENTS = %s, " .
                    "    YOUTH_ACHIEVEMENTS = %s, " .
                    "    THUMBNAIL = %s " .
-                   "WHERE COMPETITOR_ID = " . $iCompetitorId,
-                   is_null($iSeniorAchievements) ? "NULL" : "'" . \db\mysql_real_escape_string($iSeniorAchievements) . "'",
-                   is_null($iJuniorAchievements) ? "NULL" : "'" . \db\mysql_real_escape_string($iJuniorAchievements) . "'",
-                   is_null($iYouthAchievements) ? "NULL" : "'" . \db\mysql_real_escape_string($iYouthAchievements) . "'",
-                   is_null($iThumbnail) ? "NULL" : "'" . \db\mysql_real_escape_string($iThumbnail) . "'");
+                   "WHERE COMPETITOR_ID = " . $input->iCompetitorId,
+                   is_null($input->iSeniorAchievements) ? "NULL" : "'" . \db\mysql_real_escape_string($input->iSeniorAchievements) . "'",
+                   is_null($input->iJuniorAchievements) ? "NULL" : "'" . \db\mysql_real_escape_string($input->iJuniorAchievements) . "'",
+                   is_null($input->iYouthAchievements) ? "NULL" : "'" . \db\mysql_real_escape_string($input->iYouthAchievements) . "'",
+                   is_null($input->iThumbnail) ? "NULL" : "'" . \db\mysql_real_escape_string($input->iThumbnail) . "'");
 
   \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
 
   $x = new stdClass();
-  $x->competitorId = $iCompetitorId;
-  $x->seniorAchievements = $iSeniorAchievements;
-  $x->juniorAchievements = $iJuniorAchievements;
-  $x->youthAchievements = $iYouthAchievements;
-  $x->thumbnail = $iThumbnail;
+  $x->competitorId = $input->iCompetitorId;
+  $x->seniorAchievements = $input->iSeniorAchievements;
+  $x->juniorAchievements = $input->iJuniorAchievements;
+  $x->youthAchievements = $input->iYouthAchievements;
+  $x->thumbnail = $input->iThumbnail;
 }
-elseif ($iType == "EVENTOR_COMPETITOR_ID")
+elseif ($input->iType == "EVENTOR_COMPETITOR_ID")
 {
-    $iCompetitorId = intval($_REQUEST['iCompetitorId']);
-    $iEventorCompetitorId = intval($_REQUEST['iEventorCompetitorId']);
-
     $query = sprintf("INSERT INTO RACE_COMPETITORS_EVENTOR " .
                    "(" .
                    "  EVENTOR_COMPETITOR_ID, COMPETITOR_ID" .
@@ -204,18 +199,18 @@ elseif ($iType == "EVENTOR_COMPETITOR_ID")
                    "(" .
                    "  %d, %d" .
                    ")",
-                   $iEventorCompetitorId,
-                   $iCompetitorId);
+                   $input->iEventorCompetitorId,
+                   $input->iCompetitorId);
 
     \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
 
     $x = new stdClass();
-    $x->competitorId = $iCompetitorId;
-    $x->eventorCompetitorId = $iEventorCompetitorId;
+    $x->competitorId = $input->iCompetitorId;
+    $x->eventorCompetitorId = $input->iEventorCompetitorId;
 }
-elseif ($iType == "EVENT")
+elseif ($input->iType == "EVENT")
 {
-  $eventId = getRequestInt("eventId");
+  $eventId = getRequestInt($input->eventId);
 
   $query = "DELETE FROM RACE_EVENT_RESULTS_MULTI_DAY WHERE RESULT_ID IN (SELECT RESULT_ID FROM RACE_EVENT_RESULTS WHERE EVENT_ID = " . $eventId . ")";
   \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
@@ -230,28 +225,28 @@ elseif ($iType == "EVENT")
   \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
 
   $x = new stdClass();
-  $x->eventorId = getRequestInt("eventorId");
-  $x->eventorRaceId = getRequestInt("eventorRaceId");
-  $x->name = getRequestString("name");
-  $x->organiserName = getRequestString("organiserName");
-  $x->raceDate = getRequestDate("raceDate");
-  $raceDateTime = getRequestTime("raceTime", "raceDate");
-  $x->raceTime = getRequestTime("raceTime");
-  $x->sportCode = getRequestString("sportCode");
-  $x->isRelay = getRequestBool("isRelay");
-  $x->eventClassificationId = getRequestString("eventClassificationId");
-  $x->raceLightCondition = getRequestString("raceLightCondition");
-  $x->raceDistance = getRequestString("raceDistance");
-  $x->paymentModel = getRequestInt("paymentModel");
-  $x->meetsAwardRequirements = getRequestBool("meetsAwardRequirements");
-  $x->rankingBasetimePerKilometer = getRequestString("rankingBasetimePerKilometer");
-  $x->rankingBasepoint = getRequestDecimal("rankingBasepoint");
-  $x->rankingBaseDescription = getRequestString("rankingBaseDescription");
-  $x->longitude = getRequestDecimal("longitude");
-  $x->latitude = getRequestDecimal("latitude");
-  $x->results = json_decode($_REQUEST['results']);
-  $x->teamResults = json_decode($_REQUEST['teamResults']);
-  $x->invoiceVerified = getRequestBool("invoiceVerified");
+  $x->eventorId = getRequestInt($input->eventorId);
+  $x->eventorRaceId = getRequestInt($input->eventorRaceId);
+  $x->name = getRequestString($input->name);
+  $x->organiserName = getRequestString($input->organiserName);
+  $x->raceDate = getRequestDate($input->raceDate);
+  $raceDateTime = getRequestTime($input->raceTime, $input->raceDate);
+  $x->raceTime = getRequestTime($input->raceTime);
+  $x->sportCode = getRequestString($input->sportCode);
+  $x->isRelay = getRequestBool($input->isRelay);
+  $x->eventClassificationId = getRequestString($input->eventClassificationId);
+  $x->raceLightCondition = getRequestString($input->raceLightCondition);
+  $x->raceDistance = getRequestString($input->raceDistance);
+  $x->paymentModel = getRequestInt($input->paymentModel);
+  $x->meetsAwardRequirements = getRequestBool($input->meetsAwardRequirements);
+  $x->rankingBasetimePerKilometer = getRequestString($input->rankingBasetimePerKilometer);
+  $x->rankingBasepoint = getRequestDecimal($input->rankingBasepoint);
+  $x->rankingBaseDescription = getRequestString($input->rankingBaseDescription);
+  $x->longitude = getRequestDecimal($input->longitude);
+  $x->latitude = getRequestDecimal($input->latitude);
+  $x->results = $input->results;
+  $x->teamResults = $input->teamResults;
+  $x->invoiceVerified = getRequestBool($input->invoiceVerified);
 
   $query = sprintf("INSERT INTO RACE_EVENT " .
                  "(" .
@@ -410,13 +405,13 @@ elseif ($iType == "EVENT")
     $result->teamResultId = \db\mysql_insert_id();
   }
 }
-elseif ($iType == "EVENT_VERIFY")
+elseif ($input->iType == "EVENT_VERIFY")
 {
   $x = new stdClass();
-  $x->eventId = getRequestInt("eventId");
-  $x->results = json_decode($_REQUEST['results']);
-  $x->teamResults = json_decode($_REQUEST['teamResults']);
-  $x->invoiceVerified = getRequestBool("invoiceVerified");
+  $x->eventId = getRequestInt($input->eventId);
+  $x->results = $input->results;
+  $x->teamResults = $input->teamResults;
+  $x->invoiceVerified = getRequestBool($input->invoiceVerified);
 
   $query = "UPDATE RACE_EVENT " .
     "SET INVOICE_VERIFIED = " . intval($x->invoiceVerified) . " " .
@@ -455,13 +450,13 @@ elseif ($iType == "EVENT_VERIFY")
 }
 else
 {
-  trigger_error(sprintf('Unsupported type (%s)', $iType), E_USER_ERROR);
+  trigger_error(sprintf('Unsupported type (%s)', $input->iType), E_USER_ERROR);
 }
   
-  mysqli_commit($db_conn);
+mysqli_commit($db_conn);
+CloseDatabase();
 
-  header("Content-Type: application/json; charset=ISO-8859-1");
-  echo utf8_decode(json_encode($x));
-  CloseDatabase();
-  exit();
+header("Content-Type: application/json");
+echo json_encode($x);
+exit();
 ?>

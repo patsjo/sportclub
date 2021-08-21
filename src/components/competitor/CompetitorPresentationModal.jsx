@@ -52,7 +52,6 @@ const CompetitorPresentationModal = inject(
           iType: 'COMPETITOR_INFO',
           username: sessionModel.username,
           password: sessionModel.password,
-          jsonResponse: true,
         },
         true,
         sessionModel.authorizationHeader

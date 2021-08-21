@@ -71,7 +71,6 @@ const NewsEdit = inject(
           ...values,
           username: sessionModel.username,
           password: sessionModel.password,
-          jsonResponse: true,
         },
         true,
         sessionModel.authorizationHeader

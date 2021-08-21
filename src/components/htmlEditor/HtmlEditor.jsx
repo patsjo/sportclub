@@ -143,17 +143,15 @@ const HtmlEditor = inject(
 
       setSaving(true);
       form.validateFields().then((values) => {
-        values.iData = new Blob([htmlData], { type: 'text/plain', lastModified: new Date(0) });
-        values.iData.name = 'data.html';
         PostJsonData(
           saveUrl,
           {
             ...values,
+            iData: htmlData,
             iPageID: pageId,
-            iGroupIds: JSON.stringify(values.iGroupIds),
+            iGroupIds: values.iGroupIds,
             username: sessionModel.username,
             password: sessionModel.password,
-            jsonResponse: true,
           },
           true,
           sessionModel.authorizationHeader

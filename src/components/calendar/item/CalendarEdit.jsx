@@ -104,6 +104,12 @@ const CalendarEdit = inject(
             ? values.iActivityTime.format(timeFormat)
             : values.iActivityTime;
         values.iIsRepeating = isRepeating;
+        values.iFirstRepeatingDate = null;
+        values.iLastRepeatingDate = null;
+        values.iNewFirstRepeatingDate = null;
+        values.iNewLastRepeatingDate = null;
+        values.iRepeatingDates = null;
+        values.iRepeatingModified = !!values.iRepeatingModified;
 
         if (isRepeating) {
           values.iFirstRepeatingDate =
@@ -133,7 +139,6 @@ const CalendarEdit = inject(
             iType: 'ACTIVITY',
             username: sessionModel.username,
             password: sessionModel.password,
-            jsonResponse: true,
           },
           true,
           sessionModel.authorizationHeader

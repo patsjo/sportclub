@@ -21,53 +21,60 @@ include_once($_SERVER["DOCUMENT_ROOT"] . "/include/users.php");
 
 cors();
 
-$iType = "";
-$iFromDate = NULL;
-$iToDate = NULL;
+// Takes raw data from the request
+$json = file_get_contents('php://input');
+// Converts it into a PHP object
+$input = json_decode($json);
+
 $rows = array();
 
-if(isset($_REQUEST['iType']) && $_REQUEST['iType']!="")
+if(!isset($input->iType))
 {
-  $iType = $_REQUEST['iType'];
+  $input->iType = "";
 }
-if(isset($_REQUEST['iFromDate']) && $_REQUEST['iFromDate']!="")
+if(!isset($input->iFromDate) || $input->iFromDate == "" || $input->iFromDate == "null")
 {
-  $iFromDate = string2Date($_REQUEST['iFromDate']);
+  $input->iFromDate = null;
 }
-if(isset($_REQUEST['iToDate']) && $_REQUEST['iToDate']!="")
+else
 {
-  $iToDate = string2Date($_REQUEST['iToDate']);
+  $input->iFromDate = string2Date($input->iFromDate);
+}
+if(!isset($input->iToDate) || $input->iToDate == "" || $input->iToDate == "null")
+{
+  $input->iToDate = null;
+}
+else
+{
+  $input->iToDate = string2Date($input->iToDate);
 }
 
 OpenDatabase();
-if (!$db_conn->set_charset('utf8')) {
-  die('Could not set character set to latin1_swedish_ci');
-}
-if (is_null($iFromDate))
+if (is_null($input->iFromDate))
 {
   $whereStartDate = "";
 }
 else
 {
-  $whereStartDate = " AND DATE_FORMAT(activity_day, '%Y-%m-%d') >= '" . date2String($iFromDate) . "'";
+  $whereStartDate = " AND DATE_FORMAT(activity_day, '%Y-%m-%d') >= '" . date2String($input->iFromDate) . "'";
 }
 
-if (is_null($iToDate))
+if (is_null($input->iToDate))
 {
   $whereEndDate = "";
 }
 else
 {
-  $whereEndDate = " AND DATE_FORMAT(activity_day, '%Y-%m-%d') <= '" . date2String($iToDate) . "'";
+  $whereEndDate = " AND DATE_FORMAT(activity_day, '%Y-%m-%d') <= '" . date2String($input->iToDate) . "'";
 }
 
-if ($iType == "ACTIVITIES")
+if ($input->iType == "ACTIVITIES")
 {
   $sql = "SELECT * FROM activity WHERE 1=1" . $whereStartDate . $whereEndDate . " ORDER BY activity_day ASC, activity_time ASC";
   $result = \db\mysql_query($sql);
   if (!$result)
   {
-    die('SQL Error: ' . \db\mysql_error());
+    trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
   }
 
   if (\db\mysql_num_rows($result) > 0)
@@ -95,7 +102,7 @@ if ($iType == "ACTIVITIES")
         $result2 = \db\mysql_query($sql2);
         if (!$result2)
         {
-          die('SQL Error: ' . \db\mysql_error());
+          trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
         }
       
         if (\db\mysql_num_rows($result2) > 0)
@@ -113,31 +120,31 @@ if ($iType == "ACTIVITIES")
   }
 
 }
-elseif ($iType == "EVENTS")
+elseif ($input->iType == "EVENTS")
 {
-  if (is_null($iFromDate))
+  if (is_null($input->iFromDate))
   {
     $whereStartDate = "";
   }
   else
   {
-    $whereStartDate = " AND DATE_FORMAT(RACEDATE, '%Y-%m-%d') >= '" . date2String($iFromDate) . "'";
+    $whereStartDate = " AND DATE_FORMAT(RACEDATE, '%Y-%m-%d') >= '" . date2String($input->iFromDate) . "'";
   }
 
-  if (is_null($iToDate))
+  if (is_null($input->iToDate))
   {
     $whereEndDate = "";
   }
   else
   {
-    $whereEndDate = " AND DATE_FORMAT(RACEDATE, '%Y-%m-%d') <= '" . date2String($iToDate) . "'";
+    $whereEndDate = " AND DATE_FORMAT(RACEDATE, '%Y-%m-%d') <= '" . date2String($input->iToDate) . "'";
   }
 
   $sql = "SELECT * FROM CALENDAR_RACE_EVENT WHERE 1=1" . $whereStartDate . $whereEndDate . " ORDER BY RACEDATE ASC, RACETIME ASC";
   $result = \db\mysql_query($sql);
   if (!$result)
   {
-    die('SQL Error: ' . \db\mysql_error());
+    trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
   }
 
   if (\db\mysql_num_rows($result) > 0)
@@ -158,7 +165,7 @@ elseif ($iType == "EVENTS")
     }
   }
 }
-elseif ($iType == "DOMAINS")
+elseif ($input->iType == "DOMAINS")
 {
   $rows = new stdClass();
   $rows->activityTypes = array();
@@ -169,7 +176,7 @@ elseif ($iType == "DOMAINS")
   $result = \db\mysql_query($sql);
   if (!$result)
   {
-    die('SQL Error: ' . \db\mysql_error());
+    trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
   }
 
   if (\db\mysql_num_rows($result) > 0)
@@ -188,7 +195,7 @@ elseif ($iType == "DOMAINS")
   $result = \db\mysql_query($sql);
   if (!$result)
   {
-    die('SQL Error: ' . \db\mysql_error());
+    trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
   }
 
   $x = new stdClass();
@@ -212,7 +219,7 @@ elseif ($iType == "DOMAINS")
   $result = \db\mysql_query($sql);
   if (!$result)
   {
-    die('SQL Error: ' . \db\mysql_error());
+    trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
   }
 
   if (\db\mysql_num_rows($result) > 0)
@@ -228,15 +235,14 @@ elseif ($iType == "DOMAINS")
 }
 else
 {
-  die('Wrong iType parameter');
+  trigger_error('Wrong iType parameter', E_USER_ERROR);
 }
 
 \db\mysql_free_result($result);
 
-header("Content-Type: application/json; charset=ISO-8859-1");
+header("Content-Type: application/json");
 ini_set( 'precision', 20 );
 ini_set( 'serialize_precision', 14 );
-echo utf8_decode(json_encode($rows));
-
+echo json_encode($rows);
 
 ?>
