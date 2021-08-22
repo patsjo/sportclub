@@ -8,6 +8,7 @@ import { PostJsonData } from '../../utils/api';
 import moment from 'moment';
 import UploadDragger from '../formItems/UploadDragger';
 import FormItem from '../formItems/FormItem';
+import { getFileType, fileAsBase64 } from '../../utils/fileHelper';
 
 const { TextArea } = Input;
 const StyledModal = styled(Modal)`
@@ -44,46 +45,49 @@ const NewsEdit = inject(
       }, 0);
     }, [form, open]);
 
-    const onSave = useCallback((values) => {
+    const onSave = useCallback(async (values) => {
       const newsModule = clubModel.modules.find((module) => module.name === 'News');
       const saveUrl = values.iNewsID === -1 ? newsModule.addUrl : newsModule.updateUrl;
-
-      setSaving(true);
-      values.iExpireDate =
-        values.iExpireDate && typeof values.iExpireDate.format === 'function'
-          ? values.iExpireDate.format(dateFormat)
-          : values.iExpireDate;
-      if (!Array.isArray(values.iFiles)) {
-        values.iFiles = [];
+      try {
+        setSaving(true);
+        values.iExpireDate =
+          values.iExpireDate && typeof values.iExpireDate.format === 'function'
+            ? values.iExpireDate.format(dateFormat)
+            : values.iExpireDate;
+        if (!Array.isArray(values.iFiles)) {
+          values.iFiles = [];
+        }
+        values.iMimeType = null;
+        values.iFileSize = null;
+        if (values.iFiles.length === 0) {
+          values.iFileID = 0;
+        } else if (values.iFiles[0].originalFile) {
+          values.iFileID = values.iFiles[0].uid;
+        } else {
+          values.iFileID = -1;
+          values.iFileData = await fileAsBase64(values.iFiles[0].originFileObj);
+          values.iMimeType = getFileType(values.iFiles[0]);
+          values.iFileSize = values.iFiles[0].size;
+          values.iFileName = values.iFiles[0].name;
+        }
+        values.iFiles = undefined;
+        const newsObjectResponse = await PostJsonData(
+          saveUrl,
+          {
+            ...values,
+            username: sessionModel.username,
+            password: sessionModel.password,
+          },
+          true,
+          sessionModel.authorizationHeader
+        );
+        onChange && onChange(newsObjectResponse);
+        setSaving(false);
+        onClose();
+      } catch (e) {
+        message.error(e.message);
+        setSaving(false);
       }
-      if (values.iFiles.length === 0) {
-        values.iFileID = 0;
-      } else if (values.iFiles[0].originalFile) {
-        values.iFileID = values.iFiles[0].uid;
-      } else {
-        values.iFileID = -1;
-        values.iFileData = values.iFiles[0].originFileObj;
-      }
-      values.iFiles = undefined;
-      PostJsonData(
-        saveUrl,
-        {
-          ...values,
-          username: sessionModel.username,
-          password: sessionModel.password,
-        },
-        true,
-        sessionModel.authorizationHeader
-      )
-        .then((newsObjectResponse) => {
-          onChange && onChange(newsObjectResponse);
-          setSaving(false);
-          onClose();
-        })
-        .catch((e) => {
-          message.error(e.message);
-          setSaving(false);
-        });
     }, []);
 
     return (

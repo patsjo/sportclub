@@ -71,45 +71,35 @@ if(!isset($input->iFileID))
 if ($input->iFileID == -1) // New File to upload
 {
   $is_new_file_uploaded = true;
-  if ($_FILES['iFileData']['error'] == 4)
+  if (!isset($input->iFileData) || !isset($input->iMimeType) || !isset($input->iFileSize) || !isset($input->iFileName))
   {
     trigger_error('Felaktig parameter "Filnamn", fil saknas.', E_USER_ERROR);
   }
-  else if ($_FILES['iFileData']['error'] != 0)
-  {
-    trigger_error('Felaktig parameter "Filnamn", kunde ej ladda upp filen.', E_USER_ERROR);
-  }
-  $file_name = $_FILES['iFileData']['name'];
-  if (strlen($file_name) > 255)
+  if (strlen($input->iFileName) > 255)
   {
     trigger_error('Felaktig parameter "Filnamn", fler än 255 tecken.', E_USER_ERROR);
   }
-  $file_size = $_FILES['iFileData']['size'];
-  $mime_type = $_FILES['iFileData']['type'];
 
-  if ($file_size <= 0)
+  if ($input->iFileSize <= 0)
   {
     trigger_error('Ny bild/fil vald, men ingen fil skickad.', E_USER_ERROR);
   }
-  if ($file_size > 2000000) // Don't allow bigger than 2MB
+  if ($input->iFileSize > 10000000) // Don't allow bigger than 10MB
   {
-    trigger_error('Bild/fil är större än 2MB.', E_USER_ERROR);
+    trigger_error('Bild/fil är större än 10MB.', E_USER_ERROR);
   }
 
-  if (file_exists($_FILES['iFileData']['tmp_name']))
+  $decoded_filedata = base64_decode($input->iFileData);
+  $input->iFileData = \db\mysql_real_escape_string($decoded_filedata);
+  if (!strlen($input->iFileData))
   {
-    $iFileData = \db\mysql_real_escape_string(fread(fopen($_FILES['iFileData']['tmp_name'], "r"),$_FILES['iFileData']['size']));
-    if (!strlen($iFileData))
-    {
-      trigger_error('Kunde ej läsa den uppladdade bilden/filen.', E_USER_ERROR);
-    }
+    trigger_error('Kunde ej läsa den uppladdade bilden/filen.', E_USER_ERROR);
   }
-  else
-  {
-    trigger_error('Ny bild/fil vald, men ingen fil skickad.', E_USER_ERROR);
-  }
-
-  list($image_width, $image_height, $image_type, $image_attr) = @getimagesize($_FILES['iFileData']['tmp_name']);
+  
+  $cache_file = $_SERVER["DOCUMENT_ROOT"] . '/cache/' . $input->iFileName;
+  file_put_contents($cache_file, $decoded_filedata, LOCK_EX);
+  list($image_width, $image_height, $image_type, $image_attr) = @getimagesize('file://' . $cache_file);
+  unlink($cache_file);
 }
 
 $iUpdateModificationDate = getRequestBool($input->iUpdateModificationDate);
@@ -155,11 +145,11 @@ if ($input->iFileID == -1) // New File
                    "  '%s', %d, %d, '%s', '%s', %d, %d, " .
                    "  %d, %d, '%s'" .
                    ")",
-                   \db\mysql_real_escape_string($file_name),
+                   \db\mysql_real_escape_string($input->iFileName),
                    1,
-                   $file_size,
-                   $iFileData,
-                   \db\mysql_real_escape_string($mime_type),
+                   $input->iFileSize,
+                   $input->iFileData,
+                   \db\mysql_real_escape_string($input->iMimeType),
                    $image_width,
                    $image_height,
                    0,
