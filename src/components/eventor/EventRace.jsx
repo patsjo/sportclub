@@ -120,20 +120,19 @@ const EventRace = inject('clubModel')(
       // 10 Canceled
       // 11 Reported
       const classPromise = PostJsonData(
-        clubModel.corsProxyWithCache,
+        clubModel.corsProxy,
         {
           csurl: encodeURIComponent(
             clubModel.eventor.classesUrl + '?eventId=' + eventObject.eventorId + '&includeEntryFees=true'
           ),
-          requestMethod: 'GET',
-          headers: encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
+          cache: true,
         },
         false
       );
       const startPromise =
         eventObject.statusId < 8
           ? PostJsonData(
-              clubModel.corsProxyWithCache,
+              clubModel.corsProxy,
               {
                 csurl: encodeURIComponent(
                   clubModel.eventor.startUrl +
@@ -142,8 +141,7 @@ const EventRace = inject('clubModel')(
                     '&organisationIds=' +
                     clubModel.eventor.organisationId
                 ),
-                requestMethod: 'GET',
-                headers: encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
+                cache: true,
               },
               false
             )
@@ -151,7 +149,7 @@ const EventRace = inject('clubModel')(
       const resultPromise =
         eventObject.statusId >= 8 && eventObject.statusId !== 10
           ? PostJsonData(
-              clubModel.corsProxyWithCache,
+              clubModel.corsProxy,
               {
                 csurl: encodeURIComponent(
                   clubModel.eventor.resultUrl +
@@ -161,8 +159,7 @@ const EventRace = inject('clubModel')(
                     clubModel.eventor.organisationId +
                     '&top=0&includeSplitTimes=true'
                 ),
-                requestMethod: 'GET',
-                headers: encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
+                cache: true,
               },
               false
             )

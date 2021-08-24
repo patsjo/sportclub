@@ -9,14 +9,14 @@ import organisationJson from './eventorOrganisations2020';
 const flatten = (list) => list.reduce((a, b) => a.concat(Array.isArray(b) ? flatten(b) : b), []);
 const MakeArray = (object) => (!object ? [] : Array.isArray(object) ? object : [object]);
 const distanceKm = (lat1, lon1, lat2, lon2) => {
-  var R = 6371; // km (change this constant to get miles)
-  var dLat = ((lat2 - lat1) * Math.PI) / 180;
-  var dLon = ((lon2 - lon1) * Math.PI) / 180;
-  var a =
+  let R = 6371; // km (change this constant to get miles)
+  let dLat = ((lat2 - lat1) * Math.PI) / 180;
+  let dLon = ((lon2 - lon1) * Math.PI) / 180;
+  let a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  var d = R * c;
+  let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  let d = R * c;
   return Math.round(d);
 };
 
@@ -60,8 +60,6 @@ const EventSelectorWizardStep1ChooseRace = inject(
                 eventSelectorWizardModel.queryEndDate +
                 '&includeAttributes=true&includeOrganisationElement=true'
             ),
-            requestMethod: 'GET',
-            headers: encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
           },
           true
         );

@@ -126,8 +126,6 @@ const ResultWizardStep2EditRace = inject(
                     clubModel.raceClubs.selectedClub.eventorOrganisationId +
                     '&includeEntryFees=true'
                 ),
-                requestMethod: 'GET',
-                headers: encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
               },
               true
             )
@@ -142,8 +140,6 @@ const ResultWizardStep2EditRace = inject(
                     raceWizardModel.selectedEventorId +
                     '&includeEntryFees=true'
                 ),
-                requestMethod: 'GET',
-                headers: encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
               },
               false
             )
@@ -160,8 +156,6 @@ const ResultWizardStep2EditRace = inject(
                     clubModel.raceClubs.selectedClub.eventorOrganisationId +
                     `&top=${raceWizardModel.selectedIsRelay ? 30 : 15}&includeSplitTimes=true`
                 ),
-                requestMethod: 'GET',
-                headers: encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
               },
               false
             )
@@ -178,9 +172,6 @@ const ResultWizardStep2EditRace = inject(
                     raceWizardModel.selectedEventorRaceId +
                     '&groupBy=EventClass'
                 ),
-                noJsonConvert: true,
-                requestMethod: 'GET',
-                headers: encodeURIComponent('ApiKey: ' + self.props.clubModel.eventor.apiKey),
               },
               false
             )
@@ -190,8 +181,6 @@ const ResultWizardStep2EditRace = inject(
               clubModel.corsProxy,
               {
                 csurl: encodeURIComponent(clubModel.eventor.entryFeeUrl + raceWizardModel.selectedEventorId),
-                requestMethod: 'GET',
-                headers: encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
               },
               true
             )

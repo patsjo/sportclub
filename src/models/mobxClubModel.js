@@ -87,8 +87,6 @@ const Eventor = types.model({
   competitorsUrl: types.optional(types.string, "https://eventor.orientering.se/api/competitors"),
   personResultUrl: types.optional(types.string, "https://eventor.orientering.se/api/results/person"),
   externalLoginUrl: types.optional(types.string, "https://eventor.orientering.se/api/externalLoginUrl"),
-  headers: types.maybe(types.string),
-  apiKey: types.maybe(types.string),
   organisationId: types.integer,
   oRingenOrganisationId: types.optional(types.integer, 611)
 });
@@ -179,7 +177,6 @@ export const MobxClubModel = types
     eventor: types.maybe(Eventor),
     raceClubs: types.maybe(RaceClubs),
     corsProxy: types.maybe(types.string),
-    corsProxyWithCache: types.maybe(types.string),
     oldUrl: types.maybe(types.string),
     sponsors: types.array(Sponsor),
     facebookUrl: types.maybe(types.string)

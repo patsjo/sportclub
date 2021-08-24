@@ -43,7 +43,7 @@ const useEventorEntries = (clubModel) => {
     };
     const alreadySavedEventsPromise = PostJsonData(url, queryData, true);
     const entriesPromise = PostJsonData(
-      clubModel.corsProxyWithCache,
+      clubModel.corsProxy,
       {
         csurl: encodeURIComponent(
           clubModel.eventor.entriesUrl +
@@ -55,13 +55,12 @@ const useEventorEntries = (clubModel) => {
             toDate +
             '&includeEntryFees=true&includePersonElement=true&includeOrganisationElement=true&includeEventElement=true'
         ),
-        requestMethod: 'GET',
-        headers: encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
+        cache: true,
       },
       false
     );
     const oringenEventsPromise = PostJsonData(
-      clubModel.corsProxyWithCache,
+      clubModel.corsProxy,
       {
         csurl: encodeURIComponent(
           clubModel.eventor.eventsUrl +
@@ -73,8 +72,7 @@ const useEventorEntries = (clubModel) => {
             toOringenDate +
             '&includeAttributes=true'
         ),
-        requestMethod: 'GET',
-        headers: encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
+        cache: true,
       },
       false
     );

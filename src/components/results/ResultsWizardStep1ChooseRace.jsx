@@ -51,8 +51,6 @@ const ResultWizardStep1ChooseRace = inject(
                 raceWizardModel.queryEndDate +
                 '&includeEntryFees=true&includePersonElement=true&includeOrganisationElement=true&includeEventElement=true'
             ),
-            requestMethod: 'GET',
-            headers: encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
           },
           true
         );
@@ -66,8 +64,6 @@ const ResultWizardStep1ChooseRace = inject(
                       '?organisationId=' +
                       clubModel.raceClubs.selectedClub.eventorOrganisationId
                   ),
-                  requestMethod: 'GET',
-                  headers: encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
                 },
                 true
               )
@@ -89,8 +85,6 @@ const ResultWizardStep1ChooseRace = inject(
                             '&toDate=' +
                             raceWizardModel.queryEndDate
                         ),
-                        requestMethod: 'GET',
-                        headers: encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
                       },
                       true
                     )
@@ -170,8 +164,6 @@ const ResultWizardStep1ChooseRace = inject(
                 raceWizardModel.queryEndDate +
                 '&includeAttributes=true'
             ),
-            requestMethod: 'GET',
-            headers: encodeURIComponent('ApiKey: ' + clubModel.eventor.apiKey),
           },
           true
         );
