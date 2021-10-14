@@ -41,17 +41,17 @@ if(!isset($input->iMenuPath))
 OpenDatabase();
 $now = date("Y-m-d G:i:s"); // MySQL DATETIME
 
-if (isset($input->iPageId))
+if (isset($input->iPageID))
 {
   $input->iData = \db\mysql_real_escape_string($input->iData);
   if (!strlen($input->iData))
   {
-    trigger_error('Kunde ej läsa den uppladdade filen.', E_USER_ERROR);
+    trigger_error('Kunde ej lï¿½sa den uppladdade filen.', E_USER_ERROR);
   }
   
-  if ($input->iPageId > 0)
+  if ($input->iPageID > 0)
   {
-    $sql = "DELETE FROM HTMLEDITOR_GROUPS WHERE PAGE_ID = " . $input->iPageId;
+    $sql = "DELETE FROM HTMLEDITOR_GROUPS WHERE PAGE_ID = " . $input->iPageID;
   
     if (!\db\mysql_query($sql))
     {
@@ -60,7 +60,7 @@ if (isset($input->iPageId))
     
     $query = sprintf("UPDATE HTMLEDITOR_PAGES " .
                     "SET MENU_PATH = '%s', DATA = '%s'" .
-                    "WHERE PAGE_ID = " . $input->iPageId,
+                    "WHERE PAGE_ID = " . $input->iPageID,
                     \db\mysql_real_escape_string($input->iMenuPath),
                     $input->iData);
     \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
@@ -80,9 +80,9 @@ if (isset($input->iPageId))
   
     \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
   
-    $input->iPageId = \db\mysql_insert_id();
+    $input->iPageID = \db\mysql_insert_id();
           
-    if ($input->iPageId == 0)
+    if ($input->iPageID == 0)
     {
       trigger_error("Can't get the 'page_id' auto_increment value", E_USER_ERROR);
     }
@@ -100,7 +100,7 @@ if (isset($input->iPageId))
                     "(" .
                     "  %d, %d" .
                     ")",
-                    $input->iPageId,
+                    $input->iPageID,
                     $groupId);
   
     \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
@@ -114,11 +114,11 @@ else
     trigger_error('Felaktig parameter "iUrl"', E_USER_ERROR);
   }
   
-  if ($input->iLinkId > 0)
+  if ($input->iLinkID > 0)
   {
     $query = sprintf("UPDATE HTMLEDITOR_LINKS " .
                     "SET MENU_PATH = '%s', URL = '%s'" .
-                    "WHERE LINK_ID = " . $input->iLinkId,
+                    "WHERE LINK_ID = " . $input->iLinkID,
                     \db\mysql_real_escape_string($input->iMenuPath),
                     \db\mysql_real_escape_string($input->iUrl));
     \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
@@ -138,9 +138,9 @@ else
   
     \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
   
-    $input->iLinkId = \db\mysql_insert_id();
+    $input->iLinkID = \db\mysql_insert_id();
           
-    if ($input->iLinkId == 0)
+    if ($input->iLinkID == 0)
     {
       trigger_error("Can't get the 'link_id' auto_increment value", E_USER_ERROR);
     }

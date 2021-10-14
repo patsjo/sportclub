@@ -211,7 +211,6 @@ elseif ($input->iType == "EVENTS")
   {
     NotAuthorized();
   }
-  $eventId = getRequestInt($input->eventId);
 
   $query = "DELETE FROM CALENDAR_RACE_EVENT WHERE DATE_FORMAT(RACEDATE, '%Y-%m-%d') BETWEEN '" . date2String($input->queryStartDate) . "' AND '" . date2String($input->queryEndDate) . "'";
   \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
