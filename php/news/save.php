@@ -53,12 +53,12 @@ if(!isset($input->iNewsTypeID))
 $input->iRubrik = stripslashes($input->iRubrik);
 if (strlen($input->iRubrik) > 50)
 {
-  trigger_error('Felaktig parameter "Rubrik", fler än 50 tecken.', E_USER_ERROR);
+  trigger_error('Felaktig parameter "Rubrik", fler ï¿½n 50 tecken.', E_USER_ERROR);
 }
 $input->iLank = stripslashes($input->iLank);
 if (strlen($input->iLank) > 150)
 {
-  trigger_error('Felaktig parameter "Länk", fler än 150 tecken.', E_USER_ERROR);
+  trigger_error('Felaktig parameter "Lï¿½nk", fler ï¿½n 150 tecken.', E_USER_ERROR);
 }
 $input->iInledning = stripslashes($input->iInledning);
 $input->iTexten = stripslashes($input->iTexten);
@@ -77,7 +77,7 @@ if ($input->iFileID == -1) // New File to upload
   }
   if (strlen($input->iFileName) > 255)
   {
-    trigger_error('Felaktig parameter "Filnamn", fler än 255 tecken.', E_USER_ERROR);
+    trigger_error('Felaktig parameter "Filnamn", fler ï¿½n 255 tecken.', E_USER_ERROR);
   }
 
   if ($input->iFileSize <= 0)
@@ -86,14 +86,14 @@ if ($input->iFileID == -1) // New File to upload
   }
   if ($input->iFileSize > 10000000) // Don't allow bigger than 10MB
   {
-    trigger_error('Bild/fil är större än 10MB.', E_USER_ERROR);
+    trigger_error('Bild/fil ï¿½r stï¿½rre ï¿½n 10MB.', E_USER_ERROR);
   }
 
   $decoded_filedata = base64_decode($input->iFileData);
   $input->iFileData = \db\mysql_real_escape_string($decoded_filedata);
   if (!strlen($input->iFileData))
   {
-    trigger_error('Kunde ej läsa den uppladdade bilden/filen.', E_USER_ERROR);
+    trigger_error('Kunde ej lï¿½sa den uppladdade bilden/filen.', E_USER_ERROR);
   }
   
   $cache_file = $_SERVER["DOCUMENT_ROOT"] . '/cache/' . $input->iFileName;
@@ -102,7 +102,7 @@ if ($input->iFileID == -1) // New File to upload
   unlink($cache_file);
 }
 
-$iUpdateModificationDate = getRequestBool($input->iUpdateModificationDate);
+$iUpdateModificationDate = $input->iUpdateModificationDate;
 
 OpenDatabase();
 $now = date("Y-m-d G:i:s"); // MySQL DATETIME

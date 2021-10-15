@@ -87,6 +87,11 @@ if($responseStatusCode != 200)
     trigger_error('Proxy error: Failed with status code ' . $responseStatusCode . ', ' . strip_tags($response_content), E_USER_ERROR);
 }
 
+if (isset($input->noJsonConvert) && $input->noJsonConvert == true) {
+    echo $response_content;
+    die(0);
+}
+
 // convert xml to json
 $response_content = str_replace(array("\n", "\r", "\t"), '', $response_content);
 $response_content = trim(str_replace('"', "'", $response_content));

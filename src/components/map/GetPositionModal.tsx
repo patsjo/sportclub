@@ -1,10 +1,11 @@
 import { Modal } from 'antd';
 import { ModalFuncProps } from 'antd/lib/modal';
 import { TFunction } from 'i18next';
-import { Provider } from 'mobx-react';
 import { IGlobalStateModel } from 'models/globalStateModel';
 import { IMobxClubModel } from 'models/mobxClubModel';
+import { ISessionModel } from 'models/sessionModel';
 import React from 'react';
+import { MobxStoreProvider } from 'utils/mobxStore';
 import EsriOSMOrienteeringMap from './EsriOSMOrienteeringMap';
 
 const { confirm } = Modal;
@@ -15,6 +16,7 @@ export const GetPositionModal = (
   latitude: number,
   exists: boolean,
   globalStateModel: IGlobalStateModel,
+  sessionModel: ISessionModel,
   clubModel: IMobxClubModel
 ): Promise<{ longitude: number; latitude: number } | null> =>
   new Promise((resolve, reject) => {
@@ -27,9 +29,17 @@ export const GetPositionModal = (
     // eslint-disable-next-line prefer-const
     confirmModal = confirm({
       title: t('map.SelectPosition'),
+      style: { top: 40 },
+      width: 500,
       content: (
         <div style={{ height: 400 }}>
-          <Provider clubModel={clubModel} globalStateModel={globalStateModel}>
+          <MobxStoreProvider
+            store={{
+              clubModel: clubModel,
+              sessionModel: sessionModel,
+              globalStateModel: globalStateModel,
+            }}
+          >
             <EsriOSMOrienteeringMap
               key="confirm#getPositionMap"
               height="400px"
@@ -50,7 +60,7 @@ export const GetPositionModal = (
                 });
               }}
             />
-          </Provider>
+          </MobxStoreProvider>
         </div>
       ),
       okText: t('common.Save'),

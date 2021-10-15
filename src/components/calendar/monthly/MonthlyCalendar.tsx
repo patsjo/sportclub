@@ -127,6 +127,16 @@ const MonthlyCalendar = observer(() => {
   const [domains, setDomains] = useState<ICalendarDomains>({ activityTypes: [], groups: [], users: [] });
   const history = useHistory();
 
+  if (globalStateModel.startDate == null) {
+    globalStateModel.setDashboard(
+      history,
+      '/calendar',
+      moment().startOf('month').format(dateFormat),
+      moment().endOf('month').format(dateFormat),
+      1
+    );
+  }
+
   useEffect(() => {
     setLoaded(false);
     setActivities([]);

@@ -92,6 +92,7 @@ const EventSelectorWizardStep1ChooseRace = observer(
           let calendarEventId = -1;
           const events = flatten((eventsJson.Event as IEventorEvent[]).map((event) => event.EventRace))
             .filter((eventRace) => eventRace.EventRaceId != null)
+            .filter((evt, i, list) => i === list.findIndex((listEvt) => evt.EventRaceId === listEvt.EventRaceId))
             .map((eventRace) => {
               const entry = {
                 Event: (eventsJson.Event as IEventorEvent[]).find((e) =>
@@ -122,7 +123,16 @@ const EventSelectorWizardStep1ChooseRace = observer(
                 : null;
 
               return {
-                Event: { ...entry.Event, EventRace: eventRace, Name: entry.Event?.Name + ', ' + eventRace.Name },
+                Event: {
+                  ...entry.Event,
+                  EventRace: eventRace,
+                  Name:
+                    entry.Event?.Name +
+                    ', ' +
+                    (JSON.stringify(eventRace.Name) === JSON.stringify({}) || !eventRace.Name
+                      ? ''
+                      : ', ' + eventRace.Name),
+                },
                 EventRaceId: eventRace.EventRaceId,
                 organisationName,
                 calendarEventId: savedCalendarEventId,

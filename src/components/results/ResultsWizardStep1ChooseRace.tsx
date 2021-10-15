@@ -260,30 +260,36 @@ const ResultWizardStep1ChooseRace = observer(({ visible, onValidate, onFailed }:
           }
           oringenEvents = [...oringenEvents, ...noEntriesEvents];
           let events: IResultEvent[] = [
-            ...flatten(entries.map((entry) => entry.Event.EventRace)).map((eventRace) => eventRace.EventRaceId),
-            ...flatten(oringenEvents.map((event) => event.EventRace)).map((eventRace) => eventRace.EventRaceId),
+            ...flatten(entries.map((entry) => entry.Event.EventRace)),
+            ...flatten(oringenEvents.map((event) => event.EventRace)),
           ]
-            .filter((eventRaceId) => eventRaceId != null)
-            .map((eventRaceId): IResultEvent => {
+            .filter((eventRace) => eventRace.EventRaceId != null)
+            .filter((evt, i, list) => i === list.findIndex((listEvt) => evt.EventRaceId === listEvt.EventRaceId))
+            .map((eventRace): IResultEvent => {
               let entryEvent = entries.find((e) =>
                 Array.isArray(e.Event.EventRace)
-                  ? e.Event.EventRace.map((er) => er.EventRaceId).includes(eventRaceId)
-                  : e.EventRaceId === eventRaceId
+                  ? e.Event.EventRace.map((er) => er.EventRaceId).includes(eventRace.EventRaceId)
+                  : e.EventRaceId === eventRace.EventRaceId
               )?.Event;
               if (entryEvent == null) {
                 entryEvent = oringenEvents.find((e) =>
                   Array.isArray(e.EventRace)
-                    ? e.EventRace.map((er) => er.EventRaceId).includes(eventRaceId)
-                    : e.EventRace.EventRaceId === eventRaceId
+                    ? e.EventRace.map((er) => er.EventRaceId).includes(eventRace.EventRaceId)
+                    : e.EventRace.EventRaceId === eventRace.EventRaceId
                 );
               }
-              if (entryEvent && Array.isArray(entryEvent.EventRace)) {
-                entryEvent.EventRace = entryEvent.EventRace.find((eventRace) => eventRace.EventRaceId === eventRaceId)!;
-                entryEvent.Name = entryEvent.Name + ', ' + entryEvent.EventRace.Name;
+              if (entryEvent) {
+                entryEvent.Name =
+                  entryEvent.Name +
+                  ', ' +
+                  (JSON.stringify(eventRace.Name) === JSON.stringify({}) || !eventRace.Name
+                    ? ''
+                    : ', ' + eventRace.Name);
               }
               const alreadySaved = alreadySavedEventsJson.find(
                 (saved) =>
-                  saved.eventorId.toString() === entryEvent?.EventId && saved.eventorRaceId!.toString() === eventRaceId
+                  saved.eventorId.toString() === entryEvent?.EventId &&
+                  saved.eventorRaceId!.toString() === eventRace.EventRaceId
               );
 
               const isRelay =
@@ -294,19 +300,19 @@ const ResultWizardStep1ChooseRace = observer(({ visible, onValidate, onFailed }:
               return {
                 key: JSON.stringify({
                   selectedEventorId: entryEvent ? parseInt(entryEvent.EventId) : -1,
-                  selectedEventorRaceId: parseInt(eventRaceId),
+                  selectedEventorRaceId: parseInt(eventRace.EventRaceId),
                   selectedEventId: alreadySaved ? alreadySaved.eventId : -1,
                   alreadySaved: !!alreadySaved,
                   existInEventor: false,
                   isRelay: isRelay,
                 }),
-                date: entryEvent ? (entryEvent.EventRace as IEventorEventRace).RaceDate.Date : '',
+                date: entryEvent ? eventRace.RaceDate.Date : '',
                 eventId: alreadySaved ? alreadySaved.eventId : -1,
                 eventorId: entryEvent ? parseInt(entryEvent.EventId) : -1,
-                eventorRaceId: parseInt(eventRaceId),
+                eventorRaceId: parseInt(eventRace.EventRaceId),
                 invoiceVerified: alreadySaved ? alreadySaved.invoiceVerified : false,
                 name: entryEvent?.Name ?? '',
-                time: entryEvent ? (entryEvent.EventRace as IEventorEventRace).RaceDate.Clock : '',
+                time: entryEvent ? eventRace.RaceDate.Clock : '',
                 alreadySaved: !!alreadySaved,
                 alreadySavedEventsNotInEventor: false,
                 existInEventor: true,

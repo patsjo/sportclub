@@ -162,6 +162,7 @@ const CalendarEdit = observer(({ title, calendarObject, domains, open, onClose, 
       exists ? latitude : clubLatitude,
       exists,
       globalStateModel,
+      sessionModel,
       clubModel
     ).then((selectedPosition) => {
       if (selectedPosition) {

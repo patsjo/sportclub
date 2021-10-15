@@ -122,6 +122,13 @@ const DrawerRightMenu = observer(() => {
               disabled={!sessionModel.loggedIn || !sessionModel.isAdmin}
               onClick={() => {
                 globalStateModel.setRightMenuVisible(false);
+                htmEditorLinkform &&
+                  htmEditorLinkform.setFieldsValue({
+                    iLinkID: -1,
+                    iMenuPath: DefaultMenuPath,
+                    iUrl: 'https://',
+                  });
+
                 HtmlEditorLinkModal(
                   t,
                   -1,

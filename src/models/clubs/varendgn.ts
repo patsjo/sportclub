@@ -106,6 +106,7 @@ const varendgn: IMobxClubModelSnapshotIn = {
   sports: ['Orientering'],
   eventor: {
     organisationId: 584,
+    districtOrganisationId: 2,
   },
   corsProxy: 'https://varendgn.se/proxy.php?csurl=',
   eventorCorsProxy: 'https://varendgn.se/eventorProxyWithCache.php',

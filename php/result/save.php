@@ -210,7 +210,7 @@ elseif ($input->iType == "EVENTOR_COMPETITOR_ID")
 }
 elseif ($input->iType == "EVENT")
 {
-  $eventId = getRequestInt($input->eventId);
+  $eventId = $input->eventId;
 
   $query = "DELETE FROM RACE_EVENT_RESULTS_MULTI_DAY WHERE RESULT_ID IN (SELECT RESULT_ID FROM RACE_EVENT_RESULTS WHERE EVENT_ID = " . $eventId . ")";
   \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
@@ -224,29 +224,8 @@ elseif ($input->iType == "EVENT")
   $query = "DELETE FROM RACE_EVENT WHERE EVENT_ID = " . $eventId;
   \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
 
-  $x = new stdClass();
-  $x->eventorId = getRequestInt($input->eventorId);
-  $x->eventorRaceId = getRequestInt($input->eventorRaceId);
-  $x->name = getRequestString($input->name);
-  $x->organiserName = getRequestString($input->organiserName);
-  $x->raceDate = getRequestDate($input->raceDate);
+  $x = $input;
   $raceDateTime = getRequestTime($input->raceTime, $input->raceDate);
-  $x->raceTime = getRequestTime($input->raceTime);
-  $x->sportCode = getRequestString($input->sportCode);
-  $x->isRelay = getRequestBool($input->isRelay);
-  $x->eventClassificationId = getRequestString($input->eventClassificationId);
-  $x->raceLightCondition = getRequestString($input->raceLightCondition);
-  $x->raceDistance = getRequestString($input->raceDistance);
-  $x->paymentModel = getRequestInt($input->paymentModel);
-  $x->meetsAwardRequirements = getRequestBool($input->meetsAwardRequirements);
-  $x->rankingBasetimePerKilometer = getRequestString($input->rankingBasetimePerKilometer);
-  $x->rankingBasepoint = getRequestDecimal($input->rankingBasepoint);
-  $x->rankingBaseDescription = getRequestString($input->rankingBaseDescription);
-  $x->longitude = getRequestDecimal($input->longitude);
-  $x->latitude = getRequestDecimal($input->latitude);
-  $x->results = $input->results;
-  $x->teamResults = $input->teamResults;
-  $x->invoiceVerified = getRequestBool($input->invoiceVerified);
 
   $query = sprintf("INSERT INTO RACE_EVENT " .
                  "(" .
@@ -407,11 +386,7 @@ elseif ($input->iType == "EVENT")
 }
 elseif ($input->iType == "EVENT_VERIFY")
 {
-  $x = new stdClass();
-  $x->eventId = getRequestInt($input->eventId);
-  $x->results = $input->results;
-  $x->teamResults = $input->teamResults;
-  $x->invoiceVerified = getRequestBool($input->invoiceVerified);
+  $x = $input;
 
   $query = "UPDATE RACE_EVENT " .
     "SET INVOICE_VERIFIED = " . intval($x->invoiceVerified) . " " .

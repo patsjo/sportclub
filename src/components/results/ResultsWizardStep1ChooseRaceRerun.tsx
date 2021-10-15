@@ -86,7 +86,9 @@ const ResultWizardStep1ChooseRaceRerun = observer(
                         '?eventId=' +
                         saved.eventorId +
                         '&organisationIds=' +
-                        clubModel.raceClubs.selectedClub.eventorOrganisationId +
+                        clubModel.eventor.organisationId +
+                        ',' +
+                        clubModel.eventor.districtOrganisationId +
                         `&top=${saved.isRelay ? 30 : 15}&includeSplitTimes=true`
                     ),
                   },
@@ -147,8 +149,13 @@ const ResultWizardStep1ChooseRaceRerun = observer(
                       ? personResults.filter(
                           (personResult) =>
                             personResult.Organisation &&
-                            personResult.Organisation.OrganisationId ===
-                              clubModel.raceClubs?.selectedClub.eventorOrganisationId.toString()
+                            (personResult.Organisation.OrganisationId ===
+                              clubModel.eventor?.organisationId.toString() ||
+                              (personResult.Organisation.OrganisationId ===
+                                clubModel.eventor?.districtOrganisationId.toString() &&
+                                clubModel.raceClubs?.selectedClub.competitorByEventorId(
+                                  parseInt(personResult.Person.PersonId)
+                                ) != null))
                         )
                       : [];
 
@@ -268,11 +275,15 @@ const ResultWizardStep1ChooseRaceRerun = observer(
                       : [teamResult.Organisation!];
 
                     const hasClubMembers = teamOrganisations.some(
-                      (org) => org.OrganisationId === clubModel.raceClubs?.selectedClub.eventorOrganisationId.toString()
+                      (org) => org.OrganisationId === clubModel.eventor?.organisationId.toString()
                     );
+                    const hasDistrictMembers = teamOrganisations.some(
+                      (org) => org.OrganisationId === clubModel.eventor?.districtOrganisationId.toString()
+                    );
+
                     teamMemberResults.forEach((teamMemberResult) => {
                       const competitor =
-                        hasClubMembers &&
+                        (hasClubMembers || hasDistrictMembers) &&
                         typeof teamMemberResult.Person.PersonId === 'string' &&
                         teamMemberResult.Person.PersonId.length > 0
                           ? clubModel.raceClubs?.selectedClub.competitorByEventorId(

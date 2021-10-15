@@ -194,8 +194,7 @@ export interface IEventorEvent {
   WebURL: string;
   Organiser?:
     | { OrganisationId: string | string[]; Organisation: undefined }
-    | { Organisation: IEventorOrganisation }[]
-    | { Organisation: IEventorOrganisation };
+    | { Organisation: IEventorOrganisation[] | IEventorOrganisation };
   PunchingUnitType: IEventorPunchingUnitType;
   ModifyDate: IEventorDateTime;
   ModifiedBy: IEventorCreatedBy;

@@ -116,7 +116,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
   const formRef = useRef<FormInstance>(null);
   const formId = useMemo(() => 'resultsWizardFormStep2EditRace' + Math.floor(Math.random() * 1000000000000000), []);
   const [loaded, setLoaded] = useState(false);
-  const [isRelay, setIsRelay] = useState(false);
+  const [isRelay, setIsRelay] = useState(raceWizardModel.selectedIsRelay);
 
   useEffect(() => {
     if (!raceWizardModel.existInEventor) {
@@ -161,7 +161,9 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                   '?eventIds=' +
                   raceWizardModel.selectedEventorId +
                   '&organisationIds=' +
-                  clubModel.raceClubs.selectedClub.eventorOrganisationId +
+                  clubModel.eventor.organisationId +
+                  ',' +
+                  clubModel.eventor.districtOrganisationId +
                   '&includeEntryFees=true'
               ),
             },
@@ -193,7 +195,9 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                   '?eventId=' +
                   raceWizardModel.selectedEventorId +
                   '&organisationIds=' +
-                  clubModel.raceClubs.selectedClub.eventorOrganisationId +
+                  clubModel.eventor.organisationId +
+                  ',' +
+                  clubModel.eventor.districtOrganisationId +
                   `&top=${raceWizardModel.selectedIsRelay ? 30 : 15}&includeSplitTimes=true`
               ),
             },
@@ -213,6 +217,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                   raceWizardModel.selectedEventorRaceId +
                   '&groupBy=EventClass'
               ),
+              noJsonConvert: true,
             },
             false
           )
@@ -239,11 +244,12 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
           string
         ]) => {
           const eventIsRelay =
-            resultJson &&
-            resultJson.Event &&
-            resultJson.Event['@attributes'] &&
-            resultJson.Event['@attributes'].eventForm &&
-            resultJson.Event['@attributes'].eventForm.toLowerCase().indexOf('relay') >= 0;
+            editResultJson?.isRelay ||
+            (resultJson != null &&
+              resultJson.Event &&
+              resultJson.Event['@attributes'] &&
+              resultJson.Event['@attributes'].eventForm &&
+              resultJson.Event['@attributes'].eventForm.toLowerCase().indexOf('relay') >= 0);
           // 1 = championchip, 2 = National, 3 = District, 4 = Nearby, 5 = Club, 6 = International
           const eventorEventClassificationId =
             resultJson && resultJson.Event ? resultJson.Event.EventClassificationId : null;
@@ -302,8 +308,10 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                 eventorId: raceWizardModel.selectedEventorId,
                 eventorRaceId: raceWizardModel.selectedEventorRaceId,
                 name: resultJson.Event.Name,
-                organiserName: Array.isArray(resultJson.Event.Organiser)
-                  ? resultJson.Event.Organiser.find(() => true)?.Organisation.Name
+                organiserName: Array.isArray(resultJson.Event.Organiser?.Organisation)
+                  ? resultJson.Event.Organiser?.Organisation.map((org) => org.Name)
+                      .join('/')
+                      .substr(0, 128)
                   : resultJson.Event.Organiser?.Organisation?.Name,
                 raceDate: eventRace.RaceDate.Date,
                 raceTime: eventRace.RaceDate.Clock === '00:00:00' ? null : eventRace.RaceDate.Clock,
@@ -412,8 +420,12 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                     const clubPersonResults = personResults.filter(
                       (personResult) =>
                         personResult.Organisation &&
-                        personResult.Organisation.OrganisationId ===
-                          clubModel.raceClubs?.selectedClub.eventorOrganisationId.toString()
+                        (personResult.Organisation.OrganisationId === clubModel.eventor?.organisationId.toString() ||
+                          (personResult.Organisation.OrganisationId ===
+                            clubModel.eventor?.districtOrganisationId.toString() &&
+                            clubModel.raceClubs?.selectedClub.competitorByEventorId(
+                              parseInt(personResult.Person.PersonId)
+                            ) != null))
                     );
 
                     for (let j = 0; j < clubPersonResults.length; j++) {
@@ -632,12 +644,15 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                       : [teamResult.Organisation!];
 
                     const hasClubMembers = teamOrganisations.some(
-                      (org) => org.OrganisationId === clubModel.raceClubs?.selectedClub.eventorOrganisationId.toString()
+                      (org) => org.OrganisationId === clubModel.eventor?.organisationId.toString()
+                    );
+                    const hasDistrictMembers = teamOrganisations.some(
+                      (org) => org.OrganisationId === clubModel.eventor?.districtOrganisationId.toString()
                     );
 
                     teamMemberResults.forEach((teamMemberResult) => {
                       const competitor =
-                        hasClubMembers &&
+                        (hasClubMembers || hasDistrictMembers) &&
                         typeof teamMemberResult.Person.PersonId === 'string' &&
                         teamMemberResult.Person.PersonId.length > 0
                           ? clubModel.raceClubs?.selectedClub.competitorByEventorId(

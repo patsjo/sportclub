@@ -123,6 +123,7 @@ const okorion: IMobxClubModelSnapshotIn = {
   sports: ['Orientering'],
   eventor: {
     organisationId: 288,
+    districtOrganisationId: 7,
   },
   corsProxy: 'https://okorion.com/proxy.php?csurl=',
   eventorCorsProxy: 'https://okorion.com/eventorProxyWithCache.php',

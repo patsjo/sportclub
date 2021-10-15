@@ -107,6 +107,7 @@ const Eventor = types.model({
   personResultUrl: types.optional(types.string, 'https://eventor.orientering.se/api/results/person'),
   externalLoginUrl: types.optional(types.string, 'https://eventor.orientering.se/api/externalLoginUrl'),
   organisationId: types.integer,
+  districtOrganisationId: types.integer,
   oRingenOrganisationId: types.optional(types.integer, 611),
 });
 

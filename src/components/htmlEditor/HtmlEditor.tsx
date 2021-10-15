@@ -71,6 +71,17 @@ const HtmlEditor = observer(({ path }: IHtmlEditorProps) => {
   useEffect(() => {
     setError(undefined);
     if (path === '/page/new' || globalStateModel.htmlEditorMenu === undefined || !htmlEditorModule) {
+      setPageId(-1);
+      setData(DefaultData);
+      setMenuPath(DefaultMenuPath);
+      setGroups([]);
+      setEditable(true);
+      setIsReadOnly(false);
+      form.setFieldsValue({
+        iPageID: -1,
+        iMenuPath: DefaultMenuPath,
+        iGroupIds: [],
+      });
       return;
     }
     setLoading(true);
@@ -245,9 +256,11 @@ const HtmlEditor = observer(({ path }: IHtmlEditorProps) => {
       ) : null}
       {!isReadOnly ? (
         <>
-          <StyledButton onClick={() => setIsReadOnly(true)} loading={saving}>
-            {t('common.Cancel')}
-          </StyledButton>
+          {pageId > 0 ? (
+            <StyledButton onClick={() => setIsReadOnly(true)} loading={saving}>
+              {t('common.Cancel')}
+            </StyledButton>
+          ) : null}
           <StyledButton type="primary" onClick={onSave} loading={saving}>
             {t('common.Save')}
           </StyledButton>

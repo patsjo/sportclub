@@ -110,7 +110,8 @@ const StyledEllipsis = styled.div`
 `;
 
 const App = () => {
-  const [scroll, setScroll] = useState({ top: 0, stickyPos: 0 });
+  const scrollTop = useRef(0);
+  const [scrollStickyPos, setScrollStickyPos] = useState(0);
   const sessionModel = useRef(SessionModel.create(getLocalStorage()));
   const clubModel = useRef(MobxClubModel.create(clubJson));
   const logoHeight = 80;
@@ -157,18 +158,16 @@ const App = () => {
   );
 
   const onScroll = useCallback(() => {
-    setScroll((scroll) => {
-      const oldScrollTop = scroll.top;
-      const newScrollTop = window.scrollY;
-      let newStickyPos = 0;
+    const oldScrollTop = scrollTop.current;
+    const newScrollTop = window.scrollY;
+    let newStickyPos = 0;
 
-      if (newScrollTop > oldScrollTop && newScrollTop > 56) {
-        newStickyPos = -56;
-      }
-
-      return { top: newScrollTop, stickyPos: newStickyPos };
-    });
-  }, []);
+    if (newScrollTop > oldScrollTop && newScrollTop > 56) {
+      newStickyPos = -56;
+    }
+    scrollStickyPos !== newStickyPos && setScrollStickyPos(newStickyPos);
+    scrollTop.current = newScrollTop;
+  }, [scrollStickyPos]);
 
   useEffect(() => {
     const htmlEditorModule = clubModel.current.modules.find((module) => module.name === 'HTMLEditor');
@@ -201,7 +200,7 @@ const App = () => {
     return () => {
       window.removeEventListener('scroll', onScroll);
     };
-  }, []);
+  }, [onScroll]);
 
   const Header = clubModel.current.titleLogo ? (
     <Link to="/">
@@ -237,8 +236,8 @@ const App = () => {
           }
         >
           <Router>
-            <StyledLayout onScroll={onScroll}>
-              <StickyHolder top={scroll.stickyPos}>
+            <StyledLayout>
+              <StickyHolder top={scrollStickyPos}>
                 <LayoutHeader>
                   <Link to="/">
                     <StyledLogo src={clubModel.current.logo.url} width={logoWidth} height={logoHeight} />

@@ -15,9 +15,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-header("Access-Control-Allow-Credentials: true");
-header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);
-header("Access-Control-Allow-Headers: *");
+include_once($_SERVER["DOCUMENT_ROOT"] . "/include/users.php");
+
+cors();
 
 /**
  * Enables or disables filtering for cross domain requests.
@@ -39,7 +39,7 @@ define('CSAJAX_SUPPRESS_EXPECT', false);
 /**
  * Set debugging to true to receive additional messages - really helpful on development
  */
-define('CSAJAX_DEBUG', true);
+define('CSAJAX_DEBUG', false);
 /**
  * A set of valid cross domain requests
  */
@@ -148,20 +148,7 @@ $ch = curl_init($request_url);
 if (CSAJAX_SUPPRESS_EXPECT) {
     array_push($request_headers, 'Expect:'); 
 }
-// print 'url: ' . $request_url;
-// foreach ($request_headers as $key => $value) {
-//     print ' headers: ' . $value;
-// }
-// exit;
-// (re-)send headers ApiKey
-$ApiKeyHeader = array_filter($request_headers, function($var) {
-    return substr($var, 0, 6) === "ApiKey";
-});
-if (count($ApiKeyHeader) > 0) {
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $ApiKeyHeader);
-} else {
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $request_headers);
-}
+curl_setopt($ch, CURLOPT_HTTPHEADER, $request_headers);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);     // return response
 curl_setopt($ch, CURLOPT_HEADER, true);       // enabled response headers
 // add data for POST, PUT or DELETE requests
@@ -201,28 +188,14 @@ foreach ($response_headers as $key => $response_header) {
         list($header, $value) = preg_split('/: /', $response_header, 2);
         $response_header = 'Location: ' . $_SERVER['REQUEST_URI'] . '?csurl=' . $value;
     }
-    if (!preg_match('/^(Transfer-Encoding):/', $response_header)) {
+    if (!preg_match('/^(Transfer-Encoding):/', $response_header) && !preg_match('/^(Access-Control)/', $response_header)) {
         header($response_header, false);
     }
 }
 
-if (isset($request_params['noJsonConvert'])) {
-    echo $response_content;
-    die(0);
-}
+echo $response_content;
+die(0);
 
-// convert xml to json
-$response_content = str_replace(array("\n", "\r", "\t"), '', $response_content);
-$response_content = trim(str_replace('"', "'", $response_content));
-$simpleXml = simplexml_load_string($response_content);
-$json = json_encode($simpleXml);
-// finally, output the content
-header("Content-type: application/json");
-// header('Content-Transfer-Encoding: binary');
-// header('Accept-Ranges: bytes');
-header("Content-length: " . strlen($json));
-
-echo $json;
 function csajax_debug_message($message)
 {
     if (true == CSAJAX_DEBUG) {
