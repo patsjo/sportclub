@@ -127,7 +127,7 @@ export interface IEventorEntry {
   CreatedBy: IEventorCreatedBy;
   EntryClass: IEventorEntryClass;
   EntryDate: IEventorDateTime;
-  EntryEntryFee: IEventorEntryClassFee;
+  EntryEntryFee?: IEventorEntryClassFee;
   EntryId: string;
   Event: IEventorEvent;
   EventRaceId: string;
@@ -317,15 +317,15 @@ export interface IEventorStarts {
 }
 
 export interface IEventorTeamMemberResult {
-  BibNumber: string;
+  BibNumber?: string;
   CompetitorStatus: IEventorResultStatus;
   FinishTime: IEventorDateTime;
   Leg: string;
   LegOrder: string;
-  OverallResult: { Time: string; TimeDiff?: string; ResultPosition: string; TeamStatus: IEventorResultStatus };
+  OverallResult?: { Time: string; TimeDiff?: string; ResultPosition: string; TeamStatus: IEventorResultStatus };
   Organisation?: IEventorOrganisation;
   Person: IEventorPerson;
-  Position: string;
+  Position?: string;
   SplitTime: IEventorSplitTime[] | IEventorSplitTime;
   StartTime: IEventorDateTime;
   Time: string;
@@ -333,7 +333,7 @@ export interface IEventorTeamMemberResult {
 }
 
 export interface IEventorTeamResult {
-  BibNumber: string;
+  BibNumber?: string;
   FinishTime: IEventorDateTime;
   Organisation: IEventorOrganisation[] | IEventorOrganisation;
   ResultPosition?: string;

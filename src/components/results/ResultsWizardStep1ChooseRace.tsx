@@ -75,7 +75,7 @@ const ResultWizardStep1ChooseRace = observer(({ visible, onValidate, onFailed }:
       selected.selectedEventorRaceId != -1 ? selected.selectedEventorRaceId : null
     );
     raceWizardModel.setBooleanValue('selectedIsRelay', selected.isRelay ? true : false);
-    raceWizardModel.setBooleanValue('overwrite', selected.existInEventor);
+    raceWizardModel.setBooleanValue('eventExistInEventor', selected.existInEventor);
     setSelectedRowKeys(keys);
     onValidate(true);
   }, []);
@@ -303,7 +303,7 @@ const ResultWizardStep1ChooseRace = observer(({ visible, onValidate, onFailed }:
                   selectedEventorRaceId: parseInt(eventRace.EventRaceId),
                   selectedEventId: alreadySaved ? alreadySaved.eventId : -1,
                   alreadySaved: !!alreadySaved,
-                  existInEventor: false,
+                  existInEventor: true,
                   isRelay: isRelay,
                 }),
                 date: entryEvent ? eventRace.RaceDate.Date : '',

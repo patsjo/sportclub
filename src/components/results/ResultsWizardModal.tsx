@@ -38,7 +38,7 @@ import ResultWizardStep1ChooseRaceRerun from './ResultsWizardStep1ChooseRaceReru
 import ResultWizardStep2EditRace from './ResultsWizardStep2EditRace';
 import ResultWizardStep3Ranking from './ResultsWizardStep3Ranking';
 
-const { info } = Modal;
+const { confirm } = Modal;
 const StyledModalContent = styled.div``;
 const StyledSteps = styled(Steps)`
   &&& {
@@ -71,7 +71,7 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
       }
       if (
         nextStep === 2 &&
-        raceWizardModel.current.overwrite &&
+        raceWizardModel.current.eventExistInEventor &&
         raceWizardModel.current.selectedEventId &&
         raceWizardModel.current.selectedEventId > 0
       ) {
@@ -366,7 +366,7 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
                 update: (configUpdate: ModalFuncProps | ((prevConfig: ModalFuncProps) => ModalFuncProps)) => void;
               };
               // eslint-disable-next-line prefer-const
-              confirmModal = info({
+              confirmModal = confirm({
                 width: 800,
                 icon: <StyledIcon type="plus" />,
                 title: t('results.AddCompetitor'),
@@ -375,6 +375,7 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
                   raceWizardModel.current.raceEvent &&
                   !raceWizardModel.current.raceEvent?.isRelay ? (
                     <EditResultIndividual
+                      clubModel={clubModel}
                       meetsAwardRequirements={raceWizardModel.current.raceEvent.meetsAwardRequirements}
                       isSprint={raceWizardModel.current.raceEvent.raceDistance === distances.sprint}
                       raceDate={raceWizardModel.current.raceEvent.raceDate ?? ''}
@@ -395,7 +396,7 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
                     />
                   ) : clubModel.raceClubs && raceWizardModel.current.raceEvent ? (
                     <EditResultRelay
-                      raceDate={raceWizardModel.current.raceEvent.raceDate ?? ''}
+                      clubModel={clubModel}
                       eventClassificationId={
                         raceWizardModel.current.raceEvent.eventClassificationId as EventClassificationIdTypes
                       }

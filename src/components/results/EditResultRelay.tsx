@@ -1,10 +1,10 @@
 import { Col, Form, Input, InputNumber, Row, Select, TimePicker } from 'antd';
+import { IMobxClubModel } from 'models/mobxClubModel';
 import { IRaceTeamResult, IRaceTeamResultSnapshotIn } from 'models/resultModel';
 import moment from 'moment';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
-import { useMobxStore } from 'utils/mobxStore';
 import { errorRequiredField, FormSelect, hasErrors, IOption, timeFormat } from '../../utils/formHelper';
 import {
   difficulties,
@@ -36,8 +36,8 @@ const ColorOptionContent = styled.div<IColorOptionContentProps>`
 export interface IExtendedRaceTeamResult extends IRaceTeamResultSnapshotIn {
   stageText: string;
 }
-interface IEditResultIndividualProps {
-  raceDate: string;
+interface IEditResultRelayProps {
+  clubModel: IMobxClubModel;
   eventClassificationId: EventClassificationIdTypes;
   raceLightCondition: LightConditionTypes;
   result: IExtendedRaceTeamResult;
@@ -46,16 +46,15 @@ interface IEditResultIndividualProps {
   onValidate: (valid: boolean) => void;
 }
 const EditResultRelay = ({
-  raceDate,
+  clubModel,
   eventClassificationId,
   raceLightCondition,
   result,
   results,
   competitorsOptions,
   onValidate,
-}: IEditResultIndividualProps) => {
+}: IEditResultRelayProps) => {
   const { t } = useTranslation();
-  const { clubModel } = useMobxStore();
   const formRef = useRef<any>(null);
   const formId = useMemo(() => 'editResultRelay' + Math.floor(Math.random() * 1000000000000000), []);
   const [failedReason, setFailedReason] = useState(result.failedReason);
@@ -73,7 +72,7 @@ const EditResultRelay = ({
       ref={formRef}
       layout="vertical"
       initialValues={{
-        iCompetitorId: !result.competitorId ? -1 : result.competitorId,
+        iCompetitorId: !result.competitorId || result.competitorId === -1 ? undefined : result.competitorId.toString(),
         iTeamName: result.teamName,
         iClassName: result.className,
         iClassClassificationId: !result.classClassificationId ? undefined : result.classClassificationId.toString(),
@@ -179,7 +178,7 @@ const EditResultRelay = ({
                 .then((competitor) => {
                   result.competitorId = competitor ? competitor.competitorId : -1;
                   formRef.current.setFieldsValue({
-                    iCompetitorId: result.competitorId == null ? -1 : result.competitorId,
+                    iCompetitorId: result.competitorId == null ? undefined : result.competitorId.toString(),
                   });
                   formRef.current.validateFields(['iCompetitorId'], { force: true });
                 })

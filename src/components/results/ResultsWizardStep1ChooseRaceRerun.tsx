@@ -306,7 +306,8 @@ const ResultWizardStep1ChooseRaceRerun = observer(
                           TeamTimeDiff: teamResult.TimeDiff,
                           TeamPosition: teamResult.ResultPosition != null ? parseInt(teamResult.ResultPosition) : null,
                           TeamStatus: teamResult.TeamStatus,
-                          BibNumber: teamResult.BibNumber,
+                          BibNumber:
+                            teamResult.BibNumber ?? `${classResult.EventClass.ClassShortName}-${teamResult.TeamName}`,
                         });
                       }
                     });

@@ -64,6 +64,7 @@ export const RaceWizard = types
     queryEndDate: types.string,
     queryIncludeExisting: types.boolean,
     existInEventor: types.boolean,
+    eventExistInEventor: types.optional(types.boolean, false),
     overwrite: types.optional(types.boolean, false),
     queryForEventWithNoEntry: types.optional(types.boolean, false),
     paymentModel: types.integer,
@@ -81,7 +82,13 @@ export const RaceWizard = types
         setLocalStorage(self);
       },
       setBooleanValue(
-        key: 'queryIncludeExisting' | 'existInEventor' | 'overwrite' | 'queryForEventWithNoEntry' | 'selectedIsRelay',
+        key:
+          | 'queryIncludeExisting'
+          | 'existInEventor'
+          | 'eventExistInEventor'
+          | 'overwrite'
+          | 'queryForEventWithNoEntry'
+          | 'selectedIsRelay',
         value: boolean
       ) {
         self[key] = value;
@@ -111,6 +118,7 @@ export const RaceWizard = types
   .views((self) => ({
     get raceWinnerResultOptions() {
       return self.raceWinnerResults
+        .slice()
         .sort((a, b) => {
           if (a.difficulty === difficulties.black && b.difficulty !== difficulties.black) {
             return -1;

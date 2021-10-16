@@ -1,10 +1,10 @@
 import { Col, Form, Input, InputNumber, Row, Select, TimePicker } from 'antd';
+import { IMobxClubModel } from 'models/mobxClubModel';
 import { IRaceResult, IRaceResultSnapshotIn } from 'models/resultModel';
 import moment from 'moment';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
-import { useMobxStore } from 'utils/mobxStore';
 import { errorRequiredField, FormSelect, hasErrors, IOption, timeFormat } from '../../utils/formHelper';
 import {
   AwardTypes,
@@ -38,6 +38,7 @@ export interface IExtendedRaceResult extends IRaceResultSnapshotIn {
   fee: number;
 }
 interface IEditResultIndividualProps {
+  clubModel: IMobxClubModel;
   paymentModel: PaymentTypes;
   meetsAwardRequirements: boolean;
   isSprint: boolean;
@@ -49,6 +50,7 @@ interface IEditResultIndividualProps {
   onValidate: (valid: boolean) => void;
 }
 const EditResultIndividual = ({
+  clubModel,
   paymentModel,
   meetsAwardRequirements,
   isSprint,
@@ -60,7 +62,6 @@ const EditResultIndividual = ({
   onValidate,
 }: IEditResultIndividualProps) => {
   const { t } = useTranslation();
-  const { clubModel } = useMobxStore();
   const formRef = useRef<any>(null);
   const formId = useMemo(() => 'editResultIndividual' + Math.floor(Math.random() * 1000000000000000), []);
   eventClassificationId = result.deviantEventClassificationId
@@ -102,7 +103,7 @@ const EditResultIndividual = ({
       ref={formRef}
       layout="vertical"
       initialValues={{
-        iCompetitorId: !result.competitorId ? -1 : result.competitorId,
+        iCompetitorId: !result.competitorId || result.competitorId === -1 ? undefined : result.competitorId.toString(),
         iClassName: result.className,
         iClassClassificationId: !result.classClassificationId ? undefined : result.classClassificationId.toString(),
         iDifficulty: result.difficulty,
@@ -184,7 +185,7 @@ const EditResultIndividual = ({
                   result.competitorId = competitor ? competitor.competitorId : -1;
                   result.feeToClub = GetCompetitorFee(paymentModel, result, age, classClassification);
                   formRef.current.setFieldsValue({
-                    iCompetitorId: result.competitorId == null ? -1 : result.competitorId,
+                    iCompetitorId: result.competitorId == null ? undefined : result.competitorId.toString(),
                     iFeeToClub: result.feeToClub,
                   });
                   setAge(competitor ? GetAge(competitor.birthDay, raceDate) : null);

@@ -9,7 +9,7 @@ import {
   IRaceEventBasic,
   IRaceEventSnapshotIn,
   IRaceResultSnapshotIn,
-  IRaceTeamResultSnapshotIn,
+  IRaceTeamResultSnapshotIn
 } from 'models/resultModel';
 import { IWinnerResultSnapshotIn } from 'models/resultWizardModel';
 import moment from 'moment';
@@ -30,7 +30,7 @@ import {
   IEventorResults,
   IEventorResultStatus,
   IEventorTeamMemberResult,
-  IEventorTeamResult,
+  IEventorTeamResult
 } from 'utils/responseEventorInterfaces';
 import { useResultWizardStore } from 'utils/resultWizardStore';
 import { PostJsonData } from '../../utils/api';
@@ -45,7 +45,7 @@ import {
   payments,
   PaymentTypes,
   raceDistanceOptions,
-  raceLightConditionOptions,
+  raceLightConditionOptions
 } from '../../utils/resultConstants';
 import {
   CalculateAllAwards,
@@ -65,7 +65,7 @@ import {
   GetTimeWithHour,
   ResetClassClassifications,
   TimeDiff,
-  WinnerTime,
+  WinnerTime
 } from '../../utils/resultHelper';
 import FormItem from '../formItems/FormItem';
 import { MissingTag, NoWrap, SpinnerDiv, StyledIcon, StyledTable } from '../styled/styled';
@@ -489,8 +489,9 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                           entry.Competitor?.PersonId === personResult.Person.PersonId ||
                           entry.Competitor?.Person?.PersonId === personResult.Person.PersonId
                       );
-                      let entryFees: IEventorEntryClassFee[] = entry != null ? [entry.EntryEntryFee] : [];
-                      if (entry == null && currentClass) {
+                      let entryFees: IEventorEntryClassFee[] =
+                        entry?.EntryEntryFee != null ? [entry.EntryEntryFee] : [];
+                      if (entry?.EntryEntryFee == null && currentClass) {
                         if (Array.isArray(currentClass.ClassEntryFee)) {
                           entryFees = currentClass.ClassEntryFee;
                         } else if (currentClass.ClassEntryFee != null) {
@@ -675,7 +676,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                           TeamTimeDiff: teamResult.TimeDiff,
                           TeamPosition: teamResult.ResultPosition != null ? parseInt(teamResult.ResultPosition) : null,
                           TeamStatus: teamResult.TeamStatus,
-                          BibNumber: teamResult.BibNumber,
+                          BibNumber: teamResult.BibNumber ?? `${shortClassName}-${teamResult.TeamName}`,
                         });
                       }
                     });
@@ -738,7 +739,8 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                     const misPunch = teamMemberResult.CompetitorStatus['@attributes'].value === 'MisPunch';
                     const ok = teamMemberResult.CompetitorStatus['@attributes'].value === 'OK';
                     const valid = ok && !didNotStart && !misPunch;
-                    const position = valid ? parseInt(teamMemberResult.Position) : null;
+                    const position =
+                      valid && teamMemberResult.Position != null ? parseInt(teamMemberResult.Position) : null;
                     const leg = parseInt(teamMemberResult.Leg);
                     const legRaceInfo = classRaceInfos.find((classRaceInfo) => classRaceInfo.leg === leg);
                     const nofStartsInLeg = valid && legRaceInfo ? legRaceInfo.numberOfStarts : null;
@@ -747,21 +749,21 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                     //    ? personResults.find(pr => pr.Result.ResultPosition === "2").Result.Time
                     //    : null;
 
-                    const stageOk = teamMemberResult.OverallResult.TeamStatus['@attributes'].value === 'OK';
+                    const stageOk = teamMemberResult.OverallResult?.TeamStatus['@attributes'].value === 'OK';
                     const teamDidNotStart = teamMemberResult.TeamStatus['@attributes'].value === 'DidNotStart';
                     const teamMisPunch = teamMemberResult.TeamStatus['@attributes'].value === 'MisPunch';
                     const teamOk = teamMemberResult.TeamStatus['@attributes'].value === 'OK';
                     const teamValid = teamOk && !teamDidNotStart && !teamMisPunch;
                     const teamPosition = teamValid ? teamMemberResult.TeamPosition : null;
                     const totalStagePosition =
-                      stageOk && teamMemberResult.OverallResult.ResultPosition
+                      stageOk && teamMemberResult.OverallResult?.ResultPosition
                         ? parseInt(teamMemberResult.OverallResult.ResultPosition)
                         : null;
                     const totalStageTimeBehind = stageOk
-                      ? GetTimeWithHour(teamMemberResult.OverallResult.TimeDiff)
+                      ? GetTimeWithHour(teamMemberResult.OverallResult?.TimeDiff)
                       : null;
-                    let deltaPositions;
-                    let deltaTimeBehind;
+                    let deltaPositions: number | null = null;
+                    let deltaTimeBehind: string | null = null;
                     if (leg > 1 && stageOk) {
                       const prevLeg = (leg - 1).toString();
                       const prevResult = teamResults
@@ -859,22 +861,30 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
               }
             }
 
-            raceEvent && raceWizardModel.setRaceEvent(raceEvent);
             raceWizardModel.setRaceWinnerResults(raceWinnerResults);
+          }
 
-            if (!eventIsRelay && !editResultJson && clubModel.raceClubs && raceWizardModel.raceEvent) {
-              CalculateCompetitorsFee(
-                raceWizardModel.raceEvent,
-                clubModel.raceClubs.selectedClub,
-                clubModel.raceClubs.eventClassifications
-              );
-              CalculateAllAwards(clubModel.raceClubs, raceWizardModel.raceEvent);
-            }
-          } else if (editResultJson != null) {
+          if (editResultJson != null) {
             raceWizardModel.setRaceEvent(editResultJson);
           } else if (raceEvent != null) {
+            //raceWizardModel.setRaceEvent(raceEvent);
+            const list = raceEvent.teamResults;
+            raceEvent.teamResults = [];
             raceWizardModel.setRaceEvent(raceEvent);
+            list?.forEach((r) => {
+              raceWizardModel.raceEvent?.addTeamResult(r);
+            });
           }
+
+          if (!eventIsRelay && !editResultJson && clubModel.raceClubs && raceWizardModel.raceEvent) {
+            CalculateCompetitorsFee(
+              raceWizardModel.raceEvent,
+              clubModel.raceClubs.selectedClub,
+              clubModel.raceClubs.eventClassifications
+            );
+            CalculateAllAwards(clubModel.raceClubs, raceWizardModel.raceEvent);
+          }
+
           formRef.current?.validateFields().then();
           onValidate(!!raceWizardModel.raceEvent?.valid);
           setIsRelay(!!eventIsRelay);
@@ -914,6 +924,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                 content:
                   raceWizardModel.raceEvent && clubModel.raceClubs ? (
                     <EditResultIndividual
+                      clubModel={clubModel}
                       paymentModel={raceWizardModel.raceEvent.paymentModel as PaymentTypes}
                       meetsAwardRequirements={raceWizardModel.raceEvent.meetsAwardRequirements}
                       isSprint={raceWizardModel.raceEvent.raceDistance === distances.sprint}
@@ -1096,7 +1107,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                 content:
                   raceWizardModel.raceEvent && clubModel.raceClubs ? (
                     <EditResultRelay
-                      raceDate={raceWizardModel.raceEvent.raceDate ?? ''}
+                      clubModel={clubModel}
                       eventClassificationId={
                         raceWizardModel.raceEvent.eventClassificationId as EventClassificationIdTypes
                       }

@@ -10,29 +10,35 @@ import { PostJsonData } from '../../utils/api';
 import CompetitorPresentationModal from './CompetitorPresentationModal';
 
 const StyledAvatar = styled(Avatar)`
-  display: block;
-  float: left;
-  background-color: #808080;
-  border-radius: 0px;
-  margin-right: 16px;
-  height: 92px;
-  width: 92px;
+  &&& {
+    display: block;
+    float: left;
+    background-color: #808080;
+    border-radius: 0px;
+    margin-right: 16px;
+    height: 92px;
+    width: 92px;
+  }
   &&& .anticon svg {
     height: 88px;
     width: 70px;
   }
 
   @media screen and (min-width: 800px) {
-    height: 64px;
-    width: 64px;
+    &&& {
+      height: 64px;
+      width: 64px;
+    }
     &&& .anticon svg {
       height: 60px;
       width: 44px;
     }
   }
   @media screen and (max-width: 400px) {
-    height: 88px;
-    width: 88px;
+    &&& {
+      height: 88px;
+      width: 88px;
+    }
     &&& .anticon svg {
       height: 84px;
       width: 66px;
