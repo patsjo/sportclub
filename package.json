@@ -1,7 +1,7 @@
 {
   "name": "sportsclub",
   "homepage": "/",
-  "version": "0.4.0",
+  "version": "1.0.0",
   "private": true,
   "dependencies": {
     "@babel/plugin-transform-react-jsx": "^7.14.9",
