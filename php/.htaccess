@@ -1,0 +1,23 @@
+<FilesMatch "\.(gif|jpg|jpeg|png)$">
+  <IfModule mod_headers.c>
+    Header always set Access-Control-Allow-Origin "*"
+  </IfModule>
+</FilesMatch>
+
+<IfModule mod_rewrite.c> 
+  Options -MultiViews
+  RewriteEngine on 
+  RewriteBase /
+
+  #Rewrite everything to https
+  RewriteCond %{HTTPS} !=on
+  RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  RewriteRule maptiles(.*)\.(gif|jpg|jpeg|png)$ - [NC,END]
+
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [QSA,L]
+
+  RewriteRule .* - [E=REMOTE_USER:%{HTTP:Authorization},L]
+</IfModule>
