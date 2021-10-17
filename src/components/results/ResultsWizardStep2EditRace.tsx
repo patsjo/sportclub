@@ -9,7 +9,7 @@ import {
   IRaceEventBasic,
   IRaceEventSnapshotIn,
   IRaceResultSnapshotIn,
-  IRaceTeamResultSnapshotIn
+  IRaceTeamResultSnapshotIn,
 } from 'models/resultModel';
 import { IWinnerResultSnapshotIn } from 'models/resultWizardModel';
 import moment from 'moment';
@@ -30,7 +30,7 @@ import {
   IEventorResults,
   IEventorResultStatus,
   IEventorTeamMemberResult,
-  IEventorTeamResult
+  IEventorTeamResult,
 } from 'utils/responseEventorInterfaces';
 import { useResultWizardStore } from 'utils/resultWizardStore';
 import { PostJsonData } from '../../utils/api';
@@ -45,7 +45,7 @@ import {
   payments,
   PaymentTypes,
   raceDistanceOptions,
-  raceLightConditionOptions
+  raceLightConditionOptions,
 } from '../../utils/resultConstants';
 import {
   CalculateAllAwards,
@@ -65,7 +65,7 @@ import {
   GetTimeWithHour,
   ResetClassClassifications,
   TimeDiff,
-  WinnerTime
+  WinnerTime,
 } from '../../utils/resultHelper';
 import FormItem from '../formItems/FormItem';
 import { MissingTag, NoWrap, SpinnerDiv, StyledIcon, StyledTable } from '../styled/styled';
@@ -142,7 +142,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
     if (!url || !clubModel.raceClubs || !clubModel.eventor) return;
 
     const editResultPromise =
-      !raceWizardModel.overwrite && raceWizardModel.selectedEventId != null && raceWizardModel.selectedEventId > 0
+      raceWizardModel.selectedEventId != null && raceWizardModel.selectedEventId > 0
         ? PostJsonData(
             url,
             { iType: 'EVENT', iEventId: raceWizardModel.selectedEventId },
@@ -290,7 +290,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
             eventClasses = Array.isArray(classJson.EventClass) ? classJson.EventClass : [classJson.EventClass];
           }
 
-          let raceEvent: IRaceEventSnapshotIn | undefined = editResultJson;
+          let raceEvent: IRaceEventSnapshotIn | undefined = !raceWizardModel.overwrite ? editResultJson : undefined;
           let eventRace: IEventorEventRace | undefined;
           if (resultJson != null) {
             if (Array.isArray(resultJson.Event.EventRace)) {
@@ -332,6 +332,9 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                   : null,
                 results: [],
                 teamResults: [],
+                rankingBaseDescription: editResultJson?.rankingBaseDescription,
+                rankingBasetimePerKilometer: editResultJson?.rankingBasetimePerKilometer,
+                rankingBasepoint: editResultJson?.rankingBasepoint,
               };
             }
           }
@@ -416,7 +419,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                     });
                   }
 
-                  if (!editResultJson) {
+                  if (raceWizardModel.overwrite) {
                     const clubPersonResults = personResults.filter(
                       (personResult) =>
                         personResult.Organisation &&
@@ -489,8 +492,11 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                           entry.Competitor?.PersonId === personResult.Person.PersonId ||
                           entry.Competitor?.Person?.PersonId === personResult.Person.PersonId
                       );
-                      let entryFees: IEventorEntryClassFee[] =
-                        entry?.EntryEntryFee != null ? [entry.EntryEntryFee] : [];
+                      let entryFees: IEventorEntryClassFee[] = Array.isArray(entry?.EntryEntryFee)
+                        ? entry!.EntryEntryFee
+                        : entry?.EntryEntryFee != null
+                        ? [entry.EntryEntryFee]
+                        : [];
                       if (entry?.EntryEntryFee == null && currentClass) {
                         if (Array.isArray(currentClass.ClassEntryFee)) {
                           entryFees = currentClass.ClassEntryFee;
@@ -575,7 +581,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                   }
                 }
               }
-            } else if (eventIsRelay && !editResultJson) {
+            } else if (eventIsRelay && raceWizardModel.overwrite) {
               for (let i = 0; i < classResults.length; i++) {
                 const classResult = classResults[i];
                 let currentClass: IEventorEventClass | undefined;
@@ -664,7 +670,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                       if (
                         (teamMemberResult.Organisation &&
                           teamMemberResult.Organisation.OrganisationId ===
-                            clubModel.raceClubs?.selectedClub.eventorOrganisationId.toString()) ||
+                            clubModel.eventor?.organisationId.toString()) ||
                         competitor ||
                         (hasClubMembers && teamOrganisations.length === 1)
                       ) {
@@ -864,19 +870,13 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
             raceWizardModel.setRaceWinnerResults(raceWinnerResults);
           }
 
-          if (editResultJson != null) {
+          if (!raceWizardModel.overwrite && editResultJson != null) {
             raceWizardModel.setRaceEvent(editResultJson);
           } else if (raceEvent != null) {
-            //raceWizardModel.setRaceEvent(raceEvent);
-            const list = raceEvent.teamResults;
-            raceEvent.teamResults = [];
             raceWizardModel.setRaceEvent(raceEvent);
-            list?.forEach((r) => {
-              raceWizardModel.raceEvent?.addTeamResult(r);
-            });
           }
 
-          if (!eventIsRelay && !editResultJson && clubModel.raceClubs && raceWizardModel.raceEvent) {
+          if (!eventIsRelay && raceWizardModel.overwrite && clubModel.raceClubs && raceWizardModel.raceEvent) {
             CalculateCompetitorsFee(
               raceWizardModel.raceEvent,
               clubModel.raceClubs.selectedClub,

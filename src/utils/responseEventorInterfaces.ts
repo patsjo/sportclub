@@ -127,7 +127,7 @@ export interface IEventorEntry {
   CreatedBy: IEventorCreatedBy;
   EntryClass: IEventorEntryClass;
   EntryDate: IEventorDateTime;
-  EntryEntryFee?: IEventorEntryClassFee;
+  EntryEntryFee?: IEventorEntryClassFee[] | IEventorEntryClassFee;
   EntryId: string;
   Event: IEventorEvent;
   EventRaceId: string;

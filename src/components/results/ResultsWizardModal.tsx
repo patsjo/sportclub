@@ -81,6 +81,8 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
           setWizardStep(nextStep);
         });
         return;
+      } else if (nextStep === 2) {
+        raceWizardModel.current.setBooleanValue('overwrite', true);
       }
       setNextStepValid(false);
       setWizardStep(nextStep);
@@ -343,7 +345,6 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
             {t('common.Previous')}
           </Button>,
           <Button
-            type="primary"
             style={wizardStep === 2 ? {} : { display: 'none' }}
             onClick={() => {
               const resultObject: IExtendedRaceResult = {
@@ -432,6 +433,7 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
             {t('results.AddCompetitor')}
           </Button>,
           <Button
+            type="primary"
             disabled={!loaded || !nextStepValid}
             loading={saving}
             onClick={(e) => (wizardStep === 3 ? save(true) : next(e))}

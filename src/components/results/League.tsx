@@ -560,10 +560,12 @@ const League = observer(() => {
   return league ? (
     <Tabs
       defaultActiveKey="grandSlam"
-      tabBarExtraContent={[
-        <GenderSelect year={year} t={t} onUpdate={onUpdate} />,
-        <YearSelect gender={gender} t={t} onUpdate={onUpdate} />,
-      ]}
+      tabBarExtraContent={
+        <>
+          <GenderSelect year={year} t={t} onUpdate={onUpdate} />
+          <YearSelect gender={gender} t={t} onUpdate={onUpdate} />
+        </>
+      }
     >
       <TabPane tab={t('results.GrandSlam')} key="grandSlam">
         Sammanlagd placering i de fyra ligorna.

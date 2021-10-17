@@ -172,7 +172,12 @@ const ResultWizardStep1ChooseRace = observer(({ visible, onValidate, onFailed }:
                             cr.PersonResult &&
                             (!cr.PersonResult.Organisation ||
                               cr.PersonResult.Organisation.OrganisationId ===
-                                clubModel.raceClubs?.selectedClub.eventorOrganisationId.toString())
+                                clubModel.eventor?.organisationId.toString() ||
+                              (cr.PersonResult.Organisation.OrganisationId ===
+                                clubModel.eventor?.districtOrganisationId.toString() &&
+                                clubModel.raceClubs?.selectedClub.competitorByEventorId(
+                                  parseInt(cr.PersonResult.Person.PersonId)
+                                ) != null))
                           ) {
                             isCurrentClub = true;
                           }
@@ -199,8 +204,8 @@ const ResultWizardStep1ChooseRace = observer(({ visible, onValidate, onFailed }:
                             );
                             isCurrentClub = teamOrganisations.some(
                               (org) =>
-                                org.OrganisationId ===
-                                clubModel.raceClubs?.selectedClub.eventorOrganisationId.toString()
+                                org.OrganisationId === clubModel.eventor?.organisationId.toString() ||
+                                org.OrganisationId === clubModel.eventor?.districtOrganisationId.toString()
                             );
                           }
                         });
@@ -353,10 +358,10 @@ const ResultWizardStep1ChooseRace = observer(({ visible, onValidate, onFailed }:
                   selectedEventorRaceId: e.eventorRaceId,
                   selectedEventId: e.eventId,
                   alreadySaved: true,
-                  existInEventor: false,
+                  existInEventor: e.eventorId > 0,
                   isRelay: e.isRelay,
                 }),
-                existInEventor: false,
+                existInEventor: e.eventorId > 0,
                 isRelay: e.isRelay,
                 alreadySaved: true,
                 alreadySavedEventsNotInEventor: true,

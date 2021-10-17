@@ -1,4 +1,4 @@
-import { Col, Form, InputNumber, Row, TimePicker } from 'antd';
+import { Alert, Col, Form, InputNumber, Row, TimePicker } from 'antd';
 import { FormInstance } from 'antd/lib/form';
 import { observer } from 'mobx-react';
 import moment from 'moment';
@@ -98,22 +98,35 @@ const ResultWizardStep3Ranking = observer(({ saving, onValidate }: IResultWizard
     >
       {['OL', 'SKIO', 'MTBO'].includes(raceWizardModel.raceEvent.sportCode) ? (
         <>
-          <Row gutter={8}>
-            <Col span={24}>
-              Välj i första hand bästa herrsenioren, och hans ranking på samma tävling enligt sverigelistan.
-            </Col>
-          </Row>
-          <Row gutter={8}>
-            <Col span={24}>Välj i andra hand bästa junior, om denna tillhör sverige eliten.</Col>
-          </Row>
-          <Row gutter={8}>
-            <Col span={24}>Välj i tredje hand hastighet från en terrängtyp.</Col>
-          </Row>
-          <Row gutter={8}>
-            <Col span={24}>
-              OBS! Undvik att välja gubbar, damer eller ungdomar från sverigelistan, då detta blir helt missvisande.
-            </Col>
-          </Row>
+          {raceWizardModel.raceEvent?.validRanking ? (
+            <Alert message={raceWizardModel.raceEvent?.rankingBaseDescription} type="success" showIcon />
+          ) : (
+            <Alert
+              message={
+                <>
+                  <Row gutter={8}>
+                    <Col span={24}>
+                      Välj i första hand bästa herrsenioren, och hans ranking på samma tävling enligt sverigelistan.
+                    </Col>
+                  </Row>
+                  <Row gutter={8}>
+                    <Col span={24}>Välj i andra hand bästa junior, om denna tillhör sverige eliten.</Col>
+                  </Row>
+                  <Row gutter={8}>
+                    <Col span={24}>Välj i tredje hand hastighet från en terrängtyp.</Col>
+                  </Row>
+                  <Row gutter={8}>
+                    <Col span={24}>
+                      OBS! Undvik att välja gubbar, damer eller ungdomar från sverigelistan, då detta blir helt
+                      missvisande.
+                    </Col>
+                  </Row>
+                </>
+              }
+              type="info"
+              showIcon
+            />
+          )}
           <Row gutter={8}>
             {raceWizardModel.existInEventor && !raceWizardModel.raceEvent.isRelay ? (
               <Col span={12}>
