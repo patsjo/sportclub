@@ -74,7 +74,9 @@ and the following seetings:
    - php/log_in.php
    - php/log_out.php
    - php/include/users.php
-5. npm install
-6. npm run build (or "npm run start" to just start it locally)
-7. Copy "index.html" and "static" folder from the "build" folder to your public html root folder.
-8. Done!!
+5. Create your own club config file in the "src/models/clubs" folder.
+6. Change "src/App.tsx" to import your config instead. (import clubJson from './models/clubs/...';)
+7. npm install
+8. npm run build (or "npm run start" to just start it locally)
+9. Copy "index.html" and "static" folder from the "build" folder to your public html root folder.
+10. Done!!
