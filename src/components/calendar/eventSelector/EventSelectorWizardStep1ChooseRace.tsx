@@ -205,7 +205,7 @@ const EventSelectorWizardStep1ChooseRace = observer(
 
     const onSelectChange = useCallback(
       (newSelectedRowKeys: React.Key[]) => {
-        const selected = events.filter((event) => selectedRowKeys.includes(event.calendarEventId));
+        const selected = events.filter((event) => newSelectedRowKeys.includes(event.calendarEventId));
 
         eventSelectorWizardModel.setSelectedEvents(selected);
         setSelectedRowKeys(newSelectedRowKeys);
