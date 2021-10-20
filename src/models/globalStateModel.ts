@@ -33,6 +33,7 @@ export const GlobalStateModel = types
         self.updateGraphics = callbackFunc;
       },
       setDashboard(history: History, path: string, startDate?: string, endDate?: string, newsTypeId?: number) {
+        self.news?.reset();
         self.startDate = startDate !== undefined ? startDate : null;
         self.endDate = endDate !== undefined ? endDate : null;
         self.type = newsTypeId !== undefined ? newsTypeId : null;

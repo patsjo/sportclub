@@ -41,7 +41,7 @@ export const NoWrap = styled.div`
 `;
 
 export const SpinnerDiv = styled.div`
-  display: '${({ visible = true }: { visible?: boolean }) => (visible ? 'block' : 'none')}';
+  display: ${({ visible = true }: { visible?: boolean }) => (visible ? 'block' : 'none')};
   text-align: center;
   width: 100%;
 `;

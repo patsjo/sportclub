@@ -1,3 +1,4 @@
+import { useLocalStore } from 'mobx-react';
 import { GlobalStateModel, IGlobalStateModel } from 'models/globalStateModel';
 import { IMobxClubModel, MobxClubModel } from 'models/mobxClubModel';
 import { ISessionModel, SessionModel } from 'models/sessionModel';
@@ -47,7 +48,8 @@ interface IMobxStoreProvider {
   store: IMobxStore;
 }
 export const MobxStoreProvider = ({ children, store }: IMobxStoreProvider) => {
-  return <MobxStoreContext.Provider value={store}>{children}</MobxStoreContext.Provider>;
+  const observableStore = useLocalStore(() => store);
+  return <MobxStoreContext.Provider value={observableStore}>{children}</MobxStoreContext.Provider>;
 };
 
 export const useMobxStore = () => React.useContext<IMobxStore>(MobxStoreContext);

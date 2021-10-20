@@ -13,17 +13,17 @@ const SpinnerDiv = styled.div<IChildContainerProps>`
   width: 100%;
 `;
 
-const useNews = () => {
+const useNews = (withinDashboard: boolean) => {
   const { globalStateModel, clubModel } = useMobxStore();
   const [firstLoading, setFirstLoading] = React.useState(true);
   const [loading, setLoading] = useState(false);
   const location = useLocation();
 
   const loadNews = useCallback(
-    (): Promise<void> =>
+    (): Promise<boolean> =>
       new Promise((resolve, reject) => {
         if (loading) {
-          resolve();
+          resolve(true);
           return;
         }
         const url = clubModel.modules.find((module) => module.name === 'News')?.queryUrl;
@@ -38,8 +38,12 @@ const useNews = () => {
         startDate.setDate(startDate.getDate() - 180);
         const iStartDate = startDate.toISOString().substr(0, 10);
         const data = {
-          iStartDate: globalStateModel.startDate ? globalStateModel.startDate : iStartDate,
-          iEndDate: globalStateModel.endDate ? globalStateModel.endDate : '',
+          iStartDate: withinDashboard
+            ? iStartDate
+            : globalStateModel.startDate
+            ? globalStateModel.startDate
+            : '1900-01-01',
+          iEndDate: withinDashboard ? '' : globalStateModel.endDate ? globalStateModel.endDate : '2099-12-31',
           iNewsTypeID: globalStateModel.type ? globalStateModel.type : '',
           offset: offset,
           limit: limit,
@@ -54,7 +58,7 @@ const useNews = () => {
             globalStateModel.news?.addNewsItemsToBottom(newArray);
             setFirstLoading(false);
             setLoading(false);
-            resolve();
+            resolve(newArray.length === limit);
           })
           .catch(() => {
             setFirstLoading(false);
@@ -64,16 +68,6 @@ const useNews = () => {
       }),
     [loading, location.pathname, globalStateModel.type]
   );
-
-  React.useEffect(() => {
-    if (location.pathname !== '/' && location.pathname !== '/news') {
-      return;
-    }
-    loadNews();
-    return () => {
-      globalStateModel.news?.reset();
-    };
-  }, [location.pathname, globalStateModel.type]);
 
   const newsItems = globalStateModel.news?.newsItems;
 

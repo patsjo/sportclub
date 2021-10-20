@@ -123,9 +123,8 @@ const App = () => {
     GlobalStateModel.create({
       news: {
         newsItems: [],
-        limit: 12,
+        limit: 10,
         offset: 0,
-        hasMoreItems: true,
       },
       graphics:
         clubModel.current.map?.center && clubModel.current.logo

@@ -1,7 +1,7 @@
 import { Button, message, Spin, Tabs } from 'antd';
 import { observer } from 'mobx-react';
 import moment from 'moment';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { useMobxStore } from 'utils/mobxStore';
@@ -33,52 +33,65 @@ const AllCompetitorsPresentation = observer(() => {
   const [loading, setLoading] = useState(true);
   const [maleCompetitors, setMaleCompetitors] = useState<ICompetitor[]>([]);
   const [femaleCompetitors, setFemaleCompetitors] = useState<ICompetitor[]>([]);
-  const [viewNumberOf, setViewNumberOf] = useState(0);
   const [gender, setGender] = useState<GenderType>('MALE');
+  const viewNumberOfRef = useRef(0);
+  const viewMaxNumberOfRef = useRef(0);
+  const [viewNumberOf, setViewNumberOf] = useState(0);
+  const viewMaleCompetitors = useMemo(() => maleCompetitors.slice(0, viewNumberOf), [viewNumberOf]);
+  const viewFemaleCompetitors = useMemo(() => femaleCompetitors.slice(0, viewNumberOf), [viewNumberOf]);
 
-  useEffect(() => {
-    const currentYear = parseInt(moment().format('YYYY'));
-    const fromDate = moment().add(1, 'days').subtract(1, 'years').format('YYYY-MM-DD');
-    const birthDate = moment(currentYear, 'YYYY').subtract(14, 'years').subtract(1, 'days').format('YYYY-MM-DD');
-    const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
-    if (!url) return;
+  const loadMoreCallback = useCallback((): Promise<boolean> => {
+    return new Promise((resolve, reject) => {
+      if (viewNumberOfRef.current > 0) {
+        viewNumberOfRef.current += 10;
+        setViewNumberOf(viewNumberOfRef.current);
+        resolve(viewNumberOfRef.current < viewMaxNumberOfRef.current);
+        return;
+      }
 
-    PostJsonData(
-      url,
-      {
-        iType: 'TOP',
-        iFromDate: fromDate,
-        iBirthDate: birthDate,
-      },
-      true,
-      sessionModel.authorizationHeader
-    )
-      .then((competitors: ICompetitor[]) => {
-        setMaleCompetitors(competitors.filter((c) => c.gender === 'MALE'));
-        setFemaleCompetitors(competitors.filter((c) => c.gender === 'FEMALE'));
-        setViewNumberOf(10);
-        setLoading(false);
-      })
-      .catch((e) => {
-        if (e && e.message) {
-          message.error(e.message);
-        }
-      });
-  }, []);
+      const currentYear = parseInt(moment().format('YYYY'));
+      const fromDate = moment().add(1, 'days').subtract(1, 'years').format('YYYY-MM-DD');
+      const birthDate = moment(currentYear, 'YYYY').subtract(14, 'years').subtract(1, 'days').format('YYYY-MM-DD');
+      const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
+      if (!url) {
+        resolve(false);
+        return;
+      }
 
-  const loadMoreCallback = useCallback(() => {
-    setViewNumberOf((nof) => nof + 10);
-    return new Promise<void>((resolve) => resolve());
+      PostJsonData(
+        url,
+        {
+          iType: 'TOP',
+          iFromDate: fromDate,
+          iBirthDate: birthDate,
+        },
+        true,
+        sessionModel.authorizationHeader
+      )
+        .then((competitors: ICompetitor[]) => {
+          const mc = competitors.filter((c) => c.gender === 'MALE');
+          const fc = competitors.filter((c) => c.gender === 'FEMALE');
+          setMaleCompetitors(mc);
+          setFemaleCompetitors(fc);
+          viewNumberOfRef.current = 10;
+          viewMaxNumberOfRef.current = Math.max(mc.length, fc.length);
+          setViewNumberOf(viewNumberOfRef.current);
+          setLoading(false);
+          resolve(viewNumberOfRef.current < viewMaxNumberOfRef.current);
+        })
+        .catch((e) => {
+          if (e && e.message) {
+            message.error(e.message);
+          }
+          reject(e);
+        });
+    });
   }, []);
 
   const infoButton = <Button onClick={() => StarsInfoModal(t, gender)}>Info</Button>;
 
   return (
-    <InfiniteScroll
-      key="InfiniteScroll#competitorPresentation"
-      loadMore={loadMoreCallback}
-      hasMore={viewNumberOf < Math.max(maleCompetitors.length, femaleCompetitors.length)}
-    >
+    <InfiniteScroll key="InfiniteScroll#competitorPresentation" loadMore={loadMoreCallback}>
       <StyledTabs
         defaultActiveKey={gender}
         tabBarExtraContent={infoButton}
@@ -87,7 +100,7 @@ const AllCompetitorsPresentation = observer(() => {
         <TabPane tab={t('results.Male')} key="MALE">
           {!loading ? (
             <div>
-              {maleCompetitors.slice(0, viewNumberOf).map((c) => (
+              {viewMaleCompetitors.map((c) => (
                 <CompetitorPresentation
                   key={`competitorPresentation#${c.competitorId}`}
                   competitor={c}
@@ -102,7 +115,7 @@ const AllCompetitorsPresentation = observer(() => {
         <TabPane tab={t('results.FeMale')} key="FEMALE">
           {!loading ? (
             <div>
-              {femaleCompetitors.slice(0, viewNumberOf).map((c) => (
+              {viewFemaleCompetitors.map((c) => (
                 <CompetitorPresentation
                   key={`competitorPresentation#${c.competitorId}`}
                   competitor={c}

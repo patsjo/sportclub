@@ -1,16 +1,14 @@
 import { observer } from 'mobx-react';
 import React from 'react';
-import { useMobxStore } from 'utils/mobxStore';
 import InfiniteScroll from '../../utils/infinityScroll';
 import Columns from '../dashboard/columns/Columns';
 import useNews from './useNews';
 
 const News = observer(() => {
-  const { clubModel, globalStateModel } = useMobxStore();
-  const { loadMoreCallback, newsItems } = useNews();
+  const { loadMoreCallback, newsItems } = useNews(false);
 
   return (
-    <InfiniteScroll key="InfiniteScroll#news" loadMore={loadMoreCallback} hasMore={globalStateModel.news?.hasMoreItems}>
+    <InfiniteScroll key="InfiniteScroll#news" loadMore={loadMoreCallback}>
       <Columns key="columns#news">{newsItems}</Columns>
     </InfiniteScroll>
   );

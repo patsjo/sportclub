@@ -21,16 +21,12 @@ const SpinnerDiv = styled.div`
 const Dashboard = observer(() => {
   const { clubModel, globalStateModel } = useMobxStore();
   const eventorEntries = useEventorEntries(clubModel);
-  const { loadMoreCallback, newsItems } = useNews();
+  const { loadMoreCallback, newsItems } = useNews(true);
   const bannerItems = useBanners();
   const showSponsors = clubModel.sponsors ? clubModel.sponsors.some((s) => s.active) : false;
 
   return (
-    <InfiniteScroll
-      key="dashboard#InfiniteScroll#home"
-      loadMore={loadMoreCallback}
-      hasMore={globalStateModel.news?.hasMoreItems}
-    >
+    <InfiniteScroll key="dashboard#InfiniteScroll#home" loadMore={loadMoreCallback}>
       <Columns key="dashboard#columns#home">
         {newsItems.slice(0, 2)}
         {bannerItems}

@@ -51,7 +51,7 @@ const Toolbar = observer(() => {
                   }
                   break;
                 case 'News':
-                  globalStateModel.setDashboard(history, '/news', '1990-01-01', '2099-12-31');
+                  globalStateModel.setDashboard(history, '/news', '1900-01-01', '2099-12-31');
                   break;
                 case 'ScoringBoard':
                   globalStateModel.setDashboard(history, '/league');

@@ -25,14 +25,12 @@ export const NewsModel = types
     newsItems: types.array(NewsItem),
     limit: 12,
     offset: types.integer,
-    hasMoreItems: types.boolean,
   })
   .actions((self) => {
     return {
       reset() {
         self.newsItems = cast([]);
         self.offset = 0;
-        self.hasMoreItems = false;
       },
       addNewsItemToTop(newsitem: INewsItemSnapshotIn) {
         self.newsItems.unshift(newsitem);
@@ -41,7 +39,6 @@ export const NewsModel = types
         const addItems = newsitems.filter((newsItem) => !self.newsItems.some((item) => item.id === newsItem.id));
         self.newsItems = cast([...self.newsItems, ...addItems]);
         self.offset = self.offset + newsitems.length;
-        self.hasMoreItems = newsitems.length === self.limit;
       },
       removeNewsItem(newsItem: INewsItemSnapshotIn) {
         self.newsItems = cast(self.newsItems.filter((item) => item.id !== newsItem.id));

@@ -56,7 +56,7 @@ const NewsSubMenus = observer(() => {
         name={t('modules.News')}
         isSubMenu
         onClick={() => {
-          globalStateModel.setDashboard(history, '/news', '1990-01-01', '2099-12-31');
+          globalStateModel.setDashboard(history, '/news', '1900-01-01', '2099-12-31');
         }}
       />
       <MenuItem
@@ -65,7 +65,7 @@ const NewsSubMenus = observer(() => {
         name={t('news.LongTimeNews')}
         isSubMenu
         onClick={() => {
-          globalStateModel.setDashboard(history, '/news', '1990-01-01', '2099-12-31', 2);
+          globalStateModel.setDashboard(history, '/news', '1900-01-01', '2099-12-31', 2);
         }}
       />
       <MenuItem
@@ -74,7 +74,7 @@ const NewsSubMenus = observer(() => {
         name={t('news.Educations')}
         isSubMenu
         onClick={() => {
-          globalStateModel.setDashboard(history, '/news', '1990-01-01', '2099-12-31', 3);
+          globalStateModel.setDashboard(history, '/news', '1900-01-01', '2099-12-31', 3);
         }}
       />
     </>
