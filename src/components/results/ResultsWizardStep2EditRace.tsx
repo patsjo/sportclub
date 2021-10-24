@@ -1,7 +1,8 @@
-import { Col, DatePicker, Form, Input, message, Modal, Popconfirm, Row, Spin, Switch, TimePicker } from 'antd';
+import { Col, DatePicker, Form, Input, message, Modal, Popconfirm, Row, Spin, Switch } from 'antd';
 import { FormInstance } from 'antd/lib/form';
 import { ModalFuncProps } from 'antd/lib/modal';
 import { ColumnType } from 'antd/lib/table';
+import InputTime from 'components/formItems/InputTime';
 import { observer } from 'mobx-react';
 import { applySnapshot, getSnapshot } from 'mobx-state-tree';
 import {
@@ -1272,9 +1273,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
         iName: raceWizardModel.raceEvent.name,
         iOrganiserName: raceWizardModel.raceEvent.organiserName,
         iRaceDate: !raceWizardModel.raceEvent.raceDate ? null : moment(raceWizardModel.raceEvent.raceDate, dateFormat),
-        iRaceTime: !raceWizardModel.raceEvent.raceTime
-          ? null
-          : moment(raceWizardModel.raceEvent.raceTime, shortTimeFormat),
+        iRaceTime: raceWizardModel.raceEvent.raceTime,
         iMeetsAwardRequirements: raceWizardModel.raceEvent.meetsAwardRequirements,
         iEventClassificationId: raceWizardModel.raceEvent.eventClassificationId,
         iPaymentModel: raceWizardModel.raceEvent.paymentModel,
@@ -1349,11 +1348,11 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
         </Col>
         <Col span={4}>
           <FormItem name="iRaceTime" label={t('results.Time')}>
-            <TimePicker
+            <InputTime
               format={shortTimeFormat}
               allowClear={true}
               onChange={(time) => {
-                time && raceWizardModel.raceEvent?.setStringValueOrNull('raceTime', time.format(shortTimeFormat));
+                time && raceWizardModel.raceEvent?.setStringValueOrNull('raceTime', time);
                 onValidate(!!raceWizardModel.raceEvent?.valid);
               }}
             />

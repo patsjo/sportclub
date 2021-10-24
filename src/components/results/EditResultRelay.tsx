@@ -1,7 +1,7 @@
-import { Col, Form, Input, InputNumber, Row, Select, TimePicker } from 'antd';
+import { Col, Form, Input, InputNumber, Row, Select } from 'antd';
+import InputTime, { stringToMilliSeconds } from 'components/formItems/InputTime';
 import { IMobxClubModel } from 'models/mobxClubModel';
 import { IRaceTeamResult, IRaceTeamResultSnapshotIn } from 'models/resultModel';
-import moment from 'moment';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
@@ -79,47 +79,21 @@ const EditResultRelay = ({
         iDifficulty: result.difficulty,
         iLengthInMeter: result.lengthInMeter,
         iFailedReason: result.failedReason,
-        iCompetitorTime: !result.competitorTime
-          ? null
-          : moment(
-              result.competitorTime.length <= 5 ? `0:${result.competitorTime}` : result.competitorTime,
-              timeFormat
-            ),
-        iWinnerTime: !result.winnerTime
-          ? null
-          : moment(result.winnerTime.length <= 5 ? `0:${result.winnerTime}` : result.winnerTime, timeFormat),
-        iSecondTime: !result.secondTime
-          ? null
-          : moment(result.secondTime.length <= 5 ? `0:${result.secondTime}` : result.secondTime, timeFormat),
+        iCompetitorTime: result.competitorTime,
+        iWinnerTime: result.winnerTime,
+        iSecondTime: result.secondTime,
         iPosition: result.position,
         iNofStartsInClass: result.nofStartsInClass,
         iStage: result.stage,
         iTotalStages: result.totalStages,
         iDeltaPositions: result.deltaPositions,
-        iDeltaTimeBehind: !result.deltaTimeBehind
-          ? null
-          : moment(
-              result.deltaTimeBehind.length <= 5 ? `0:${result.deltaTimeBehind}` : result.deltaTimeBehind,
-              timeFormat
-            ),
+        iDeltaTimeBehind: result.deltaTimeBehind,
         iTotalStagePosition: result.totalStagePosition,
-        iTotalStageTimeBehind: !result.totalStageTimeBehind
-          ? null
-          : moment(
-              result.totalStageTimeBehind.length <= 5
-                ? `0:${result.totalStageTimeBehind}`
-                : result.totalStageTimeBehind,
-              timeFormat
-            ),
+        iTotalStageTimeBehind: result.totalStageTimeBehind,
         iTeamFailedReason: result.teamFailedReason,
         iTotalPosition: result.totalPosition,
         iTotalNofStartsInClass: result.totalNofStartsInClass,
-        iTotalTimeBehind: !result.totalTimeBehind
-          ? null
-          : moment(
-              result.totalTimeBehind.length <= 5 ? `0:${result.totalTimeBehind}` : result.totalTimeBehind,
-              timeFormat
-            ),
+        iTotalTimeBehind: result.totalTimeBehind,
         iRaceLightCondition: raceLightCondition,
         iDeviantRaceLightCondition: result.deviantRaceLightCondition,
         iEventClassificationId: eventClassificationId,
@@ -459,18 +433,17 @@ const EditResultRelay = ({
             label={t('results.Time')}
             rules={[
               {
-                type: 'object',
                 required: !failedReason,
                 message: errorRequiredField(t, 'results.Time'),
               },
             ]}
           >
-            <TimePicker
+            <InputTime
               format={timeFormat}
               allowClear={true}
               style={{ width: '100%' }}
               onChange={(time) => {
-                result.competitorTime = !time ? null : time.format(timeFormat);
+                result.competitorTime = time;
                 formRef.current.validateFields(['iWinnerTime'], { force: true });
               }}
             />
@@ -482,15 +455,17 @@ const EditResultRelay = ({
             label={t('results.WinnerTime')}
             rules={[
               {
-                type: 'object',
                 required: !failedReason,
                 message: errorRequiredField(t, 'results.WinnerTime'),
               },
               {
-                type: 'object',
                 validator: (rule, value, callback) => {
-                  const competitorTime = formRef.current.getFieldValue('iCompetitorTime');
-                  if (competitorTime && value && !value.isSameOrBefore(competitorTime)) {
+                  const competitorTime = stringToMilliSeconds(
+                    formRef.current.getFieldValue('iCompetitorTime'),
+                    timeFormat
+                  );
+                  const winnerTime = stringToMilliSeconds(value, timeFormat);
+                  if (competitorTime > 0 && winnerTime > 0 && competitorTime < winnerTime) {
                     callback(t('results.WinnerTimeLessOrEqualThanTime'));
                   }
                   callback();
@@ -498,12 +473,12 @@ const EditResultRelay = ({
               },
             ]}
           >
-            <TimePicker
+            <InputTime
               format={timeFormat}
               allowClear={true}
               style={{ width: '100%' }}
               onChange={(time) => {
-                result.winnerTime = !time ? null : time.format(timeFormat);
+                result.winnerTime = time;
                 formRef.current.validateFields(['iSecondTime'], { force: true });
                 const resultsWithSameClass = results.filter(
                   (r) =>
@@ -523,10 +498,10 @@ const EditResultRelay = ({
             label={t('results.SecondTime')}
             rules={[
               {
-                type: 'object',
                 validator: (rule, value, callback) => {
-                  const winnerTime = formRef.current.getFieldValue('iWinnerTime');
-                  if (winnerTime && value && !value.isSameOrAfter(winnerTime)) {
+                  const winnerTime = stringToMilliSeconds(formRef.current.getFieldValue('iWinnerTime'), timeFormat);
+                  const secondTime = stringToMilliSeconds(value, timeFormat);
+                  if (winnerTime > 0 && secondTime > 0 && secondTime < winnerTime) {
                     callback(t('results.SecondTimeGreaterOrEqualThanWinnerTime'));
                   }
                   callback();
@@ -534,12 +509,12 @@ const EditResultRelay = ({
               },
             ]}
           >
-            <TimePicker
+            <InputTime
               format={timeFormat}
               allowClear={true}
               style={{ width: '100%' }}
               onChange={(time) => {
-                result.secondTime = !time ? null : time.format(timeFormat);
+                result.secondTime = time;
                 const resultsWithSameClass = results.filter(
                   (r) =>
                     r.className === result.className &&
@@ -669,12 +644,13 @@ const EditResultRelay = ({
         </Col>
         <Col span={6}>
           <FormItem name="iDeltaTimeBehind" label={t('results.DeltaTimeBehind')}>
-            <TimePicker
+            <InputTime
               format={timeFormat}
               allowClear={true}
+              allowNegativeTime={true}
               style={{ width: '100%' }}
               onChange={(time) => {
-                result.deltaTimeBehind = !time ? null : time.format(timeFormat);
+                result.deltaTimeBehind = time;
               }}
             />
           </FormItem>
@@ -694,12 +670,13 @@ const EditResultRelay = ({
         </Col>
         <Col span={6}>
           <FormItem name="iTotalStageTimeBehind" label={t('results.TotalStageTimeBehind')}>
-            <TimePicker
+            <InputTime
               format={timeFormat}
               allowClear={true}
+              allowNegativeTime={true}
               style={{ width: '100%' }}
               onChange={(time) => {
-                result.totalStageTimeBehind = !time ? null : time.format(timeFormat);
+                result.totalStageTimeBehind = time;
               }}
             />
           </FormItem>
@@ -769,12 +746,13 @@ const EditResultRelay = ({
         </Col>
         <Col span={6}>
           <FormItem name="iTotalTimeBehind" label={t('results.TotalTimeBehind')}>
-            <TimePicker
+            <InputTime
               format={timeFormat}
               allowClear={true}
+              allowNegativeTime={true}
               style={{ width: '100%' }}
               onChange={(time) => {
-                result.totalTimeBehind = !time ? null : time.format(timeFormat);
+                result.totalTimeBehind = time;
               }}
             />
           </FormItem>

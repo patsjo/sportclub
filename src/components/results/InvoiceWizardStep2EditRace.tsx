@@ -1,6 +1,7 @@
-import { Col, DatePicker, Form, Input, InputNumber, message, Row, Spin, TimePicker } from 'antd';
+import { Col, DatePicker, Form, Input, InputNumber, message, Row, Spin } from 'antd';
 import { FormInstance } from 'antd/lib/form';
 import { ColumnType } from 'antd/lib/table';
+import InputTime from 'components/formItems/InputTime';
 import { observer } from 'mobx-react';
 import { getSnapshot } from 'mobx-state-tree';
 import { IRaceEventSnapshotIn, IRaceResult, IRaceTeamResult } from 'models/resultModel';
@@ -245,9 +246,7 @@ const InvoiceWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: 
         iName: raceWizardModel.raceEvent.name,
         iOrganiserName: raceWizardModel.raceEvent.organiserName,
         iRaceDate: !raceWizardModel.raceEvent.raceDate ? null : moment(raceWizardModel.raceEvent.raceDate, dateFormat),
-        iRaceTime: !raceWizardModel.raceEvent.raceTime
-          ? null
-          : moment(raceWizardModel.raceEvent.raceTime, shortTimeFormat),
+        iRaceTime: raceWizardModel.raceEvent.raceTime,
       }}
     >
       <Row gutter={8}>
@@ -268,7 +267,7 @@ const InvoiceWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: 
         </Col>
         <Col span={4}>
           <FormItem name="iRaceTime" label={t('results.Time')}>
-            <TimePicker format={shortTimeFormat} disabled={true} />
+            <InputTime format={shortTimeFormat} disabled={true} />
           </FormItem>
         </Col>
       </Row>

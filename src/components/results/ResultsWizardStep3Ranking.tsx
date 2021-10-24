@@ -1,7 +1,7 @@
-import { Alert, Col, Form, InputNumber, Row, TimePicker } from 'antd';
+import { Alert, Col, Form, InputNumber, Row } from 'antd';
 import { FormInstance } from 'antd/lib/form';
+import InputTime from 'components/formItems/InputTime';
 import { observer } from 'mobx-react';
-import moment from 'moment';
 import React, { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMobxStore } from 'utils/mobxStore';
@@ -90,9 +90,7 @@ const ResultWizardStep3Ranking = observer(({ saving, onValidate }: IResultWizard
       ref={formRef}
       layout="vertical"
       initialValues={{
-        iRankingBasetimePerKilometer: !raceWizardModel.raceEvent.rankingBasetimePerKilometer
-          ? null
-          : moment(raceWizardModel.raceEvent.rankingBasetimePerKilometer, 'HH:mm:ss.SSS'),
+        iRankingBasetimePerKilometer: raceWizardModel.raceEvent.rankingBasetimePerKilometer,
         iRankingBasepoint: raceWizardModel.raceEvent.rankingBasepoint,
       }}
     >
@@ -148,7 +146,7 @@ const ResultWizardStep3Ranking = observer(({ saving, onValidate }: IResultWizard
                       );
                       formRef.current?.setFieldsValue({
                         iAreaTime: undefined,
-                        iRankingBasetimePerKilometer: moment(raceWinnerResult.timePerKilometer, 'HH:mm:ss.SSS'),
+                        iRankingBasetimePerKilometer: raceWinnerResult.timePerKilometer,
                         iRankingBasepoint: undefined,
                       });
                       onValidate(!!raceWizardModel.raceEvent?.validRanking);
@@ -181,7 +179,7 @@ const ResultWizardStep3Ranking = observer(({ saving, onValidate }: IResultWizard
                       );
                       formRef.current?.setFieldsValue({
                         iWinnerTime: undefined,
-                        iRankingBasetimePerKilometer: moment(areaResult.timePerKilometer, 'HH:mm:ss.SSS'),
+                        iRankingBasetimePerKilometer: areaResult.timePerKilometer,
                         iRankingBasepoint: 0,
                       });
                       onValidate(!!raceWizardModel.raceEvent?.validRanking);
@@ -200,22 +198,18 @@ const ResultWizardStep3Ranking = observer(({ saving, onValidate }: IResultWizard
             label={t('results.TimePerKilometer')}
             rules={[
               {
-                type: 'object',
                 required: true,
                 message: errorRequiredField(t, 'results.TimePerKilometer'),
               },
             ]}
           >
-            <TimePicker
+            <InputTime
               format={'mm:ss.SSS'}
               disabled={!['OL', 'SKIO', 'MTBO'].includes(raceWizardModel.raceEvent.sportCode)}
               allowClear={false}
               style={{ width: '100%' }}
               onChange={(time) => {
-                raceWizardModel.raceEvent?.setStringValueOrNull(
-                  'rankingBasetimePerKilometer',
-                  !time ? null : time.format('HH:mm:ss.SSS')
-                );
+                raceWizardModel.raceEvent?.setStringValueOrNull('rankingBasetimePerKilometer', time);
                 onValidate(!!raceWizardModel.raceEvent?.validRanking);
               }}
             />

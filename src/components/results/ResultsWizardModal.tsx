@@ -82,7 +82,7 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
         });
         return;
       } else if (nextStep === 2) {
-        raceWizardModel.current.setBooleanValue('overwrite', true);
+        raceWizardModel.current.setBooleanValue('overwrite', raceWizardModel.current.eventExistInEventor);
       }
       setNextStepValid(false);
       setWizardStep(nextStep);

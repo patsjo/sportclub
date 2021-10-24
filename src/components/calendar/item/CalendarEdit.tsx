@@ -1,5 +1,6 @@
 import { GlobalOutlined } from '@ant-design/icons';
-import { Button, Col, DatePicker, Form, Input, InputNumber, message, Modal, Row, Switch, TimePicker } from 'antd';
+import { Button, Col, DatePicker, Form, Input, InputNumber, message, Modal, Row, Switch } from 'antd';
+import InputTime from 'components/formItems/InputTime';
 import { observer } from 'mobx-react';
 import moment from 'moment';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -201,7 +202,7 @@ const CalendarEdit = observer(({ title, calendarObject, domains, open, onClose, 
             iGroupID: calendarObject.groupId,
             iHeader: calendarObject.header,
             iActivityDay: moment(calendarObject.date, dateFormat),
-            iActivityTime: !calendarObject.time ? null : moment(calendarObject.time, shortTimeFormat),
+            iActivityTime: calendarObject.time,
             iActivityDurationMinutes: calendarObject.activityDurationMinutes,
             iPlace: calendarObject.place,
             iLongitude: calendarObject.longitude,
@@ -291,7 +292,7 @@ const CalendarEdit = observer(({ title, calendarObject, domains, open, onClose, 
             </Col>
             <Col span={8}>
               <FormItem name="iActivityTime" label={t('calendar.ActivityTime')}>
-                <TimePicker format={shortTimeFormat} allowClear={true} style={{ width: '100%' }} />
+                <InputTime format={shortTimeFormat} allowClear={true} style={{ width: '100%' }} />
               </FormItem>
             </Col>
             <Col span={8}>
