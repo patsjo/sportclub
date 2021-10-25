@@ -19,7 +19,12 @@ import {
 import { PostJsonData } from '../../utils/api';
 import { FormSelect, IOption } from '../../utils/formHelper';
 import { getPdf, getZip, IPrintInput, IPrintObject, IPrintTable, IPrintTableColumn } from '../../utils/pdf';
-import { failedReasons, raceDistanceOptions, raceLightConditionOptions } from '../../utils/resultConstants';
+import {
+  failedReasons,
+  ManuallyEditedMissingTimePostfix,
+  raceDistanceOptions,
+  raceLightConditionOptions,
+} from '../../utils/resultConstants';
 import { FormatTime } from '../../utils/resultHelper';
 import FormItem from '../formItems/FormItem';
 import { SpinnerDiv, StyledTable } from '../styled/styled';
@@ -170,6 +175,8 @@ const columns = (
     selected: true,
     dataIndex: 'missingTime',
     key: 'missingTime',
+    render: (value) =>
+      value?.substr(-5) === ManuallyEditedMissingTimePostfix ? FormatTime(value) + '*' : FormatTime(value),
   });
   cols.push({
     title: t('results.RankingLeague'),
@@ -623,7 +630,12 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
             const printObjects = resultJsons
               .filter((printResult) => printResult && (printResult.results?.length || printResult.teamResults?.length))
               .map((printResult, index) => {
-                const printCompetitorId = isIndividual ? (competitorsOptions[index].code as number) : undefined;
+                let printCompetitorId: number | undefined;
+                if (isIndividual) {
+                  printCompetitorId = printResult.results.length
+                    ? printResult.results[0].competitorId
+                    : printResult.teamResults[0].competitorId;
+                }
                 return getPrintObject(settings, printResult, printCompetitorId);
               });
 

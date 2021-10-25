@@ -27,7 +27,7 @@ export const AddMapCompetitorConfirmModal = (
         opt.description.startsWith(`${newCompetitor.iFirstName} ${newCompetitor.iLastName} (`)
       );
     if (option) {
-      confirmObject.competitorId = parseInt(option.code);
+      confirmObject.competitorId = option.code;
     }
     let selectedTabKey = confirmObject.competitorId !== -1 ? '1' : '2';
     let confirmModal: {

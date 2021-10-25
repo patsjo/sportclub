@@ -10,6 +10,8 @@ export type LightConditionTypes = 'Day' | 'Night' | 'Dusk' | 'Dawn';
 export type PaymentTypes = 0 | 1 | 2 | 3 | 4;
 export type SportCodeTypes = 'OL' | 'RUN' | 'MTB' | 'MTBO' | 'SKI' | 'SKIO';
 
+export const ManuallyEditedMissingTimePostfix = '.0001';
+
 export const difficulties = {
   green: 'Grön',
   white: 'Vit',

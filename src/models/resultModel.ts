@@ -124,7 +124,7 @@ const RaceClub = types
             : -1
         )
         .map((competitor) => ({
-          code: competitor.competitorId.toString(),
+          code: competitor.competitorId,
           description: `${competitor.fullName} (${competitor.birthDay})`,
         }));
     },

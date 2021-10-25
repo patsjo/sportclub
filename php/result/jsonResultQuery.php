@@ -205,7 +205,7 @@ if ($input->iType == "EVENT" || $input->iType == "COMPETITOR")
       $x->pointsOld                    = is_null($row['POINTS_OLD']) ? NULL : intval($row['POINTS_OLD']);
       $x->points1000                   = is_null($row['POINTS_1000']) ? NULL : intval($row['POINTS_1000']);
       $x->ranking                      = is_null($row['RANKING']) ? NULL : floatval($row['RANKING']);
-      $x->missingTime                  = is_null($row['MISSING_TIME']) ? NULL : time2StringWithSeconds(strtotime($row['MISSING_TIME']));
+      $x->missingTime                  = $row['MISSING_TIME'];
       $x->speedRanking                 = is_null($row['SPEED_RANKING']) ? NULL : floatval($row['SPEED_RANKING']);
       $x->technicalRanking             = is_null($row['TECHNICAL_RANKING']) ? NULL : floatval($row['TECHNICAL_RANKING']);
       if (is_null($row['MULTI_DAY_RESULT_ID']))
@@ -291,7 +291,7 @@ if ($input->iType == "EVENT" || $input->iType == "COMPETITOR")
       $x->totalTimeBehind              = is_null($row['TOTAL_TIME_BEHIND']) ? NULL : time2StringWithSeconds(strtotime($row['TOTAL_TIME_BEHIND']));
       $x->points1000                   = is_null($row['POINTS_1000']) ? NULL : intval($row['POINTS_1000']);
       $x->ranking                      = is_null($row['RANKING']) ? NULL : floatval($row['RANKING']);
-      $x->missingTime                  = is_null($row['MISSING_TIME']) ? NULL : time2StringWithSeconds(strtotime($row['MISSING_TIME']));
+      $x->missingTime                  = $row['MISSING_TIME'];
       $x->speedRanking                 = is_null($row['SPEED_RANKING']) ? NULL : floatval($row['SPEED_RANKING']);
       $x->technicalRanking             = is_null($row['TECHNICAL_RANKING']) ? NULL : floatval($row['TECHNICAL_RANKING']);
       $x->serviceFeeToClub             = floatval($row['SERVICEFEE_TO_CLUB']);

@@ -1,4 +1,5 @@
-import { Col, DatePicker, Form, Input, message, Modal, Popconfirm, Row, Spin, Switch } from 'antd';
+import { ExclamationCircleOutlined } from '@ant-design/icons';
+import { Col, DatePicker, Form, Input, message, Modal, Popconfirm, Row, Spin, Switch, Tag } from 'antd';
 import { FormInstance } from 'antd/lib/form';
 import { ModalFuncProps } from 'antd/lib/modal';
 import { ColumnType } from 'antd/lib/table';
@@ -42,6 +43,7 @@ import {
   failedReasons,
   genders,
   LightConditionTypes,
+  ManuallyEditedMissingTimePostfix,
   paymentOptions,
   payments,
   PaymentTypes,
@@ -877,13 +879,26 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
             raceWizardModel.setRaceEvent(raceEvent);
           }
 
-          if (!eventIsRelay && raceWizardModel.overwrite && clubModel.raceClubs && raceWizardModel.raceEvent) {
-            CalculateCompetitorsFee(
-              raceWizardModel.raceEvent,
-              clubModel.raceClubs.selectedClub,
-              clubModel.raceClubs.eventClassifications
-            );
-            CalculateAllAwards(clubModel.raceClubs, raceWizardModel.raceEvent);
+          if (raceWizardModel.overwrite && clubModel.raceClubs && raceWizardModel.raceEvent) {
+            if (!eventIsRelay) {
+              CalculateCompetitorsFee(
+                raceWizardModel.raceEvent,
+                clubModel.raceClubs.selectedClub,
+                clubModel.raceClubs.eventClassifications
+              );
+              CalculateAllAwards(clubModel.raceClubs, raceWizardModel.raceEvent);
+              raceWizardModel.raceEvent.results.forEach((result) => {
+                if (result.missingTime?.substr(-5) !== ManuallyEditedMissingTimePostfix) {
+                  result.setStringValueOrNull('missingTime', result.missingTime);
+                }
+              });
+            } else {
+              raceWizardModel.raceEvent.teamResults.forEach((teamResult) => {
+                if (teamResult.missingTime?.substr(-5) !== ManuallyEditedMissingTimePostfix) {
+                  teamResult.setStringValueOrNull('missingTime', teamResult.missingTime);
+                }
+              });
+            }
           }
 
           formRef.current?.validateFields().then();
@@ -1041,10 +1056,17 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
         record.failedReason == null && value == null ? <MissingTag t={t} /> : FormatTime(value),
     },
     {
-      title: t('results.SecondTime'),
-      dataIndex: 'secondTime',
-      key: 'secondTime',
-      render: (value) => FormatTime(value),
+      title: t('results.MissingTime'),
+      dataIndex: 'missingTime',
+      key: 'missingTime',
+      render: (value) =>
+        value?.substr(-5) === ManuallyEditedMissingTimePostfix ? (
+          <Tag icon={<ExclamationCircleOutlined />} color="warning">
+            {FormatTime(value)}
+          </Tag>
+        ) : (
+          FormatTime(value)
+        ),
     },
     {
       title: t('results.Position'),
@@ -1218,10 +1240,17 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
         record.failedReason == null && value == null ? <MissingTag t={t} /> : FormatTime(value),
     },
     {
-      title: t('results.SecondTime'),
-      dataIndex: 'secondTime',
-      key: 'secondTime',
-      render: (value) => FormatTime(value),
+      title: t('results.MissingTime'),
+      dataIndex: 'missingTime',
+      key: 'missingTime',
+      render: (value) =>
+        value?.substr(-5) === ManuallyEditedMissingTimePostfix ? (
+          <Tag icon={<ExclamationCircleOutlined />} color="warning">
+            {FormatTime(value)}
+          </Tag>
+        ) : (
+          FormatTime(value)
+        ),
     },
     {
       title: t('results.Position'),

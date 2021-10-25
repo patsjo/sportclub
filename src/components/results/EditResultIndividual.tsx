@@ -13,6 +13,7 @@ import {
   EventClassificationIdTypes,
   failedReasonOptions,
   failedReasons,
+  ManuallyEditedMissingTimePostfix,
   PaymentTypes,
 } from '../../utils/resultConstants';
 import { GetAge, GetAward, GetClassClassificationId, GetCompetitorFee } from '../../utils/resultHelper';
@@ -112,6 +113,7 @@ const EditResultIndividual = ({
         iCompetitorTime: result.competitorTime,
         iWinnerTime: result.winnerTime,
         iSecondTime: result.secondTime,
+        iMissingTime: result.missingTime != null ? result.missingTime.substr(0, 8) : null,
         iPosition: result.position,
         iNofStartsInClass: result.nofStartsInClass,
         iAward: result.award,
@@ -585,6 +587,18 @@ const EditResultIndividual = ({
             >
               {calculatedAward ? <Option value={calculatedAward}>{calculatedAward}</Option> : null}
             </Select>
+          </FormItem>
+        </Col>
+        <Col span={6}>
+          <FormItem name="iMissingTime" label={t('results.MissingTime')}>
+            <InputTime
+              format={timeFormat}
+              allowClear={true}
+              style={{ width: '100%' }}
+              onChange={(time) => {
+                result.missingTime = time != null ? `${time}${ManuallyEditedMissingTimePostfix}` : null;
+              }}
+            />
           </FormItem>
         </Col>
       </Row>

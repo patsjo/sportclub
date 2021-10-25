@@ -13,6 +13,7 @@ import {
   failedReasonOptions,
   failedReasons,
   LightConditionTypes,
+  ManuallyEditedMissingTimePostfix,
   raceLightConditionOptions,
 } from '../../utils/resultConstants';
 import { GetClassClassificationId } from '../../utils/resultHelper';
@@ -82,6 +83,7 @@ const EditResultRelay = ({
         iCompetitorTime: result.competitorTime,
         iWinnerTime: result.winnerTime,
         iSecondTime: result.secondTime,
+        iMissingTime: result.missingTime != null ? result.missingTime.substr(0, 8) : null,
         iPosition: result.position,
         iNofStartsInClass: result.nofStartsInClass,
         iStage: result.stage,
@@ -623,6 +625,18 @@ const EditResultRelay = ({
                   (r) => r.className === result.className && r.teamResultId !== result.teamResultId
                 );
                 resultsWithSameClass.forEach((r) => r.setNumberValue('totalStages', result.totalStages));
+              }}
+            />
+          </FormItem>
+        </Col>
+        <Col span={6}>
+          <FormItem name="iMissingTime" label={t('results.MissingTime')}>
+            <InputTime
+              format={timeFormat}
+              allowClear={true}
+              style={{ width: '100%' }}
+              onChange={(time) => {
+                result.missingTime = time != null ? `${time}${ManuallyEditedMissingTimePostfix}` : null;
               }}
             />
           </FormItem>

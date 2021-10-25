@@ -17,7 +17,7 @@ import { IEventViewResultResponse } from 'utils/responseInterfaces';
 import { useResultWizardStore } from 'utils/resultWizardStore';
 import { PostJsonData } from '../../utils/api';
 import { dateFormat } from '../../utils/formHelper';
-import { genders } from '../../utils/resultConstants';
+import { genders, ManuallyEditedMissingTimePostfix } from '../../utils/resultConstants';
 import { GetMissingTime, GetRelaySplitTimes, GetSplitTimes, GetTimeWithHour } from '../../utils/resultHelper';
 import { SpinnerDiv } from '../styled/styled';
 import { AddMapCompetitorConfirmModal } from './AddMapCompetitorConfirmModal';
@@ -230,7 +230,11 @@ const ResultWizardStep1ChooseRaceRerun = observer(
                         r.competitorId === competitor?.competitorId &&
                         r.competitorTime === (valid ? GetTimeWithHour(personResult.Result?.Time) : null)
                     );
-                    if (result && result.missingTime !== missingTime) {
+                    if (
+                      result &&
+                      result.missingTime?.substr(-5) !== ManuallyEditedMissingTimePostfix &&
+                      result.missingTime !== missingTime
+                    ) {
                       result.setStringValueOrNull('missingTime', missingTime);
                     }
                   }
@@ -384,7 +388,11 @@ const ResultWizardStep1ChooseRaceRerun = observer(
                         r.competitorId === competitor?.competitorId &&
                         r.competitorTime === (valid ? GetTimeWithHour(teamMemberResult.Time) : null)
                     );
-                    if (result && result.missingTime !== missingTime) {
+                    if (
+                      result &&
+                      result.missingTime?.substr(-5) !== ManuallyEditedMissingTimePostfix &&
+                      result.missingTime !== missingTime
+                    ) {
                       result.setStringValueOrNull('missingTime', missingTime);
                     }
                   }
