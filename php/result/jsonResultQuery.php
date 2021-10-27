@@ -283,12 +283,12 @@ if ($input->iType == "EVENT" || $input->iType == "COMPETITOR")
       $x->totalStages                  = is_null($row['TOTAL_STAGES']) ? NULL : intval($row['TOTAL_STAGES']);
       $x->deviantRaceLightCondition    = $row['DEVIANT_RACE_LIGHT_CONDITION'];
       $x->deltaPositions               = is_null($row['DELTA_POSITIONS']) ? NULL : intval($row['DELTA_POSITIONS']);
-      $x->deltaTimeBehind              = is_null($row['DELTA_TIME_BEHIND']) ? NULL : time2StringWithSeconds(strtotime($row['DELTA_TIME_BEHIND']));
+      $x->deltaTimeBehind              = $row['DELTA_TIME_BEHIND'];
       $x->totalStagePosition           = is_null($row['TOTAL_STAGE_POSITION']) ? NULL : intval($row['TOTAL_STAGE_POSITION']);
-      $x->totalStageTimeBehind         = is_null($row['TOTAL_STAGE_TIME_BEHIND']) ? NULL : time2StringWithSeconds(strtotime($row['TOTAL_STAGE_TIME_BEHIND']));
+      $x->totalStageTimeBehind         = $row['TOTAL_STAGE_TIME_BEHIND'];
       $x->totalPosition                = is_null($row['TOTAL_POSITION']) ? NULL : intval($row['TOTAL_POSITION']);
       $x->totalNofStartsInClass        = is_null($row['TOTAL_NOF_STARTS_IN_CLASS']) ? NULL : intval($row['TOTAL_NOF_STARTS_IN_CLASS']);
-      $x->totalTimeBehind              = is_null($row['TOTAL_TIME_BEHIND']) ? NULL : time2StringWithSeconds(strtotime($row['TOTAL_TIME_BEHIND']));
+      $x->totalTimeBehind              = $row['TOTAL_TIME_BEHIND'];
       $x->points1000                   = is_null($row['POINTS_1000']) ? NULL : intval($row['POINTS_1000']);
       $x->ranking                      = is_null($row['RANKING']) ? NULL : floatval($row['RANKING']);
       $x->missingTime                  = $row['MISSING_TIME'];

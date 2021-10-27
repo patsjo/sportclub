@@ -35,26 +35,29 @@ const minMissingPercentageQuota = 0.04;
 const minMissingTimeSeconds = 4;
 
 export const GetTimeWithHour = (timeString?: string | null): string | null => {
-  if (!timeString || timeString.length < 4) {
-    return null;
-  } else if (timeString.length === 4) {
-    return `00:0${timeString}`;
-  } else if (timeString.length === 5) {
-    return `00:${timeString}`;
-  } else if (timeString.length === 7) {
-    return `0${timeString}`;
-  } else {
-    return timeString;
+  if (!timeString || timeString.replace('-', '').length < 4) return null;
+
+  const isNegative = timeString.substr(0, 1) === '-';
+  let str = timeString.replace('-', '');
+
+  if (str.length === 4) {
+    str = `00:0${str}`;
+  } else if (str.length === 5) {
+    str = `00:${str}`;
+  } else if (str.length === 7) {
+    str = `0${str}`;
   }
+  return `${isNegative ? '-' : ''}${str}`;
 };
 
 const PrivateFormatTime = (timeString: string): string => {
-  const time = moment(GetTimeWithHour(timeString), timeFormat);
+  const isNegative = timeString.substr(0, 1) === '-';
+  const time = moment(GetTimeWithHour(timeString.replace('-', '')), timeFormat);
 
   if (time.get('hour') === 0) {
-    return time.format('m:ss');
+    return `${isNegative ? '-' : ''}${time.format('m:ss')}`;
   }
-  return time.format('H:mm:ss');
+  return `${isNegative ? '-' : ''}${time.format('H:mm:ss')}`;
 };
 
 export const FormatTime = (timeString?: string | null): string | null => {
