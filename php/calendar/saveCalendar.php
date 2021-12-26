@@ -78,130 +78,96 @@ if ($input->iType == "ACTIVITY")
   $x->longitude             = getRequestDecimal($input->iLongitude);
   $x->latitude              = getRequestDecimal($input->iLatitude);
   $x->responsibleUserId     = getRequestInt($input->iResponsibleUserID);
-  $x->firstRepeatingDate    = getRequestDate($input->iNewFirstRepeatingDate);
-  $x->lastRepeatingDate     = getRequestDate($input->iNewLastRepeatingDate);
+  $x->firstRepeatingDate    = getRequestDate($input->iFirstRepeatingDate);
+  $x->lastRepeatingDate     = getRequestDate($input->iLastRepeatingDate);
   $x->repeatingGid          = getRequestString($input->iRepeatingGid);
   if ($x->repeatingGid == "")
   {
     $x->repeatingGid = null;
   }
-  $x->repeatingModified     = getRequestBool($input->iRepeatingModified);
+  $x->repeatingModified     = $input->iRepeatingModified;
+  $x->isRepeating           = $input->iIsRepeating;
 
-  $isRepeating              = getRequestBool($input->iIsRepeating);
-  $prevFirstRepeatingDate   = getRequestDate($input->iFirstRepeatingDate);
-  $prevLastRepeatingDate    = getRequestDate($input->iLastRepeatingDate);
-
-  $newDates = array();
-  if ($x->activityId == 0 && !$isRepeating)
-  {
-    array_push($newDates, $x->date);
-  }
-  elseif ($isRepeating && is_null($prevFirstRepeatingDate) && is_null($prevLastRepeatingDate))
-  {
-    $dateDiff = ceil(dateDifference($x->date, $x->firstRepeatingDate) / 7) * 7;
-    $date = addDays($x->date, $dateDiff);
-    while ($date <= $x->lastRepeatingDate)
-    {
-      array_push($newDates, $date);
-      $date = addDays($date, 7);
-    }
-    if ($x->activityId > 0)
-    {
-      $deleteQuery = "DELETE FROM activity WHERE activity_id = " . $x->activityId;
-      \db\mysql_query($deleteQuery) || trigger_error(sprintf('SQL-Error (%s)', substr($deleteQuery, 0, 1024)), E_USER_ERROR);
-      $x->activityId = 0;
-    }
-  }
-  elseif ($isRepeating && !is_null($prevFirstRepeatingDate) && !is_null($prevLastRepeatingDate))
-  {
-    $dateDiff = ceil(dateDifference($x->date, $x->firstRepeatingDate) / 7) * 7;
-    $date = addDays($x->date, $dateDiff);
-    while ($date < $prevFirstRepeatingDate)
-    {
-      array_push($newDates, $date);
-      $date = addDays($date, 7);
-    }
-    $dateDiff = ceil(dateDifference($x->date, addDays($x->lastRepeatingDate, -6)) / 7) * 7;
-    $date = addDays($x->date, $dateDiff);
-    while ($date > $prevLastRepeatingDate)
-    {
-      array_push($newDates, $date);
-      $date = addDays($date, -7);
-    }
-  }
-
-  foreach($newDates as $date)
-  {
-    $query =
-    "INSERT INTO activity " .
-    "(" .
-    "  group_id, activity_type_id," .
-    "  activity_day, activity_time, activity_duration_minutes, place," .
-    "  header, descr, url," .
-    "  longitude, latitude," .
-    "  responsible_user_id, repeating_gid, repeating_modified," .
-    "  cre_by_user_id, cre_date, mod_by_user_id, mod_date" .
-    ") " .
-    "VALUES " .
-    "(" .
-    $x->groupId . "," . $x->activityTypeId . "," .
-    "'" . $date . "'" . "," .
-    (is_null($x->time) ? "NULL" : "'" . $x->time . "'") . "," .
-    (is_null($x->activityDurationMinutes) ? "NULL" : $x->activityDurationMinutes) . "," .
-    "'" . str_replace("'", "", $x->place) . "','" . str_replace("'", "", $x->header) . "'," .
-    "'" . str_replace("'", "", $x->description) . "','" .
-    str_replace("'", "", $x->url) . "'," .
-    (is_null($x->longitude) ? "NULL" : $x->longitude) . "," .
-    (is_null($x->latitude) ? "NULL" : $x->latitude) . "," .
-    $x->responsibleUserId . "," .
-    (is_null($x->repeatingGid) ? "NULL" : "'" . $x->repeatingGid . "'") . "," .
-    intval($x->repeatingModified) . "," .
-    $user_id . ",'" . datetime2String(time()) . "'," .
-    $user_id . ",'" . datetime2String(time()) . "'" .
-    ")";
-
-    \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
-    if ($x->activityId == 0)
-    {
-      $x->activityId = \db\mysql_insert_id();
-    }
-  }
-  if ($x->activityId > 0)
+  if ($x->activityId > 0 && (!$x->isRepeating || $x->repeatingModified))
   {
     $queryWhere = "WHERE activity_id = " . $x->activityId;
-    $queryExtraSet = ", activity_day = '" . $x->date . "' ";
-    if ($isRepeating && !$x->repeatingModified && !is_null($x->repeatingGid))
+    $query =
+      "UPDATE activity " .
+      "SET group_id = " . $x->groupId . ", activity_type_id = " . $x->activityTypeId . ", " .
+      "    activity_time = " . (is_null($x->time) ? "NULL" : "'" . $x->time . "'") . ", " .
+      "    activity_duration_minutes = " . (is_null($x->activityDurationMinutes) ? "NULL" : $x->activityDurationMinutes) . ", " .
+      "    place = '" . str_replace("'", "", $x->place) . "', header = '" . str_replace("''", "Null", $x->header) . "', " .
+      "    descr = '" . str_replace("'", "", $x->description) . "', " .
+      "    url = '" . str_replace("'", "", $x->url) . "', " .
+      "    longitude = " . (is_null($x->longitude) ? "NULL" : $x->longitude) . ", " .
+      "    latitude = " . (is_null($x->latitude) ? "NULL" : $x->latitude) . ", " .
+      "    responsible_user_id = " . $x->responsibleUserId . ", " .
+      "    repeating_modified = " . intval($x->repeatingModified) . ", " .
+      "    mod_by_user_id = " . $user_id . ", mod_date = '" . datetime2String(time()) . "'" .
+      $queryWhere;
+      \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
+  }
+  else
+  {
+    $newDates = array();
+    if ($x->activityId == 0 && !$x->isRepeating)
     {
-      $queryExtraSet = "";
-      if (!is_null($prevFirstRepeatingDate) && !is_null($prevLastRepeatingDate))
+      array_push($newDates, $x->date);
+    }
+    else
+    {
+      $dateDiff = ceil(dateDifference($x->date, $x->firstRepeatingDate) / 7) * 7;
+      $date = addDays($x->date, $dateDiff);
+      while ($date <= $x->lastRepeatingDate)
       {
-        $deleteQuery = "DELETE FROM activity WHERE repeating_gid = '" . $x->repeatingGid .
-          "' AND (DATE_FORMAT(activity_day, '%Y-%m-%d') < '" . date2String(strtotime($x->firstRepeatingDate)) . "'" .
-          "      OR DATE_FORMAT(activity_day, '%Y-%m-%d') > '" . date2String(strtotime($x->lastRepeatingDate)) . "')";
-        \db\mysql_query($deleteQuery) || trigger_error(sprintf('SQL-Error (%s)', substr($deleteQuery, 0, 1024)), E_USER_ERROR);
-        $queryWhere = "WHERE repeating_modified = 0 AND repeating_gid = '" . $x->repeatingGid . "'";
+        array_push($newDates, $date);
+        $date = addDays($date, 7);
       }
-      else
+      if ($x->activityId > 0)
       {
-        $queryExtraSet = ", repeating_gid = '" . $x->repeatingGid . "' ";
+        $deleteQuery = "DELETE FROM activity WHERE repeating_modified = 0 AND repeating_gid = '" . $x->repeatingGid . "'";
+        \db\mysql_query($deleteQuery) || trigger_error(sprintf('SQL-Error (%s)', substr($deleteQuery, 0, 1024)), E_USER_ERROR);
       }
     }
-    $query =
-        "UPDATE activity " .
-        "SET group_id = " . $x->groupId . ", activity_type_id = " . $x->activityTypeId . ", " .
-        "    activity_time = " . (is_null($x->time) ? "NULL" : "'" . $x->time . "'") . ", " .
-        "    activity_duration_minutes = " . (is_null($x->activityDurationMinutes) ? "NULL" : $x->activityDurationMinutes) . ", " .
-        "    place = '" . str_replace("'", "", $x->place) . "', header = '" . str_replace("''", "Null", $x->header) . "', " .
-        "    descr = '" . str_replace("'", "", $x->description) . "', " .
-        "    url = '" . str_replace("'", "", $x->url) . "', " .
-        "    longitude = " . (is_null($x->longitude) ? "NULL" : $x->longitude) . ", " .
-        "    latitude = " . (is_null($x->latitude) ? "NULL" : $x->latitude) . ", " .
-        "    responsible_user_id = " . $x->responsibleUserId . ", " .
-        "    repeating_modified = " . intval($x->repeatingModified) . ", " .
-        "    mod_by_user_id = " . $user_id . ", mod_date = '" . datetime2String(time()) . "'" .
-        $queryExtraSet .
-        $queryWhere;
-     \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
+    $x->dates = $newDates;
+    unset($x->date);
+  
+    foreach($newDates as $date)
+    {
+      $query =
+      "INSERT INTO activity " .
+      "(" .
+      "  group_id, activity_type_id," .
+      "  activity_day, activity_time, activity_duration_minutes, place," .
+      "  header, descr, url," .
+      "  longitude, latitude," .
+      "  responsible_user_id, repeating_gid, repeating_modified," .
+      "  cre_by_user_id, cre_date, mod_by_user_id, mod_date" .
+      ") " .
+      "VALUES " .
+      "(" .
+      $x->groupId . "," . $x->activityTypeId . "," .
+      "'" . $date . "'" . "," .
+      (is_null($x->time) ? "NULL" : "'" . $x->time . "'") . "," .
+      (is_null($x->activityDurationMinutes) ? "NULL" : $x->activityDurationMinutes) . "," .
+      "'" . str_replace("'", "", $x->place) . "','" . str_replace("'", "", $x->header) . "'," .
+      "'" . str_replace("'", "", $x->description) . "','" .
+      str_replace("'", "", $x->url) . "'," .
+      (is_null($x->longitude) ? "NULL" : $x->longitude) . "," .
+      (is_null($x->latitude) ? "NULL" : $x->latitude) . "," .
+      $x->responsibleUserId . "," .
+      (is_null($x->repeatingGid) ? "NULL" : "'" . $x->repeatingGid . "'") . "," .
+      intval($x->repeatingModified) . "," .
+      $user_id . ",'" . datetime2String(time()) . "'," .
+      $user_id . ",'" . datetime2String(time()) . "'" .
+      ")";
+  
+      \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
+      if ($x->activityId == 0)
+      {
+        $x->activityId = \db\mysql_insert_id();
+      }
+    }
   }
   $input = $x;
 }

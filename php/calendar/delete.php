@@ -20,6 +20,8 @@ include_once($_SERVER["DOCUMENT_ROOT"] . "/include/db.php");
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/functions.php");
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/users.php");
 
+cors();
+
 // Takes raw data from the request
 $json = file_get_contents('php://input');
 // Converts it into a PHP object

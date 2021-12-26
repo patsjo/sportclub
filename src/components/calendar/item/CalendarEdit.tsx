@@ -98,34 +98,22 @@ const CalendarEdit = observer(({ title, calendarObject, domains, open, onClose, 
           ? values.iActivityTime.format(timeFormat)
           : values.iActivityTime;
       values.iIsRepeating = isRepeating;
-      values.iFirstRepeatingDate = null;
-      values.iLastRepeatingDate = null;
-      values.iNewFirstRepeatingDate = null;
-      values.iNewLastRepeatingDate = null;
-      values.iRepeatingDates = null;
       values.iRepeatingModified = !!values.iRepeatingModified;
 
-      if (isRepeating) {
+      if (isRepeating && Array.isArray(values.iRepeatingDates) && values.iRepeatingDates.length === 2) {
         values.iFirstRepeatingDate =
-          values.iFirstRepeatingDate && typeof values.iFirstRepeatingDate.format === 'function'
-            ? values.iFirstRepeatingDate.format(dateFormat)
-            : values.iFirstRepeatingDate;
+          values.iRepeatingDates[0] && typeof values.iRepeatingDates[0].format === 'function'
+            ? values.iRepeatingDates[0].format(dateFormat)
+            : values.iRepeatingDates[0];
         values.iLastRepeatingDate =
-          values.iLastRepeatingDate && typeof values.iLastRepeatingDate.format === 'function'
-            ? values.iLastRepeatingDate.format(dateFormat)
-            : values.iLastRepeatingDate;
-        if (Array.isArray(values.iRepeatingDates) && values.iRepeatingDates.length === 2) {
-          values.iNewFirstRepeatingDate =
-            values.iRepeatingDates[0] && typeof values.iRepeatingDates[0].format === 'function'
-              ? values.iRepeatingDates[0].format(dateFormat)
-              : values.iRepeatingDates[0];
-          values.iNewLastRepeatingDate =
-            values.iRepeatingDates[1] && typeof values.iRepeatingDates[1].format === 'function'
-              ? values.iRepeatingDates[1].format(dateFormat)
-              : values.iRepeatingDates[1];
-          values.iRepeatingDates = null;
-        }
+          values.iRepeatingDates[1] && typeof values.iRepeatingDates[1].format === 'function'
+            ? values.iRepeatingDates[1].format(dateFormat)
+            : values.iRepeatingDates[1];
+      } else {
+        values.iFirstRepeatingDate = null;
+        values.iLastRepeatingDate = null;
       }
+      values.iRepeatingDates = null;
       PostJsonData(
         saveUrl,
         {
@@ -213,12 +201,6 @@ const CalendarEdit = observer(({ title, calendarObject, domains, open, onClose, 
             iIsRepeating: isRepeating,
             iRepeatingGid: calendarObject.repeatingGid,
             iRepeatingModified: calendarObject.repeatingModified,
-            iFirstRepeatingDate: !calendarObject.firstRepeatingDate
-              ? null
-              : moment(calendarObject.firstRepeatingDate, dateFormat),
-            iLastRepeatingDate: !calendarObject.lastRepeatingDate
-              ? null
-              : moment(calendarObject.lastRepeatingDate, dateFormat),
             iRepeatingDates:
               !calendarObject.firstRepeatingDate || !calendarObject.lastRepeatingDate
                 ? null
@@ -302,8 +284,6 @@ const CalendarEdit = observer(({ title, calendarObject, domains, open, onClose, 
             </Col>
           </Row>
           <FormItem name="iRepeatingGid" hidden={true} />
-          <FormItem name="iFirstRepeatingDate" hidden={true} />
-          <FormItem name="iLastRepeatingDate" hidden={true} />
           <FormItem name="iIsRepeating" label={t('calendar.IsRepeating')} valuePropName="checked">
             <Switch
               disabled={repeatingDisabled}

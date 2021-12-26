@@ -82,11 +82,11 @@ function getHolidayName($iDate)
   }
   elseif ($mmddStr == "1231")
   {
-    return "Nyårsafton";
+    return "Nyï¿½rsafton";
   }
   elseif ($mmddStr == "0101")
   {
-    return "Nyårsdagen";
+    return "Nyï¿½rsdagen";
   }
   elseif ($mmddStr == "0106")
   {
@@ -94,7 +94,7 @@ function getHolidayName($iDate)
   }
   elseif ($mmddStr == "0501")
   {
-    return "Första maj";
+    return "Fï¿½rsta maj";
   }
   elseif ($mmddStr == "0606")
   {
@@ -114,7 +114,7 @@ function getHolidayName($iDate)
   }
   elseif ($mmddStr == "0214")
   {
-    return "Alla hjärtans dag";
+    return "Alla hjï¿½rtans dag";
   }
   elseif (($dayOfWeek == 5) && in_array($mmddStr, array("0619", "0620", "0621", "0622", "0623", "0624", "0625")))
   {
@@ -130,23 +130,23 @@ function getHolidayName($iDate)
   }
   elseif (dateDiff($easterSunday, $iDate) == -2)
   {
-    return "Långfredagen";
+    return "Lï¿½ngfredagen";
   }
   elseif (dateDiff($easterSunday, $iDate) == -1)
   {
-    return "Påskafton";
+    return "Pï¿½skafton";
   }
   elseif (dateDiff($easterSunday, $iDate) == 0)
   {
-    return "Påskdagen";
+    return "Pï¿½skdagen";
   }
   elseif (dateDiff($easterSunday, $iDate) == 1)
   {
-    return "Annandag påsk";
+    return "Annandag pï¿½sk";
   }
   elseif (dateDiff($easterSunday, $iDate) == 39)
   {
-    return "Kristi Himmelsfärdsdag";
+    return "Kristi Himmelsfï¿½rdsdag";
   }
   else
   {
@@ -291,7 +291,7 @@ function getWeekdayName($iDate)
 
   if ($dayOfWeek == 1)
   {
-    return "Mån";
+    return "Mï¿½n";
   }
   elseif ($dayOfWeek == 2)
   {
@@ -311,11 +311,11 @@ function getWeekdayName($iDate)
   }
   elseif ($dayOfWeek == 6)
   {
-    return "Lör";
+    return "Lï¿½r";
   }
   else
   {
-    return "Sön";
+    return "Sï¿½n";
   }
 }
 
@@ -410,7 +410,7 @@ function string2Date($iDateString)
   $day = intval(substr($iDateString, 8));
   if (($year < 1900) || ($year > 2100) || ($month <= 0) || ($month > 12) || ($day <= 0) || ($day > 31))
   {
-    trigger_error(sprintf('Felaktigt datum %s, skall vara på formatet YYYY-MM-DD.', $iDateString), E_USER_ERROR);
+    trigger_error(sprintf('Felaktigt datum %s, skall vara pï¿½ formatet YYYY-MM-DD.', $iDateString), E_USER_ERROR);
   }
 
   return mktime(0, 0, 0, $month, $day, $year);
@@ -463,7 +463,7 @@ function string2Time($iTimeString)
   }
   if (($hour < 0) || ($hour >= 24) || ($minute < 0) || ($minute >= 60))
   {
-    trigger_error(sprintf('Felaktig tid %s, skall vara på formatet HH:MM.', $iTimeString), E_USER_ERROR);
+    trigger_error(sprintf('Felaktig tid %s, skall vara pï¿½ formatet HH:MM.', $iTimeString), E_USER_ERROR);
   }
   return mktime($hour, $minute, $second, 1, 1, 1970);
 }
@@ -504,11 +504,11 @@ function string2DateTime($iDateTimeString)
   $second = intval(substr($iDateTimeString, 17));
   if (($year < 1900) || ($year > 2100) || ($month <= 0) || ($month > 12) || ($day <= 0) || ($day > 31))
   {
-    trigger_error(sprintf('Felaktigt datum/tid %s, skall vara på formatet YYYY-MM-DD HH:MM:SS.', $iDateTimeString), E_USER_ERROR);
+    trigger_error(sprintf('Felaktigt datum/tid %s, skall vara pï¿½ formatet YYYY-MM-DD HH:MM:SS.', $iDateTimeString), E_USER_ERROR);
   }
   if (($hour < 0) || ($hour >= 24) || ($minute < 0) || ($minute >= 60) || ($second < 0) || ($second >= 60))
   {
-    trigger_error(sprintf('Felaktigt datum/tid %s, skall vara på formatet YYYY-MM-DD HH:MM:SS.', $iDateTimeString), E_USER_ERROR);
+    trigger_error(sprintf('Felaktigt datum/tid %s, skall vara pï¿½ formatet YYYY-MM-DD HH:MM:SS.', $iDateTimeString), E_USER_ERROR);
   }
   return mktime($hour, $minute, $second, $month, $day, $year);
 }
@@ -593,16 +593,6 @@ function getRequestTime($param, $paramDate = null)
   else
   {
     return Date("Y-m-d G:i:s", string2DateTime($paramDate . " " . $param));
-  }
-}
-
-function getRequestBool($param)
-{
-  if (!isset($param) || is_null($param) || $param == false || $param == "false")
-  {
-    return false;
-  } else {
-    return true;
   }
 }
 
