@@ -1,5 +1,5 @@
 import { LeftOutlined, PlusOutlined, RightOutlined } from '@ant-design/icons';
-import { Button, message, Modal, Spin, Steps } from 'antd';
+import { Button, message, Modal, Popconfirm, Spin, Steps } from 'antd';
 import { FormInstance } from 'antd/lib/form';
 import { ModalFuncProps } from 'antd/lib/modal';
 import { observer } from 'mobx-react';
@@ -340,10 +340,24 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
         width="calc(100% - 80px)"
         style={{ top: 40, minWidth: 1250 }}
         footer={[
-          <Button disabled={wizardStep < 1} onClick={prev}>
-            <LeftOutlined />
-            {t('common.Previous')}
-          </Button>,
+          wizardStep === 2 ? (
+            <Popconfirm
+              title={t('common.Confirm')}
+              okText={t('common.Yes')}
+              cancelText={t('common.No')}
+              onConfirm={prev}
+            >
+              <Button>
+                <LeftOutlined />
+                {t('common.Previous')}
+              </Button>
+            </Popconfirm>
+          ) : (
+            <Button disabled={wizardStep < 1} onClick={prev}>
+              <LeftOutlined />
+              {t('common.Previous')}
+            </Button>
+          ),
           <Button
             style={wizardStep === 2 ? {} : { display: 'none' }}
             onClick={() => {
@@ -441,9 +455,20 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
             {wizardStep === 3 ? t('common.Save') : t('common.Next')}
             {wizardStep === 3 ? null : <RightOutlined />}
           </Button>,
-          <Button onClick={onClose} loading={false}>
-            {t('common.Cancel')}
-          </Button>,
+          wizardStep >= 2 ? (
+            <Popconfirm
+              title={t('common.Confirm')}
+              okText={t('common.Yes')}
+              cancelText={t('common.No')}
+              onConfirm={onClose}
+            >
+              <Button loading={false}>{t('common.Cancel')}</Button>
+            </Popconfirm>
+          ) : (
+            <Button loading={false} onClick={onClose}>
+              {t('common.Cancel')}
+            </Button>
+          ),
         ]}
       >
         <StyledModalContent>

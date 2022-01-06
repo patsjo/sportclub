@@ -104,7 +104,7 @@ const EditResultIndividual = ({
       ref={formRef}
       layout="vertical"
       initialValues={{
-        iCompetitorId: !result.competitorId || result.competitorId === -1 ? undefined : result.competitorId.toString(),
+        iCompetitorId: !result.competitorId || result.competitorId === -1 ? undefined : result.competitorId,
         iClassName: result.className,
         iClassClassificationId: !result.classClassificationId ? undefined : result.classClassificationId.toString(),
         iDifficulty: result.difficulty,

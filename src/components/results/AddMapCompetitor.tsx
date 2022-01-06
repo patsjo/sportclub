@@ -67,7 +67,7 @@ const AddMapCompetitor = ({
       id={formId}
       layout="vertical"
       initialValues={{
-        iCompetitorId: !addLinkCompetitor.competitorId ? undefined : addLinkCompetitor.competitorId.toString(),
+        iCompetitorId: !addLinkCompetitor.competitorId ? undefined : addLinkCompetitor.competitorId,
         iFirstName: addLinkCompetitor.newCompetitor.iFirstName,
         iLastName: addLinkCompetitor.newCompetitor.iLastName,
         iBirthDay: !addLinkCompetitor.newCompetitor.iBirthDay

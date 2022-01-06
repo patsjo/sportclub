@@ -53,11 +53,26 @@ const formatInputValue = (value: string | undefined, format: ValidTimeTypes, all
 
   if (!val.innerValue) return val;
 
-  if (val.innerValue.length === 2 && !isNaN(parseInt(val.innerValue)) && parseInt(val.innerValue) > 59)
-    val.innerValue = `01:${('0' + (parseInt(val.innerValue) - 60)).slice(-2)}`;
-  if (val.innerValue.length === 2 && val.innerValue.substr(1, 1) === ':') val.innerValue = `0${val.innerValue}`;
-  if (format === 'mm:ss.SSS' && val.innerValue.length === 5) val.innerValue += '.000';
-  if (val.innerValue.length === 2 || val.innerValue.length === 5) val.innerValue += ':';
+  if (
+    format === 'HH:mm:ss' &&
+    val.innerValue.length >= 2 &&
+    val.innerValue.length <= 3 &&
+    !val.innerValue.startsWith('0') &&
+    !isNaN(parseInt(val.innerValue))
+  ) {
+    if (val.innerValue.length === 3 || (val.innerValue.length === 2 && parseInt(val.innerValue) >= 15)) {
+      const minutes = parseInt(val.innerValue);
+      const hoursString = Math.floor(minutes / 60)
+        .toString()
+        .padStart(2, '0');
+      const minutesString = (minutes % 60).toString().padStart(2, '0');
+      val.innerValue = `${hoursString}:${minutesString}:`;
+    }
+  } else {
+    if (val.innerValue.length === 2 && val.innerValue.substr(1, 1) === ':') val.innerValue = `0${val.innerValue}`;
+    if (format === 'mm:ss.SSS' && val.innerValue.length === 5) val.innerValue += '.000';
+    if (val.innerValue.length === 2 || val.innerValue.length === 5) val.innerValue += ':';
+  }
 
   val.innerValue = val.innerValue.substr(0, format.length);
   val.value = validValue(val.innerValue, format);

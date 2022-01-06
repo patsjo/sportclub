@@ -73,7 +73,7 @@ const EditResultRelay = ({
       ref={formRef}
       layout="vertical"
       initialValues={{
-        iCompetitorId: !result.competitorId || result.competitorId === -1 ? undefined : result.competitorId.toString(),
+        iCompetitorId: !result.competitorId || result.competitorId === -1 ? undefined : result.competitorId,
         iTeamName: result.teamName,
         iClassName: result.className,
         iClassClassificationId: !result.classClassificationId ? undefined : result.classClassificationId.toString(),
