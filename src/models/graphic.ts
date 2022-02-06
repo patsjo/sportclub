@@ -11,9 +11,8 @@ const PointGeometry = types.model({
 const CircleGeometry = types.model({
   type: types.literal('circle'),
   center: types.array(types.number),
-  geodesic: types.boolean,
-  radius: types.integer,
-  radiusUnit: types.literal('kilometers'),
+  geodesic: types.literal(true),
+  radius: types.number,
 });
 
 const Attributes = types.model({
@@ -24,18 +23,18 @@ const Attributes = types.model({
 
 const OutlineSymbol = types.model({
   color: types.array(types.number),
-  width: types.integer,
+  width: types.number,
 });
 
 const PictureMarkerSymbol = types.model({
   type: types.literal('picture-marker'),
   url: types.string,
-  width: types.string,
-  height: types.string,
+  width: types.number,
+  height: types.number,
 });
 
 const SimpleFillSymbol = types.model({
-  type: types.literal('simple-fill'),
+  type: types.union(types.literal('simple-fill'), types.literal('gradient-fill')),
   color: types.array(types.number),
   style: types.literal('solid'),
   outline: OutlineSymbol,

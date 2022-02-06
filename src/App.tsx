@@ -137,18 +137,10 @@ const App = () => {
                 },
                 attributes: { name: clubModel.current.title, type: 'logo' },
                 symbol: {
-                  type: 'picture-marker', // autocasts as new PictureMarkerSymbol()
+                  type: 'picture-marker',
                   url: clubModel.current.logo.url,
-                  width: `${
-                    clubModel.current.logo.width > clubModel.current.logo.height
-                      ? 20
-                      : (20 * clubModel.current.logo.width) / clubModel.current.logo.height
-                  }px`,
-                  height: `${
-                    clubModel.current.logo.height > clubModel.current.logo.width
-                      ? 20
-                      : (20 * clubModel.current.logo.height) / clubModel.current.logo.width
-                  }px`,
+                  width: clubModel.current.logo.width,
+                  height: clubModel.current.logo.height,
                 },
               },
             ]

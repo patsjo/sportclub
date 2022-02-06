@@ -1,4 +1,4 @@
-import { cast, getSnapshot, IAnyModelType, Instance, SnapshotIn, SnapshotOrInstance, types } from 'mobx-state-tree';
+import { cast, IAnyModelType, Instance, SnapshotIn, SnapshotOrInstance, types } from 'mobx-state-tree';
 import { IRaceClubsSnapshotIn, RaceClubs } from './resultModel';
 
 type ModuleNameTypes =
@@ -125,10 +125,11 @@ const MapTileLayer = types
     id: types.string,
     title: types.string,
     visible: types.optional(types.boolean, true),
-    urlTemplates: types.array(types.string),
-    minScale: types.optional(types.integer, 0),
-    maxScale: types.optional(types.integer, 0),
+    urlTemplate: types.string,
+    minZoomLevel: types.optional(types.number, 2),
+    maxZoomLevel: types.optional(types.number, 17),
     fullExtent: Extent,
+    zoomExtent: types.maybe(Extent),
   })
   .views((self) => ({
     getByLayerId(id: string) {
@@ -137,18 +138,18 @@ const MapTileLayer = types
     },
   }));
 
+const AnyLayer = types.union({
+  eager: false,
+  dispatcher: (snapshot): IAnyModelType => (snapshot.type === 'group' ? MapGroupLayer : MapTileLayer),
+});
+
 const MapGroupLayer = types
   .model({
     type: types.literal('group'),
     id: types.string,
     title: types.string,
     visible: types.optional(types.boolean, true),
-    layers: types.array(
-      types.union({
-        eager: false,
-        dispatcher: (snapshot): IAnyModelType => (snapshot.type === 'group' ? MapGroupLayer : MapTileLayer),
-      })
-    ),
+    layers: types.array(AnyLayer),
   })
   .views((self) => ({
     get fullExtent(): IExtent {
@@ -162,7 +163,7 @@ const MapGroupLayer = types
         if (extent.xmin > layer.fullExtent.xmin) extent.xmin = layer.fullExtent.xmin;
         if (extent.ymin > layer.fullExtent.ymin) extent.ymin = layer.fullExtent.ymin;
         if (extent.xmax < layer.fullExtent.xmax) extent.xmax = layer.fullExtent.xmax;
-        if (extent.ymax > layer.fullExtent.ymax) extent.ymax = layer.fullExtent.ymax;
+        if (extent.ymax < layer.fullExtent.ymax) extent.ymax = layer.fullExtent.ymax;
       });
       return extent;
     },
@@ -178,25 +179,22 @@ const MapGroupLayer = types
 const Map = types
   .model({
     center: types.array(types.number),
-    minScale: types.optional(types.integer, 0),
-    maxScale: types.optional(types.integer, 0),
-    layers: types.array(
-      types.union({
-        eager: false,
-        dispatcher: (snapshot) => (snapshot.type === 'group' ? MapGroupLayer : MapTileLayer),
-      })
-    ),
-    fullExtent: Extent,
+    defaultZoomLevel: types.optional(types.integer, 0),
+    minZoomLevel: types.optional(types.number, 2),
+    maxZoomLevel: types.optional(types.number, 17),
+    layers: types.array(AnyLayer),
   })
   .views((self) => ({
-    getLayerFullExtent(id: string): IExtent {
+    getLayerFullExtent(id: string): IExtent | undefined {
       for (let i = 0; i < self.layers.length; i++) {
         const layer = self.layers[i].getByLayerId(id);
         if (layer) return layer.fullExtent.toJSON();
       }
-      return getSnapshot(self.fullExtent);
+      return undefined;
     },
   }));
+
+export type IAnyLayer = Instance<typeof AnyLayer>;
 
 export const MobxClubModel = types
   .model({

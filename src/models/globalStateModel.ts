@@ -44,8 +44,12 @@ export const GlobalStateModel = types
         self.rightMenuVisible = false;
         history.replace({ pathname: path });
       },
-      setGraphics(type: GraphicAttributeTypesType, graphics: IGraphic[]) {
-        self.graphics = cast(self.graphics.filter((gr) => gr.attributes?.type !== type));
+      setGraphics(types: GraphicAttributeTypesType[], graphics: IGraphic[]) {
+        self.graphics = cast(
+          self.graphics.filter(
+            (gr) => !(types as (GraphicAttributeTypesType | 'logo' | undefined)[]).includes(gr.attributes?.type)
+          )
+        );
         self.graphics = cast(self.graphics.concat(graphics));
         self.updateGraphics(self.graphics).then();
       },

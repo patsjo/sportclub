@@ -33,26 +33,15 @@ const StyledOuterDiv = styled.div<{ loaded: boolean }>`
   }
 `;
 
-interface ILoaderProps {
-  view: any;
-}
-const Loader = ({ view }: ILoaderProps) => {
+const Loader = () => {
   const [loaded, setLoaded] = React.useState(false);
   const { t } = useTranslation();
 
   React.useEffect(() => {
-    let handle: { remove: () => void } | null = null;
-    if (view) {
-      handle = view.watch('updating', () => {
-        if (view.map && view.map.basemap.loaded && !loaded) {
-          setLoaded(true);
-        }
-      });
-    }
-    return () => {
-      handle && handle.remove();
-    };
-  }, [loaded, view]);
+    setTimeout(() => {
+      setLoaded(true);
+    }, 3000);
+  }, []);
 
   return (
     <StyledOuterDiv loaded={loaded}>

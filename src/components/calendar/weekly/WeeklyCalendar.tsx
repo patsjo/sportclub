@@ -9,7 +9,7 @@ import styled from 'styled-components';
 import { useMobxStore } from 'utils/mobxStore';
 import { ICalendarActivity, ICalendarDomains, ICalendarEvent } from 'utils/responseCalendarInterfaces';
 import { PostJsonData } from '../../../utils/api';
-import { DirectionPngUrl } from '../../map/EsriOSMOrienteeringMap';
+import { DirectionPngUrl } from '../../map/OSMOrienteeringMap';
 import { GetDates } from '../calendarHelper';
 import CalendarItem from '../item/CalendarItem';
 
@@ -135,8 +135,7 @@ const WeeklyCalendar = observer(() => {
               },
             })
           );
-        isMounted && globalStateModel.setGraphics('calendar', activityGraphics);
-        isMounted && globalStateModel.setGraphics('event', eventGraphics);
+        isMounted && globalStateModel.setGraphics(['calendar', 'event'], [...activityGraphics, ...eventGraphics]);
         isMounted && setDomains(domainsJson);
         isMounted &&
           setActivities([
@@ -209,7 +208,7 @@ const WeeklyCalendar = observer(() => {
                         }${act.place}`}</ActivityUrl>
                         {act.longitude && act.latitude ? (
                           <ActivityUrl
-                            href={`http://maps.google.com/maps?saddr=&daddr=N${act.latitude},E${act.longitude}`}
+                            href={`https://maps.google.com/maps?saddr=&daddr=N${act.latitude},E${act.longitude}`}
                             target="_blank"
                           >
                             <DirectionImage src={DirectionPngUrl} width="16" height="16" />
@@ -220,7 +219,7 @@ const WeeklyCalendar = observer(() => {
                       <CalendarItem key={`activity#${act.activityId}`} calendarObject={act} domains={domains}>
                         {act.longitude && act.latitude ? (
                           <ActivityUrl
-                            href={`http://maps.google.com/maps?saddr=&daddr=N${act.latitude},E${act.longitude}`}
+                            href={`https://maps.google.com/maps?saddr=&daddr=N${act.latitude},E${act.longitude}`}
                             target="_blank"
                             onClick={(e) => e.stopPropagation()}
                           >

@@ -9,7 +9,7 @@ import styled from 'styled-components';
 import { useMobxStore } from 'utils/mobxStore';
 import { dateFormat, errorRequiredField } from '../../../utils/formHelper';
 import FormItem from '../../formItems/FormItem';
-import EsriOSMOrienteeringMap from '../../map/EsriOSMOrienteeringMap';
+import OSMOrienteeringMap from '../../map/OSMOrienteeringMap';
 
 const { RangePicker } = DatePicker;
 
@@ -119,7 +119,7 @@ const EventSelectorWizardStep0Input = observer(
         {clubModel.map?.center ? (
           <Col span={12}>
             <MapContainer>
-              <EsriOSMOrienteeringMap
+              <OSMOrienteeringMap
                 key="eventSelector#maxDistanceMap"
                 height="400px"
                 width="100%"
@@ -131,15 +131,14 @@ const EventSelectorWizardStep0Input = observer(
                       type: 'circle',
                       center: clubModel.map.center,
                       geodesic: true,
-                      radius: eventSelectorWizardModel.maxDistanceDistrict,
-                      radiusUnit: 'kilometers',
+                      radius: eventSelectorWizardModel.maxDistanceDistrict * 1000,
                     },
                     symbol: {
-                      type: 'simple-fill',
-                      color: [128, 128, 255, 0.5],
+                      type: 'gradient-fill',
+                      color: [128, 128, 255, 0.75],
                       style: 'solid',
                       outline: {
-                        color: [128, 128, 255, 0.9],
+                        color: [128, 128, 255, 0.75],
                         width: 2,
                       },
                     },
@@ -149,15 +148,14 @@ const EventSelectorWizardStep0Input = observer(
                       type: 'circle',
                       center: clubModel.map.center,
                       geodesic: true,
-                      radius: eventSelectorWizardModel.maxDistanceNearbyAndClub,
-                      radiusUnit: 'kilometers',
+                      radius: eventSelectorWizardModel.maxDistanceNearbyAndClub * 1000,
                     },
                     symbol: {
-                      type: 'simple-fill',
-                      color: [128, 255, 128, 0.5],
+                      type: 'gradient-fill',
+                      color: [255, 128, 128, 0.75],
                       style: 'solid',
                       outline: {
-                        color: [128, 255, 128, 0.9],
+                        color: [255, 128, 128, 0.75],
                         width: 2,
                       },
                     },

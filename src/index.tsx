@@ -1,5 +1,6 @@
 import 'antd/dist/antd.css';
 import * as moment from 'moment';
+import 'ol/ol.css';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import App from './App';

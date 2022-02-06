@@ -4,9 +4,12 @@ import { TFunction } from 'i18next';
 import { IGlobalStateModel } from 'models/globalStateModel';
 import { IMobxClubModel } from 'models/mobxClubModel';
 import { ISessionModel } from 'models/sessionModel';
+import { toLonLat } from 'ol/proj';
+import { Icon, Style } from 'ol/style';
 import React from 'react';
 import { MobxStoreProvider } from 'utils/mobxStore';
-import EsriOSMOrienteeringMap from './EsriOSMOrienteeringMap';
+import OSMOrienteeringMap, { OrienteeringSymbol } from './OSMOrienteeringMap';
+import { mapProjection } from './useOpenLayersMap';
 
 const { confirm } = Modal;
 
@@ -40,7 +43,7 @@ export const GetPositionModal = (
               globalStateModel: globalStateModel,
             }}
           >
-            <EsriOSMOrienteeringMap
+            <OSMOrienteeringMap
               key="confirm#getPositionMap"
               height="400px"
               width="100%"
@@ -50,9 +53,19 @@ export const GetPositionModal = (
                 exists ? [{ geometry: { type: 'point', longitude: longitude, latitude: latitude } }] : []
               }
               onClick={(graphicLayer, graphic) => {
-                selectedPosition = graphic.geometry;
-                graphicLayer.removeAll();
-                graphicLayer.add(graphic);
+                const coordinates = toLonLat(graphic.getGeometry()!.getCoordinates(), mapProjection);
+                graphic.setStyle(
+                  new Style({
+                    image: new Icon({
+                      src: OrienteeringSymbol.url,
+                      scale: 15 / OrienteeringSymbol.width,
+                      imgSize: [OrienteeringSymbol.width, OrienteeringSymbol.height],
+                    }),
+                  })
+                );
+                selectedPosition = { longitude: coordinates[0], latitude: coordinates[1] };
+                graphicLayer.getSource().clear();
+                graphicLayer.getSource().addFeature(graphic);
                 confirmModal.update({
                   okButtonProps: {
                     disabled: false,

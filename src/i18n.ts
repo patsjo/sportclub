@@ -117,6 +117,8 @@ i18next
             Latitude: 'Latitude',
             ClickForDirection: 'Click for direction',
             GoToFullExtent: 'Zoom to layer',
+            Speed: 'Speed',
+            GPSAccuracy: 'GPS accuracy',
           },
           modules: {
             Home: 'Home',
@@ -379,6 +381,8 @@ i18next
             Latitude: 'Latitud',
             ClickForDirection: 'Klicka för vägbeskrivning',
             GoToFullExtent: 'Zooma till lager',
+            Speed: 'Hastighet',
+            GPSAccuracy: 'GPS noggrannhet',
           },
           modules: {
             Home: 'Startsida',

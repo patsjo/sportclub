@@ -5,32 +5,8 @@ const varendgn: IMobxClubModelSnapshotIn = {
   defaultLanguage: 'sv',
   map: {
     center: [14.893426, 56.960593],
-    maxScale: 3500,
-    layers: [
-      {
-        type: 'base-tile',
-        id: 'OrienteeringTileLayer',
-        title: 'Openstreetmap orienteering',
-        urlTemplates: [
-          'https://tiler4.oobrien.com/oterrain_global/{z}/{x}/{y}.png',
-          'https://tiler5.oobrien.com/oterrain_global/{z}/{x}/{y}.png',
-          'https://tiler6.oobrien.com/oterrain_global/{z}/{x}/{y}.png',
-        ],
-        minScale: 150000,
-        fullExtent: {
-          xmin: 15.829884 - 0.06,
-          ymin: 56.200408 - 0.025,
-          xmax: 15.829884 + 0.06,
-          ymax: 56.200408 + 0.025,
-        },
-      },
-    ],
-    fullExtent: {
-      xmin: 14.893426 - 0.015,
-      ymin: 56.960593 - 0.006,
-      xmax: 14.893426 + 0.015,
-      ymax: 56.960593 + 0.006,
-    },
+    defaultZoomLevel: 15,
+    layers: [],
   },
   loginUrl: 'https://varendgn.se/log_in.php',
   logoutUrl: 'https://varendgn.se/log_out.php',
@@ -102,7 +78,7 @@ const varendgn: IMobxClubModelSnapshotIn = {
       queryUrl: 'https://varendgn.se/htmlEditor/jsonHtmlEditorQuery.php',
     },
   ],
-  links: [{ name: 'SOFT', url: 'http://www.svenskorientering.se' }],
+  links: [{ name: 'SOFT', url: 'https://www.svenskorientering.se' }],
   sports: ['Orientering'],
   eventor: {
     organisationId: 584,
