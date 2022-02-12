@@ -1,3 +1,4 @@
+import { INewCompetitorForm } from 'components/results/AddMapCompetitor';
 import { cast, flow, Instance, SnapshotIn, types } from 'mobx-state-tree';
 import { PostJsonData } from '../utils/api';
 import {
@@ -26,14 +27,15 @@ const RaceCompetitor = types
   })
   .actions((self) => {
     return {
-      addEventorId: flow(function* addEventorId(url, id) {
+      addEventorId: flow(function* addEventorId(url: string, id: string, authorizationHeader: Record<string, string>) {
         try {
           yield PostJsonData(
             url,
             { iType: 'EVENTOR_COMPETITOR_ID', iCompetitorId: self.competitorId, iEventorCompetitorId: id },
-            false
+            false,
+            authorizationHeader
           );
-          self.eventorCompetitorIds.push(id);
+          self.eventorCompetitorIds.push(parseInt(id));
         } catch (error) {
           console.error(error);
         }
@@ -93,9 +95,18 @@ const RaceClub = types
   })
   .actions((self) => {
     return {
-      addCompetitor: flow(function* addCompetitor(url, competitor) {
+      addCompetitor: flow(function* addCompetitor(
+        url: string,
+        competitor: INewCompetitorForm,
+        authorizationHeader: Record<string, string>
+      ) {
         try {
-          const responseJson: IRaceCompetitorSnapshotIn = yield PostJsonData(url, competitor, false);
+          const responseJson: IRaceCompetitorSnapshotIn = yield PostJsonData(
+            url,
+            competitor,
+            false,
+            authorizationHeader
+          );
           self.competitors.push(responseJson);
           return responseJson.competitorId;
         } catch (error) {

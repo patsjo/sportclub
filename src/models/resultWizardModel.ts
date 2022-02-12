@@ -4,15 +4,11 @@ import { difficulties, payments } from '../utils/resultConstants';
 import { IRaceEventSnapshotIn, RaceEvent } from './resultModel';
 
 export interface ILocalStorageRaceWizard {
-  queryStartDate: string;
-  queryEndDate: string;
   paymentModel: number;
 }
 
 const setLocalStorage = (raceWizard: IRaceWizardSnapshotIn) => {
   const obj: ILocalStorageRaceWizard = {
-    queryStartDate: raceWizard.queryStartDate,
-    queryEndDate: raceWizard.queryEndDate,
     paymentModel: raceWizard.paymentModel,
   };
 
@@ -20,8 +16,8 @@ const setLocalStorage = (raceWizard: IRaceWizardSnapshotIn) => {
 };
 
 export const getLocalStorage = (): IRaceWizardSnapshotIn => {
-  const startDate = moment().startOf('year').format('YYYY-MM-DD');
   const endDate = moment().format('YYYY-MM-DD');
+  const startDate = moment().add(-30, 'days').format('YYYY-MM-DD');
   try {
     const raceWizardData = localStorage.getItem('raceWizard');
 
@@ -35,7 +31,13 @@ export const getLocalStorage = (): IRaceWizardSnapshotIn => {
       };
     }
 
-    return { queryEndDate: endDate, ...JSON.parse(raceWizardData), queryIncludeExisting: false, existInEventor: true };
+    return {
+      ...JSON.parse(raceWizardData),
+      queryStartDate: startDate,
+      queryEndDate: endDate,
+      queryIncludeExisting: false,
+      existInEventor: true,
+    };
   } catch (error) {
     return {
       queryStartDate: startDate,

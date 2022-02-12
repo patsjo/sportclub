@@ -145,6 +145,8 @@ const OSMOrienteeringMap = observer(
     const mapinfoControl = useRef<Control>();
     const [loaded, setLoaded] = useState(false);
     const [layerListVisible, setLayerListVisible] = useState(false);
+    const [trackingText, setTrackingText] = useState<string>();
+    const [highlightText, setHighlightText] = useState<string>();
 
     const onMapClick = (event: any, newGraphicsLayer: VectorLayer<VectorSource<Geometry>>) => {
       const highlighted: Feature<Point>[] = [];
@@ -198,9 +200,10 @@ const OSMOrienteeringMap = observer(
           .map((g) => g.getProperties().attributes)
           .map((a) => `${a.time ? a.time : ''} ${a.name}`)
           .join('<br/>');
-        text = `${text}${text && text.length ? '<br/>' : ''}${
-          highlighted.some((g: any) => g.getProperties().attributes.direction) ? t('map.ClickForDirection') : ''
-        }`;
+        const directionText = highlighted.some((g: any) => g.getProperties().attributes.direction)
+          ? t('map.ClickForDirection')
+          : '';
+        text = `${text}${text && text.length && directionText && directionText.length ? '<br/>' : ''}${directionText}`;
         const highlightedUids = highlighted.map((g: any) => g.uid);
         const existingFeature = highlightLayer
           .getSource()
@@ -218,20 +221,16 @@ const OSMOrienteeringMap = observer(
         }
         currentUids.current = JSON.stringify(highlightedUids);
       }
-
       if (text && text.length) {
-        const mapInfoTextDiv = document.getElementById(`${containerId}#orienteeringMapInfoText`);
-
-        mapInfoTextDiv && (mapInfoTextDiv.innerHTML = text);
-        mapInfoRef.current && (mapInfoRef.current.style.display = 'block');
-
         highlight.current = true;
       } else {
         highlightLayer.getSource().clear();
         currentUids.current = undefined;
         highlight.current = false;
-        mapInfoRef.current && (mapInfoRef.current.style.display = 'none');
+        text = undefined;
       }
+
+      setHighlightText(text);
     };
 
     const getMapLength = (point: number[], units: number) =>
@@ -250,8 +249,12 @@ const OSMOrienteeringMap = observer(
         mapCenter && map.getView().setCenter(fromLonLat(mapCenter, mapProjection));
 
         let defaultExtent = map.getView().calculateExtent();
-        if (clubModel.map?.center || mapCenter) {
-          const center = fromLonLat(clubModel.map?.center ?? mapCenter!, mapProjection);
+        if (clubModel.map?.center) {
+          map.getView().setCenter(fromLonLat(clubModel.map.center, mapProjection));
+          map.getView().setZoom(clubModel.map.defaultZoomLevel);
+          defaultExtent = map.getView().calculateExtent();
+        } else if (mapCenter) {
+          const center = fromLonLat(mapCenter, mapProjection);
           const extentHalfWidth = getMapLength(center, 500);
           defaultExtent = [
             center[0] - extentHalfWidth,
@@ -273,7 +276,7 @@ const OSMOrienteeringMap = observer(
         if (useAllWidgets) {
           map.addControl(new FullScreen());
           map.addControl(new LayerListControl({ setLayerListVisible }));
-          map.addControl(new TrackingControl({ map, view: map.getView(), containerId, mapInfoRef, t }));
+          map.addControl(new TrackingControl({ map, view: map.getView(), containerId, t, setTrackingText }));
         }
 
         const newGraphicsLayer = new VectorLayer({
@@ -303,6 +306,21 @@ const OSMOrienteeringMap = observer(
         setGraphicsLayer(newGraphicsLayer);
       }
     }, [map, clubModel, loaded]);
+
+    React.useEffect(() => {
+      if (mapInfoRef.current) {
+        const text =
+          trackingText && highlightText ? `${highlightText}<br/>${trackingText}` : trackingText ?? highlightText;
+        if (text && text.length) {
+          const mapInfoTextDiv = document.getElementById(`${containerId}#orienteeringMapInfoText`);
+
+          mapInfoTextDiv && (mapInfoTextDiv.innerHTML = text);
+          mapInfoRef.current && (mapInfoRef.current.style.display = 'block');
+        } else {
+          mapInfoRef.current && (mapInfoRef.current.style.display = 'none');
+        }
+      }
+    }, [trackingText, highlightText]);
 
     React.useEffect(() => {
       if (map && graphicsLayer) {
@@ -437,12 +455,25 @@ const OSMOrienteeringMap = observer(
                 })
             );
           }
-          const geometriesExtent = graphicsLayer.getSource().getExtent();
-          map.getView().fit(geometriesExtent, {
-            padding: [40, 40, 40, 40],
-            maxZoom: 16,
-            duration: 800,
-          });
+          if (
+            clubModel.map?.center &&
+            !graphics.some(
+              (graphic) =>
+                graphic.geometry.type !== 'point' ||
+                graphic.geometry.longitude !== clubModel.map!.center[0] ||
+                graphic.geometry.latitude !== clubModel.map!.center[1]
+            )
+          ) {
+            map.getView().setCenter(fromLonLat(clubModel.map.center, mapProjection));
+            map.getView().setZoom(clubModel.map.defaultZoomLevel);
+          } else {
+            const geometriesExtent = graphicsLayer.getSource().getExtent();
+            map.getView().fit(geometriesExtent, {
+              padding: [40, 40, 40, 40],
+              maxZoom: 16,
+              duration: 800,
+            });
+          }
         };
         if (defaultGraphics && Array.isArray(defaultGraphics)) {
           updateGraphics(defaultGraphics);
@@ -457,7 +488,7 @@ const OSMOrienteeringMap = observer(
           };
         }
       }
-    }, [map, graphicsLayer, defaultGraphics]);
+    }, [map, graphicsLayer, defaultGraphics, clubModel.map]);
 
     return (
       <MapDiv key="map" height={height} width={width}>

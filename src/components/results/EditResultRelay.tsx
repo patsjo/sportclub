@@ -2,6 +2,7 @@ import { Col, Form, Input, InputNumber, Row, Select } from 'antd';
 import InputTime, { stringToMilliSeconds } from 'components/formItems/InputTime';
 import { IMobxClubModel } from 'models/mobxClubModel';
 import { IRaceTeamResult, IRaceTeamResultSnapshotIn } from 'models/resultModel';
+import { ISessionModel } from 'models/sessionModel';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
@@ -39,6 +40,7 @@ export interface IExtendedRaceTeamResult extends IRaceTeamResultSnapshotIn {
 }
 interface IEditResultRelayProps {
   clubModel: IMobxClubModel;
+  sessionModel: ISessionModel;
   eventClassificationId: EventClassificationIdTypes;
   raceLightCondition: LightConditionTypes;
   result: IExtendedRaceTeamResult;
@@ -48,6 +50,7 @@ interface IEditResultRelayProps {
 }
 const EditResultRelay = ({
   clubModel,
+  sessionModel,
   eventClassificationId,
   raceLightCondition,
   result,
@@ -149,7 +152,8 @@ const EditResultRelay = ({
                   iEventorCompetitorId: null,
                 },
                 result.className,
-                clubModel
+                clubModel,
+                sessionModel
               )
                 .then((competitor) => {
                   result.competitorId = competitor ? competitor.competitorId : -1;

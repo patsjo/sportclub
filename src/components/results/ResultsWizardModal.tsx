@@ -391,6 +391,7 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
                   !raceWizardModel.current.raceEvent?.isRelay ? (
                     <EditResultIndividual
                       clubModel={clubModel}
+                      sessionModel={sessionModel}
                       meetsAwardRequirements={raceWizardModel.current.raceEvent.meetsAwardRequirements}
                       isSprint={raceWizardModel.current.raceEvent.raceDistance === distances.sprint}
                       raceDate={raceWizardModel.current.raceEvent.raceDate ?? ''}
@@ -412,6 +413,7 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
                   ) : clubModel.raceClubs && raceWizardModel.current.raceEvent ? (
                     <EditResultRelay
                       clubModel={clubModel}
+                      sessionModel={sessionModel}
                       eventClassificationId={
                         raceWizardModel.current.raceEvent.eventClassificationId as EventClassificationIdTypes
                       }

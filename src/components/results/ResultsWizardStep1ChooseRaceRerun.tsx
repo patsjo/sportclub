@@ -178,8 +178,9 @@ const ResultWizardStep1ChooseRaceRerun = observer(
                         );
                         if (competitor) {
                           await competitor.addEventorId(
-                            clubModel.modules.find((module) => module.name === 'Results')?.addUrl,
-                            personResult.Person.PersonId
+                            clubModel.modules.find((module) => module.name === 'Results')!.addUrl!,
+                            personResult.Person.PersonId,
+                            sessionModel.authorizationHeader
                           );
                         }
                       }
@@ -210,7 +211,8 @@ const ResultWizardStep1ChooseRaceRerun = observer(
                               : personResult.Person.PersonId,
                         },
                         classResult.EventClass.ClassShortName,
-                        clubModel
+                        clubModel,
+                        sessionModel
                       );
                     }
 
@@ -333,8 +335,9 @@ const ResultWizardStep1ChooseRaceRerun = observer(
                         );
                         if (competitor) {
                           await competitor.addEventorId(
-                            clubModel.modules.find((module) => module.name === 'Results')?.addUrl,
-                            teamMemberResult.Person.PersonId
+                            clubModel.modules.find((module) => module.name === 'Results')!.addUrl!,
+                            teamMemberResult.Person.PersonId,
+                            sessionModel.authorizationHeader
                           );
                         }
                       }
@@ -366,7 +369,8 @@ const ResultWizardStep1ChooseRaceRerun = observer(
                               : teamMemberResult.Person.PersonId,
                         },
                         classResult.EventClass.ClassShortName,
-                        clubModel
+                        clubModel,
+                        sessionModel
                       );
                     }
 

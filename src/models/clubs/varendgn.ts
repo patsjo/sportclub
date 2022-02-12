@@ -4,8 +4,8 @@ const varendgn: IMobxClubModelSnapshotIn = {
   title: 'Värend GN',
   defaultLanguage: 'sv',
   map: {
-    center: [14.893426, 56.960593],
-    defaultZoomLevel: 15,
+    center: [14.85774, 56.91077],
+    defaultZoomLevel: 12,
     layers: [],
   },
   loginUrl: 'https://varendgn.se/log_in.php',

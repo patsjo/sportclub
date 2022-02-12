@@ -253,15 +253,15 @@ const ResultWizardStep1ChooseRace = observer(({ visible, onValidate, onFailed }:
           let noEntriesEvents: IEventorEvent[] = [];
           if (entriesJson != null) {
             if (Array.isArray(entriesJson.Entry)) entries = entriesJson.Entry;
-            else entries = [entriesJson.Entry];
+            else entries = entriesJson.Entry ? [entriesJson.Entry] : [];
           }
           if (oringenEventsJson != null && oringenEventsJson.Event != null) {
             if (Array.isArray(oringenEventsJson.Event)) oringenEvents = oringenEventsJson.Event;
-            else oringenEvents = [oringenEventsJson.Event];
+            else oringenEvents = oringenEventsJson.Event ? [oringenEventsJson.Event] : [];
           }
           if (noEntriesJson != null && noEntriesJson.Event != null) {
             if (Array.isArray(noEntriesJson.Event)) noEntriesEvents = noEntriesJson.Event;
-            else noEntriesEvents = [noEntriesJson.Event];
+            else noEntriesEvents = noEntriesJson.Event ? [noEntriesJson.Event] : [];
           }
           oringenEvents = [...oringenEvents, ...noEntriesEvents];
           let events: IResultEvent[] = [

@@ -3,6 +3,7 @@ import { ModalFuncProps } from 'antd/lib/modal';
 import { TFunction } from 'i18next';
 import { IMobxClubModel } from 'models/mobxClubModel';
 import { IRaceCompetitor } from 'models/resultModel';
+import { ISessionModel } from 'models/sessionModel';
 import React from 'react';
 import AddMapCompetitor, { IAddLinkCompetitor, INewCompetitorForm } from './AddMapCompetitor';
 
@@ -14,7 +15,8 @@ export const AddMapCompetitorConfirmModal = (
   personId: string | undefined,
   newCompetitor: INewCompetitorForm,
   classShortName: string,
-  clubModel: IMobxClubModel
+  clubModel: IMobxClubModel,
+  sessionModel: ISessionModel
 ): Promise<IRaceCompetitor | undefined> =>
   new Promise((resolve, reject) => {
     const confirmObject: IAddLinkCompetitor = {
@@ -73,7 +75,11 @@ export const AddMapCompetitorConfirmModal = (
             !comp.eventorCompetitorIds.includes(parseInt(personId))
           ) {
             comp
-              .addEventorId(clubModel.modules.find((module) => module.name === 'Results')?.addUrl, personId)
+              .addEventorId(
+                clubModel.modules.find((module) => module.name === 'Results')!.addUrl!,
+                personId,
+                sessionModel.authorizationHeader
+              )
               .then(() => resolve(comp));
           } else if (comp) {
             resolve(comp);
@@ -81,8 +87,9 @@ export const AddMapCompetitorConfirmModal = (
         } else {
           clubModel.raceClubs?.selectedClub
             .addCompetitor(
-              clubModel.modules.find((module) => module.name === 'Results')?.addUrl,
-              confirmObject.newCompetitor
+              clubModel.modules.find((module) => module.name === 'Results')!.addUrl!,
+              confirmObject.newCompetitor,
+              sessionModel.authorizationHeader
             )
             .then(
               (competitorId) =>

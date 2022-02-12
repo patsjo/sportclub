@@ -279,7 +279,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
             entriesJson = { Entry: [] };
           }
           if (!Array.isArray(entriesJson.Entry)) {
-            entriesJson.Entry = [entriesJson.Entry];
+            entriesJson.Entry = entriesJson.Entry ? [entriesJson.Entry] : [];
           }
 
           if (!entryFeeJson) {
@@ -453,8 +453,9 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                           );
                           if (competitor) {
                             await competitor.addEventorId(
-                              clubModel.modules.find((module) => module.name === 'Results')?.addUrl,
-                              personResult.Person.PersonId
+                              clubModel.modules.find((module) => module.name === 'Results')!.addUrl!,
+                              personResult.Person.PersonId,
+                              sessionModel.authorizationHeader
                             );
                           }
                         }
@@ -486,7 +487,8 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                                 : personResult.Person.PersonId,
                           },
                           currentClass?.ClassShortName ?? '',
-                          clubModel
+                          clubModel,
+                          sessionModel
                         );
                       }
 
@@ -707,8 +709,9 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                         );
                         if (competitor) {
                           await competitor.addEventorId(
-                            clubModel.modules.find((module) => module.name === 'Results')?.addUrl,
-                            teamMemberResult.Person.PersonId
+                            clubModel.modules.find((module) => module.name === 'Results')!.addUrl!,
+                            teamMemberResult.Person.PersonId,
+                            sessionModel.authorizationHeader
                           );
                         }
                       }
@@ -740,7 +743,8 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                               : teamMemberResult.Person.PersonId,
                         },
                         currentClass?.ClassShortName ?? '',
-                        clubModel
+                        clubModel,
+                        sessionModel
                       );
                     }
 
@@ -941,6 +945,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                   raceWizardModel.raceEvent && clubModel.raceClubs ? (
                     <EditResultIndividual
                       clubModel={clubModel}
+                      sessionModel={sessionModel}
                       paymentModel={raceWizardModel.raceEvent.paymentModel as PaymentTypes}
                       meetsAwardRequirements={raceWizardModel.raceEvent.meetsAwardRequirements}
                       isSprint={raceWizardModel.raceEvent.raceDistance === distances.sprint}
@@ -1131,6 +1136,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                   raceWizardModel.raceEvent && clubModel.raceClubs ? (
                     <EditResultRelay
                       clubModel={clubModel}
+                      sessionModel={sessionModel}
                       eventClassificationId={
                         raceWizardModel.raceEvent.eventClassificationId as EventClassificationIdTypes
                       }

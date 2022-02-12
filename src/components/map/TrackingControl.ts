@@ -37,7 +37,6 @@ export class TrackingControl extends Control {
   private map: Map;
   private view: View;
   private containerId: string;
-  private mapInfoRef: React.RefObject<HTMLDivElement>;
   private t: TFunction;
   private accuracy: number;
   private positions: (number[] | undefined)[];
@@ -47,13 +46,14 @@ export class TrackingControl extends Control {
   private positionLayer?: VectorLayer<VectorSource<Geometry>>;
   private oldPositionsLayer?: VectorLayer<VectorSource<Geometry>>;
   private intervalId?: NodeJS.Timeout;
+  private setTrackingText: (htmlText?: string) => void;
 
   constructor(options: {
     map: Map;
     view: View;
     containerId: string;
-    mapInfoRef: React.RefObject<HTMLDivElement>;
     t: TFunction;
+    setTrackingText: (htmlText?: string) => void;
   }) {
     const button = document.createElement('button');
     button.innerHTML =
@@ -70,10 +70,10 @@ export class TrackingControl extends Control {
     this.map = options.map;
     this.view = options.view;
     this.containerId = options.containerId;
-    this.mapInfoRef = options.mapInfoRef;
     this.positions = [];
     this.accuracy = maxAccuracy;
     this.t = options.t;
+    this.setTrackingText = options.setTrackingText;
     button.addEventListener('click', this.trackingOnOff.bind(this), false);
   }
 
@@ -160,7 +160,7 @@ export class TrackingControl extends Control {
       this.geolocation.setTracking(true);
       this.intervalId = setInterval(this.addPosition.bind(this), 5000);
     } else {
-      this.mapInfoRef.current && (this.mapInfoRef.current.style.display = 'none');
+      this.setTrackingText(undefined);
       this.geolocation.setTracking(false);
       this.element.className = 'ol-selectable ol-control ol-tracking';
       this.geolocation.un('change', this.onGeoLocationChange);
@@ -190,14 +190,14 @@ export class TrackingControl extends Control {
       this.accuracyFeature.setGeometry(this.geolocation.getAccuracyGeometry() ?? undefined);
     else this.accuracyFeature.setGeometry(undefined);
 
-    const mapInfoTextDiv = document.getElementById(`${this.containerId}#orienteeringMapInfoText`);
     const minPerKm = speed > 0 ? FormatTime(ConvertSecondsToTime(Math.round(1000 / speed))) : '0:00';
+    const currentAccuracy = this.geolocation.getAccuracy();
 
-    mapInfoTextDiv &&
-      (mapInfoTextDiv.innerHTML = `${this.t('map.Speed')}: ${minPerKm} min/km<br/>${this.t('map.GPSAccuracy')}: ${
-        this.geolocation.getAccuracy() ?? 'X'
-      } m`);
-    this.mapInfoRef.current && (this.mapInfoRef.current.style.display = 'block');
+    const description = `${this.t('map.Speed')}: ${minPerKm} min/km<br/>${this.t('map.GPSAccuracy')}: ${
+      currentAccuracy !== undefined ? parseFloat(currentAccuracy.toPrecision(2)) : 'X'
+    } m`;
+    this.setTrackingText(description);
+
     this.latestPosition = this.accuracy <= maxAccuracy * 2.5 ? position : undefined;
 
     if (!position) return;
