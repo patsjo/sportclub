@@ -164,6 +164,11 @@ export class TrackingControl extends Control {
       this.geolocation.setTracking(false);
       this.element.className = 'ol-selectable ol-control ol-tracking';
       this.geolocation.un('change', this.onGeoLocationChange);
+      this.view.animate({
+        rotation: 0,
+        duration: 500,
+      });
+      this.map.render();
       this.geolocation = undefined;
       this.positions = [];
       this.latestPosition = undefined;
@@ -180,8 +185,9 @@ export class TrackingControl extends Control {
   onGeoLocationChange() {
     if (!this.geolocation || !this.accuracyFeature || !this.positionFeature) return;
     const position = this.geolocation.getPosition();
-    const heading = this.geolocation.getHeading() || 0;
-    const speed = this.geolocation.getSpeed() || 0;
+    let speed = this.geolocation.getSpeed() || 0;
+    if (speed < 0.3) speed = 0;
+    const heading = speed === 0 ? 0 : this.geolocation.getHeading() || 0;
     const m = Date.now();
 
     this.accuracy = this.geolocation.getAccuracy() ?? 500;
@@ -190,7 +196,7 @@ export class TrackingControl extends Control {
       this.accuracyFeature.setGeometry(this.geolocation.getAccuracyGeometry() ?? undefined);
     else this.accuracyFeature.setGeometry(undefined);
 
-    const minPerKm = speed > 0 ? FormatTime(ConvertSecondsToTime(Math.round(1000 / speed))) : '0:00';
+    const minPerKm = speed > 0 ? FormatTime(ConvertSecondsToTime(Math.round(1000 / speed))) : '--:--';
     const currentAccuracy = this.geolocation.getAccuracy();
 
     const description = `${this.t('map.Speed')}: ${minPerKm} min/km<br/>${this.t('map.GPSAccuracy')}: ${
@@ -221,7 +227,7 @@ export class TrackingControl extends Control {
     this.view.animate({
       center,
       resolution,
-      rotation: this.accuracy <= maxAccuracy * 2.5 ? -heading : 0,
+      rotation: speed === 0 ? undefined : this.accuracy <= maxAccuracy * 2.5 ? -heading : 0,
       duration: 500,
     });
     this.map.render();

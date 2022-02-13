@@ -154,7 +154,7 @@ const okorion: IMobxClubModelSnapshotIn = {
         height: 48,
       },
       url: 'https://bergkvarabuss.se/',
-      active: true,
+      active: false,
     },
     {
       name: 'BLT',
@@ -165,6 +165,16 @@ const okorion: IMobxClubModelSnapshotIn = {
       },
       url: 'https://blt.se/',
       active: false,
+    },
+    {
+      name: 'Börjessons',
+      logo: {
+        url: 'https://okorion.com/images/sponsors/borjessons.png',
+        width: 620,
+        height: 183,
+      },
+      url: 'https://www.borjessonsbil.se/',
+      active: true,
     },
     {
       name: 'EY',
@@ -194,6 +204,16 @@ const okorion: IMobxClubModelSnapshotIn = {
         height: 313,
       },
       url: 'https://www.ica.se/butiker/supermarket/karlskrona/ica-supermarket-jamjo-2450/start/',
+      active: true,
+    },
+    {
+      name: 'iLOG',
+      logo: {
+        url: 'https://okorion.com/images/sponsors/ilog.png',
+        width: 600,
+        height: 104,
+      },
+      url: 'https://www.wip.se/',
       active: true,
     },
     {
@@ -249,9 +269,9 @@ const okorion: IMobxClubModelSnapshotIn = {
     {
       name: 'S-GROUP Solutions',
       logo: {
-        url: 'https://okorion.com/images/sponsors/sgroupsolutions.png',
-        width: 387,
-        height: 80,
+        url: 'https://okorion.com/images/sponsors/sgroup-solutions.svg',
+        width: 425,
+        height: 40,
       },
       url: 'https://www.sgroup-solutions.se/',
       active: true,
