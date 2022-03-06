@@ -10,7 +10,7 @@ const okorion: IMobxClubModelSnapshotIn = {
       {
         type: 'group',
         id: 'OrienteeringTileLayers',
-        title: 'OK Orions kartor 2021',
+        title: 'OK Orions kartor 2022',
         layers: [
           {
             type: 'base-tile',
@@ -21,7 +21,7 @@ const okorion: IMobxClubModelSnapshotIn = {
             maxZoomLevel: 14.9999999999999,
             fullExtent: {
               xmin: 15.39838,
-              ymin: 56.06166,
+              ymin: 56.0,
               xmax: 16.08225,
               ymax: 56.39629,
             },
@@ -35,7 +35,7 @@ const okorion: IMobxClubModelSnapshotIn = {
             maxZoomLevel: 17,
             fullExtent: {
               xmin: 15.39838,
-              ymin: 56.06166,
+              ymin: 56.0,
               xmax: 16.08225,
               ymax: 56.39629,
             },
@@ -44,6 +44,69 @@ const okorion: IMobxClubModelSnapshotIn = {
               ymin: 56.158,
               xmax: 15.853,
               ymax: 56.162,
+            },
+          },
+        ],
+      },
+      {
+        type: 'group',
+        id: 'CoursesTileLayers',
+        title: 'OK Orions banor värdetävlingar',
+        layers: [
+          {
+            type: 'base-tile',
+            id: 'CourseLayerElitserien2001-1-H21',
+            title: 'Elitserien 2001:1 H21',
+            urlTemplate: 'https://okorion.com/maptiles/courses/elitserien2001/1/h21/wgs84/{z}/{x}/{y}.png',
+            minZoomLevel: 12,
+            maxZoomLevel: 17,
+            fullExtent: {
+              xmin: 15.42126,
+              ymin: 56.34907,
+              xmax: 15.4825,
+              ymax: 56.39411,
+            },
+          },
+          {
+            type: 'base-tile',
+            id: 'CourseLayerElitserien2001-1-D21',
+            title: 'Elitserien 2001:1 D21',
+            urlTemplate: 'https://okorion.com/maptiles/courses/elitserien2001/1/d21/wgs84/{z}/{x}/{y}.png',
+            minZoomLevel: 12,
+            maxZoomLevel: 17,
+            fullExtent: {
+              xmin: 15.43325,
+              ymin: 56.36599,
+              xmax: 15.4818,
+              ymax: 56.39413,
+            },
+          },
+          {
+            type: 'base-tile',
+            id: 'CourseLayerElitserien2001-2-H21',
+            title: 'Elitserien 2001:2 H21',
+            urlTemplate: 'https://okorion.com/maptiles/courses/elitserien2001/2/h21/wgs84/{z}/{x}/{y}.png',
+            minZoomLevel: 12,
+            maxZoomLevel: 17,
+            fullExtent: {
+              xmin: 15.42565,
+              ymin: 56.37695,
+              xmax: 15.47173,
+              ymax: 56.39566,
+            },
+          },
+          {
+            type: 'base-tile',
+            id: 'CourseLayerElitserien2001-2-D21',
+            title: 'Elitserien 2001:2 D21',
+            urlTemplate: 'https://okorion.com/maptiles/courses/elitserien2001/2/d21/wgs84/{z}/{x}/{y}.png',
+            minZoomLevel: 12,
+            maxZoomLevel: 17,
+            fullExtent: {
+              xmin: 15.42648,
+              ymin: 56.37692,
+              xmax: 15.47189,
+              ymax: 56.39565,
             },
           },
         ],

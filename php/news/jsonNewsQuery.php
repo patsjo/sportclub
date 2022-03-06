@@ -62,9 +62,13 @@ if ($input->iNewsTypeID == 0)
 {
   $whereNewsType = "(news_type_id = 1 OR news_type_id = 2)";
 }
-else
+elseif (isset($input->iNewsTypeID) && $input->iNewsTypeID != "")
 {
   $whereNewsType = "news_type_id = " . $input->iNewsTypeID;
+}
+else
+{
+  $whereNewsType = "1 = 1";
 }
 
 if (is_null($input->iStartDate))
@@ -101,7 +105,7 @@ $sql = "SELECT * FROM news LEFT OUTER JOIN users ON (news.mod_by_user_id = users
 $result = \db\mysql_query($sql);
 if (!$result)
 {
-  trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
+  trigger_error('SQL Error: ' . \db\mysql_error() . ' SQL: ' . $sql, E_USER_ERROR);
 }
 
 $rows = array();
