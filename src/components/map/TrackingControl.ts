@@ -19,8 +19,8 @@ const trackingCanvas = document.createElement('canvas');
 const trackingContext = trackingCanvas.getContext('2d');
 trackingCanvas.width = 31;
 trackingCanvas.height = 31;
-trackingContext!.strokeStyle = 'rgba(51,153,204,0.9)';
-trackingContext!.lineWidth = 2;
+trackingContext!.strokeStyle = 'rgba(224,48,32,0.9)';
+trackingContext!.lineWidth = 2.5;
 trackingContext!.arc(15, 15, 10, 0, 2 * Math.PI, true);
 trackingContext!.moveTo(0, 15);
 trackingContext!.lineTo(10, 15);
@@ -108,16 +108,16 @@ export class TrackingControl extends Control {
             const outerRadius = radius * 1.2;
 
             const gradient = ctx.createRadialGradient(x, y, innerRadius, x, y, outerRadius);
-            gradient.addColorStop(0, 'rgba(51,153,204,0)');
-            gradient.addColorStop(0.6, 'rgba(51,153,204,0)');
-            gradient.addColorStop(1, 'rgba(51,153,204,0.75)');
+            gradient.addColorStop(0, 'rgba(224,48,32,0)');
+            gradient.addColorStop(0.6, 'rgba(224,48,32,0)');
+            gradient.addColorStop(1, 'rgba(224,48,32,0.75)');
             ctx.beginPath();
             ctx.arc(x, y, radius, 0, 2 * Math.PI, true);
             ctx.fillStyle = gradient;
             ctx.fill();
 
             ctx.arc(x, y, radius, 0, 2 * Math.PI, true);
-            ctx.strokeStyle = 'rgba(51,153,204,0.75)';
+            ctx.strokeStyle = 'rgba(224,48,32,0.75)';
             ctx.stroke();
           },
         })
@@ -143,10 +143,10 @@ export class TrackingControl extends Control {
           image: new CircleStyle({
             radius: 4,
             fill: new FillStyle({
-              color: 'rgba(51,153,204, 0.4)',
+              color: 'rgba(224,48,32, 0.6)',
             }),
             stroke: new StrokeStyle({
-              color: 'rgba(255, 255, 255, 0.4)',
+              color: 'rgba(255, 255, 255, 0.6)',
               width: 2,
             }),
           }),
@@ -156,6 +156,7 @@ export class TrackingControl extends Control {
         }),
       });
       this.map.addLayer(this.oldPositionsLayer);
+      this.onGeoLocationChange();
       this.geolocation.on('change', this.onGeoLocationChange.bind(this));
       this.geolocation.setTracking(true);
       this.intervalId = setInterval(this.addPosition.bind(this), 5000);
@@ -247,7 +248,7 @@ export class TrackingControl extends Control {
 
   addPosition() {
     this.positions = [this.latestPosition, ...this.positions];
-    this.positions = this.positions.slice(0, 60);
+    this.positions = this.positions.slice(0, 8640);
 
     const coordsOutsideAccuracy: number[][] = [];
 

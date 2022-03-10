@@ -52,6 +52,7 @@ const okorion: IMobxClubModelSnapshotIn = {
         type: 'group',
         id: 'CoursesTileLayers',
         title: 'OK Orions banor värdetävlingar',
+        visible: false,
         layers: [
           {
             type: 'base-tile',
@@ -66,6 +67,7 @@ const okorion: IMobxClubModelSnapshotIn = {
               xmax: 15.4825,
               ymax: 56.39411,
             },
+            visible: false,
           },
           {
             type: 'base-tile',
@@ -80,6 +82,7 @@ const okorion: IMobxClubModelSnapshotIn = {
               xmax: 15.4818,
               ymax: 56.39413,
             },
+            visible: false,
           },
           {
             type: 'base-tile',
@@ -94,6 +97,7 @@ const okorion: IMobxClubModelSnapshotIn = {
               xmax: 15.47173,
               ymax: 56.39566,
             },
+            visible: false,
           },
           {
             type: 'base-tile',
@@ -108,6 +112,7 @@ const okorion: IMobxClubModelSnapshotIn = {
               xmax: 15.47189,
               ymax: 56.39565,
             },
+            visible: false,
           },
         ],
       },
@@ -317,6 +322,16 @@ const okorion: IMobxClubModelSnapshotIn = {
         height: 100,
       },
       url: 'https://www.lansforsakringar.se/blekinge/',
+      active: true,
+    },
+    {
+      name: 'Martins grus',
+      logo: {
+        url: 'https://okorion.com/images/sponsors/martinsgrus.png',
+        width: 598,
+        height: 300,
+      },
+      url: 'https://martinsgrus.se/',
       active: true,
     },
     {

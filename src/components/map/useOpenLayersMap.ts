@@ -13,6 +13,18 @@ const openStreetMapLayerId = 'OpenStreetMapLayer';
 export const mapProjection = 'EPSG:3857';
 export const backgroundLayerIds = [openStreetMapLayerId];
 
+const getDefaultLayerVisible = (layers: IAnyLayer[], id: string): boolean | undefined => {
+  for (let i = 0; i < layers.length; i++) {
+    if (layers[i].id === id) return layers[i].visible;
+    if (layers[i].type === 'group') {
+      const visible = getDefaultLayerVisible(layers[i].layers, id);
+      if (visible !== undefined) return visible;
+    }
+  }
+
+  return undefined;
+};
+
 const getMapLayers = (layers: IAnyLayer[]): BaseLayer[] => {
   const mapLayers: BaseLayer[] = [];
 
@@ -28,10 +40,10 @@ const getMapLayers = (layers: IAnyLayer[]): BaseLayer[] => {
           zoomExtent: [pMin[0], pMin[1], pMax[0], pMax[1]],
         },
         layers: getMapLayers(layer.layers),
-        visible: layer.visible,
         extent: [pMin[0], pMin[1], pMax[0], pMax[1]],
       });
       mapLayers.push(groupLayer);
+      //Layer don't work if visibility is set false on this layer instance (must by done in map)
     } else {
       const zMin = fromLonLat(
         layer.zoomExtent
@@ -57,10 +69,10 @@ const getMapLayers = (layers: IAnyLayer[]): BaseLayer[] => {
         }),
         minZoom: layer.minZoomLevel,
         maxZoom: layer.maxZoomLevel,
-        visible: layer.visible,
         extent: [pMin[0], pMin[1], pMax[0], pMax[1]],
       });
       mapLayers.push(orienteeringTileLayer);
+      //Layer don't work if visibility is set false on this layer instance (must by done in map)
     }
   });
 
@@ -95,6 +107,13 @@ export const useOpenLayersMap = () => {
 
     const layers = getMapLayers(clubModel.map!.layers);
     layers.forEach((layer) => openLayersMap.addLayer(layer));
+
+    const allMapLayers = openLayersMap.getAllLayers()?.filter((l) => l.getProperties().id) ?? [];
+
+    allMapLayers.forEach((l) => {
+      const visible = getDefaultLayerVisible(clubModel.map!.layers, l.getProperties().id);
+      if (visible !== undefined && !visible) l.setVisible(false);
+    });
 
     setMap(openLayersMap);
   }, [map, init]);
