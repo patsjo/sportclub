@@ -207,7 +207,7 @@ const useEventorEntries = (clubModel: IMobxClubModel) => {
           .filter((savedEvent) => fromDate <= savedEvent.date && savedEvent.date <= toDate)
           .map((savedEvent) => ({
             eventId: savedEvent.eventId,
-            eventorId: savedEvent.eventorId.toString(),
+            eventorId: savedEvent.eventorId?.toString() ?? '',
             eventorRaceId: savedEvent.eventorRaceId?.toString() ?? '',
             date: savedEvent.date,
             name: savedEvent.name,
@@ -224,7 +224,7 @@ const useEventorEntries = (clubModel: IMobxClubModel) => {
             .slice(0, 5 - events.length)
             .map((savedEvent) => ({
               eventId: savedEvent.eventId,
-              eventorId: savedEvent.eventorId.toString(),
+              eventorId: savedEvent.eventorId?.toString() ?? '',
               eventorRaceId: savedEvent.eventorRaceId?.toString() ?? '',
               date: savedEvent.date,
               name: savedEvent.name,

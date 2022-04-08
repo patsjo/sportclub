@@ -39,6 +39,11 @@ const EventHeader = styled.div`
   text-align: left;
 `;
 
+const EventorUrl = styled.a`
+  color: black;
+  cursor: pointer;
+`;
+
 const StyledTable = styled.table`
   border-spacing: 0px;
   font-size: 12px;
@@ -415,45 +420,47 @@ const EventRace = observer(({ header, date, eventObject, ref }: IEventRaceProps)
         <Spin size="large" />
       </SpinnerDiv>
     ) : null;
-  const ShowEventItem =
-    EventItem != null && eventorModule ? (
-      <FadeOutItem
-        key={`FadeOutItem#EventorRaceId#${eventObject.eventorRaceId}`}
-        ref={ref}
-        maxHeight={100}
-        module={eventorModule}
-        content={
-          <ContentHolder>
-            <EventHeader>
-              {loaded && showStart
-                ? `${t('eventor.Startlist')} - `
-                : loaded && showResult
-                ? `${t('eventor.Result')} - `
-                : ''}
-              {header}
-            </EventHeader>
-            <EventTime>{date}</EventTime>
-            {EventItem}
-          </ContentHolder>
-        }
-        modalContent={
-          <ContentHolder>
-            <EventHeader>
-              {loaded && showStart
-                ? `${t('eventor.Startlist')} - `
-                : loaded && showResult
-                ? `${t('eventor.Result')} - `
-                : ''}
-              {header}
-            </EventHeader>
-            <EventTime>{date}</EventTime>
-            {EventItem}
-          </ContentHolder>
-        }
-        modalColumns={1}
-      />
-    ) : null;
-  return ShowEventItem;
+
+  const startlistUrl = `https://eventor.orientering.se/Events/StartList?eventId=${eventObject.eventorId}&eventRaceId=${eventObject.eventorRaceId}&organisationId=${clubModel.eventor?.organisationId}`;
+  const resultsUrl = `https://eventor.orientering.se/Events/ResultList?eventId=${eventObject.eventorId}&eventRaceId=${eventObject.eventorRaceId}&organisationId=${clubModel.eventor?.organisationId}`;
+  const url = !eventObject.eventorId
+    ? undefined
+    : showStart
+    ? startlistUrl
+    : showResult
+    ? resultsUrl
+    : `https://eventor.orientering.se/Events/Show/${eventObject.eventorId}`;
+  const headerText =
+    (loaded && showStart ? `${t('eventor.Startlist')} - ` : loaded && showResult ? `${t('eventor.Result')} - ` : '') +
+    header;
+
+  const EventContent = (isModal: boolean) => (
+    <ContentHolder>
+      <EventHeader>
+        {url && isModal ? (
+          <EventorUrl href={url} target="_blank">
+            {headerText}
+          </EventorUrl>
+        ) : (
+          headerText
+        )}
+      </EventHeader>
+      <EventTime>{date}</EventTime>
+      {EventItem}
+    </ContentHolder>
+  );
+
+  return EventItem != null && eventorModule ? (
+    <FadeOutItem
+      key={`FadeOutItem#EventorRaceId#${eventObject.eventorRaceId}`}
+      ref={ref}
+      maxHeight={100}
+      module={eventorModule}
+      content={EventContent(false)}
+      modalContent={EventContent(true)}
+      modalColumns={1}
+    />
+  ) : null;
 });
 
 export default EventRace;
