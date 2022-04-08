@@ -21,7 +21,9 @@
 //# 2021-08-21  PatSjo  Remove HTML functions                #
 //############################################################
 
+include_once($_SERVER["DOCUMENT_ROOT"] . "/include/functions.php");
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/db.php");
+include_once($_SERVER["DOCUMENT_ROOT"] . "/include/eventorApiKey.php");
 
 $cADMIN_GROUP_ID = 1;
 $user_id = 0;
@@ -55,7 +57,7 @@ function NotAuthorized($UseForbidden = false)
       header("HTTP/1.0 403 Forbidden");
     } else {
       header("HTTP/1.0 401 Unauthorized");
-      header("WWW-Authenticate: Basic realm=\"Värend GN\"");
+      header("WWW-Authenticate: Basic realm=\"VÃ¤rend GN\"");
     }
     die(0);
 }
@@ -204,7 +206,8 @@ function setUserID()
 
   $user_id = 0;
   $eventorPersonId = null;
-  $userName = "Okänd";
+  $withinOrganisation = false;
+  $userName = "OkÃ¤nd";
   $base64_client = get_http_authorization();
   $person = null;
 
@@ -215,10 +218,6 @@ function setUserID()
   if (isset($_SESSION['user_name']))
   {
     $userName = $_SESSION['user_name'];
-  }
-  if (isset($_SESSION['eventor_person_id']))
-  {
-    $eventorPersonId = $_SESSION['eventor_person_id'];
   }
   
   if ($user_id > 0 || ((!is_null($base64_client)) && (strlen($base64_client) > 0)))
@@ -270,7 +269,24 @@ function setUserID()
       
         \db\mysql_free_result($result);
 
-        if ($user_id == 0 && !is_null($person) && (string)$person->OrganisationId == "584")
+        $withinOrganisation = (!is_null($person) && (string)$person->OrganisationId == GetEventorOrganisationId());
+        if (!is_null($person) && !$withinOrganisation)
+        {
+            if (is_array($person->Role))
+            {
+                foreach ($person->Role as &$role) {
+                    if ($role->OrganisationId == GetEventorOrganisationId())
+                    {
+                        $withinOrganisation = true;
+                    }
+                }    
+            }
+            else
+            {
+                $withinOrganisation = (!is_null($person->Role) && (string)$person->Role->OrganisationId == GetEventorOrganisationId());
+            }
+        }
+        if ($user_id == 0 && !is_null($person) && $withinOrganisation)
         {
           $sql = "INSERT INTO users (birthday,first_name,last_name) " .
             "VALUES ('" . \db\mysql_real_escape_string($person->BirthDate->Date) . "', " .

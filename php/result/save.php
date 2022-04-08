@@ -21,17 +21,7 @@ include_once($_SERVER["DOCUMENT_ROOT"] . "/include/db.php");
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/users.php");
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/functions.php");
 
-ValidLogin();
-if (!(ValidGroup($cADMIN_GROUP_ID)))
-{
-  NotAuthorized();
-}
-
-header("Access-Control-Allow-Credentials: true");
-header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);
-header("Access-Control-Allow-Headers: *");
-header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
-header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); // Date in the past
+cors();
 
 // Takes raw data from the request
 $json = file_get_contents('php://input');
@@ -41,6 +31,12 @@ $input = json_decode($json);
 if(!isset($input->iType))
 {
   $input->iType = "";
+}
+
+ValidLogin();
+if ($input->iType != "COMPETITOR_INFO" && !(ValidGroup($cADMIN_GROUP_ID)))
+{
+  NotAuthorized();
 }
 
 OpenDatabase();

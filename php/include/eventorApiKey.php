@@ -17,4 +17,10 @@ function GetApiKey()
 {
     return "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 }
+
+function GetEventorOrganisationId()
+{
+    return "xxx";
+}
+
 ?>
