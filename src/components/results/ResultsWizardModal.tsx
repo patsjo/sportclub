@@ -117,7 +117,8 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
     setNextStepValid(valid);
   }, []);
 
-  const save = useCallback((shouldClose = true) => {
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  const save = useCallback((shouldClose = true, onSuccess = () => {}) => {
     const { raceEvent } = raceWizardModel.current;
     const raceEventClassification = clubModel.raceClubs?.eventClassifications.find(
       (ec) => ec.eventClassificationId === raceEvent?.eventClassificationId
@@ -298,6 +299,8 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
       sessionModel.authorizationHeader
     )
       .then(() => {
+        setSaving(false);
+        onSuccess();
         shouldClose && onClose();
       })
       .catch((e) => {
@@ -305,6 +308,19 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
         setSaving(false);
       });
   }, []);
+
+  const saveAndNextEvent = useCallback(() => {
+    save(false, () => {
+      raceWizardModel.current.raceEvent?.eventorRaceId != null &&
+        raceWizardModel.current.addImportedId(raceWizardModel.current.raceEvent?.eventorRaceId);
+      raceWizardModel.current.setRaceEvent(null);
+      raceWizardModel.current.setNumberValueOrNull('selectedEventId', null);
+      raceWizardModel.current.setNumberValueOrNull('selectedEventorId', null);
+      raceWizardModel.current.setNumberValueOrNull('selectedEventorRaceId', null);
+      setNextStepValid(false);
+      setWizardStep(1);
+    });
+  }, [save]);
 
   useEffect(() => {
     const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
@@ -448,6 +464,12 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
             <PlusOutlined />
             {t('results.AddCompetitor')}
           </Button>,
+          wizardStep === 3 && raceWizardModel.current.existInEventor ? (
+            <Button disabled={!loaded || !nextStepValid} loading={saving} onClick={(e) => saveAndNextEvent()}>
+              <LeftOutlined />
+              {t('common.SaveAndNextEvent')}
+            </Button>
+          ) : null,
           <Button
             type="primary"
             disabled={!loaded || !nextStepValid}

@@ -70,6 +70,20 @@ const InvoiceWizardStep1ChooseRace = observer(
         });
     }, []);
 
+    useEffect(() => {
+      setSelectedRowKeys([]);
+      setEvents((oldEvents) =>
+        raceWizardModel.queryIncludeExisting
+          ? oldEvents.map(
+              (e): IInvoiceEvent => ({
+                ...e,
+                invoiceVerified: e.invoiceVerified || raceWizardModel.importedIds.includes(e.eventId),
+              })
+            )
+          : oldEvents.filter((e) => !raceWizardModel.importedIds.includes(e.eventId))
+      );
+    }, [raceWizardModel.importedIds.length]);
+
     const rowSelection: TableRowSelection<IInvoiceEvent> = {
       selectedRowKeys,
       onChange: onSelectChange,

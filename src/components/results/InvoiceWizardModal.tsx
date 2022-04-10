@@ -53,7 +53,8 @@ const InvoiceWizardModal = observer(({ open, onClose }: IInvoiceWizardModalProps
     setNextStepValid(valid);
   }, []);
 
-  const save = useCallback(() => {
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  const save = useCallback((shouldClose = true, onSuccess = () => {}) => {
     const { raceEvent } = raceWizardModel.current;
     const resultsModule = clubModel.modules.find((module) => module.name === 'Results');
     const saveUrl = raceEvent?.eventId === -1 ? resultsModule?.addUrl : resultsModule?.updateUrl;
@@ -75,13 +76,28 @@ const InvoiceWizardModal = observer(({ open, onClose }: IInvoiceWizardModalProps
       sessionModel.authorizationHeader
     )
       .then(() => {
-        onClose();
+        setSaving(false);
+        onSuccess();
+        shouldClose && onClose();
       })
       .catch((e) => {
         message.error(e.message);
         setSaving(false);
       });
   }, []);
+
+  const saveAndNextEvent = useCallback(() => {
+    save(false, () => {
+      raceWizardModel.current.raceEvent?.eventId != null &&
+        raceWizardModel.current.addImportedId(raceWizardModel.current.raceEvent?.eventId);
+      raceWizardModel.current.setRaceEvent(null);
+      raceWizardModel.current.setNumberValueOrNull('selectedEventId', null);
+      raceWizardModel.current.setNumberValueOrNull('selectedEventorId', null);
+      raceWizardModel.current.setNumberValueOrNull('selectedEventorRaceId', null);
+      setNextStepValid(false);
+      setWizardStep(1);
+    });
+  }, [save]);
 
   useEffect(() => {
     const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
@@ -121,6 +137,12 @@ const InvoiceWizardModal = observer(({ open, onClose }: IInvoiceWizardModalProps
             <LeftOutlined />
             {t('common.Previous')}
           </Button>,
+          wizardStep === 2 ? (
+            <Button disabled={!loaded || !nextStepValid} loading={saving} onClick={(e) => saveAndNextEvent()}>
+              <LeftOutlined />
+              {t('common.SaveAndNextEvent')}
+            </Button>
+          ) : null,
           <Button
             type="primary"
             disabled={!loaded || !nextStepValid}

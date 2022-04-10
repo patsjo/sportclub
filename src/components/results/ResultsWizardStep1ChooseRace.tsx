@@ -384,6 +384,21 @@ const ResultWizardStep1ChooseRace = observer(({ visible, onValidate, onFailed }:
       });
   }, []);
 
+  useEffect(() => {
+    setSelectedRowKeys([]);
+    setEvents((oldEvents) =>
+      raceWizardModel.queryIncludeExisting
+        ? oldEvents.map(
+            (e): IResultEvent => ({
+              ...e,
+              alreadySaved:
+                e.alreadySaved || (e.eventorRaceId != null && raceWizardModel.importedIds.includes(e.eventorRaceId)),
+            })
+          )
+        : oldEvents.filter((e) => !raceWizardModel.importedIds.includes(e.eventId))
+    );
+  }, [raceWizardModel.importedIds.length]);
+
   const rowSelection: TableRowSelection<IResultEvent> = {
     selectedRowKeys,
     onChange: onSelectChange,

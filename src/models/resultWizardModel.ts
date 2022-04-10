@@ -76,6 +76,7 @@ export const RaceWizard = types
     selectedIsRelay: types.optional(types.boolean, false),
     raceEvent: types.maybeNull(RaceEvent),
     raceWinnerResults: types.array(WinnerResult),
+    importedIds: types.optional(types.array(types.integer), []),
   })
   .actions((self) => {
     return {
@@ -107,13 +108,16 @@ export const RaceWizard = types
         self[key] = value != null ? value : null;
         setLocalStorage(self);
       },
-      setRaceEvent(value: IRaceEventSnapshotIn) {
-        self.raceEvent = cast(value);
+      setRaceEvent(value: IRaceEventSnapshotIn | null) {
+        self.raceEvent = value == null ? null : cast(value);
         setLocalStorage(self);
       },
       setRaceWinnerResults(value: IWinnerResultSnapshotIn[]) {
         self.raceWinnerResults = cast(value);
         setLocalStorage(self);
+      },
+      addImportedId(id: number) {
+        self.importedIds = cast([...self.importedIds, id]);
       },
     };
   })
