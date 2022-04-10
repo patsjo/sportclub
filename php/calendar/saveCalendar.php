@@ -69,7 +69,7 @@ if ($input->iType == "ACTIVITY")
   $x->activityTypeId        = getRequestInt($input->iActivityTypeID);
   $x->groupId               = getRequestInt($input->iGroupID);
   $x->date                  = getRequestDate($input->iActivityDay);
-  $x->time                  = getRequestTime($input->iActivityTime);
+  $x->time                  = isset($input->iActivityTime) ? getRequestTime($input->iActivityTime) : null;
   $x->activityDurationMinutes = getRequestInt($input->iActivityDurationMinutes);
   $x->place                 = getRequestString($input->iPlace);
   $x->header                = getRequestString($input->iHeader);
