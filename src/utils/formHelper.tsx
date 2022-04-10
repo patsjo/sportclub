@@ -15,6 +15,10 @@ export const timeFormatWithoutHour = 'mm:ss';
 export const shortTimeFormat = 'HH:mm';
 export const maxByteSize = 10485760;
 
+export interface INumberOption {
+  code: number;
+  description: string;
+}
 export interface IOption {
   code: number | string;
   description: string;

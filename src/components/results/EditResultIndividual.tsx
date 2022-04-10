@@ -6,7 +6,7 @@ import { ISessionModel } from 'models/sessionModel';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
-import { errorRequiredField, FormSelect, hasErrors, IOption, timeFormat } from '../../utils/formHelper';
+import { errorRequiredField, FormSelect, hasErrors, INumberOption, timeFormat } from '../../utils/formHelper';
 import {
   AwardTypes,
   difficulties,
@@ -49,7 +49,7 @@ interface IEditResultIndividualProps {
   eventClassificationId: EventClassificationIdTypes;
   result: IExtendedRaceResult;
   results: IRaceResult[];
-  competitorsOptions: IOption[];
+  competitorsOptions: INumberOption[];
   onValidate: (valid: boolean) => void;
 }
 const EditResultIndividual = ({
@@ -149,8 +149,8 @@ const EditResultIndividual = ({
               optionFilterProp="children"
               filterOption={(input, option) => option?.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
               options={competitorsOptions}
-              onChange={(code) => {
-                result.competitorId = code == null ? -1 : parseInt(code);
+              onChange={(code: number) => {
+                result.competitorId = code == null ? -1 : code;
               }}
             />
           </FormItem>
@@ -182,7 +182,7 @@ const EditResultIndividual = ({
                   result.competitorId = competitor ? competitor.competitorId : -1;
                   result.feeToClub = GetCompetitorFee(paymentModel, result, age, classClassification);
                   formRef.current.setFieldsValue({
-                    iCompetitorId: result.competitorId == null ? undefined : result.competitorId.toString(),
+                    iCompetitorId: result.competitorId == null ? undefined : result.competitorId,
                     iFeeToClub: result.feeToClub,
                   });
                   setAge(competitor ? GetAge(competitor.birthDay, raceDate) : null);

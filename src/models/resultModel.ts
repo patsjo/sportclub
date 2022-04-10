@@ -1,5 +1,6 @@
 import { INewCompetitorForm } from 'components/results/AddMapCompetitor';
 import { cast, flow, Instance, SnapshotIn, types } from 'mobx-state-tree';
+import { INumberOption } from 'utils/formHelper';
 import { PostJsonData } from '../utils/api';
 import {
   AwardTypes,
@@ -10,7 +11,7 @@ import {
   FailedReasonTypes,
   LightConditionTypes,
   PaymentTypes,
-  SportCodeTypes,
+  SportCodeTypes
 } from '../utils/resultConstants';
 import { GetAge, GetAward } from '../utils/resultHelper';
 
@@ -134,7 +135,7 @@ const RaceClub = types
             ? 1
             : -1
         )
-        .map((competitor) => ({
+        .map((competitor):INumberOption => ({
           code: competitor.competitorId,
           description: `${competitor.fullName} (${competitor.birthDay})`,
         }));

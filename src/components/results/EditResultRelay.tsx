@@ -6,7 +6,7 @@ import { ISessionModel } from 'models/sessionModel';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
-import { errorRequiredField, FormSelect, hasErrors, IOption, timeFormat } from '../../utils/formHelper';
+import { errorRequiredField, FormSelect, hasErrors, INumberOption, timeFormat } from '../../utils/formHelper';
 import {
   difficulties,
   DifficultyTypes,
@@ -45,7 +45,7 @@ interface IEditResultRelayProps {
   raceLightCondition: LightConditionTypes;
   result: IExtendedRaceTeamResult;
   results: IRaceTeamResult[];
-  competitorsOptions: IOption[];
+  competitorsOptions: INumberOption[];
   onValidate: (valid: boolean) => void;
 }
 const EditResultRelay = ({
@@ -126,8 +126,8 @@ const EditResultRelay = ({
               optionFilterProp="children"
               filterOption={(input, option) => option?.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
               options={competitorsOptions}
-              onChange={(code) => {
-                result.competitorId = code == null ? -1 : parseInt(code);
+              onChange={(code: number) => {
+                result.competitorId = code == null ? -1 : code;
               }}
             />
           </FormItem>
@@ -158,7 +158,7 @@ const EditResultRelay = ({
                 .then((competitor) => {
                   result.competitorId = competitor ? competitor.competitorId : -1;
                   formRef.current.setFieldsValue({
-                    iCompetitorId: result.competitorId == null ? undefined : result.competitorId.toString(),
+                    iCompetitorId: result.competitorId == null ? undefined : result.competitorId,
                   });
                   formRef.current.validateFields(['iCompetitorId'], { force: true });
                 })

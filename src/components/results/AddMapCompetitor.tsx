@@ -1,8 +1,8 @@
 import { DatePicker, Form, Input, Tabs } from 'antd';
 import moment from 'moment';
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { dateFormat, errorRequiredField, FormSelect, IOption } from '../../utils/formHelper';
+import { dateFormat, errorRequiredField, FormSelect, INumberOption } from '../../utils/formHelper';
 import { genderOptions, GenderType } from '../../utils/resultConstants';
 import FormItem from '../formItems/FormItem';
 
@@ -25,7 +25,7 @@ export interface IAddLinkCompetitor {
 }
 interface IAddMapCompetitor {
   addLinkCompetitor: IAddLinkCompetitor;
-  competitorsOptions: IOption[];
+  competitorsOptions: INumberOption[];
   defaultActiveKey: string;
   onTabChange: (key: string) => void;
   onValidate: (valid: boolean) => void;
@@ -40,13 +40,12 @@ const AddMapCompetitor = ({
   const { t } = useTranslation();
   const formId = useMemo(() => 'addMapCompetitor' + Math.floor(Math.random() * 1000000000000000), []);
 
-  const onThisTabChange = useCallback(
+  const validate = useCallback(
     (key: string) => {
       const { iFirstName, iLastName, iBirthDay, iGender, iStartDate } = addLinkCompetitor.newCompetitor;
 
-      onTabChange(key);
       if (key === '1') {
-        onValidate(addLinkCompetitor.competitorId != null);
+        onValidate(addLinkCompetitor.competitorId != null && addLinkCompetitor.competitorId !== -1);
       } else {
         onValidate(
           !!iFirstName &&
@@ -59,15 +58,30 @@ const AddMapCompetitor = ({
         );
       }
     },
-    [addLinkCompetitor, onValidate, onTabChange]
+    [addLinkCompetitor, onValidate]
   );
+
+  const onThisTabChange = useCallback(
+    (key: string) => {
+      onTabChange(key);
+      validate(key);
+    },
+    [onTabChange, validate]
+  );
+
+  useEffect(() => {
+    validate(defaultActiveKey);
+  }, []);
 
   return (
     <Form
       id={formId}
       layout="vertical"
       initialValues={{
-        iCompetitorId: !addLinkCompetitor.competitorId ? undefined : addLinkCompetitor.competitorId,
+        iCompetitorId:
+          !addLinkCompetitor.competitorId || addLinkCompetitor.competitorId === -1
+            ? undefined
+            : addLinkCompetitor.competitorId,
         iFirstName: addLinkCompetitor.newCompetitor.iFirstName,
         iLastName: addLinkCompetitor.newCompetitor.iLastName,
         iBirthDay: !addLinkCompetitor.newCompetitor.iBirthDay
@@ -98,9 +112,9 @@ const AddMapCompetitor = ({
               optionFilterProp="children"
               filterOption={(input, option) => option?.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
               options={competitorsOptions}
-              onChange={(code: string) => {
-                addLinkCompetitor.competitorId = code == null ? -1 : parseInt(code);
-                onValidate(addLinkCompetitor.competitorId !== -1);
+              onChange={(code: number) => {
+                addLinkCompetitor.competitorId = code == null ? -1 : code;
+                onValidate(addLinkCompetitor.competitorId != null && addLinkCompetitor.competitorId !== -1);
               }}
             />
           </FormItem>

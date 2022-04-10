@@ -65,7 +65,7 @@ export const AddMapCompetitorConfirmModal = (
       onOk() {
         if (selectedTabKey === '1') {
           const comp =
-            confirmObject.competitorId !== -1
+            confirmObject.competitorId != null && confirmObject.competitorId !== -1
               ? clubModel.raceClubs?.selectedClub.competitorById(confirmObject.competitorId)
               : undefined;
           if (

@@ -17,7 +17,7 @@ import {
   IViewTeamResult,
 } from 'utils/responseInterfaces';
 import { PostJsonData } from '../../utils/api';
-import { FormSelect, IOption } from '../../utils/formHelper';
+import { FormSelect, INumberOption, IOption } from '../../utils/formHelper';
 import { getPdf, getZip, IPrintInput, IPrintObject, IPrintTable, IPrintTableColumn } from '../../utils/pdf';
 import {
   failedReasons,
@@ -586,7 +586,7 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
     (settings: IPrintSettings, allInOnePdf: boolean): Promise<void> => {
       const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
       let resultPromisies: Promise<IIndividualViewResultResponse | IClubViewResultResponse>[] = [];
-      let competitorsOptions: IOption[] = [];
+      let competitorsOptions: INumberOption[] = [];
 
       if (!url || !clubModel.raceClubs) return new Promise<void>((resolve) => resolve());
 

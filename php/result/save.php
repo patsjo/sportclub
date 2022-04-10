@@ -132,6 +132,7 @@ if ($input->iType == "COMPETITOR")
       $x->firstName            = $row2['FIRST_NAME'];
       $x->lastName             = $row2['LAST_NAME'];
       $x->birthDay             = $row2['BIRTHDAY'];
+      $x->gender               = $row2['GENDER'];
       $x->startDate            = is_null($row2['START_DATE']) ? NULL : date2String(strtotime($row2['START_DATE']));
       $x->endDate              = is_null($row2['END_DATE']) ? NULL : date2String(strtotime($row2['END_DATE']));
       $x->eventorCompetitorIds = array();
