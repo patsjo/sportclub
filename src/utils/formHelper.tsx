@@ -13,6 +13,7 @@ export const weekFormat = 'GGGG-WW';
 export const timeFormat = 'HH:mm:ss';
 export const timeFormatWithoutHour = 'mm:ss';
 export const shortTimeFormat = 'HH:mm';
+export const datetimeFormat = `${dateFormat} ${timeFormat}`;
 export const maxByteSize = 10485760;
 
 export interface INumberOption {

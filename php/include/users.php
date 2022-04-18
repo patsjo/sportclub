@@ -26,6 +26,7 @@ include_once($_SERVER["DOCUMENT_ROOT"] . "/include/db.php");
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/eventorApiKey.php");
 
 $cADMIN_GROUP_ID = 1;
+$cCOACH_GROUP_ID = 6;
 $user_id = 0;
 $not_valid = true;
 
@@ -72,7 +73,7 @@ function Authorized()
   $userInfo->id = $user_id;
   $userInfo->name = $userName;
   $userInfo->isAdmin = ValidGroup(1);
-  $userInfo->eventorPersonId = (string)$eventorPersonId;
+  $userInfo->eventorPersonId = $eventorPersonId;
 
   $json = json_encode($userInfo);
   header("Content-type: application/json");
@@ -219,6 +220,10 @@ function setUserID()
   {
     $userName = $_SESSION['user_name'];
   }
+  if (isset($_SESSION['eventor_person_id']))
+  {
+    $eventorPersonId = $_SESSION['eventor_person_id'];
+  }
   
   if ($user_id > 0 || ((!is_null($base64_client)) && (strlen($base64_client) > 0)))
   {
@@ -250,8 +255,8 @@ function setUserID()
           {
             return;
           }
-          $eventorPersonId = $person->PersonId;
-          $_SESSION['eventor_person_id'] = (string)$eventorPersonId;
+          $eventorPersonId = intval($person->PersonId);
+          $_SESSION['eventor_person_id'] = $eventorPersonId;
         }
       
         $query = sprintf("SELECT user_id FROM user_login WHERE eventor_person_id = %s", $eventorPersonId);
@@ -357,7 +362,7 @@ function ValidGroup($iGroupID)
 
   OpenDatabase();
 
-  $query = sprintf("SELECT COUNT(*) AS number_of FROM user_groups WHERE (group_id = 1 OR group_id = %s) AND user_id = %s",
+  $query = sprintf("SELECT COUNT(*) AS number_of FROM user_groups WHERE group_id = %s AND user_id = %s",
                    $iGroupID,
                    $user_id);
 

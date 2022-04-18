@@ -15,6 +15,7 @@
 //#                     technicalRanking                     #
 //# 2021-05-20  PatSjo  Added COMPETITOR_INFO                #
 //# 2021-08-21  PatSjo  Change to JSON in and out            #
+//# 2022-04-17  PatSjo  Added exclude competitor             #
 //############################################################
 
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/db.php");
@@ -34,12 +35,13 @@ if(!isset($input->iType))
 }
 
 ValidLogin();
-if ($input->iType != "COMPETITOR_INFO" && !(ValidGroup($cADMIN_GROUP_ID)))
+if ($input->iType != "COMPETITOR_INFO" && $input->iType != "COMPETITOR_RENOUNCE" && $input->iType != "COMPETITOR_REGRET_RENOUNCE" && !(ValidGroup($cADMIN_GROUP_ID)))
 {
   NotAuthorized();
 }
 
 OpenDatabase();
+$now = date("Y-m-d G:i:s"); // MySQL DATETIME
   
 if ($input->iType == "COMPETITOR")
 {
@@ -133,6 +135,8 @@ if ($input->iType == "COMPETITOR")
       $x->lastName             = $row2['LAST_NAME'];
       $x->birthDay             = $row2['BIRTHDAY'];
       $x->gender               = $row2['GENDER'];
+      $y->excludeResults       = strcasecmp($row2['EXCLUDE_RESULTS'], 'YES') == 0;
+      $y->excludeTime          = is_null($row2['EXCLUDE_TIME']) ? NULL : date2String(strtotime($row2['EXCLUDE_TIME']));
       $x->startDate            = is_null($row2['START_DATE']) ? NULL : date2String(strtotime($row2['START_DATE']));
       $x->endDate              = is_null($row2['END_DATE']) ? NULL : date2String(strtotime($row2['END_DATE']));
       $x->eventorCompetitorIds = array();
@@ -185,6 +189,36 @@ elseif ($input->iType == "COMPETITOR_INFO")
   $x->juniorAchievements = $input->iJuniorAchievements;
   $x->youthAchievements = $input->iYouthAchievements;
   $x->thumbnail = $input->iThumbnail;
+}
+elseif ($input->iType == "COMPETITOR_RENOUNCE")
+{
+  $query = sprintf("UPDATE RACE_COMPETITORS " .
+                   "SET EXCLUDE_RESULTS = 'YES', " .
+                   "    EXCLUDE_TIME = '%s' " .
+                   "WHERE COMPETITOR_ID = " . $input->iCompetitorId,
+                   $now);
+
+  \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
+
+  $x = new stdClass();
+  $x->competitorId = $input->iCompetitorId;
+  $x->excludeResults = true;
+  $x->excludeTime = $now;
+}
+elseif ($input->iType == "COMPETITOR_REGRET_RENOUNCE")
+{
+  $query = sprintf("UPDATE RACE_COMPETITORS " .
+                   "SET EXCLUDE_RESULTS = 'NO', " .
+                   "    EXCLUDE_TIME = '%s' " .
+                   "WHERE COMPETITOR_ID = " . $input->iCompetitorId,
+                   $now);
+
+  \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
+
+  $x = new stdClass();
+  $x->competitorId = $input->iCompetitorId;
+  $x->excludeResults = false;
+  $x->excludeTime = $now;
 }
 elseif ($input->iType == "EVENTOR_COMPETITOR_ID")
 {

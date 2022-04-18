@@ -7,7 +7,9 @@ import {
   DownloadOutlined,
   EditOutlined,
   EuroOutlined,
+  FrownOutlined,
   HomeOutlined,
+  LoadingOutlined,
   LoginOutlined,
   LogoutOutlined,
   MenuFoldOutlined,
@@ -18,6 +20,7 @@ import {
   PictureOutlined,
   PlusOutlined,
   RollbackOutlined,
+  SmileOutlined,
   StarOutlined,
   TeamOutlined,
   TrophyOutlined,
@@ -38,10 +41,13 @@ export type MaterialIconsType =
   | 'download'
   | 'edit'
   | 'euro'
+  | 'frown'
+  | 'loading'
   | 'menu-fold'
   | 'menu-unfold'
   | 'plus'
   | 'rollback'
+  | 'smile'
   | 'star'
   | 'team'
   | 'user'
@@ -79,6 +85,8 @@ const MaterialIcon = ({ icon, fontSize, marginRight }: IMaterialIconProps) => {
       return <EditOutlined style={{ verticalAlign: 'middle', fontSize: fontSize }} />;
     case 'euro':
       return <EuroOutlined style={{ verticalAlign: 'middle', fontSize: fontSize }} />;
+    case 'frown':
+      return <FrownOutlined style={{ verticalAlign: 'middle', fontSize: fontSize }} />;
     case 'menu-fold':
       return <MenuFoldOutlined style={{ verticalAlign: 'middle', fontSize: fontSize }} />;
     case 'menu-unfold':
@@ -87,6 +95,8 @@ const MaterialIcon = ({ icon, fontSize, marginRight }: IMaterialIconProps) => {
       return <PlusOutlined style={{ verticalAlign: 'middle', fontSize: fontSize }} />;
     case 'rollback':
       return <RollbackOutlined style={{ verticalAlign: 'middle', fontSize: fontSize }} />;
+    case 'smile':
+      return <SmileOutlined style={{ verticalAlign: 'middle', fontSize: fontSize }} />;
     case 'star':
       return <StarOutlined style={{ verticalAlign: 'middle', fontSize: fontSize }} />;
     case 'team':
@@ -115,6 +125,8 @@ const MaterialIcon = ({ icon, fontSize, marginRight }: IMaterialIconProps) => {
       return <TrophyOutlined style={{ verticalAlign: 'middle', fontSize: fontSize }} />;
     case 'StarsIcon':
       return <StarOutlined style={{ verticalAlign: 'middle', fontSize: fontSize }} />;
+    case 'loading':
+      return <LoadingOutlined style={{ verticalAlign: 'middle', fontSize: fontSize }} />;
     case 'EventorIcon':
       return (
         <StyledImg

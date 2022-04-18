@@ -1,12 +1,17 @@
 import { AuditOutlined } from '@ant-design/icons';
+import { message } from 'antd';
 import { observer } from 'mobx-react';
-import React, { lazy, Suspense, useState } from 'react';
+import { IRaceClubsSnapshotIn, IRaceCompetitor } from 'models/resultModel';
+import moment from 'moment';
+import React, { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHistory } from 'react-router-dom';
+import { PostJsonData } from 'utils/api';
 import { useMobxStore } from 'utils/mobxStore';
 import MenuItem from '../MenuItem';
 const ResultsWizardModal = lazy(() => import('../../results/ResultsWizardModal'));
 const InvoiceWizardModal = lazy(() => import('../../results/InvoiceWizardModal'));
+const RenounceModal = lazy(() => import('../../results/RenounceModal'));
 
 const ResultsSubMenus = observer(() => {
   const { t } = useTranslation();
@@ -15,7 +20,67 @@ const ResultsSubMenus = observer(() => {
   const [addResultsWizardModalIsOpen, setAddResultsWizardModalIsOpen] = useState(false);
   const [invoiceWizardModalIsOpen, setInvoiceWizardModalIsOpen] = useState(false);
   const [addOldResultsWizardModalIsOpen, setAddOldResultsWizardModalIsOpen] = useState(false);
+  const [renounceModalIsOpen, setRenounceModalIsOpen] = useState(false);
+  const [competitor, setCompetitor] = useState<IRaceCompetitor>();
   const history = useHistory();
+  const daysSinceRenounce = useMemo(
+    () => (!competitor?.excludeTime ? 0 : moment().diff(moment(competitor.excludeTime), 'days')),
+    [competitor?.excludeTime]
+  );
+
+  const onRegretRenounce = useCallback(() => {
+    const saveUrl = clubModel.modules.find((module) => module.name === 'Results')?.updateUrl;
+    if (!saveUrl) return;
+
+    const oldCompetitor = competitor;
+    setCompetitor(undefined);
+
+    PostJsonData(
+      saveUrl,
+      {
+        iType: 'COMPETITOR_REGRET_RENOUNCE',
+        iCompetitorId: oldCompetitor?.competitorId,
+        username: sessionModel.username,
+        password: sessionModel.password,
+      },
+      true,
+      sessionModel.authorizationHeader
+    )
+      .then(() => {
+        oldCompetitor?.regretRenounce();
+        setCompetitor(oldCompetitor);
+      })
+      .catch((e) => {
+        message.error(e.message);
+        setCompetitor(oldCompetitor);
+      });
+  }, [sessionModel, competitor, clubModel.modules]);
+
+  useEffect(() => {
+    const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
+    if (!url) return;
+
+    PostJsonData(
+      url,
+      {
+        iType: 'CLUBS',
+      },
+      true,
+      sessionModel.authorizationHeader
+    )
+      .then((clubsJson: IRaceClubsSnapshotIn) => {
+        clubModel.setRaceClubs(clubsJson);
+      })
+      .catch((e) => {
+        message.error(e.message);
+      });
+  }, []);
+
+  useEffect(() => {
+    sessionModel.eventorPersonId &&
+      clubModel.raceClubs?.selectedClub &&
+      setCompetitor(clubModel.raceClubs.selectedClub.competitorByEventorId(sessionModel.eventorPersonId));
+  }, [clubModel.raceClubs?.selectedClub, sessionModel.eventorPersonId]);
 
   return (
     <>
@@ -30,6 +95,18 @@ const ResultsSubMenus = observer(() => {
       {invoiceWizardModalIsOpen ? (
         <Suspense fallback={null}>
           <InvoiceWizardModal open={invoiceWizardModalIsOpen} onClose={() => setInvoiceWizardModalIsOpen(false)} />
+        </Suspense>
+      ) : null}
+      {renounceModalIsOpen && competitor ? (
+        <Suspense fallback={null}>
+          <RenounceModal
+            competitor={competitor}
+            open={renounceModalIsOpen}
+            onClose={() => {
+              setRenounceModalIsOpen(false);
+              setCompetitor(competitor);
+            }}
+          />
         </Suspense>
       ) : null}
       <MenuItem
@@ -98,6 +175,32 @@ const ResultsSubMenus = observer(() => {
           setTimeout(() => setAddOldResultsWizardModalIsOpen(true), 0);
         }}
       />
+      {sessionModel.loggedIn && sessionModel.eventorPersonId && (!competitor || !competitor.excludeResults) ? (
+        <MenuItem
+          key={'menuItem#resultsRenounce'}
+          icon={!competitor ? 'loading' : 'frown'}
+          name={t('results.Renounce')}
+          disabled={!competitor}
+          isSubMenu
+          onClick={() => {
+            globalStateModel.setRightMenuVisible(false);
+            setTimeout(() => setRenounceModalIsOpen(true), 0);
+          }}
+        />
+      ) : null}
+      {sessionModel.loggedIn && sessionModel.eventorPersonId && competitor && competitor.excludeResults ? (
+        <MenuItem
+          key={'menuItem#resultsRegretRenounce'}
+          icon="smile"
+          name={t('results.RegretRenounce')}
+          disabled={daysSinceRenounce < 30}
+          isSubMenu
+          onClick={() => {
+            globalStateModel.setRightMenuVisible(false);
+            setTimeout(() => onRegretRenounce(), 0);
+          }}
+        />
+      ) : null}
     </>
   );
 });

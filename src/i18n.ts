@@ -278,6 +278,15 @@ i18next
             Gender: 'Gender',
             FeMale: 'Female',
             Male: 'Male',
+            Renounce: 'Renounce result service',
+            RenounceBullet1: 'I do not want my results to be visible on the clubs website',
+            RenounceBullet2: 'I will not be in any of our leagues',
+            RenounceBullet3:
+              'The decision is valid until further notice (it is possible to regret it after 30 days, but the old results will remain hidden)',
+            RenounceBullet4:
+              'Only the coach still has the opportunity to see my results, to be able to make fair team selections',
+            RenounceConfirm: 'I have read the above and understand the meaning',
+            RegretRenounce: 'Regret renounce result service',
           },
           eventor: {
             Participant: 'Participant',
@@ -544,6 +553,15 @@ i18next
             Gender: 'Kön',
             FeMale: 'Dam',
             Male: 'Herr',
+            Renounce: 'Avstår resulatservice',
+            RenounceBullet1: 'Jag vill inte att mina resultat syns på klubbens hemsida',
+            RenounceBullet2: 'Jag kommer inte finnas med i någon av våra ligor',
+            RenounceBullet3:
+              'Beslutet gäller tillsvidare (möjliget finns att ångra efter 30 dagar, men de gamla resultaten kommer förbli dolda)',
+            RenounceBullet4:
+              'Endast UK har fortfarande möjlighet att se mina resultat, för att kunna göra rättvisa laguttagningar',
+            RenounceConfirm: 'Jag har läst ovanstående och förstår innebörden',
+            RegretRenounce: 'Ångrar avstår resulatservice',
           },
           eventor: {
             Participant: 'Anmäld',

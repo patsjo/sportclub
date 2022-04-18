@@ -1,6 +1,7 @@
 import { INewCompetitorForm } from 'components/results/AddMapCompetitor';
 import { cast, flow, Instance, SnapshotIn, types } from 'mobx-state-tree';
-import { INumberOption } from 'utils/formHelper';
+import moment from 'moment';
+import { datetimeFormat, INumberOption } from 'utils/formHelper';
 import { PostJsonData } from '../utils/api';
 import {
   AwardTypes,
@@ -11,7 +12,7 @@ import {
   FailedReasonTypes,
   LightConditionTypes,
   PaymentTypes,
-  SportCodeTypes
+  SportCodeTypes,
 } from '../utils/resultConstants';
 import { GetAge, GetAward } from '../utils/resultHelper';
 
@@ -22,6 +23,8 @@ const RaceCompetitor = types
     lastName: types.string,
     birthDay: types.string,
     gender: types.string,
+    excludeResults: types.boolean,
+    excludeTime: types.maybeNull(types.string),
     startDate: types.string,
     endDate: types.maybeNull(types.string),
     eventorCompetitorIds: types.array(types.integer),
@@ -41,6 +44,14 @@ const RaceCompetitor = types
           console.error(error);
         }
       }),
+      renounce() {
+        self.excludeResults = true;
+        self.excludeTime = moment().format(datetimeFormat);
+      },
+      regretRenounce() {
+        self.excludeResults = false;
+        self.excludeTime = moment().format(datetimeFormat);
+      },
     };
   })
   .views((self) => ({
@@ -135,10 +146,12 @@ const RaceClub = types
             ? 1
             : -1
         )
-        .map((competitor):INumberOption => ({
-          code: competitor.competitorId,
-          description: `${competitor.fullName} (${competitor.birthDay})`,
-        }));
+        .map(
+          (competitor): INumberOption => ({
+            code: competitor.competitorId,
+            description: `${competitor.fullName} (${competitor.birthDay})`,
+          })
+        );
     },
   }));
 export type IRaceClub = Instance<typeof RaceClub>;
