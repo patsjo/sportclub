@@ -395,7 +395,7 @@ const ResultWizardStep1ChooseRace = observer(({ visible, onValidate, onFailed }:
                 e.alreadySaved || (e.eventorRaceId != null && raceWizardModel.importedIds.includes(e.eventorRaceId)),
             })
           )
-        : oldEvents.filter((e) => !raceWizardModel.importedIds.includes(e.eventId))
+        : oldEvents.filter((e) => !e.eventorRaceId || !raceWizardModel.importedIds.includes(e.eventorRaceId))
     );
   }, [raceWizardModel.importedIds.length]);
 

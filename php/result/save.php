@@ -52,11 +52,11 @@ if ($input->iType == "COMPETITOR")
 
   $query = sprintf("INSERT INTO RACE_COMPETITORS " .
                    "(" .
-                   "  FIRST_NAME, LAST_NAME, BIRTHDAY, GENDER" .
+                   "  FIRST_NAME, LAST_NAME, BIRTHDAY, GENDER, EXCLUDE_RESULTS" .
                    ")" .
                    " VALUES " .
                    "(" .
-                   "  '%s', '%s', " . str_replace("''", "Null", "'" . date2String($input->iBirthDay) . "'") . " ,'%s' " .
+                   "  '%s', '%s', " . str_replace("''", "Null", "'" . date2String($input->iBirthDay) . "'") . " ,'%s', 'NO' " .
                    ")",
                    \db\mysql_real_escape_string($input->iFirstName),
                    \db\mysql_real_escape_string($input->iLastName),
@@ -135,8 +135,8 @@ if ($input->iType == "COMPETITOR")
       $x->lastName             = $row2['LAST_NAME'];
       $x->birthDay             = $row2['BIRTHDAY'];
       $x->gender               = $row2['GENDER'];
-      $y->excludeResults       = strcasecmp($row2['EXCLUDE_RESULTS'], 'YES') == 0;
-      $y->excludeTime          = is_null($row2['EXCLUDE_TIME']) ? NULL : date2String(strtotime($row2['EXCLUDE_TIME']));
+      $x->excludeResults       = is_null($row2['EXCLUDE_RESULTS']) ? false : strcasecmp($row2['EXCLUDE_RESULTS'], 'YES') == 0;
+      $x->excludeTime          = is_null($row2['EXCLUDE_TIME']) ? NULL : date2String(strtotime($row2['EXCLUDE_TIME']));
       $x->startDate            = is_null($row2['START_DATE']) ? NULL : date2String(strtotime($row2['START_DATE']));
       $x->endDate              = is_null($row2['END_DATE']) ? NULL : date2String(strtotime($row2['END_DATE']));
       $x->eventorCompetitorIds = array();
