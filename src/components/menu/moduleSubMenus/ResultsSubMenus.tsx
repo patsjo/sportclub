@@ -22,6 +22,7 @@ const ResultsSubMenus = observer(() => {
   const [addOldResultsWizardModalIsOpen, setAddOldResultsWizardModalIsOpen] = useState(false);
   const [renounceModalIsOpen, setRenounceModalIsOpen] = useState(false);
   const [competitor, setCompetitor] = useState<IRaceCompetitor>();
+  const [loadingCompetitor, setLoadingCompetitor] = useState(true);
   const history = useHistory();
   const daysSinceRenounce = useMemo(
     () => (!competitor?.excludeTime ? 0 : moment().diff(moment(competitor.excludeTime), 'days')),
@@ -58,7 +59,9 @@ const ResultsSubMenus = observer(() => {
 
   useEffect(() => {
     const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
-    if (!url) return;
+    if (!url || !sessionModel.loggedIn || !sessionModel.eventorPersonId) return;
+
+    setLoadingCompetitor(true);
 
     PostJsonData(
       url,
@@ -70,17 +73,16 @@ const ResultsSubMenus = observer(() => {
     )
       .then((clubsJson: IRaceClubsSnapshotIn) => {
         clubModel.setRaceClubs(clubsJson);
+        if (clubModel.raceClubs?.selectedClub) {
+          setCompetitor(clubModel.raceClubs.selectedClub.competitorByEventorId(sessionModel.eventorPersonId!));
+        }
+        setLoadingCompetitor(false);
       })
       .catch((e) => {
         message.error(e.message);
+        setLoadingCompetitor(false);
       });
-  }, []);
-
-  useEffect(() => {
-    sessionModel.eventorPersonId &&
-      clubModel.raceClubs?.selectedClub &&
-      setCompetitor(clubModel.raceClubs.selectedClub.competitorByEventorId(sessionModel.eventorPersonId));
-  }, [clubModel.raceClubs?.selectedClub, sessionModel.eventorPersonId]);
+  }, [sessionModel.loggedIn]);
 
   return (
     <>
@@ -175,12 +177,14 @@ const ResultsSubMenus = observer(() => {
           setTimeout(() => setAddOldResultsWizardModalIsOpen(true), 0);
         }}
       />
-      {sessionModel.loggedIn && sessionModel.eventorPersonId && (!competitor || !competitor.excludeResults) ? (
+      {sessionModel.loggedIn &&
+      sessionModel.eventorPersonId &&
+      (loadingCompetitor || (competitor && !competitor.excludeResults)) ? (
         <MenuItem
           key={'menuItem#resultsRenounce'}
-          icon={!competitor ? 'loading' : 'frown'}
+          icon={loadingCompetitor ? 'loading' : 'frown'}
           name={t('results.Renounce')}
-          disabled={!competitor}
+          disabled={loadingCompetitor}
           isSubMenu
           onClick={() => {
             globalStateModel.setRightMenuVisible(false);

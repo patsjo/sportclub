@@ -15,6 +15,7 @@ import {
   IEventorStarts,
 } from 'utils/responseEventorInterfaces';
 import { IClubViewResultResponse } from 'utils/responseInterfaces';
+import { failedReasons } from 'utils/resultConstants';
 import { PostJsonData } from '../../utils/api';
 import { FormatTime, TimeDiff } from '../../utils/resultHelper';
 import FadeOutItem from '../fadeOutItem/FadeOutItem';
@@ -49,7 +50,9 @@ const StyledTable = styled.table`
   font-size: 12px;
   width: 100%;
 `;
-const StyledTableRow = styled.tr``;
+const StyledTableRow = styled.tr`
+  font-weight: ${(props: { isTeam?: boolean }) => (props.isTeam ? 'bold' : 'unset')};
+`;
 const StyledTableBody = styled.tbody``;
 const StyledTableDataName = styled.td`
   padding-left: 0px;
@@ -93,6 +96,7 @@ interface IEventDashboardCompetitorStart {
 }
 interface IEventDashboardCompetitor {
   key: string;
+  isTeam?: boolean;
   firstName: string;
   lastName: string;
   className: string;
@@ -120,7 +124,7 @@ const EventRace = observer(({ header, date, eventObject, ref }: IEventRaceProps)
 
     PostJsonData(url, { iType: 'EVENT', iEventId: eventObject.eventId }, true)
       .then((editResultJson: IClubViewResultResponse) => {
-        if (editResultJson.results) {
+        if (editResultJson.results && editResultJson.results.length > 0) {
           const competitors = editResultJson.results
             .filter((result) => !result.failedReason)
             .sort((a, b) => (a.position! > b.position! ? 1 : a.position! < b.position! ? -1 : 0))
@@ -144,6 +148,69 @@ const EventRace = observer(({ header, date, eventObject, ref }: IEventRaceProps)
                 },
               })
             );
+
+          setCompetitors(competitors);
+          setShowResult(true);
+        } else if (editResultJson.teamResults && editResultJson.teamResults.length > 0) {
+          const competitors = editResultJson.teamResults
+            .filter(
+              (result) =>
+                result.failedReason !== failedReasons.NotStarted && result.teamFailedReason !== failedReasons.NotStarted
+            )
+            .sort((a, b) =>
+              (a.teamFailedReason ?? failedReasons.Finished) === failedReasons.Finished &&
+              (b.teamFailedReason ?? failedReasons.Finished) !== failedReasons.Finished
+                ? 1
+                : (a.teamFailedReason ?? failedReasons.Finished) !== failedReasons.Finished &&
+                  (b.teamFailedReason ?? failedReasons.Finished) === failedReasons.Finished
+                ? -1
+                : (a.totalPosition ?? 0) > (b.totalPosition ?? 0)
+                ? 1
+                : (a.totalPosition ?? 0) < (b.totalPosition ?? 0)
+                ? -1
+                : (a.className ?? '').localeCompare(b.className ?? '') !== 0
+                ? (a.className ?? '').localeCompare(b.className ?? '')
+                : (a.stage ?? 0) > (b.stage ?? 0)
+                ? 1
+                : (a.stage ?? 0) < (b.stage ?? 0)
+                ? -1
+                : 0
+            )
+            .map((result): IEventDashboardCompetitor[] => [
+              {
+                key: `teamEventResultID#${eventObject.eventId}-${result.className}-${result.teamName}`,
+                isTeam: true,
+                className: result.className,
+                firstName: result.teamName!,
+                lastName: '',
+                result: {
+                  numberOfStarts: result.totalNofStartsInClass!,
+                  position: result.totalPosition!,
+                  time: '',
+                  timeDiff: FormatTime(result.totalTimeBehind)!,
+                },
+              },
+              {
+                key: `eventResultID#${eventObject.eventId}-${result.teamResultId}`,
+                className: `${t('results.Leg')} ${result.stage}`,
+                firstName: result.firstName!,
+                lastName: result.lastName!,
+                result: {
+                  numberOfStarts: result.nofStartsInClass!,
+                  position: result.position!,
+                  time: FormatTime(result.competitorTime)!,
+                  timeDiff: TimeDiff(
+                    result.winnerTime === result.competitorTime && result.secondTime
+                      ? result.secondTime
+                      : result.winnerTime,
+                    result.competitorTime,
+                    true
+                  ),
+                },
+              },
+            ])
+            .reduce((a: IEventDashboardCompetitor[], b) => [...a, ...b], [] as IEventDashboardCompetitor[])
+            .filter((value, index, self) => self.findIndex((v) => v.key === value.key) === index);
 
           setCompetitors(competitors);
           setShowResult(true);
@@ -335,7 +402,7 @@ const EventRace = observer(({ header, date, eventObject, ref }: IEventRaceProps)
                       position: parseInt(result?.ResultPosition ?? '0'),
                       numberOfStarts: numberOfStarts,
                       time: result?.Time ?? '',
-                      timeDiff: result?.TimeDiff ?? '',
+                      timeDiff: result?.ResultPosition === '1' ? '' : result?.TimeDiff ?? '',
                     },
                   });
                 }
@@ -398,7 +465,7 @@ const EventRace = observer(({ header, date, eventObject, ref }: IEventRaceProps)
       <StyledTable>
         <StyledTableBody>
           {competitors.map((competitor) => (
-            <StyledTableRow key={competitor.key}>
+            <StyledTableRow key={competitor.key} isTeam={competitor.isTeam}>
               <StyledTableDataName>
                 {competitor.result?.position + '. ' + competitor.firstName + ' ' + competitor.lastName}
               </StyledTableDataName>
@@ -407,9 +474,12 @@ const EventRace = observer(({ header, date, eventObject, ref }: IEventRaceProps)
                   (competitor.result?.numberOfStarts != null ? ' (' + competitor.result.numberOfStarts + ')' : '')}
               </StyledTableDataClass>
               <StyledTableDataStart>
-                {competitor.result?.position === 1
+                {competitor.result?.position === 1 && competitor.result?.timeDiff
+                  ? competitor.result?.time + ' (' + competitor.result?.timeDiff + ')'
+                  : competitor.result?.position === 1
                   ? competitor.result.time
-                  : competitor.result?.time + ' (+' + competitor.result?.timeDiff + ')'}
+                  : competitor.result?.time +
+                    (competitor.result?.timeDiff ? ' (+' + competitor.result?.timeDiff + ')' : '')}
               </StyledTableDataStart>
             </StyledTableRow>
           ))}

@@ -164,6 +164,7 @@ i18next
             Edit: 'Edit competitor achievements',
           },
           results: {
+            Leg: 'Leg',
             Add: 'Import/Add/Edit',
             AddCompetitor: 'Add competitor',
             Edit: 'Edit',
@@ -438,6 +439,7 @@ i18next
             Edit: 'Redigera löparmeriter',
           },
           results: {
+            Leg: 'Str',
             Add: 'Importera/Lägg till/Redigera',
             AddCompetitor: 'Lägg till löpare',
             Edit: 'Ändra',
