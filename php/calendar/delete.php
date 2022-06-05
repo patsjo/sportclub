@@ -17,10 +17,14 @@
 //############################################################
 
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/db.php");
-include_once($_SERVER["DOCUMENT_ROOT"] . "/include/functions.php");
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/users.php");
+include_once($_SERVER["DOCUMENT_ROOT"] . "/include/functions.php");
 
 cors();
+ValidLogin();
+
+header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
+header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); // Date in the past
 
 // Takes raw data from the request
 $json = file_get_contents('php://input');
@@ -38,10 +42,9 @@ if(!isset($input->iRepeatingGid) || $input->iRepeatingGid == "")
   $input->iRepeatingGid = null;
 }
 
-ValidLogin();
-if (!ValidGroup(8888)) //Not a admin user
+if (!(ValidGroup($cADMIN_GROUP_ID)))
 {
-  NotAuthorized();
+  trigger_error('User needs to be a administrator, to delete a activity.');
 }
 
 OpenDatabase();

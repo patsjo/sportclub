@@ -86,7 +86,7 @@ export interface IEventDashboardObject {
 
 interface IEventDashboardCompetitorResult {
   numberOfStarts?: number;
-  position: number;
+  position?: number;
   time: string;
   timeDiff: string;
 }
@@ -160,10 +160,10 @@ const EventRace = observer(({ header, date, eventObject, ref }: IEventRaceProps)
             .sort((a, b) =>
               (a.teamFailedReason ?? failedReasons.Finished) === failedReasons.Finished &&
               (b.teamFailedReason ?? failedReasons.Finished) !== failedReasons.Finished
-                ? 1
+                ? -1
                 : (a.teamFailedReason ?? failedReasons.Finished) !== failedReasons.Finished &&
                   (b.teamFailedReason ?? failedReasons.Finished) === failedReasons.Finished
-                ? -1
+                ? 1
                 : (a.totalPosition ?? 0) > (b.totalPosition ?? 0)
                 ? 1
                 : (a.totalPosition ?? 0) < (b.totalPosition ?? 0)
@@ -185,9 +185,19 @@ const EventRace = observer(({ header, date, eventObject, ref }: IEventRaceProps)
                 lastName: '',
                 result: {
                   numberOfStarts: result.totalNofStartsInClass!,
-                  position: result.totalPosition!,
-                  time: '',
-                  timeDiff: FormatTime(result.totalTimeBehind)!,
+                  position:
+                    (result.teamFailedReason ?? failedReasons.Finished) === failedReasons.Finished
+                      ? result.totalPosition!
+                      : undefined,
+                  time:
+                    (result.teamFailedReason ?? failedReasons.Finished) === failedReasons.Finished
+                      ? ''
+                      : result.teamFailedReason!.charAt(0).toUpperCase() +
+                        result.teamFailedReason!.substr(1).toLowerCase(),
+                  timeDiff:
+                    (result.teamFailedReason ?? failedReasons.Finished) === failedReasons.Finished
+                      ? FormatTime(result.totalTimeBehind)!
+                      : '',
                 },
               },
               {
@@ -197,15 +207,24 @@ const EventRace = observer(({ header, date, eventObject, ref }: IEventRaceProps)
                 lastName: result.lastName!,
                 result: {
                   numberOfStarts: result.nofStartsInClass!,
-                  position: result.position!,
-                  time: FormatTime(result.competitorTime)!,
-                  timeDiff: TimeDiff(
-                    result.winnerTime === result.competitorTime && result.secondTime
-                      ? result.secondTime
-                      : result.winnerTime,
-                    result.competitorTime,
-                    true
-                  ),
+                  position:
+                    (result.failedReason ?? failedReasons.Finished) === failedReasons.Finished
+                      ? result.position!
+                      : undefined,
+                  time:
+                    (result.failedReason ?? failedReasons.Finished) === failedReasons.Finished
+                      ? FormatTime(result.competitorTime)!
+                      : result.failedReason!.charAt(0).toUpperCase() + result.failedReason!.substr(1).toLowerCase(),
+                  timeDiff:
+                    (result.failedReason ?? failedReasons.Finished) === failedReasons.Finished
+                      ? TimeDiff(
+                          result.winnerTime === result.competitorTime && result.secondTime
+                            ? result.secondTime
+                            : result.winnerTime,
+                          result.competitorTime,
+                          true
+                        )
+                      : '',
                 },
               },
             ])
@@ -467,7 +486,10 @@ const EventRace = observer(({ header, date, eventObject, ref }: IEventRaceProps)
           {competitors.map((competitor) => (
             <StyledTableRow key={competitor.key} isTeam={competitor.isTeam}>
               <StyledTableDataName>
-                {competitor.result?.position + '. ' + competitor.firstName + ' ' + competitor.lastName}
+                {(competitor.result?.position ? competitor.result?.position + '. ' : '') +
+                  competitor.firstName +
+                  ' ' +
+                  competitor.lastName}
               </StyledTableDataName>
               <StyledTableDataClass>
                 {competitor.className +

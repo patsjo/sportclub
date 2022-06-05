@@ -80,11 +80,7 @@ const NewsItem = observer(({ ref, newsObject }: INewsItemProps) => {
 
   const FileDownload =
     newsObject && (!newsObject.imageWidth || !newsObject.imageHeight) && newsObject.fileId ? (
-      <FloatRightAnchor
-        href={clubModel.attachmentUrl + newsObject.fileId}
-        // eslint-disable-next-line react/jsx-no-target-blank
-        target="_blank"
-      >
+      <FloatRightAnchor href={clubModel.attachmentUrl + newsObject.fileId} target="_blank">
         <MaterialIcon icon="download" fontSize={24} />
       </FloatRightAnchor>
     ) : null;
