@@ -457,6 +457,7 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
                   } else {
                     raceWizardModel.current.raceEvent?.addResult(resultObject);
                   }
+                  onValidate(!!raceWizardModel.current.raceEvent?.valid);
                 },
               });
             }}

@@ -185,7 +185,13 @@ const okorion: IMobxClubModelSnapshotIn = {
         pointsLeagueAgeLimit: 15,
       },
     },
-    { name: 'Address' },
+    {
+      name: 'Users',
+      addUrl: 'https://okorion.com/users/save.php',
+      deleteUrl: 'https://okorion.com/users/delete.php',
+      updateUrl: 'https://okorion.com/users/save.php',
+      queryUrl: 'https://okorion.com/users/jsonUserQuery.php',
+    },
     { name: 'Photo' },
     {
       name: 'HTMLEditor',

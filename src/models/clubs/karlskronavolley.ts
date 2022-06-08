@@ -29,7 +29,7 @@ export default {
       fontSize: 12,
     },
   },
-  modules: [{ name: 'News' }, { name: 'Calendar' }, { name: 'Address' }, { name: 'Photo' }],
+  modules: [{ name: 'News' }, { name: 'Calendar' }, { name: 'Users' }, { name: 'Photo' }],
   links: [{ name: 'SVBF', url: 'www.volleyboll.se' }],
   sports: ['Volleyboll', 'Beachvolley'],
 };

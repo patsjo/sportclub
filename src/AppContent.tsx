@@ -4,6 +4,7 @@ import { Route, Switch, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 const Dashboard = lazy(() => import('./components/dashboard/Dashboard'));
 const News = lazy(() => import('./components/news/News'));
+const Users = lazy(() => import('./components/users/Users'));
 const League = lazy(() => import('./components/results/League'));
 const ViewResults = lazy(() => import('./components/results/ViewResults'));
 const ResultsFees = lazy(() => import('./components/results/ResultsFees'));
@@ -38,6 +39,9 @@ const AppContent = observer(() => {
       <Switch>
         <Route exact path="/news">
           <News key="news" />
+        </Route>
+        <Route exact path="/users">
+          <Users key="users" />
         </Route>
         <Route exact path="/calendar">
           <>

@@ -14,7 +14,7 @@ interface IModuleSubMenuProps {
 }
 const ModuleSubMenu = observer(({ module }: IModuleSubMenuProps) => {
   const { t } = useTranslation();
-  const { clubModel, globalStateModel } = useMobxStore();
+  const { clubModel, globalStateModel, sessionModel } = useMobxStore();
   const history = useHistory();
 
   switch (module.name) {
@@ -54,6 +54,19 @@ const ModuleSubMenu = observer(({ module }: IModuleSubMenuProps) => {
           onClick={() => {
             globalStateModel.setRightMenuVisible(false);
             globalStateModel.setDashboard(history, '/competitor/presentation');
+          }}
+        />
+      );
+    case 'Users':
+      return (
+        <MenuItem
+          key={'menuItem#users'}
+          icon={'team'}
+          name={t('modules.Users')}
+          disabled={!sessionModel.loggedIn}
+          onClick={() => {
+            globalStateModel.setRightMenuVisible(false);
+            globalStateModel.setDashboard(history, '/users');
           }}
         />
       );
