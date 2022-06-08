@@ -70,10 +70,10 @@ const varendgn: IMobxClubModelSnapshotIn = {
     },
     {
       name: 'Users',
-      addUrl: 'https://okorion.com/users/save.php',
-      deleteUrl: 'https://okorion.com/users/delete.php',
-      updateUrl: 'https://okorion.com/users/save.php',
-      queryUrl: 'https://okorion.com/users/jsonUserQuery.php',
+      addUrl: 'https://varendgn.se/users/save.php',
+      deleteUrl: 'https://varendgn.se/users/delete.php',
+      updateUrl: 'https://varendgn.se/users/save.php',
+      queryUrl: 'https://varendgn.se/users/jsonUserQuery.php',
     },
     { name: 'Photo' },
     {
