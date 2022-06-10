@@ -80,3 +80,62 @@ and the following seetings:
 8. npm run build (or "npm run start" to just start it locally)
 9. Copy "index.html" and "static" folder from the "build" folder to your public html root folder.
 10. Done!!
+
+## Make tiled open streetmap images from Ocad
+
+For this task I uses three programs
+
+- OCad orienteering
+- GIMP
+- QGIS
+
+First export from OCad:
+
+1. Transform map
+   - Rotate map to zero degrees, if it's rotated
+   - Change coordinate system to Google Mercator (WGS84)
+2. If you exporting course do the following
+   - Add a grey boxarea where you put the results (purple text)
+3. Export PNG
+   - Include georeference file
+   - 1,0m / pixel (0,5m / pixel for courses)
+
+GIMP (map):
+
+1. Remove surrounding areas that doesn't belong to the map and make them 100% transparent
+2. Save
+3. Copy that file (and the georeference file) to a purple only png file.
+4. Open the purple only png file
+   1. Colors > Adjust Contrast to -127
+   2. Colors > Adjust Balance magenta (rgb 255, 0, 255) to -100
+   3. Colors > Color to alpha (color: white, opacity threshold: 0,015)
+   4. Select by color
+   5. Edit stroke 20px (line color: rgb 132, 0, 142)
+5. Save
+
+GIMP (course):
+
+1. Colors > Color to alpha (color: white, opacity threshold: 0)
+2. Colors > Adjust Contrast to +127
+3. Colors > Color to alpha (color: white, blending opacity: 20,0)
+
+QGIS:
+
+1. Add png file(s)
+   - Drag it into map
+   - (Use openstreetmap layer to see that your layer ends up correctly)
+   - Edit properities for map layer
+     - Symbology > Set min scale to 1:20000
+     - Rendering > Resampling Cubic + Oversampling 4,0
+   - Edit properities for purple map layer
+     - Symbology > Set max scale to 1:20000
+     - Rendering > Resampling Cubic + Oversampling 4,0
+   - Edit properities for course layer
+     - Rendering > Resampling Linear + Oversampling 4,0
+2. Raster > Generate XYZ tiles
+   - Only show the layers you want to export (all maps at once, or one course layer at a time)
+   - Extent > By your layer is a simple choice
+   - Minimum zoom: 7 (12 for course layer)
+   - Maximum zoom: 17
+   - Set Output directory
+3. You can remove \*.png files that are totally empty (1,21 kB)
