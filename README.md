@@ -6,12 +6,13 @@ This is a react app for sports like orienteering, volleyball or any other sport.
 
 It's free to use this as you like, but I will be happy if:
 
-- You pay a small amount for all the time spent. 35000+ lines of code and 800+ hours. Swish between 1 SEK and 2000 SEK to 0723-750908 (Patrik Sjökvist).
+- You pay a small amount for all the time spent. 38000+ lines of code and 800+ hours. Swish between 50 SEK and 3500 SEK to 0723-750908 (Patrik Sjökvist).
 - If you contribute with some development or testing.
 
 ## Clubs using sportclub / Samples
 
 - [OK Orion](https://okorion.com/)
+- [OK Norrvirdarna](https://oknorrvirdarna.se/)
 - [Värend GN](https://varendgn.se/)
 
 _Please email patrik@sjokvistarna.se if your club has started to use this great webpage._

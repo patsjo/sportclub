@@ -583,101 +583,78 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
   );
 
   const onPrintAll = useCallback(
-    (settings: IPrintSettings, allInOnePdf: boolean): Promise<void> => {
+    async (settings: IPrintSettings, allInOnePdf: boolean): Promise<void> => {
       const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
-      let resultPromisies: Promise<IIndividualViewResultResponse | IClubViewResultResponse>[] = [];
       let competitorsOptions: INumberOption[] = [];
+      const resultJsons: (IIndividualViewResultResponse | IClubViewResultResponse)[] = [];
 
-      if (!url || !clubModel.raceClubs) return new Promise<void>((resolve) => resolve());
+      if (!url || !clubModel.raceClubs || !clubModel.corsProxy) return;
 
-      if (isIndividual) {
-        const fromDate = moment(year, 'YYYY').format('YYYY-MM-DD');
-        const toDate = moment(fromDate, 'YYYY-MM-DD').add(1, 'years').subtract(1, 'days').format('YYYY-MM-DD');
-        competitorsOptions = clubModel.raceClubs.selectedClub.competitorsOptions;
+      try {
+        if (isIndividual) {
+          const fromDate = moment(year, 'YYYY').format('YYYY-MM-DD');
+          const toDate = moment(fromDate, 'YYYY-MM-DD').add(1, 'years').subtract(1, 'days').format('YYYY-MM-DD');
+          competitorsOptions = clubModel.raceClubs.selectedClub.competitorsOptions;
 
-        resultPromisies = competitorsOptions.map(
-          (option) =>
-            PostJsonData(
-              url,
-              { iType: 'COMPETITOR', iFromDate: fromDate, iToDate: toDate, iCompetitorId: option.code },
-              true,
-              sessionModel.authorizationHeader
-            ) as Promise<IIndividualViewResultResponse>
-        );
-      } else {
-        resultPromisies = events
-          .slice()
-          .reverse()
-          .map(
-            (event) =>
-              PostJsonData(
+          for (const option of competitorsOptions) {
+            resultJsons.push(
+              (await PostJsonData(
+                url,
+                { iType: 'COMPETITOR', iFromDate: fromDate, iToDate: toDate, iCompetitorId: option.code },
+                true,
+                sessionModel.authorizationHeader
+              )) as IIndividualViewResultResponse
+            );
+            await new Promise((resolve) => setTimeout(resolve, Math.floor(Math.random() * 200)));
+          }
+        } else {
+          for (const event of events.slice().reverse()) {
+            resultJsons.push(
+              (await PostJsonData(
                 url,
                 { iType: 'EVENT', iEventId: event.eventId },
                 true,
                 sessionModel.authorizationHeader
-              ) as Promise<IClubViewResultResponse>
-          );
-      }
+              )) as IClubViewResultResponse
+            );
+            await new Promise((resolve) => setTimeout(resolve, Math.floor(Math.random() * 200)));
+          }
+        }
 
-      return new Promise((resolve, reject) => {
-        Promise.all(resultPromisies)
-          .then((resultJsons: (IIndividualViewResultResponse | IClubViewResultResponse)[]) => {
-            if (!clubModel.corsProxy) {
-              resolve();
-              return;
+        const printObjects = resultJsons
+          .filter((printResult) => printResult && (printResult.results?.length || printResult.teamResults?.length))
+          .map((printResult, index) => {
+            let printCompetitorId: number | undefined;
+            if (isIndividual) {
+              printCompetitorId = printResult.results.length
+                ? printResult.results[0].competitorId
+                : printResult.teamResults[0].competitorId;
             }
-
-            const printObjects = resultJsons
-              .filter((printResult) => printResult && (printResult.results?.length || printResult.teamResults?.length))
-              .map((printResult, index) => {
-                let printCompetitorId: number | undefined;
-                if (isIndividual) {
-                  printCompetitorId = printResult.results.length
-                    ? printResult.results[0].competitorId
-                    : printResult.teamResults[0].competitorId;
-                }
-                return getPrintObject(settings, printResult, printCompetitorId);
-              });
-
-            if (allInOnePdf) {
-              getPdf(
-                clubModel.corsProxy,
-                clubModel.logo.url,
-                `${t(isIndividual ? 'results.Individual' : 'results.Latest')} ${year}`,
-                printObjects,
-                settings.pdf
-              )
-                .then(resolve)
-                .catch((e) => {
-                  if (e && e.message) {
-                    message.error(e.message);
-                  }
-                  reject();
-                });
-            } else {
-              getZip(
-                clubModel.corsProxy,
-                clubModel.logo.url,
-                `${t(isIndividual ? 'results.Individual' : 'results.Latest')} ${year}`,
-                printObjects,
-                settings.pdf
-              )
-                .then(resolve)
-                .catch((e) => {
-                  if (e && e.message) {
-                    message.error(e.message);
-                  }
-                  reject();
-                });
-            }
-          })
-          .catch((e) => {
-            if (e && e.message) {
-              message.error(e.message);
-            }
-            reject();
+            return getPrintObject(settings, printResult, printCompetitorId);
           });
-      });
+
+        if (allInOnePdf) {
+          await getPdf(
+            clubModel.corsProxy,
+            clubModel.logo.url,
+            `${t(isIndividual ? 'results.Individual' : 'results.Latest')} ${year}`,
+            printObjects,
+            settings.pdf
+          );
+        } else {
+          await getZip(
+            clubModel.corsProxy,
+            clubModel.logo.url,
+            `${t(isIndividual ? 'results.Individual' : 'results.Latest')} ${year}`,
+            printObjects,
+            settings.pdf
+          );
+        }
+      } catch (e: any) {
+        if (e && e.message) {
+          message.error(e.message);
+        }
+      }
     },
     [t, clubModel, sessionModel, isIndividual, year, events, getPrintObject]
   );

@@ -20,29 +20,38 @@ export const ChildContainer = styled.div<IChildContainerProps>`
   width: 100%;
 `;
 
-const getColumn = (child: IChildColumn, columns: number, heights: number[]): number => {
+const getColumn = (child: IChildColumn, columns: number, heights: number[], totalHeight: number): number => {
   let index = 0;
+  const totalHeightPerColumn = totalHeight / columns;
   if (child.preferredColumn === undefined) {
     index = heights.indexOf(Math.min(...heights));
   } else if (child.preferredColumn === -50 && columns > 1) {
-    const weightedHeights = heights.map((h, idx) =>
-      h > 1280 ? h : idx < columns / 2 ? (h < 280 ? 840 : 840 + 0.44 * (h - 280)) : h
-    );
-    index = weightedHeights.indexOf(Math.min(...weightedHeights));
+    const weightedHeights =
+      totalHeightPerColumn > 840
+        ? heights.map((h, idx) => (h > 1280 ? h : idx < columns / 2 ? (h < 280 ? 840 : 840 + 0.44 * (h - 280)) : h))
+        : heights;
+    index = weightedHeights.lastIndexOf(Math.min(...weightedHeights));
     if (index < 0) index = columns - 1;
   } else if (child.preferredColumn === 50 && columns > 1) {
-    const weightedHeights = heights.map((h, idx) =>
-      h > 1280 ? h : idx > columns / 2 ? (h < 280 ? 840 : 840 + 0.44 * (h - 280)) : h
-    );
+    const weightedHeights =
+      totalHeightPerColumn > 840
+        ? heights.map((h, idx) => (h > 1280 ? h : idx > columns / 2 ? (h < 280 ? 840 : 840 + 0.44 * (h - 280)) : h))
+        : heights;
     index = weightedHeights.indexOf(Math.min(...weightedHeights));
     if (index < 0) index = 0;
   } else if (child.preferredColumn < 0 && columns > 2) {
-    index = columns + child.preferredColumn;
+    index =
+      totalHeightPerColumn > 840 || heights[columns + child.preferredColumn] < 280
+        ? columns + child.preferredColumn
+        : heights.lastIndexOf(Math.min(...heights));
     if (index < 0) index = 0;
   } else if (child.preferredColumn < 0) {
     index = columns - 1;
   } else if (child.preferredColumn < columns && columns > 2) {
-    index = child.preferredColumn;
+    index =
+      totalHeightPerColumn > 840 || heights[child.preferredColumn] < 280
+        ? child.preferredColumn
+        : heights.indexOf(Math.min(...heights));
   } else if (child.preferredColumn < columns) {
     index = 0;
   } else {
@@ -61,7 +70,7 @@ export const getDefaultChild = (reactChild: IChildColumnElement, columns: number
     column: 0,
     height: 0,
   };
-  child.column = getColumn(child, columns, [...Array(columns)].fill(0));
+  child.column = getColumn(child, columns, [...Array(columns)].fill(0), 0);
 
   return child;
 };
@@ -82,6 +91,7 @@ export const recalculateChildDistribution = (
   let aboveChildAlreadyCalculated = !recalculateAll;
   const heights = [...Array(columns)].fill(0);
   const newChildDistribution = [...Array(maxColumns)].map((): IChildColumn[] => []);
+  const totalHeight = updatedChilds.reduce((a, b) => a + (b.key ? childHeights[b.key] ?? b.height : b.height), 0);
 
   updatedChilds.forEach((child) => {
     if (child.key != null) {
@@ -91,7 +101,7 @@ export const recalculateChildDistribution = (
       } else {
         aboveChildAlreadyCalculated = false;
         child.height = newChildHeight ? newChildHeight : 0;
-        const index = getColumn(child, columns, heights);
+        const index = getColumn(child, columns, heights, totalHeight);
         heights[index] += child.height;
         if (child.column !== index) {
           sendReparentableChild(
