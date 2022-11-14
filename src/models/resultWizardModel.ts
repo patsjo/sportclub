@@ -1,5 +1,6 @@
 import { cast, Instance, SnapshotIn, types } from 'mobx-state-tree';
 import moment from 'moment';
+import { ConvertSecondsWithFractionsToTime, GetSecondsWithFractionsPerKiloMeter } from 'utils/resultHelper';
 import { difficulties, payments } from '../utils/resultConstants';
 import { IRaceEventSnapshotIn, RaceEvent } from './resultModel';
 
@@ -48,16 +49,34 @@ export const getLocalStorage = (): IRaceWizardSnapshotIn => {
     };
   }
 };
-const WinnerResult = types.model({
-  id: types.identifierNumber,
-  personName: types.string,
-  className: types.string,
-  difficulty: types.maybeNull(types.string),
-  lengthInMeter: types.maybeNull(types.integer),
-  winnerTime: types.maybeNull(types.string),
-  secondsPerKilometer: types.maybeNull(types.number),
-  timePerKilometer: types.maybeNull(types.string),
-});
+const WinnerResult = types
+  .model({
+    id: types.identifierNumber,
+    personName: types.string,
+    className: types.string,
+    difficulty: types.maybeNull(types.string),
+    lengthInMeter: types.maybeNull(types.integer),
+    winnerTime: types.maybeNull(types.string),
+    secondsPerKilometer: types.maybeNull(types.number),
+    timePerKilometer: types.maybeNull(types.string),
+  })
+  .actions((self) => {
+    return {
+      setLengthInMeter(value: number) {
+        self.lengthInMeter = value;
+        self.secondsPerKilometer =
+          self.winnerTime && self.lengthInMeter
+            ? GetSecondsWithFractionsPerKiloMeter(self.winnerTime, self.lengthInMeter) ?? null
+            : null;
+        self.timePerKilometer = self.secondsPerKilometer
+          ? ConvertSecondsWithFractionsToTime(self.secondsPerKilometer)
+          : null;
+      },
+      setDifficulty(value: string) {
+        self.difficulty = value;
+      },
+    };
+  });
 export type IWinnerResultSnapshotIn = SnapshotIn<typeof WinnerResult>;
 
 export const RaceWizard = types
@@ -69,6 +88,7 @@ export const RaceWizard = types
     eventExistInEventor: types.optional(types.boolean, false),
     overwrite: types.optional(types.boolean, false),
     queryForEventWithNoEntry: types.optional(types.boolean, false),
+    queryForCompetitorWithNoClub: types.optional(types.boolean, false),
     paymentModel: types.integer,
     selectedEventId: types.maybeNull(types.integer),
     selectedEventorId: types.maybeNull(types.integer),
@@ -91,6 +111,7 @@ export const RaceWizard = types
           | 'eventExistInEventor'
           | 'overwrite'
           | 'queryForEventWithNoEntry'
+          | 'queryForCompetitorWithNoClub'
           | 'selectedIsRelay',
         value: boolean
       ) {

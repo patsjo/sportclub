@@ -21,11 +21,11 @@ export interface IEventorEventClass {
     teamEntry: 'Y' | 'N';
     timePresentation: 'Y' | 'N';
   };
-  BaseClassId: string;
-  ClassEntryFee: IEventorEntryClassFee[] | IEventorEntryClassFee;
+  BaseClassId?: string;
+  ClassEntryFee?: IEventorEntryClassFee[] | IEventorEntryClassFee;
   ClassRaceInfo: IEventorEventClassRaceInfo[] | IEventorEventClassRaceInfo;
   ClassShortName: string;
-  ClassType: { ClassTypeId: string; ShortName: 'T'; Name: string };
+  ClassType?: { ClassTypeId: string; ShortName: 'T'; Name: string };
   EventClassStatus: { '@attributes': { value: 'normal' } };
   ExternalId: string;
   Name: string;
@@ -73,7 +73,7 @@ export interface IEventorClassStart {
 interface IEventorEventClassRaceInfo {
   ClassRaceInfoId: string;
   '@attributes': { minRunners: string; maxRunners: string; noOfEntries: string; noOfStarts: string; relayLeg?: string };
-  ClassRaceStatus: { '@attributes': { value: 'notAllocated' } };
+  ClassRaceStatus?: { '@attributes': { value: 'notAllocated' } };
   EventRaceId: string;
   Name: any;
   PunchingUnitType: IEventorPunchingUnitType;
@@ -284,6 +284,7 @@ interface IEventorRaceResult {
 
 interface IEventorResult {
   ResultId: string;
+  BibNumber: string;
   CCardId: string;
   CompetitorStatus: IEventorResultStatus;
   FinishTime: IEventorDateTime;

@@ -5,7 +5,7 @@ import { ModalFuncProps } from 'antd/lib/modal';
 import { observer } from 'mobx-react';
 import { getSnapshot } from 'mobx-state-tree';
 import { IRaceClubsSnapshotIn } from 'models/resultModel';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { useMobxStore } from 'utils/mobxStore';
@@ -408,6 +408,7 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
                     <EditResultIndividual
                       clubModel={clubModel}
                       sessionModel={sessionModel}
+                      raceWizardModel={raceWizardModel.current}
                       meetsAwardRequirements={raceWizardModel.current.raceEvent.meetsAwardRequirements}
                       isSprint={raceWizardModel.current.raceEvent.raceDistance === distances.sprint}
                       raceDate={raceWizardModel.current.raceEvent.raceDate ?? ''}
@@ -430,6 +431,7 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
                     <EditResultRelay
                       clubModel={clubModel}
                       sessionModel={sessionModel}
+                      raceWizardModel={raceWizardModel.current}
                       eventClassificationId={
                         raceWizardModel.current.raceEvent.eventClassificationId as EventClassificationIdTypes
                       }

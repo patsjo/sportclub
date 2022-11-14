@@ -37,6 +37,7 @@ const ResultWizardStep0Input = observer(({ onMount }: IResultWizardStep0InputPro
         QueryEndDate: moment(raceWizardModel.queryEndDate, dateFormat),
         QueryIncludeExisting: raceWizardModel.queryIncludeExisting,
         QueryForEventWithNoEntry: raceWizardModel.queryForEventWithNoEntry,
+        QueryForCompetitorWithNoClub: raceWizardModel.queryForCompetitorWithNoClub,
         ExistInEventor: raceWizardModel.existInEventor,
       }}
     >
@@ -92,6 +93,13 @@ const ResultWizardStep0Input = observer(({ onMount }: IResultWizardStep0InputPro
             valuePropName="checked"
           >
             <Switch onChange={(checked) => raceWizardModel.setBooleanValue('queryForEventWithNoEntry', checked)} />
+          </FormItem>
+          <FormItem
+            name="QueryForCompetitorWithNoClub"
+            label={t('results.QueryForCompetitorWithNoClub')}
+            valuePropName="checked"
+          >
+            <Switch onChange={(checked) => raceWizardModel.setBooleanValue('queryForCompetitorWithNoClub', checked)} />
           </FormItem>
         </>
       ) : null}

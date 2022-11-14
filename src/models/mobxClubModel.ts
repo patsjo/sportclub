@@ -105,6 +105,7 @@ const Eventor = types.model({
   entriesUrl: types.optional(types.string, 'https://eventor.orientering.se/api/entries'),
   startUrl: types.optional(types.string, 'https://eventor.orientering.se/api/starts/organisation'),
   classesUrl: types.optional(types.string, 'https://eventor.orientering.se/api/eventclasses'),
+  iofResultUrl: types.optional(types.string, 'https://eventor.orientering.se/api/results/event/iofxml'),
   resultUrl: types.optional(types.string, 'https://eventor.orientering.se/api/results/organisation'),
   lengthUrl: types.optional(types.string, 'https://eventor.orientering.se/Events/StartList'),
   competitorsUrl: types.optional(types.string, 'https://eventor.orientering.se/api/competitors'),

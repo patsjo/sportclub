@@ -2,8 +2,9 @@ import { Col, Form, Input, InputNumber, Row, Select } from 'antd';
 import InputTime, { stringToMilliSeconds } from 'components/formItems/InputTime';
 import { IMobxClubModel } from 'models/mobxClubModel';
 import { IRaceResult, IRaceResultSnapshotIn } from 'models/resultModel';
+import { IRaceWizard } from 'models/resultWizardModel';
 import { ISessionModel } from 'models/sessionModel';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { errorRequiredField, FormSelect, hasErrors, INumberOption, timeFormat } from '../../utils/formHelper';
@@ -42,6 +43,7 @@ export interface IExtendedRaceResult extends IRaceResultSnapshotIn {
 interface IEditResultIndividualProps {
   clubModel: IMobxClubModel;
   sessionModel: ISessionModel;
+  raceWizardModel: IRaceWizard;
   paymentModel: PaymentTypes;
   meetsAwardRequirements: boolean;
   isSprint: boolean;
@@ -56,6 +58,7 @@ const EditResultIndividual = ({
   clubModel,
   sessionModel,
   paymentModel,
+  raceWizardModel,
   meetsAwardRequirements,
   isSprint,
   raceDate,
@@ -337,6 +340,10 @@ const EditResultIndividual = ({
                   (r) => r.className === result.className && r.resultId !== result.resultId
                 );
                 resultsWithSameClass.forEach((r) => r.setDifficulty(result.difficulty as DifficultyTypes));
+                const raceWinnerResult = raceWizardModel.raceWinnerResults.find(
+                  (wr) => wr.className === result.className
+                );
+                if (raceWinnerResult && result.difficulty) raceWinnerResult.setDifficulty(result.difficulty);
               }}
             >
               <Option value={difficulties.green}>
@@ -388,6 +395,10 @@ const EditResultIndividual = ({
                   (r) => r.className === result.className && r.resultId !== result.resultId
                 );
                 resultsWithSameClass.forEach((r) => r.setNumberValueOrNull('lengthInMeter', result.lengthInMeter));
+                const raceWinnerResult = raceWizardModel.raceWinnerResults.find(
+                  (wr) => wr.className === result.className
+                );
+                if (raceWinnerResult && result.lengthInMeter) raceWinnerResult.setLengthInMeter(result.lengthInMeter);
               }}
             />
           </FormItem>

@@ -1,3 +1,4 @@
+import { IPersonRaceResult, IPersonResult, ITeamMemberRaceResult, ITeamMemberResult } from 'models/iof.xsd-3.0';
 import {
   IRaceClassClassificationSnapshotIn,
   IRaceClassLevelSnapshotIn,
@@ -879,6 +880,41 @@ export const GetSplitTimes = (
   return { splitTimes, ...GetBestSplitTimes(splitTimes) };
 };
 
+export const GetIOFSplitTimes = (
+  personResults: (Omit<IPersonResult, 'Result'> & { Result?: IPersonRaceResult })[]
+): { splitTimes: ISplitTimes[]; bestSplitTimes: ISplitTime[]; secondBestSplitTimes: ISplitTime[] } => {
+  const splitTimes: ISplitTimes[] = personResults
+    .filter((pr) => {
+      const didNotStart = pr.Result?.Status === 'DidNotStart';
+      const misPunch = pr.Result?.Status === 'MissingPunch';
+      const ok = pr.Result?.Status === 'OK';
+      const hasSplitTimes = Array.isArray(pr.Result?.SplitTime) && pr.Result?.SplitTime.filter((st) => st.Time).length;
+      return ok && !didNotStart && !misPunch && pr.Person?.Id?.length && hasSplitTimes;
+    })
+    .map(
+      (pr): ISplitTimes => ({
+        personId: pr.Person.Id!.find(() => true) ?? '',
+        splitTimes: (pr.Result?.SplitTime && Array.isArray(pr.Result?.SplitTime) ? pr.Result.SplitTime : [])
+          .filter((st) => st.Time)
+          .map((st, idx): { controlCode: string; sequence: number; time: number } => ({
+            controlCode: st.ControlCode,
+            sequence: idx + 1,
+            time: st.Time ?? 0,
+          }))
+          .filter((st, i, stArray) => i === 0 || st.controlCode !== stArray[i - 1].controlCode)
+          .map(
+            (st, i, stArray): ISplitTime => ({
+              controlCode: `${i === 0 ? 'S' : stArray[i - 1].controlCode}-${st.controlCode}`,
+              controlOrder: st.sequence,
+              time: i === 0 ? st.time : st.time - stArray[i - 1].time,
+            })
+          )
+          .sort((a, b) => (a.controlCode > b.controlCode ? 1 : b.controlCode > a.controlCode ? -1 : 0)),
+      })
+    );
+  return { splitTimes, ...GetBestSplitTimes(splitTimes) };
+};
+
 interface IRelaySplitTime {
   leg: string;
   splitTimes: ISplitTimes[];
@@ -918,6 +954,57 @@ export const GetRelaySplitTimes = (teamResults: IEventorTeamResult[]): IRelaySpl
           .map((st, i, stArray) => ({
             controlCode: `${i === 0 ? 'S' : stArray[i - 1].controlCode}-${st.controlCode}`,
             controlOrder: parseInt(st.sequence),
+            time: i === 0 ? st.time : st.time - stArray[i - 1].time,
+          }))
+          .sort((a, b) => (a.controlCode > b.controlCode ? 1 : b.controlCode > a.controlCode ? -1 : 0)),
+      }));
+
+    const { bestSplitTimes, secondBestSplitTimes } = GetBestSplitTimes(legSplitTimes.splitTimes);
+    legSplitTimes.bestSplitTimes = bestSplitTimes;
+    legSplitTimes.secondBestSplitTimes = secondBestSplitTimes;
+  });
+  return allLegsSplitTimes;
+};
+
+export const GetIOFRelaySplitTimes = (
+  teamResults: {
+    TeamMemberResult: (Omit<ITeamMemberResult, 'Result'> & { Result?: ITeamMemberRaceResult })[] | undefined;
+  }[]
+): IRelaySplitTime[] => {
+  const allTeamMemberResult = teamResults
+    .filter((tr) => tr.TeamMemberResult)
+    .reduce(
+      (a, b) => a.concat(b.TeamMemberResult!),
+      [] as (Omit<ITeamMemberResult, 'Result'> & { Result?: ITeamMemberRaceResult })[]
+    );
+  const allLegsSplitTimes: IRelaySplitTime[] = allTeamMemberResult
+    .filter((r) => r.Result?.Leg != null)
+    .map((r) => r.Result!.Leg!.toString())
+    .filter((value, index, self) => self.indexOf(value) === index)
+    .map((leg) => ({ leg: leg, splitTimes: [], bestSplitTimes: [], secondBestSplitTimes: [] }));
+
+  allLegsSplitTimes.forEach((legSplitTimes) => {
+    legSplitTimes.splitTimes = allTeamMemberResult
+      .filter((pr) => pr.Result?.Leg?.toString() === legSplitTimes.leg)
+      .filter((pr) => {
+        const didNotStart = pr.Result?.Status === 'DidNotStart';
+        const misPunch = pr.Result?.Status === 'MissingPunch';
+        const ok = pr.Result?.Status === 'OK';
+        const hasSplitTimes = pr.Result?.SplitTime && pr.Result.SplitTime.filter((st) => st.Time).length > 0;
+        return ok && !didNotStart && !misPunch && pr.Person?.Id?.length && hasSplitTimes;
+      })
+      .map((pr) => ({
+        personId: pr.Person!.Id!.find(() => true) ?? '',
+        splitTimes: pr
+          .Result!.SplitTime!.filter((st) => st.Time)
+          .map((st, idx) => ({
+            controlCode: st.ControlCode,
+            sequence: idx + 1,
+            time: st.Time!,
+          }))
+          .map((st, i, stArray) => ({
+            controlCode: `${i === 0 ? 'S' : stArray[i - 1].controlCode}-${st.controlCode}`,
+            controlOrder: st.sequence,
             time: i === 0 ? st.time : st.time - stArray[i - 1].time,
           }))
           .sort((a, b) => (a.controlCode > b.controlCode ? 1 : b.controlCode > a.controlCode ? -1 : 0)),

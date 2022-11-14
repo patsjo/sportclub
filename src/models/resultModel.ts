@@ -342,6 +342,8 @@ const RaceResultMultiDay = types.model({
   totalNofStartsInClass: types.maybeNull(types.integer),
 });
 
+export type IRaceResultMultiDaySnapshotIn = SnapshotIn<typeof RaceResultMultiDay>;
+
 export interface IRaceEventBasic {
   eventClassificationId: string;
   raceDate: string;
