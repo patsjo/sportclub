@@ -1,4 +1,4 @@
-import { IRaceEventSnapshotIn, IRaceResultSnapshotIn, IRaceTeamResultSnapshotIn } from 'models/resultModel';
+import { IRaceEventProps, IRaceResultProps, IRaceTeamResultProps } from 'models/resultModel';
 import {
   DistanceTypes,
   EventClassificationIdTypes,
@@ -73,7 +73,7 @@ interface IViewResultRaceInfo {
   sportCode: SportCodeTypes;
 }
 
-export interface IViewResult extends IRaceResultSnapshotIn, IViewResultRaceInfo {
+export interface IViewResult extends IRaceResultProps, IViewResultRaceInfo {
   firstName?: string;
   lastName?: string;
   gender?: GenderType;
@@ -81,7 +81,7 @@ export interface IViewResult extends IRaceResultSnapshotIn, IViewResultRaceInfo 
   serviceFeeToClub: number;
 }
 
-export interface IViewTeamResult extends IRaceTeamResultSnapshotIn, IViewResultRaceInfo {
+export interface IViewTeamResult extends IRaceTeamResultProps, IViewResultRaceInfo {
   firstName?: string;
   lastName?: string;
   gender?: GenderType;
@@ -93,7 +93,7 @@ export interface IIndividualViewResultResponse {
   results: IViewResult[];
   teamResults: IViewTeamResult[];
 }
-export interface IClubViewResultResponse extends IRaceEventSnapshotIn {
+export interface IClubViewResultResponse extends IRaceEventProps {
   results: IViewResult[];
   teamResults: IViewTeamResult[];
 }

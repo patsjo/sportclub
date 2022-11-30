@@ -4,7 +4,6 @@ import { TFunction } from 'i18next';
 import { IMobxClubModel } from 'models/mobxClubModel';
 import { IRaceCompetitor } from 'models/resultModel';
 import { ISessionModel } from 'models/sessionModel';
-import React from 'react';
 import AddMapCompetitor, { IAddLinkCompetitor, INewCompetitorForm } from './AddMapCompetitor';
 
 const { confirm } = Modal;
@@ -25,7 +24,7 @@ export const AddMapCompetitorConfirmModal = (
     };
     const option =
       competitorId === -1 &&
-      clubModel.raceClubs?.selectedClub.competitorsOptions.find((opt) =>
+      clubModel.raceClubs?.selectedClub?.competitorsOptions.find((opt) =>
         opt.description.startsWith(`${newCompetitor.iFirstName} ${newCompetitor.iLastName} (`)
       );
     if (option) {
@@ -46,7 +45,7 @@ export const AddMapCompetitorConfirmModal = (
         <AddMapCompetitor
           defaultActiveKey={selectedTabKey}
           addLinkCompetitor={confirmObject}
-          competitorsOptions={clubModel.raceClubs?.selectedClub.competitorsOptions ?? []}
+          competitorsOptions={clubModel.raceClubs?.selectedClub?.competitorsOptions ?? []}
           onTabChange={(key) => (selectedTabKey = key)}
           onValidate={(valid) =>
             confirmModal.update({
@@ -66,7 +65,7 @@ export const AddMapCompetitorConfirmModal = (
         if (selectedTabKey === '1') {
           const comp =
             confirmObject.competitorId != null && confirmObject.competitorId !== -1
-              ? clubModel.raceClubs?.selectedClub.competitorById(confirmObject.competitorId)
+              ? clubModel.raceClubs?.selectedClub?.competitorById(confirmObject.competitorId)
               : undefined;
           if (
             typeof personId === 'string' &&
@@ -86,14 +85,14 @@ export const AddMapCompetitorConfirmModal = (
           }
         } else {
           clubModel.raceClubs?.selectedClub
-            .addCompetitor(
+            ?.addCompetitor(
               clubModel.modules.find((module) => module.name === 'Results')!.addUrl!,
               confirmObject.newCompetitor,
               sessionModel.authorizationHeader
             )
             .then(
               (competitorId) =>
-                competitorId !== undefined && resolve(clubModel.raceClubs?.selectedClub.competitorById(competitorId))
+                competitorId !== undefined && resolve(clubModel.raceClubs?.selectedClub?.competitorById(competitorId))
             );
         }
       },

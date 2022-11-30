@@ -1,4 +1,4 @@
-import { Instance, SnapshotIn, types } from 'mobx-state-tree';
+import { action, computed, makeObservable, observable } from 'mobx';
 
 const switchCharacters = (str: string): string => {
   let retVal = '';
@@ -20,7 +20,7 @@ export interface ILocalStorageLogin {
   rememberLogin: boolean;
 }
 
-const setLocalStorage = ({ username, password, rememberLogin }: ISessionModelSnapshotIn) => {
+const setLocalStorage = ({ username, password, rememberLogin }: ISessionModelProps) => {
   if (!rememberLogin) {
     localStorage.removeItem('sessionData');
     return;
@@ -32,10 +32,10 @@ const setLocalStorage = ({ username, password, rememberLogin }: ISessionModelSna
     rememberLogin,
   };
 
-  localStorage.setItem('sessionData', btoa(switchCharacters(btoa(JSON.stringify(obj)))));
+  localStorage.setItem('sessionData', window.btoa(switchCharacters(window.btoa(JSON.stringify(obj)))));
 };
 
-export const getLocalStorage = (): ISessionModelSnapshotIn => {
+export const getLocalStorage = (): ISessionModelProps => {
   try {
     const sessionData = localStorage.getItem('sessionData');
 
@@ -50,7 +50,7 @@ export const getLocalStorage = (): ISessionModelSnapshotIn => {
     }
 
     return {
-      ...(JSON.parse(atob(switchCharacters(atob(sessionData)))) as ILocalStorageLogin),
+      ...(JSON.parse(window.atob(switchCharacters(window.atob(sessionData)))) as ILocalStorageLogin),
       isAdmin: false,
       canReadLocalStorage: true,
     };
@@ -65,62 +65,97 @@ export const getLocalStorage = (): ISessionModelSnapshotIn => {
   }
 };
 
-export const SessionModel = types
-  .model({
-    username: types.maybe(types.string),
-    password: types.maybe(types.string),
-    rememberLogin: types.optional(types.boolean, false),
-    id: types.maybe(types.string),
-    name: types.maybe(types.string),
-    isAdmin: types.optional(types.boolean, false),
-    eventorPersonId: types.maybe(types.integer),
-    canReadLocalStorage: types.optional(types.boolean, false),
-  })
-  .volatile((self) => ({
-    loggedIn: false,
-  }))
-  .views((self) => ({
-    get authorizationHeader() {
-      return {
-        Authorization: 'Basic ' + btoa(self.username + ':' + self.password),
-      };
-    },
-  }))
-  .actions((self) => {
+interface ISessionModelProps {
+  username?: string;
+  password?: string;
+  rememberLogin: boolean;
+  id?: string;
+  name?: string;
+  isAdmin: boolean;
+  eventorPersonId?: number;
+  canReadLocalStorage: boolean;
+}
+
+export interface ISessionModel extends ISessionModelProps {
+  loggedIn: boolean;
+  setLogin: (username: string, password: string, rememberLogin: boolean) => void;
+  setSuccessfullyLogin: (id: string, name: string, isAdmin: boolean, eventorPersonId: number) => void;
+  setFailedLogin: () => void;
+  setLogout: () => void;
+  authorizationHeader: {
+    Authorization: string;
+  };
+}
+
+export class SessionModel implements ISessionModel {
+  loggedIn = false;
+  username?: string;
+  password?: string;
+  rememberLogin = false;
+  id?: string;
+  name?: string;
+  isAdmin = false;
+  eventorPersonId?: number;
+  canReadLocalStorage = false;
+
+  constructor(options?: Partial<ISessionModelProps>) {
+    options && Object.assign(this, options);
+    makeObservable(this, {
+      username: observable,
+      password: observable,
+      rememberLogin: observable,
+      id: observable,
+      name: observable,
+      isAdmin: observable,
+      eventorPersonId: observable,
+      canReadLocalStorage: observable,
+      setLogin: action,
+      setSuccessfullyLogin: action,
+      setFailedLogin: action,
+      setLogout: action,
+      authorizationHeader: computed,
+    });
+  }
+
+  public setLogin(username: string, password: string, rememberLogin: boolean) {
+    this.username = username;
+    this.password = password;
+    this.rememberLogin = rememberLogin;
+    try {
+      setLocalStorage(this);
+      this.canReadLocalStorage = true;
+    } catch (error) {
+      this.canReadLocalStorage = false;
+    }
+  }
+
+  public setSuccessfullyLogin(id: string, name: string, isAdmin: boolean, eventorPersonId: number) {
+    this.id = '' + id;
+    this.name = name;
+    this.loggedIn = true;
+    this.isAdmin = isAdmin;
+    this.eventorPersonId = eventorPersonId;
+  }
+
+  public setFailedLogin() {
+    this.id = undefined;
+    this.name = undefined;
+    this.loggedIn = false;
+    this.isAdmin = false;
+    this.eventorPersonId = undefined;
+  }
+
+  public setLogout() {
+    this.id = undefined;
+    this.name = undefined;
+    this.loggedIn = false;
+    this.isAdmin = false;
+    this.eventorPersonId = undefined;
+  }
+
+  get authorizationHeader() {
     return {
-      setLogin(username: string, password: string, rememberLogin: boolean) {
-        self.username = username;
-        self.password = password;
-        self.rememberLogin = rememberLogin;
-        try {
-          setLocalStorage(self);
-          self.canReadLocalStorage = true;
-        } catch (error) {
-          self.canReadLocalStorage = false;
-        }
-      },
-      setSuccessfullyLogin(id: string, name: string, isAdmin: boolean, eventorPersonId: number) {
-        self.id = '' + id;
-        self.name = name;
-        self.loggedIn = true;
-        self.isAdmin = isAdmin;
-        self.eventorPersonId = eventorPersonId;
-      },
-      setFailedLogin() {
-        self.id = undefined;
-        self.name = undefined;
-        self.loggedIn = false;
-        self.isAdmin = false;
-        self.eventorPersonId = undefined;
-      },
-      setLogout() {
-        self.id = undefined;
-        self.name = undefined;
-        self.loggedIn = false;
-        self.isAdmin = false;
-        self.eventorPersonId = undefined;
-      },
+      Authorization: 'Basic ' + window.btoa(`${this.username}:${this.password}`),
     };
-  });
-export type ISessionModel = Instance<typeof SessionModel>;
-export type ISessionModelSnapshotIn = SnapshotIn<typeof SessionModel>;
+  }
+}

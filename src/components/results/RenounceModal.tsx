@@ -1,7 +1,7 @@
 import { Button, message, Modal, Popconfirm, Switch } from 'antd';
 import { observer } from 'mobx-react';
 import { IRaceCompetitor } from 'models/resultModel';
-import React, { useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { useMobxStore } from 'utils/mobxStore';
@@ -52,7 +52,7 @@ const RenounceModal = observer(({ competitor, open, onClose }: IRenounceModalPro
       closable={false}
       maskClosable={false}
       title={t('results.Renounce')}
-      visible={open}
+      open={open}
       onCancel={onClose}
       width="calc(100% - 80px)"
       style={{ top: 40 }}

@@ -1,7 +1,7 @@
 import { message, Modal, ModalFuncProps, Popconfirm, Spin } from 'antd';
 import { ColumnType } from 'antd/lib/table';
 import { observer } from 'mobx-react';
-import { ICouncilModelSnapshotIn, IGroupModelSnapshotIn, IUserModelSnapshotIn } from 'models/userModel';
+import { ICouncilModel, IGroupModel, IUserModel } from 'models/userModel';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PostJsonData } from 'utils/api';
@@ -11,11 +11,11 @@ import EditUser from './EditUser';
 
 const { confirm } = Modal;
 
-interface IUserTable extends IUserModelSnapshotIn {
+interface IUserTable extends IUserModel {
   edit?: undefined;
 }
 
-const userSort = (a: IUserModelSnapshotIn, b: IUserModelSnapshotIn) =>
+const userSort = (a: IUserModel, b: IUserModel) =>
   a.councilId !== b.councilId
     ? !a.councilId
       ? 1
@@ -31,8 +31,8 @@ const Users = observer(() => {
   const { clubModel, sessionModel } = useMobxStore();
   const [loaded, setLoaded] = useState(false);
   const [users, setUsers] = useState<IUserTable[]>([]);
-  const [groups, setGroups] = useState<IGroupModelSnapshotIn[]>([]);
-  const [councils, setCouncils] = useState<ICouncilModelSnapshotIn[]>([]);
+  const [groups, setGroups] = useState<IGroupModel[]>([]);
+  const [councils, setCouncils] = useState<ICouncilModel[]>([]);
 
   const onDeleteUser = useCallback(
     (userId: number) => {
@@ -60,7 +60,7 @@ const Users = observer(() => {
   );
 
   const onSaveUser = useCallback(
-    (user: IUserModelSnapshotIn) => {
+    (user: IUserModel) => {
       const url = clubModel.modules.find((module) => module.name === 'Users')?.updateUrl;
       setLoaded(false);
 
@@ -70,7 +70,7 @@ const Users = observer(() => {
       }
 
       PostJsonData(url, user, true, sessionModel.authorizationHeader)
-        .then((updatedUser: IUserModelSnapshotIn) => {
+        .then((updatedUser: IUserModel) => {
           setUsers((oldUsers) =>
             [...oldUsers.filter((u) => u.userId !== updatedUser.userId), updatedUser].sort(userSort)
           );
@@ -96,18 +96,12 @@ const Users = observer(() => {
     }
 
     PostJsonData(url, {}, true, sessionModel.authorizationHeader)
-      .then(
-        (data: {
-          users: IUserModelSnapshotIn[];
-          groups: IGroupModelSnapshotIn[];
-          councils: ICouncilModelSnapshotIn[];
-        }) => {
-          setCouncils(data.councils);
-          setGroups(data.groups);
-          setUsers(data.users.sort(userSort));
-          setLoaded(true);
-        }
-      )
+      .then((data: { users: IUserModel[]; groups: IGroupModel[]; councils: ICouncilModel[] }) => {
+        setCouncils(data.councils);
+        setGroups(data.groups);
+        setUsers(data.users.sort(userSort));
+        setLoaded(true);
+      })
       .catch((e) => {
         if (e && e.message) {
           message.error(e.message);

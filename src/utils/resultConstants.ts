@@ -48,7 +48,9 @@ export const genderOptions = (t: TFunction): IOption[] => [
   { code: genders.Male, description: t('results.Male') },
 ];
 
-export const payments = {
+export type PaymentModelTypes = 0 | 1 | 2 | 3 | 4;
+
+export const payments: Record<string, PaymentModelTypes> = {
   defaultFee0And100IfNotStarted: 0,
   defaultFee0And100IfNotFinished: 1,
   defaultFee50And100IfNotFinished: 2,

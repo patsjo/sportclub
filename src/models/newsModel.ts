@@ -1,47 +1,126 @@
-import { cast, Instance, SnapshotIn, types } from 'mobx-state-tree';
+import { action, makeObservable, observable } from 'mobx';
 
-export const NewsItem = types.model({
-  id: types.identifierNumber,
-  newsTypeId: types.integer,
-  header: types.string,
-  introduction: types.maybeNull(types.string),
-  text: types.maybeNull(types.string),
-  link: types.maybeNull(types.string),
-  expireDate: types.string,
-  fileId: types.maybeNull(types.integer),
-  fileName: types.maybeNull(types.string),
-  fileSize: types.maybeNull(types.integer),
-  fileType: types.maybeNull(types.string),
-  imageHeight: types.maybeNull(types.integer),
-  imageWidth: types.maybeNull(types.integer),
-  modificationDate: types.string,
-  modifiedBy: types.string,
-});
-export type INewsItem = Instance<typeof NewsItem>;
-export type INewsItemSnapshotIn = SnapshotIn<typeof NewsItem>;
+export interface INewsItemProps {
+  id: number;
+  newsTypeId: number;
+  header: string;
+  introduction?: string | null;
+  text?: string | null;
+  link?: string | null;
+  expireDate: string;
+  fileId?: number | null;
+  fileName?: string | null;
+  fileSize?: number | null;
+  fileType?: string | null;
+  imageHeight?: number | null;
+  imageWidth?: number | null;
+  modificationDate: string;
+  modifiedBy: string;
+}
 
-export const NewsModel = types
-  .model({
-    newsItems: types.array(NewsItem),
-    limit: 12,
-    offset: types.integer,
-  })
-  .actions((self) => {
-    return {
-      reset() {
-        self.newsItems = cast([]);
-        self.offset = 0;
-      },
-      addNewsItemToTop(newsitem: INewsItemSnapshotIn) {
-        self.newsItems.unshift(newsitem);
-      },
-      addNewsItemsToBottom(newsitems: INewsItemSnapshotIn[]) {
-        const addItems = newsitems.filter((newsItem) => !self.newsItems.some((item) => item.id === newsItem.id));
-        self.newsItems = cast([...self.newsItems, ...addItems]);
-        self.offset = self.offset + newsitems.length;
-      },
-      removeNewsItem(newsItem: INewsItemSnapshotIn) {
-        self.newsItems = cast(self.newsItems.filter((item) => item.id !== newsItem.id));
-      },
-    };
-  });
+export interface INewsItem extends INewsItemProps {
+  setValues: (values: Partial<INewsItemProps>) => void;
+}
+
+export class NewsItem implements INewsItem {
+  id = -1;
+  newsTypeId = -1;
+  header = '';
+  introduction?: string | null;
+  text?: string | null;
+  link?: string | null;
+  expireDate = '';
+  fileId?: number | null;
+  fileName?: string | null;
+  fileSize?: number | null;
+  fileType?: string | null;
+  imageHeight?: number | null;
+  imageWidth?: number | null;
+  modificationDate = '';
+  modifiedBy = '';
+
+  constructor(options: INewsItemProps) {
+    options && Object.assign(this, options);
+    makeObservable(this, {
+      id: observable,
+      newsTypeId: observable,
+      header: observable,
+      introduction: observable,
+      text: observable,
+      link: observable,
+      expireDate: observable,
+      fileId: observable,
+      fileName: observable,
+      fileSize: observable,
+      fileType: observable,
+      imageHeight: observable,
+      imageWidth: observable,
+      modificationDate: observable,
+      modifiedBy: observable,
+      setValues: action,
+    });
+  }
+
+  setValues(values: Partial<INewsItemProps>) {
+    Object.assign(this, values);
+  }
+}
+
+export interface INewsModelProps {
+  newsItems: INewsItemProps[];
+  limit: number;
+  offset: number;
+}
+
+export interface INewsModel extends Omit<INewsModelProps, 'newsItems'> {
+  newsItems: INewsItem[];
+  reset: () => void;
+  addNewsItemToTop: (newsitem: INewsItemProps) => void;
+  addNewsItemsToBottom: (newsitems: INewsItemProps[]) => void;
+  removeNewsItem: (newsItem: INewsItemProps) => void;
+}
+
+export class NewsModel implements INewsModel {
+  newsItems: INewsItem[] = [];
+  limit = 12;
+  offset = 0;
+
+  constructor(options?: Partial<INewsModelProps>) {
+    if (options) {
+      const { newsItems, ...rest } = options;
+      Object.assign(this, rest);
+      if (newsItems) this.newsItems = newsItems.map((n) => new NewsItem(n));
+    }
+
+    makeObservable(this, {
+      newsItems: observable,
+      limit: observable,
+      offset: observable,
+      reset: action,
+      addNewsItemToTop: action,
+      addNewsItemsToBottom: action,
+      removeNewsItem: action,
+    });
+  }
+
+  reset() {
+    this.newsItems = [];
+    this.offset = 0;
+  }
+
+  addNewsItemToTop(newsitem: INewsItemProps) {
+    this.newsItems.unshift(new NewsItem(newsitem));
+  }
+
+  addNewsItemsToBottom(newsitems: INewsItemProps[]) {
+    const addItems = newsitems
+      .filter((newsItem) => !this.newsItems.some((item) => item.id === newsItem.id))
+      .map((item) => new NewsItem(item));
+    this.newsItems = [...this.newsItems, ...addItems];
+    this.offset = this.offset + newsitems.length;
+  }
+
+  removeNewsItem(newsItem: INewsItemProps) {
+    this.newsItems = this.newsItems.filter((item) => item.id !== newsItem.id);
+  }
+}

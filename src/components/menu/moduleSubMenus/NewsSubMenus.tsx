@@ -1,13 +1,13 @@
 import { observer } from 'mobx-react';
-import { INewsItemSnapshotIn, NewsItem } from 'models/newsModel';
+import { INewsItemProps, NewsItem } from 'models/newsModel';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useMobxStore } from 'utils/mobxStore';
 import NewsEdit from '../../news/NewsEdit';
 import MenuItem from '../MenuItem';
 
-const defaultNewsObject: INewsItemSnapshotIn = {
+const defaultNewsObject: INewsItemProps = {
   expireDate: new Date(new Date().getTime() + 86400000 * 14).toISOString().substr(0, 10),
   fileId: 0,
   header: '',
@@ -25,17 +25,15 @@ const NewsSubMenus = observer(() => {
   const { clubModel, globalStateModel, sessionModel } = useMobxStore();
   const newsModule = React.useMemo(() => clubModel.modules.find((module) => module.name === 'News'), []);
   const [addNewsModalIsOpen, setAddNewsModalIsOpen] = useState(false);
-  const history = useHistory();
+  const navigate = useNavigate();
 
   return (
     <>
       {addNewsModalIsOpen ? (
         <NewsEdit
-          newsObject={NewsItem.create({ ...defaultNewsObject })}
+          newsObject={new NewsItem({ ...defaultNewsObject })}
           open={addNewsModalIsOpen}
-          onChange={(insertedNewsObject: INewsItemSnapshotIn) =>
-            globalStateModel.news?.addNewsItemToTop(insertedNewsObject)
-          }
+          onChange={(insertedNewsObject: INewsItemProps) => globalStateModel.news?.addNewsItemToTop(insertedNewsObject)}
           onClose={() => setAddNewsModalIsOpen(false)}
         />
       ) : null}
@@ -56,7 +54,7 @@ const NewsSubMenus = observer(() => {
         name={t('modules.News')}
         isSubMenu
         onClick={() => {
-          globalStateModel.setDashboard(history, '/news', '1900-01-01', '2099-12-31');
+          globalStateModel.setDashboard(navigate, '/news', '1900-01-01', '2099-12-31');
         }}
       />
       <MenuItem
@@ -65,7 +63,7 @@ const NewsSubMenus = observer(() => {
         name={t('news.LongTimeNews')}
         isSubMenu
         onClick={() => {
-          globalStateModel.setDashboard(history, '/news', '1900-01-01', '2099-12-31', 2);
+          globalStateModel.setDashboard(navigate, '/news', '1900-01-01', '2099-12-31', 2);
         }}
       />
       <MenuItem
@@ -74,7 +72,7 @@ const NewsSubMenus = observer(() => {
         name={t('news.Educations')}
         isSubMenu
         onClick={() => {
-          globalStateModel.setDashboard(history, '/news', '1900-01-01', '2099-12-31', 3);
+          globalStateModel.setDashboard(navigate, '/news', '1900-01-01', '2099-12-31', 3);
         }}
       />
     </>

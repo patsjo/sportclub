@@ -1,5 +1,4 @@
 import { Skeleton } from 'antd';
-import React from 'react';
 import styled from 'styled-components';
 import Star from '../svg/Star';
 
@@ -42,7 +41,7 @@ export const Loader = () => (
 );
 
 interface IFiveStarsProps {
-  label?: string;
+  label?: string | null;
   stars: number;
   size?: number;
 }

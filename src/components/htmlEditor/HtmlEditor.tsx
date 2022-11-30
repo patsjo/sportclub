@@ -1,13 +1,12 @@
 import { CopyOutlined } from '@ant-design/icons';
-import { CKEditor } from '@ckeditor/ckeditor5-react';
-import { StickyPanelView } from '@ckeditor/ckeditor5-ui';
+import ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor.js';
 import { Alert, Button, Form, Input, message, Popconfirm, Select, Spin } from 'antd';
 import copy from 'copy-to-clipboard';
 import { observer } from 'mobx-react';
-import { getSnapshot } from 'mobx-state-tree';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { ICouncilModel, IGroupModel, IUserModel } from 'models/userModel';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useMobxStore } from 'utils/mobxStore';
 import { IHtmlPageGroupResponse, IHtmlPageResponse } from 'utils/responseInterfaces';
@@ -16,8 +15,7 @@ import { errorRequiredField, hasErrors } from '../../utils/formHelper';
 import { getPageId } from '../../utils/htmlEditorMenuHelper';
 import FormItem from '../formItems/FormItem';
 import { SpinnerDiv } from '../styled/styled';
-import ClassicEditor, { ckEditorConfig } from './ckeditor';
-import './ckeditor5.css';
+import CustomCKEditor from './CustomCKEditor';
 
 const DefaultData = '<p>Här lägger man in all text och bilder</p>';
 export const DefaultMenuPath = '/Exempel/Sida1';
@@ -29,23 +27,12 @@ const StyledButton = styled(Button)`
   }
 `;
 
-const StyledCKEditor = styled(CKEditor)`
-  &&& {
-    margin-top: 8px;
-    margin-bottom: 8px;
-  }
-  &&& .ck.ck-toolbar {
-    ${(props) => (props.isReadOnly ? 'display: none;' : '')}
-  }
-`;
-
 interface IHtmlEditorProps {
   path: string;
 }
 const HtmlEditor = observer(({ path }: IHtmlEditorProps) => {
   const { clubModel, globalStateModel, sessionModel } = useMobxStore();
   const { t } = useTranslation();
-  const [currentEditor, setCurrentEditor] = useState<ClassicEditor>();
   const [pageId, setPageId] = useState(-1);
   const [error, setError] = useState<string | undefined>();
   const [isReadOnly, setIsReadOnly] = useState(path !== '/page/new');
@@ -56,25 +43,19 @@ const HtmlEditor = observer(({ path }: IHtmlEditorProps) => {
   const [groups, setGroups] = useState<IHtmlPageGroupResponse[]>([]);
   const [valid, setValid] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [loading, setLoading] = useState(path !== '/page/new');
+  const [loading, setLoading] = useState(true);
   const formId = 'htmlEditorForm' + Math.floor(Math.random() * 1000000000000000);
   const htmlEditorModule = clubModel.modules.find((module) => module.name === 'HTMLEditor');
-  const toolbarContainer = useRef<StickyPanelView>();
-  const history = useHistory();
-
-  useEffect(() => {
-    if (currentEditor) {
-      currentEditor.isReadOnly = isReadOnly;
-    }
-  }, [currentEditor, isReadOnly]);
+  const navigate = useNavigate();
+  const [currentEditor, setCurrentEditor] = useState<ClassicEditor>();
 
   useEffect(() => {
     setError(undefined);
+    setLoading(true);
     if (path === '/page/new' || globalStateModel.htmlEditorMenu === undefined || !htmlEditorModule) {
       setPageId(-1);
       setData(DefaultData);
       setMenuPath(DefaultMenuPath);
-      setGroups([]);
       setEditable(true);
       setIsReadOnly(false);
       form.setFieldsValue({
@@ -82,12 +63,22 @@ const HtmlEditor = observer(({ path }: IHtmlEditorProps) => {
         iMenuPath: DefaultMenuPath,
         iGroupIds: [],
       });
+      const url = clubModel.modules.find((module) => module.name === 'Users')?.queryUrl;
+
+      PostJsonData(url, {}, true, sessionModel.authorizationHeader)
+        .then((data: { users: IUserModel[]; groups: IGroupModel[]; councils: ICouncilModel[] }) => {
+          setGroups(data.groups.map((g) => ({ ...g, selected: false })));
+          setLoading(false);
+        })
+        .catch((e) => {
+          setLoading(false);
+          setError(e.message);
+        });
       return;
     }
-    setLoading(true);
     setEditable(false);
     setIsReadOnly(true);
-    const pageId = globalStateModel.htmlEditorMenu && getPageId(getSnapshot(globalStateModel.htmlEditorMenu)!, path);
+    const pageId = globalStateModel.htmlEditorMenu && getPageId(globalStateModel.htmlEditorMenu, path);
     if (!pageId) {
       setError('404 - Page not found');
       setLoading(false);
@@ -135,20 +126,6 @@ const HtmlEditor = observer(({ path }: IHtmlEditorProps) => {
     path,
     form,
   ]);
-
-  useEffect(() => {
-    if (currentEditor && toolbarContainer.current) {
-      try {
-        if (isReadOnly) {
-          currentEditor.ui.view.top.remove(toolbarContainer.current as any);
-        } else {
-          currentEditor.ui.view.top.add(toolbarContainer.current as any);
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    }
-  }, [currentEditor, isReadOnly]);
 
   const onSave = useCallback(() => {
     if (!valid || !currentEditor) {
@@ -229,16 +206,7 @@ const HtmlEditor = observer(({ path }: IHtmlEditorProps) => {
           </FormItem>
         </Form>
       ) : null}
-      <StyledCKEditor
-        editor={ClassicEditor}
-        isReadOnly={isReadOnly}
-        config={ckEditorConfig}
-        data={data}
-        onReady={(editor: ClassicEditor) => {
-          toolbarContainer.current = editor.ui.view.stickyPanel;
-          setCurrentEditor(editor);
-        }}
-      />
+      <CustomCKEditor isReadOnly={isReadOnly} data={data} onReady={setCurrentEditor} />
       {pageId > 0 ? (
         <StyledButton
           icon={<CopyOutlined />}
@@ -284,7 +252,7 @@ const HtmlEditor = observer(({ path }: IHtmlEditorProps) => {
                 sessionModel.authorizationHeader
               )
                 .then(() => {
-                  globalStateModel.setDashboard(history, '/');
+                  globalStateModel.setDashboard(navigate, '/');
                 })
                 .catch((e) => {
                   message.error(e.message);

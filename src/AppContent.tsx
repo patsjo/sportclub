@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react';
-import React, { lazy } from 'react';
-import { Route, Switch, useLocation } from 'react-router-dom';
+import { lazy } from 'react';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 const Dashboard = lazy(() => import('./components/dashboard/Dashboard'));
 const News = lazy(() => import('./components/news/News'));
@@ -36,46 +36,32 @@ const AppContent = observer(() => {
 
   return (
     <ContentArea>
-      <Switch>
-        <Route exact path="/news">
-          <News key="news" />
-        </Route>
-        <Route exact path="/users">
-          <Users key="users" />
-        </Route>
-        <Route exact path="/calendar">
-          <>
-            <NoMonthlyContainer>
-              <WeeklyCalendar />
-            </NoMonthlyContainer>
-            <MonthlyCalendar />
-          </>
-        </Route>
-        <Route exact path="/league">
-          <League key="league" />
-        </Route>
-        <Route exact path="/competitor/presentation">
-          <AllCompetitorsPresentation key="allCompetitorsPresentation" />
-        </Route>
-        <Route exact path="/results/individual">
-          <ViewResults key="individualViewResult" isIndividual={true} />
-        </Route>
-        <Route exact path="/results/fees">
-          <ResultsFees key="resultsFees" />
-        </Route>
-        <Route exact path="/results">
-          <ViewResults key="clubViewResult" isIndividual={false} />
-        </Route>
-        <Route exact path="/sponsors">
-          <AllSponsors key="individualViewResult" />
-        </Route>
-        <Route exact path="/">
-          <Dashboard key="dashboard" />
-        </Route>
-        <Route path="*">
-          <HtmlEditor key="htmlEditor" path={location.pathname} />
-        </Route>
-      </Switch>
+      <Routes>
+        <Route path="/news" element={<News key="news" />} />
+        <Route path="/users" element={<Users key="users" />} />
+        <Route
+          path="/calendar"
+          element={
+            <>
+              <NoMonthlyContainer>
+                <WeeklyCalendar />
+              </NoMonthlyContainer>
+              <MonthlyCalendar />
+            </>
+          }
+        />
+        <Route path="/league" element={<League key="league" />} />
+        <Route
+          path="/competitor/presentation"
+          element={<AllCompetitorsPresentation key="allCompetitorsPresentation" />}
+        />
+        <Route path="/results/individual" element={<ViewResults key="individualViewResult" isIndividual={true} />} />
+        <Route path="/results/fees" element={<ResultsFees key="resultsFees" />} />
+        <Route path="/results" element={<ViewResults key="clubViewResult" isIndividual={false} />} />
+        <Route path="/sponsors" element={<AllSponsors key="individualViewResult" />} />
+        <Route path="/" element={<Dashboard key="dashboard" />} />
+        <Route path="*" element={<HtmlEditor key="htmlEditor" path={location.pathname} />} />
+      </Routes>
     </ContentArea>
   );
 });

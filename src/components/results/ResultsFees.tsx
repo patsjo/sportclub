@@ -35,7 +35,7 @@ const columns = (t: TFunction, clubModel: IMobxClubModel): IPrintTableColumn<IFe
     fixed: 'left',
     width: 180,
     render: (id: string): string => {
-      const value = id == null ? null : clubModel.raceClubs?.selectedClub.competitorById(parseInt(id))?.fullName;
+      const value = id == null ? null : clubModel.raceClubs?.selectedClub?.competitorById(parseInt(id))?.fullName;
       return value ? value : '';
     },
   },

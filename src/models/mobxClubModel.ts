@@ -1,5 +1,6 @@
-import { cast, IAnyModelType, Instance, SnapshotIn, SnapshotOrInstance, types } from 'mobx-state-tree';
-import { IRaceClubsSnapshotIn, RaceClubs } from './resultModel';
+import { action, computed, makeObservable, observable } from 'mobx';
+import { IRaceClubs, IRaceClubsProps, RaceClubs } from './resultModel';
+import { PickRequired } from './typescriptPartial';
 
 type ModuleNameTypes =
   | 'News'
@@ -12,228 +13,434 @@ type ModuleNameTypes =
   | 'Photo'
   | 'HTMLEditor';
 
-const League = types
-  .model({
-    rankingLeagueAgeLimit: types.optional(types.integer, 0),
-    rankingRelayLeagueAgeLimit: types.optional(types.integer, 0),
-    points1000LeagueAgeLimit: types.optional(types.integer, 0),
-    pointsLeagueAgeLimit: types.optional(types.integer, 0),
-  })
-  .views((self) => ({
-    get grandSlamAgeLimit() {
-      return Math.max(
-        self.rankingLeagueAgeLimit,
-        self.rankingRelayLeagueAgeLimit,
-        self.points1000LeagueAgeLimit,
-        self.pointsLeagueAgeLimit
-      );
-    },
-  }));
+interface ILeagueProps {
+  rankingLeagueAgeLimit: number;
+  rankingRelayLeagueAgeLimit: number;
+  points1000LeagueAgeLimit: number;
+  pointsLeagueAgeLimit: number;
+}
+class League implements ILeagueProps {
+  rankingLeagueAgeLimit = 0;
+  rankingRelayLeagueAgeLimit = 0;
+  points1000LeagueAgeLimit = 0;
+  pointsLeagueAgeLimit = 0;
 
-const Logo = types.model({
-  url: types.string,
-  width: types.integer,
-  height: types.integer,
-});
+  constructor(options?: Partial<ILeagueProps>) {
+    options && Object.assign(this, options);
+    makeObservable(this, {
+      rankingLeagueAgeLimit: observable,
+      rankingRelayLeagueAgeLimit: observable,
+      points1000LeagueAgeLimit: observable,
+      pointsLeagueAgeLimit: observable,
+      grandSlamAgeLimit: computed,
+    });
+  }
 
-const Color = types.model({
-  main: types.string,
-  contrastText: types.maybe(types.string),
-});
+  get grandSlamAgeLimit() {
+    return Math.max(
+      this.rankingLeagueAgeLimit,
+      this.rankingRelayLeagueAgeLimit,
+      this.points1000LeagueAgeLimit,
+      this.pointsLeagueAgeLimit
+    );
+  }
+}
 
-const Palette = types.model({
-  primary: Color,
-  secondary: Color,
-  error: Color,
-  contrastThreshold: types.maybe(types.integer),
-  tonalOffset: types.maybe(types.number),
-  type: types.maybe(types.string),
-});
+interface ILogoProps {
+  url: string;
+  width: number;
+  height: number;
+}
 
-const Typography = types.model({
-  fontFamily: types.string,
-  fontSize: types.integer,
-  htmlFontSize: types.maybe(types.integer),
-  useNextVariants: types.optional(types.boolean, true),
-});
+interface IColorProps {
+  main: string;
+  contrastText?: string;
+}
 
-const Theme = types.model({
-  palette: Palette,
-  typography: Typography,
-});
+interface IPaletteProps {
+  primary: IColorProps;
+  secondary: IColorProps;
+  error: IColorProps;
+  contrastThreshold?: number;
+  tonalOffset?: number;
+  type?: string;
+}
 
-const Link = types.model({
-  name: types.string,
-  url: types.string,
-});
+interface ITypographyProps {
+  fontFamily: string;
+  fontSize: number;
+  htmlFontSize?: number;
+  useNextVariants?: boolean;
+}
 
-const Module = types
-  .model({
-    name: types.string,
-    addUrl: types.maybe(types.string),
-    deleteUrl: types.maybe(types.string),
-    updateUrl: types.maybe(types.string),
-    queryUrl: types.maybe(types.string),
-    league: types.optional(League, {}),
-  })
-  .views((self) => ({
-    get hasSubMenus() {
-      return (
-        self.name !== 'Eventor' &&
-        self.name !== 'ScoringBoard' &&
-        self.name !== 'Stars' &&
-        self.name !== 'HTMLEditor' &&
-        self.name !== 'Users'
-      );
-    },
-  }));
-export type IModule = Instance<typeof Module>;
+interface IThemeProps {
+  palette: IPaletteProps;
+  typography: ITypographyProps;
+}
 
-const Sponsor = types.model({
-  name: types.string,
-  logo: Logo,
-  url: types.maybe(types.string),
-  active: types.boolean,
-});
-export type ISponsorSnapshotIn = SnapshotIn<typeof Sponsor>;
+interface ILinkProps {
+  name: string;
+  url: string;
+}
 
-const Eventor = types.model({
-  url: types.optional(types.string, 'https://eventor.orientering.se/Events'),
-  eventsUrl: types.optional(types.string, 'https://eventor.orientering.se/api/events'),
-  organisationUrl: types.optional(types.string, 'https://eventor.orientering.se/api/organisation/'),
-  entryFeeUrl: types.optional(types.string, 'https://eventor.orientering.se/api/entryfees/events/'),
-  entriesUrl: types.optional(types.string, 'https://eventor.orientering.se/api/entries'),
-  startUrl: types.optional(types.string, 'https://eventor.orientering.se/api/starts/organisation'),
-  classesUrl: types.optional(types.string, 'https://eventor.orientering.se/api/eventclasses'),
-  iofResultUrl: types.optional(types.string, 'https://eventor.orientering.se/api/results/event/iofxml'),
-  resultUrl: types.optional(types.string, 'https://eventor.orientering.se/api/results/organisation'),
-  lengthUrl: types.optional(types.string, 'https://eventor.orientering.se/Events/StartList'),
-  competitorsUrl: types.optional(types.string, 'https://eventor.orientering.se/api/competitors'),
-  personResultUrl: types.optional(types.string, 'https://eventor.orientering.se/api/results/person'),
-  externalLoginUrl: types.optional(types.string, 'https://eventor.orientering.se/api/externalLoginUrl'),
-  organisationId: types.integer,
-  districtOrganisationId: types.integer,
-  oRingenOrganisationId: types.optional(types.integer, 611),
-});
+interface IModuleProps {
+  name: string;
+  addUrl?: string;
+  deleteUrl?: string;
+  updateUrl?: string;
+  queryUrl?: string;
+  league?: ILeagueProps;
+}
 
-const Extent = types.model({
-  xmin: types.number,
-  ymin: types.number,
-  xmax: types.number,
-  ymax: types.number,
-});
-type IExtent = SnapshotOrInstance<typeof Extent>;
+export interface IModule extends Omit<IModuleProps, 'league'> {
+  league: League;
+  hasSubMenus: boolean;
+}
 
-const MapTileLayer = types
-  .model({
-    type: types.literal('base-tile'),
-    id: types.string,
-    title: types.string,
-    visible: types.optional(types.boolean, true),
-    urlTemplate: types.string,
-    minZoomLevel: types.optional(types.number, 2),
-    maxZoomLevel: types.optional(types.number, 17),
-    fullExtent: Extent,
-    zoomExtent: types.maybe(Extent),
-  })
-  .views((self) => ({
-    getByLayerId(id: string) {
-      if (self.id === id) return self;
-      return undefined;
-    },
-  }));
+class Module implements IModule {
+  name = '';
+  addUrl?: string;
+  deleteUrl?: string;
+  updateUrl?: string;
+  queryUrl?: string;
+  league: League;
 
-const AnyLayer = types.union({
-  eager: false,
-  dispatcher: (snapshot): IAnyModelType => (snapshot.type === 'group' ? MapGroupLayer : MapTileLayer),
-});
+  constructor(options: PickRequired<IModuleProps, 'name'>) {
+    if (options) {
+      const { league, ...rest } = options;
+      Object.assign(this, rest);
+      this.league = new League(league);
+    } else {
+      this.league = new League();
+    }
 
-const MapGroupLayer = types
-  .model({
-    type: types.literal('group'),
-    id: types.string,
-    title: types.string,
-    visible: types.optional(types.boolean, true),
-    layers: types.array(AnyLayer),
-  })
-  .views((self) => ({
-    get fullExtent(): IExtent {
-      const extent: IExtent = {
-        xmin: 99999999999999,
-        ymin: 99999999999999,
-        xmax: -99999999999999,
-        ymax: -99999999999999,
-      };
-      self.layers.forEach((layer) => {
-        if (extent.xmin > layer.fullExtent.xmin) extent.xmin = layer.fullExtent.xmin;
-        if (extent.ymin > layer.fullExtent.ymin) extent.ymin = layer.fullExtent.ymin;
-        if (extent.xmax < layer.fullExtent.xmax) extent.xmax = layer.fullExtent.xmax;
-        if (extent.ymax < layer.fullExtent.ymax) extent.ymax = layer.fullExtent.ymax;
-      });
-      return extent;
-    },
-    getByLayerId(id: string) {
-      if (self.id === id) return self;
-      for (let i = 0; i < self.layers.length; i++) {
-        const layer = self.layers[i].getByLayerId(id);
-        if (layer) return layer;
-      }
-    },
-  }));
+    makeObservable(this, {
+      name: observable,
+      addUrl: observable,
+      deleteUrl: observable,
+      updateUrl: observable,
+      queryUrl: observable,
+      league: observable,
+      hasSubMenus: computed,
+    });
+  }
 
-const Map = types
-  .model({
-    center: types.array(types.number),
-    defaultZoomLevel: types.optional(types.integer, 0),
-    minZoomLevel: types.optional(types.number, 2),
-    maxZoomLevel: types.optional(types.number, 17),
-    layers: types.array(AnyLayer),
-  })
-  .views((self) => ({
-    getLayerFullExtent(id: string): IExtent | undefined {
-      for (let i = 0; i < self.layers.length; i++) {
-        const layer = self.layers[i].getByLayerId(id);
-        if (layer) return layer.fullExtent.toJSON();
-      }
-      return undefined;
-    },
-  }));
+  get hasSubMenus() {
+    return (
+      this.name !== 'Eventor' &&
+      this.name !== 'ScoringBoard' &&
+      this.name !== 'Stars' &&
+      this.name !== 'HTMLEditor' &&
+      this.name !== 'Users'
+    );
+  }
+}
 
-export type IAnyLayer = Instance<typeof AnyLayer>;
+export interface ISponsorProps {
+  name: string;
+  logo: ILogoProps;
+  url?: string;
+  active: boolean;
+}
 
-export const MobxClubModel = types
-  .model({
-    title: types.string,
-    titleLogo: types.maybe(Logo),
-    map: types.maybe(Map),
-    defaultLanguage: types.enumeration('Lang', ['sv', 'en']),
-    logo: Logo,
-    attachmentUrl: types.optional(types.string, '/showfile.php?iFileID='),
-    loginUrl: types.optional(types.string, '/log_in.php'),
-    logoutUrl: types.optional(types.string, '/log_out.php'),
-    theme: Theme,
-    modules: types.array(Module),
-    links: types.array(Link),
-    sports: types.array(types.string),
-    eventor: types.maybe(Eventor),
-    raceClubs: types.maybe(RaceClubs),
-    corsProxy: types.maybe(types.string),
-    eventorCorsProxy: types.maybe(types.string),
-    oldUrl: types.maybe(types.string),
-    sponsors: types.array(Sponsor),
-    facebookUrl: types.maybe(types.string),
-  })
-  .actions((self) => ({
-    setRaceClubs(raceClubs: IRaceClubsSnapshotIn) {
-      const selectedClub = raceClubs.clubs?.find((club) => club.eventorOrganisationId === self.eventor?.organisationId);
-      self.raceClubs = cast({ ...raceClubs, selectedClub: selectedClub?.clubId as any });
-    },
-  }))
-  .views((self) => ({
-    module(name: ModuleNameTypes) {
-      const module = self.modules.find((module) => module.name === name);
-      return module ? module : {};
-    },
-  }));
-export type IMobxClubModel = Instance<typeof MobxClubModel>;
-export type IMobxClubModelSnapshotIn = SnapshotIn<typeof MobxClubModel>;
+interface IEventorProps {
+  url?: string;
+  eventsUrl?: string;
+  organisationUrl?: string;
+  entryFeeUrl?: string;
+  entriesUrl?: string;
+  startUrl?: string;
+  classesUrl?: string;
+  iofResultUrl?: string;
+  resultUrl?: string;
+  lengthUrl?: string;
+  competitorsUrl?: string;
+  personResultUrl?: string;
+  externalLoginUrl?: string;
+  organisationId: number;
+  districtOrganisationId: number;
+  oRingenOrganisationId?: number;
+}
+
+class Eventor implements IEventorProps {
+  url = 'https://eventor.orientering.se/Events';
+  eventsUrl = 'https://eventor.orientering.se/api/events';
+  organisationUrl = 'https://eventor.orientering.se/api/organisation/';
+  entryFeeUrl = 'https://eventor.orientering.se/api/entryfees/events/';
+  entriesUrl = 'https://eventor.orientering.se/api/entries';
+  startUrl = 'https://eventor.orientering.se/api/starts/organisation';
+  classesUrl = 'https://eventor.orientering.se/api/eventclasses';
+  iofResultUrl = 'https://eventor.orientering.se/api/results/event/iofxml';
+  resultUrl = 'https://eventor.orientering.se/api/results/organisation';
+  lengthUrl = 'https://eventor.orientering.se/Events/StartList';
+  competitorsUrl = 'https://eventor.orientering.se/api/competitors';
+  personResultUrl = 'https://eventor.orientering.se/api/results/person';
+  externalLoginUrl = 'https://eventor.orientering.se/api/externalLoginUrl';
+  organisationId = 0;
+  districtOrganisationId = 0;
+  oRingenOrganisationId = 611;
+
+  constructor(options?: Partial<IEventorProps>) {
+    options && Object.assign(this, options);
+  }
+}
+
+interface IExtentProps {
+  xmin: number;
+  ymin: number;
+  xmax: number;
+  ymax: number;
+}
+
+export interface IMapTileLayerProps {
+  type: 'base-tile';
+  id: string;
+  title: string;
+  visible?: boolean;
+  urlTemplate: string;
+  minZoomLevel?: number;
+  maxZoomLevel?: number;
+  fullExtent: IExtentProps;
+  zoomExtent?: IExtentProps;
+}
+
+class MapTileLayer implements IMapTileLayerProps {
+  readonly type = 'base-tile';
+  id = '';
+  title = '';
+  visible = true;
+  urlTemplate = '';
+  minZoomLevel = 2;
+  maxZoomLevel = 17;
+  fullExtent: IExtentProps = {
+    xmin: 0,
+    ymin: 0,
+    xmax: 0,
+    ymax: 0,
+  };
+  zoomExtent?: IExtentProps;
+
+  constructor(options: PickRequired<IMapTileLayerProps, 'id' | 'title' | 'urlTemplate' | 'fullExtent'>) {
+    Object.assign(this, options);
+
+    makeObservable(this, {
+      id: observable,
+      title: observable,
+      visible: observable,
+      urlTemplate: observable,
+      minZoomLevel: observable,
+      maxZoomLevel: observable,
+      fullExtent: observable,
+      zoomExtent: observable,
+    });
+  }
+}
+
+interface IMapGroupLayerProps {
+  type: 'group';
+  id: string;
+  title: string;
+  visible?: boolean;
+  layers: IAnyLayerProps[];
+}
+
+export interface IMapGroupLayer extends Omit<IMapGroupLayerProps, 'layers'> {
+  layers: IAnyLayer[];
+  fullExtent: IExtentProps;
+}
+
+class MapGroupLayer implements IMapGroupLayer {
+  readonly type = 'group';
+  id = '';
+  title = '';
+  visible = true;
+  layers: IAnyLayer[] = [];
+
+  constructor(options: PickRequired<IMapGroupLayerProps, 'id' | 'title'>) {
+    if (options) {
+      const { layers, ...rest } = options;
+      Object.assign(this, rest);
+      if (layers)
+        this.layers = layers.map((l) =>
+          l.type === 'base-tile'
+            ? new MapTileLayer(l as IMapTileLayerProps)
+            : new MapGroupLayer(l as IMapGroupLayerProps)
+        );
+    }
+
+    makeObservable(this, {
+      id: observable,
+      title: observable,
+      visible: observable,
+      layers: observable,
+      fullExtent: computed,
+    });
+  }
+
+  get fullExtent(): IExtentProps {
+    const extent: IExtentProps = {
+      xmin: 99999999999999,
+      ymin: 99999999999999,
+      xmax: -99999999999999,
+      ymax: -99999999999999,
+    };
+    this.layers.forEach((layer) => {
+      if (extent.xmin > layer.fullExtent.xmin) extent.xmin = layer.fullExtent.xmin;
+      if (extent.ymin > layer.fullExtent.ymin) extent.ymin = layer.fullExtent.ymin;
+      if (extent.xmax < layer.fullExtent.xmax) extent.xmax = layer.fullExtent.xmax;
+      if (extent.ymax < layer.fullExtent.ymax) extent.ymax = layer.fullExtent.ymax;
+    });
+    return extent;
+  }
+}
+
+type IAnyLayerProps = IMapTileLayerProps | IMapGroupLayerProps;
+export type IAnyLayer = IMapTileLayerProps | IMapGroupLayer;
+
+interface IMapProps {
+  center: number[];
+  defaultZoomLevel?: number;
+  minZoomLevel?: number;
+  maxZoomLevel?: number;
+  layers: IAnyLayerProps[];
+}
+
+interface IMap extends Omit<IMapProps, 'layers' | 'defaultZoomLevel' | 'minZoomLevel' | 'maxZoomLevel'> {
+  layers: IAnyLayer[];
+  defaultZoomLevel: number;
+  minZoomLevel: number;
+  maxZoomLevel: number;
+  getLayerFullExtent: (id: string) => IExtentProps | undefined;
+}
+
+class Map implements IMap {
+  center: number[] = [0, 0];
+  defaultZoomLevel = 0;
+  minZoomLevel = 2;
+  maxZoomLevel = 17;
+  layers: IAnyLayer[] = [];
+
+  constructor(options: Partial<IMapProps>) {
+    if (options) {
+      const { layers, ...rest } = options;
+      Object.assign(this, rest);
+      if (layers)
+        this.layers = layers.map((l) =>
+          l.type === 'base-tile'
+            ? new MapTileLayer(l as IMapTileLayerProps)
+            : new MapGroupLayer(l as IMapGroupLayerProps)
+        );
+    }
+
+    makeObservable(this, {
+      center: observable,
+      defaultZoomLevel: observable,
+      minZoomLevel: observable,
+      maxZoomLevel: observable,
+      layers: observable,
+    });
+  }
+
+  getLayerFullExtent(id: string): IExtentProps | undefined {
+    return this.layers.find((l) => l.id === id)?.fullExtent;
+  }
+}
+
+export interface IMobxClubModelProps {
+  title: string;
+  titleLogo?: ILogoProps;
+  map?: IMapProps;
+  defaultLanguage: 'sv' | 'en';
+  logo: ILogoProps;
+  attachmentUrl: string;
+  loginUrl: string;
+  logoutUrl: string;
+  theme: IThemeProps;
+  modules: IModuleProps[];
+  links: ILinkProps[];
+  sports: string[];
+  eventor?: IEventorProps;
+  raceClubs?: IRaceClubsProps;
+  corsProxy?: string;
+  eventorCorsProxy?: string;
+  oldUrl?: string;
+  sponsors: ISponsorProps[];
+  facebookUrl?: string;
+}
+
+export interface IMobxClubModel extends Omit<IMobxClubModelProps, 'map' | 'modules' | 'raceClubs' | 'eventor'> {
+  map?: IMap;
+  modules: IModule[];
+  raceClubs?: IRaceClubs;
+  eventor?: Eventor;
+  setRaceClubs: (raceClubs: IRaceClubsProps) => void;
+  module: (name: ModuleNameTypes) => IModule | undefined;
+}
+
+export class MobxClubModel implements IMobxClubModel {
+  title = 'sportclub';
+  titleLogo?: ILogoProps;
+  map?: IMap;
+  defaultLanguage: 'sv' | 'en' = 'sv';
+  logo: ILogoProps;
+  attachmentUrl = '/showfile.php?iFileID=';
+  loginUrl = '/log_in.php';
+  logoutUrl = '/log_out.php';
+  theme: IThemeProps;
+  modules: IModule[] = [];
+  links: ILinkProps[] = [];
+  sports: string[] = [];
+  eventor?: Eventor;
+  raceClubs?: IRaceClubs;
+  corsProxy?: string;
+  eventorCorsProxy?: string;
+  oldUrl?: string;
+  sponsors: ISponsorProps[] = [];
+  facebookUrl?: string;
+
+  constructor(options: PickRequired<IMobxClubModelProps, 'title' | 'logo' | 'theme'>) {
+    const { title, logo, theme, map, modules, raceClubs, eventor, ...rest } = options;
+    Object.assign(this, rest);
+    this.title = title;
+    this.logo = logo;
+    this.theme = theme;
+    if (map) this.map = new Map(map);
+    if (modules) this.modules = modules.map((m) => new Module(m));
+    if (raceClubs) this.raceClubs = new RaceClubs(raceClubs);
+    if (eventor) this.eventor = new Eventor(eventor);
+
+    if (options?.theme?.typography.useNextVariants === undefined) this.theme.typography.useNextVariants = true;
+
+    makeObservable(this, {
+      title: observable,
+      titleLogo: observable,
+      map: observable,
+      defaultLanguage: observable,
+      logo: observable,
+      attachmentUrl: observable,
+      loginUrl: observable,
+      logoutUrl: observable,
+      theme: observable,
+      modules: observable,
+      links: observable,
+      sports: observable,
+      eventor: observable,
+      raceClubs: observable,
+      corsProxy: observable,
+      eventorCorsProxy: observable,
+      oldUrl: observable,
+      sponsors: observable,
+      facebookUrl: observable,
+      setRaceClubs: action,
+    });
+  }
+
+  setRaceClubs(raceClubs: IRaceClubsProps) {
+    this.raceClubs = new RaceClubs(raceClubs);
+    this.eventor?.organisationId && this.raceClubs.setSelectedClub(this.eventor.organisationId);
+  }
+
+  module(name: ModuleNameTypes) {
+    return this.modules.find((module) => module.name === name);
+  }
+}

@@ -4,6 +4,8 @@ import { observer } from 'mobx-react';
 import moment from 'moment';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { PostJsonData } from 'utils/api';
+import { dateFormat } from 'utils/formHelper';
 import { useMobxStore } from 'utils/mobxStore';
 import {
   IEventorCompetitorResult,
@@ -18,8 +20,6 @@ import {
 } from 'utils/responseEventorInterfaces';
 import { IEventViewResultResponse } from 'utils/responseInterfaces';
 import { useResultWizardStore } from 'utils/resultWizardStore';
-import { PostJsonData } from '../../utils/api';
-import { dateFormat } from '../../utils/formHelper';
 import { SpinnerDiv, StyledTable } from '../styled/styled';
 
 const flatten = (list: (IEventorEventRace[] | IEventorEventRace)[]): IEventorEventRace[] =>
@@ -87,7 +87,7 @@ const ResultWizardStep1ChooseRace = observer(({ visible, onValidate, onFailed }:
 
       const queryData = {
         iType: 'EVENTS',
-        iClubId: clubModel.raceClubs.selectedClub.clubId,
+        iClubId: clubModel.raceClubs.selectedClub?.clubId,
         iFromDate: moment(raceWizardModel.queryStartDate, dateFormat).add(-7, 'days').format(dateFormat),
         iToDate: moment(raceWizardModel.queryEndDate, dateFormat).add(7, 'days').format(dateFormat),
       };
@@ -105,7 +105,7 @@ const ResultWizardStep1ChooseRace = observer(({ visible, onValidate, onFailed }:
             csurl: encodeURIComponent(
               clubModel.eventor.entriesUrl +
                 '?organisationIds=' +
-                clubModel.raceClubs.selectedClub.eventorOrganisationId +
+                clubModel.raceClubs.selectedClub?.eventorOrganisationId +
                 '&fromEventDate=' +
                 raceWizardModel.queryStartDate +
                 '&toEventDate=' +
@@ -124,7 +124,7 @@ const ResultWizardStep1ChooseRace = observer(({ visible, onValidate, onFailed }:
               csurl: encodeURIComponent(
                 clubModel.eventor?.competitorsUrl +
                   '?organisationId=' +
-                  clubModel.raceClubs?.selectedClub.eventorOrganisationId
+                  clubModel.raceClubs?.selectedClub?.eventorOrganisationId
               ),
             },
             true
@@ -173,7 +173,7 @@ const ResultWizardStep1ChooseRace = observer(({ visible, onValidate, onFailed }:
                         cr.PersonResult.Organisation.OrganisationId === clubModel.eventor?.organisationId.toString() ||
                         (cr.PersonResult.Organisation.OrganisationId ===
                           clubModel.eventor?.districtOrganisationId.toString() &&
-                          clubModel.raceClubs?.selectedClub.competitorByEventorId(
+                          clubModel.raceClubs?.selectedClub?.competitorByEventorId(
                             parseInt(cr.PersonResult.Person.PersonId)
                           ) != null))
                     ) {

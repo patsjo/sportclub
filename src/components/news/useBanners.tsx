@@ -1,6 +1,6 @@
 import { Spin } from 'antd';
 import { IChildContainerProps } from 'components/dashboard/columns/mapNodesToColumns';
-import { INewsItem, INewsItemSnapshotIn, NewsItem } from 'models/newsModel';
+import { INewsItem, INewsItemProps, NewsItem } from 'models/newsModel';
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import styled from 'styled-components';
@@ -32,12 +32,12 @@ const useBanners = () => {
       iNewsTypeID: 10,
     };
 
-    PostJsonData(url, data, false).then((json: INewsItemSnapshotIn[]) => {
+    PostJsonData(url, data, false).then((json: INewsItemProps[]) => {
       const newArray = json != null ? json : [];
       newArray.forEach((newsItem) => {
         newsItem.link = newsItem.link && decodeURIComponent(newsItem.link);
       });
-      setBannerItems(newArray.map((item) => NewsItem.create(item)));
+      setBannerItems(newArray.map((item) => new NewsItem(item)));
       setFirstLoading(false);
       setLoading(false);
     });
@@ -52,10 +52,10 @@ const useBanners = () => {
 
   return !firstLoading
     ? bannerItems.map((newsObject) => (
-        <BannerItem key={'bannerObject#' + newsObject.id} column={-50} newsObject={newsObject} />
+        <BannerItem key={'bannerObject#' + newsObject.id} column={-50} newsObject={newsObject} preferredHeight={100} />
       ))
     : [
-        <SpinnerDiv key="bannerObject#spinner" column={-50}>
+        <SpinnerDiv key="bannerObject#spinner" column={-50} preferredHeight={100}>
           <Spin size="large" />
         </SpinnerDiv>,
       ];

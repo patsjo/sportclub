@@ -1,3 +1,4 @@
+import { TFunction } from 'i18next';
 import { Control } from 'ol/control';
 import { getWidth } from 'ol/extent';
 import Feature from 'ol/Feature';
@@ -10,7 +11,6 @@ import { Vector as VectorSource } from 'ol/source';
 import * as wgs84Sphere from 'ol/sphere';
 import { Circle as CircleStyle, Fill as FillStyle, Icon as IconStyle, Stroke as StrokeStyle, Style } from 'ol/style';
 import View from 'ol/View';
-import { TFunction } from 'react-i18next';
 import { ConvertSecondsToTime, FormatTime } from 'utils/resultHelper';
 import { mapProjection } from './useOpenLayersMap';
 
@@ -133,7 +133,7 @@ export class TrackingControl extends Control {
         })
       );
       this.positionLayer = new VectorLayer({
-        source: new VectorSource({
+        source: new VectorSource<Geometry>({
           features: [this.accuracyFeature, this.positionFeature],
         }),
       });
@@ -267,8 +267,8 @@ export class TrackingControl extends Control {
           geometry: new Point(coord),
         })
     );
-    this.oldPositionsLayer?.getSource().clear();
-    this.oldPositionsLayer?.getSource().addFeatures(features);
+    this.oldPositionsLayer?.getSource()?.clear();
+    this.oldPositionsLayer?.getSource()?.addFeatures(features);
   }
 
   getCenterWithHeading(position: number[], rotation: number, resolution: number) {

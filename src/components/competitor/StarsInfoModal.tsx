@@ -1,7 +1,6 @@
 import { StarOutlined } from '@ant-design/icons';
 import { Modal } from 'antd';
 import { TFunction } from 'i18next';
-import React from 'react';
 import { GenderType } from 'utils/resultConstants';
 import { StyledTable } from '../styled/styled';
 import FiveStars from './FiveStars';

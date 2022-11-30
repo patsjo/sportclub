@@ -1,7 +1,7 @@
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Form, Input, Modal, Switch } from 'antd';
 import { observer } from 'mobx-react';
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { useMobxStore } from 'utils/mobxStore';
@@ -61,7 +61,7 @@ const Login = observer(({ open, onClose }: ILoginProps) => {
       closable={false}
       maskClosable={false}
       title={t('common.Login')}
-      visible={open}
+      open={open}
       okText={t('common.Login')}
       okButtonProps={{ disabled: !valid, loading: loggingIn }}
       cancelText={t('common.Cancel')}

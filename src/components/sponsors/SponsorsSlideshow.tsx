@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react';
-import { ISponsorSnapshotIn } from 'models/mobxClubModel';
+import { ISponsorProps } from 'models/mobxClubModel';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Zoom } from 'react-slideshow-image';
@@ -40,7 +40,7 @@ const SponsorImage = styled.img`
   height: 100px;
 `;
 
-const shuffle = (array: ISponsorSnapshotIn[]) => {
+const shuffle = (array: ISponsorProps[]) => {
   const a = [...array];
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -52,7 +52,7 @@ const shuffle = (array: ISponsorSnapshotIn[]) => {
 const SponsorsSlideshow = observer(() => {
   const { t } = useTranslation();
   const { clubModel } = useMobxStore();
-  const sponsors = React.useMemo<ISponsorSnapshotIn[] | undefined>(
+  const sponsors = React.useMemo<ISponsorProps[] | undefined>(
     () => (clubModel.sponsors ? clubModel.sponsors.filter((s) => s.active) : undefined),
     [clubModel.sponsors]
   );

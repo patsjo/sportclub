@@ -1,14 +1,15 @@
-import { cast, Instance, SnapshotIn, types } from 'mobx-state-tree';
+import { action, computed, makeObservable, observable } from 'mobx';
 import moment from 'moment';
+import { IOption } from 'utils/formHelper';
+import { difficulties, PaymentModelTypes, payments } from 'utils/resultConstants';
 import { ConvertSecondsWithFractionsToTime, GetSecondsWithFractionsPerKiloMeter } from 'utils/resultHelper';
-import { difficulties, payments } from '../utils/resultConstants';
-import { IRaceEventSnapshotIn, RaceEvent } from './resultModel';
+import { IRaceEvent, IRaceEventProps, RaceEvent } from './resultModel';
 
 export interface ILocalStorageRaceWizard {
-  paymentModel: number;
+  paymentModel: PaymentModelTypes;
 }
 
-const setLocalStorage = (raceWizard: IRaceWizardSnapshotIn) => {
+const setLocalStorage = (raceWizard: IRaceWizardProps) => {
   const obj: ILocalStorageRaceWizard = {
     paymentModel: raceWizard.paymentModel,
   };
@@ -16,7 +17,7 @@ const setLocalStorage = (raceWizard: IRaceWizardSnapshotIn) => {
   localStorage.setItem('raceWizard', JSON.stringify(obj));
 };
 
-export const getLocalStorage = (): IRaceWizardSnapshotIn => {
+export const getLocalStorage = (): IRaceWizardProps => {
   const endDate = moment().format('YYYY-MM-DD');
   const startDate = moment().add(-30, 'days').format('YYYY-MM-DD');
   try {
@@ -29,6 +30,13 @@ export const getLocalStorage = (): IRaceWizardSnapshotIn => {
         paymentModel: payments.defaultFee0And100IfNotStarted,
         queryIncludeExisting: false,
         existInEventor: true,
+        eventExistInEventor: false,
+        overwrite: false,
+        queryForEventWithNoEntry: false,
+        queryForCompetitorWithNoClub: false,
+        selectedIsRelay: false,
+        raceWinnerResults: [],
+        importedIds: [],
       };
     }
 
@@ -46,123 +54,229 @@ export const getLocalStorage = (): IRaceWizardSnapshotIn => {
       paymentModel: payments.defaultFee0And100IfNotStarted,
       queryIncludeExisting: false,
       existInEventor: true,
+      eventExistInEventor: false,
+      overwrite: false,
+      queryForEventWithNoEntry: false,
+      queryForCompetitorWithNoClub: false,
+      selectedIsRelay: false,
+      raceWinnerResults: [],
+      importedIds: [],
     };
   }
 };
-const WinnerResult = types
-  .model({
-    id: types.identifierNumber,
-    personName: types.string,
-    className: types.string,
-    difficulty: types.maybeNull(types.string),
-    lengthInMeter: types.maybeNull(types.integer),
-    winnerTime: types.maybeNull(types.string),
-    secondsPerKilometer: types.maybeNull(types.number),
-    timePerKilometer: types.maybeNull(types.string),
-  })
-  .actions((self) => {
-    return {
-      setLengthInMeter(value: number) {
-        self.lengthInMeter = value;
-        self.secondsPerKilometer =
-          self.winnerTime && self.lengthInMeter
-            ? GetSecondsWithFractionsPerKiloMeter(self.winnerTime, self.lengthInMeter) ?? null
-            : null;
-        self.timePerKilometer = self.secondsPerKilometer
-          ? ConvertSecondsWithFractionsToTime(self.secondsPerKilometer)
-          : null;
-      },
-      setDifficulty(value: string) {
-        self.difficulty = value;
-      },
-    };
-  });
-export type IWinnerResultSnapshotIn = SnapshotIn<typeof WinnerResult>;
 
-export const RaceWizard = types
-  .model({
-    queryStartDate: types.string,
-    queryEndDate: types.string,
-    queryIncludeExisting: types.boolean,
-    existInEventor: types.boolean,
-    eventExistInEventor: types.optional(types.boolean, false),
-    overwrite: types.optional(types.boolean, false),
-    queryForEventWithNoEntry: types.optional(types.boolean, false),
-    queryForCompetitorWithNoClub: types.optional(types.boolean, false),
-    paymentModel: types.integer,
-    selectedEventId: types.maybeNull(types.integer),
-    selectedEventorId: types.maybeNull(types.integer),
-    selectedEventorRaceId: types.maybeNull(types.integer),
-    selectedIsRelay: types.optional(types.boolean, false),
-    raceEvent: types.maybeNull(RaceEvent),
-    raceWinnerResults: types.array(WinnerResult),
-    importedIds: types.optional(types.array(types.integer), []),
-  })
-  .actions((self) => {
-    return {
-      setStringValue(key: 'queryStartDate' | 'queryEndDate', value: string) {
-        self[key] = value;
-        setLocalStorage(self);
-      },
-      setBooleanValue(
-        key:
-          | 'queryIncludeExisting'
-          | 'existInEventor'
-          | 'eventExistInEventor'
-          | 'overwrite'
-          | 'queryForEventWithNoEntry'
-          | 'queryForCompetitorWithNoClub'
-          | 'selectedIsRelay',
-        value: boolean
-      ) {
-        self[key] = value;
-        setLocalStorage(self);
-      },
-      setNumberValue(key: 'paymentModel', value: number) {
-        self[key] = value;
-        setLocalStorage(self);
-      },
-      setNumberValueOrNull(
-        key: 'selectedEventId' | 'selectedEventorId' | 'selectedEventorRaceId',
-        value?: number | null
-      ) {
-        self[key] = value != null ? value : null;
-        setLocalStorage(self);
-      },
-      setRaceEvent(value: IRaceEventSnapshotIn | null) {
-        self.raceEvent = value == null ? null : cast(value);
-        setLocalStorage(self);
-      },
-      setRaceWinnerResults(value: IWinnerResultSnapshotIn[]) {
-        self.raceWinnerResults = cast(value);
-        setLocalStorage(self);
-      },
-      addImportedId(id: number) {
-        self.importedIds = cast([...self.importedIds, id]);
-      },
-    };
-  })
-  .views((self) => ({
-    get raceWinnerResultOptions() {
-      return self.raceWinnerResults
-        .slice()
-        .sort((a, b) => {
-          if (a.difficulty === difficulties.black && b.difficulty !== difficulties.black) {
-            return -1;
-          } else if (a.difficulty !== difficulties.black && b.difficulty === difficulties.black) {
-            return 1;
-          }
+export interface IWinnerResultProps {
+  id: number;
+  personName: string;
+  className: string;
+  difficulty?: string | null;
+  lengthInMeter?: number | null;
+  winnerTime?: string;
+  secondsPerKilometer?: number;
+  timePerKilometer?: string;
+}
 
-          if (a.secondsPerKilometer && b.secondsPerKilometer && a.secondsPerKilometer < b.secondsPerKilometer) {
-            return -1;
-          }
+export interface IWinnerResult extends IWinnerResultProps {
+  setLengthInMeter: (value: number) => void;
+  setDifficulty: (value: string) => void;
+}
+
+class WinnerResult implements IWinnerResult {
+  id = -1;
+  personName = '';
+  className = '';
+  difficulty?: string;
+  lengthInMeter?: number;
+  winnerTime?: string;
+  secondsPerKilometer?: number;
+  timePerKilometer?: string;
+
+  constructor(options: IWinnerResultProps) {
+    options && Object.assign(this, options);
+    makeObservable(this, {
+      id: observable,
+      personName: observable,
+      className: observable,
+      difficulty: observable,
+      lengthInMeter: observable,
+      winnerTime: observable,
+      secondsPerKilometer: observable,
+      timePerKilometer: observable,
+      setLengthInMeter: action,
+      setDifficulty: action,
+    });
+  }
+
+  setLengthInMeter(value: number) {
+    this.lengthInMeter = value;
+    this.secondsPerKilometer =
+      this.winnerTime && this.lengthInMeter
+        ? GetSecondsWithFractionsPerKiloMeter(this.winnerTime, this.lengthInMeter) ?? undefined
+        : undefined;
+    this.timePerKilometer = this.secondsPerKilometer
+      ? ConvertSecondsWithFractionsToTime(this.secondsPerKilometer)
+      : undefined;
+  }
+
+  setDifficulty(value: string) {
+    this.difficulty = value;
+  }
+}
+
+interface IRaceWizardProps {
+  queryStartDate: string;
+  queryEndDate: string;
+  queryIncludeExisting: boolean;
+  existInEventor: boolean;
+  eventExistInEventor: boolean;
+  overwrite: boolean;
+  queryForEventWithNoEntry: boolean;
+  queryForCompetitorWithNoClub: boolean;
+  paymentModel: PaymentModelTypes;
+  selectedEventId?: number;
+  selectedEventorId?: number;
+  selectedEventorRaceId?: number;
+  selectedIsRelay: boolean;
+  raceEvent?: IRaceEventProps;
+  raceWinnerResults: IWinnerResultProps[];
+  importedIds: number[];
+}
+
+export interface IRaceWizard extends Omit<IRaceWizardProps, 'raceEvent' | 'raceWinnerResults'> {
+  raceEvent?: IRaceEvent;
+  raceWinnerResults: IWinnerResult[];
+  setStringValue: (key: 'queryStartDate' | 'queryEndDate', value: string) => void;
+  setBooleanValue: (
+    key:
+      | 'queryIncludeExisting'
+      | 'existInEventor'
+      | 'eventExistInEventor'
+      | 'overwrite'
+      | 'queryForEventWithNoEntry'
+      | 'queryForCompetitorWithNoClub'
+      | 'selectedIsRelay',
+    value: boolean
+  ) => void;
+  setNumberValue: (key: 'paymentModel', value: PaymentModelTypes) => void;
+  setNumberValueOrNull: (
+    key: 'selectedEventId' | 'selectedEventorId' | 'selectedEventorRaceId',
+    value?: number | null
+  ) => void;
+  setRaceEvent: (value: IRaceEventProps | null) => void;
+  setRaceWinnerResults: (values: IWinnerResultProps[]) => void;
+  addImportedId: (id: number) => void;
+  raceWinnerResultOptions: IOption[];
+}
+
+export class RaceWizard implements IRaceWizard {
+  queryStartDate = '';
+  queryEndDate = '';
+  queryIncludeExisting = false;
+  existInEventor = false;
+  eventExistInEventor = false;
+  overwrite = false;
+  queryForEventWithNoEntry = false;
+  queryForCompetitorWithNoClub = false;
+  paymentModel: PaymentModelTypes = 0;
+  selectedEventId?: number;
+  selectedEventorId?: number;
+  selectedEventorRaceId?: number;
+  selectedIsRelay = false;
+  raceEvent?: IRaceEvent;
+  raceWinnerResults: IWinnerResult[] = [];
+  importedIds: number[] = [];
+
+  constructor(options: Partial<IRaceWizardProps>) {
+    options && Object.assign(this, options);
+    makeObservable(this, {
+      queryStartDate: observable,
+      queryEndDate: observable,
+      queryIncludeExisting: observable,
+      existInEventor: observable,
+      eventExistInEventor: observable,
+      overwrite: observable,
+      queryForEventWithNoEntry: observable,
+      queryForCompetitorWithNoClub: observable,
+      selectedEventId: observable,
+      selectedEventorId: observable,
+      selectedEventorRaceId: observable,
+      selectedIsRelay: observable,
+      raceEvent: observable,
+      raceWinnerResults: observable,
+      importedIds: observable,
+      setStringValue: action,
+      setBooleanValue: action,
+      setNumberValue: action,
+      setNumberValueOrNull: action,
+      setRaceEvent: action,
+      setRaceWinnerResults: action,
+      addImportedId: action,
+      raceWinnerResultOptions: computed,
+    });
+  }
+
+  setStringValue(key: 'queryStartDate' | 'queryEndDate', value: string) {
+    this[key] = value;
+    setLocalStorage(this);
+  }
+
+  setBooleanValue(
+    key:
+      | 'queryIncludeExisting'
+      | 'existInEventor'
+      | 'eventExistInEventor'
+      | 'overwrite'
+      | 'queryForEventWithNoEntry'
+      | 'queryForCompetitorWithNoClub'
+      | 'selectedIsRelay',
+    value: boolean
+  ) {
+    this[key] = value;
+    setLocalStorage(this);
+  }
+
+  setNumberValue(key: 'paymentModel', value: PaymentModelTypes) {
+    this[key] = value;
+    setLocalStorage(this);
+  }
+
+  setNumberValueOrNull(key: 'selectedEventId' | 'selectedEventorId' | 'selectedEventorRaceId', value?: number | null) {
+    this[key] = value != null ? value : undefined;
+    setLocalStorage(this);
+  }
+
+  setRaceEvent(value: IRaceEventProps | null) {
+    this.raceEvent = value == null ? undefined : new RaceEvent(value);
+    setLocalStorage(this);
+  }
+
+  setRaceWinnerResults(values: IWinnerResultProps[]) {
+    this.raceWinnerResults = values.map((value) => new WinnerResult(value));
+    setLocalStorage(this);
+  }
+
+  addImportedId(id: number) {
+    this.importedIds = [...this.importedIds, id];
+  }
+
+  get raceWinnerResultOptions() {
+    return this.raceWinnerResults
+      .slice()
+      .sort((a, b) => {
+        if (a.difficulty === difficulties.black && b.difficulty !== difficulties.black) {
+          return -1;
+        } else if (a.difficulty !== difficulties.black && b.difficulty === difficulties.black) {
           return 1;
-        })
-        .map((wr) => ({
-          code: JSON.stringify(wr),
-          description: `${wr.timePerKilometer}, ${wr.className}, ${wr.personName}`,
-        }));
-    },
-  }));
-export type IRaceWizard = Instance<typeof RaceWizard>;
-type IRaceWizardSnapshotIn = SnapshotIn<typeof RaceWizard>;
+        }
+
+        if (a.secondsPerKilometer && b.secondsPerKilometer && a.secondsPerKilometer < b.secondsPerKilometer) {
+          return -1;
+        }
+        return 1;
+      })
+      .map((wr) => ({
+        code: JSON.stringify(wr),
+        description: `${wr.timePerKilometer}, ${wr.className}, ${wr.personName}`,
+      }));
+  }
+}

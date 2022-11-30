@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react';
-import React, { useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMobxStore } from 'utils/mobxStore';
 import { GetJsonData } from '../../utils/api';

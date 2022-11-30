@@ -2,16 +2,15 @@ import { LeftOutlined, PlusOutlined, RightOutlined } from '@ant-design/icons';
 import { Button, message, Modal, Popconfirm, Spin, Steps } from 'antd';
 import { FormInstance } from 'antd/lib/form';
 import { ModalFuncProps } from 'antd/lib/modal';
+import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
-import { getSnapshot } from 'mobx-state-tree';
-import { IRaceClubsSnapshotIn } from 'models/resultModel';
+import { IRaceClubsProps } from 'models/resultModel';
+import { getLocalStorage, IRaceWizard, RaceWizard } from 'models/resultWizardModel';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
+import { PostJsonData } from 'utils/api';
 import { useMobxStore } from 'utils/mobxStore';
-import { ResultWizardStoreProvider } from 'utils/resultWizardStore';
-import { getLocalStorage, RaceWizard } from '../../models/resultWizardModel';
-import { PostJsonData } from '../../utils/api';
 import {
   difficulties,
   distances,
@@ -19,7 +18,7 @@ import {
   LightConditionTypes,
   PaymentTypes,
   SportCodeTypes,
-} from '../../utils/resultConstants';
+} from 'utils/resultConstants';
 import {
   ConvertSecondsToTime,
   ConvertTimeToSeconds,
@@ -27,7 +26,8 @@ import {
   GetRaceOldPoint,
   GetRacePoint,
   GetRanking,
-} from '../../utils/resultHelper';
+} from 'utils/resultHelper';
+import { ResultWizardStoreProvider } from 'utils/resultWizardStore';
 import { SpinnerDiv, StyledIcon } from '../styled/styled';
 import { ConfirmOverwriteOrEdit } from './ConfirmOverwriteOrEditPromise';
 import EditResultIndividual, { IExtendedRaceResult } from './EditResultIndividual';
@@ -54,7 +54,7 @@ interface IResultsWizardModalProps {
 const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps) => {
   const { t } = useTranslation();
   const { clubModel, sessionModel } = useMobxStore();
-  const raceWizardModel = useRef(RaceWizard.create(getLocalStorage()));
+  const raceWizardModel = useRef<IRaceWizard>(new RaceWizard(getLocalStorage()));
   const [wizardStep, setWizardStep] = useState(-1);
   const [nextStepValid, setNextStepValid] = useState(true);
   const [inputForm, setInputForm] = useState<FormInstance>();
@@ -285,7 +285,7 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
       );
     });
 
-    const snapshot = getSnapshot(raceEvent);
+    const snapshot = toJS(raceEvent);
 
     PostJsonData(
       saveUrl,
@@ -334,7 +334,7 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
       true,
       sessionModel.authorizationHeader
     )
-      .then((clubsJson: IRaceClubsSnapshotIn) => {
+      .then((clubsJson: IRaceClubsProps) => {
         clubModel.setRaceClubs(clubsJson);
         setWizardStep(0);
         setLoaded(true);
@@ -351,7 +351,7 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
         closable={false}
         maskClosable={false}
         title={t('results.Add')}
-        visible={open}
+        open={open}
         onCancel={onClose}
         width="calc(100% - 80px)"
         style={{ top: 40, minWidth: 1250 }}
@@ -418,7 +418,7 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
                       }
                       result={resultObject}
                       results={raceWizardModel.current.raceEvent.results}
-                      competitorsOptions={clubModel.raceClubs.selectedClub.competitorsOptions}
+                      competitorsOptions={clubModel.raceClubs.selectedClub?.competitorsOptions ?? []}
                       onValidate={(valid) =>
                         confirmModal.update({
                           okButtonProps: {
@@ -438,7 +438,7 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
                       raceLightCondition={raceWizardModel.current.raceEvent.raceLightCondition as LightConditionTypes}
                       result={teamResultObject}
                       results={raceWizardModel.current.raceEvent.teamResults}
-                      competitorsOptions={clubModel.raceClubs.selectedClub.competitorsOptions}
+                      competitorsOptions={clubModel.raceClubs.selectedClub?.competitorsOptions ?? []}
                       onValidate={(valid) =>
                         confirmModal.update({
                           okButtonProps: {

@@ -1,8 +1,7 @@
 import { MaterialIconsType } from 'components/materialIcon/MaterialIcon';
 import { observer } from 'mobx-react';
-import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useMobxStore } from 'utils/mobxStore';
 import DrawerRightMenu from '../menu/DrawerRightMenu';
@@ -26,7 +25,7 @@ const WideToolbarHolder = styled.div`
 const Toolbar = observer(() => {
   const { t } = useTranslation();
   const { clubModel, globalStateModel } = useMobxStore();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   return (
     <ToolbarHolder>
@@ -51,13 +50,13 @@ const Toolbar = observer(() => {
                   }
                   break;
                 case 'News':
-                  globalStateModel.setDashboard(history, '/news', '1900-01-01', '2099-12-31');
+                  globalStateModel.setDashboard(navigate, '/news', '1900-01-01', '2099-12-31');
                   break;
                 case 'ScoringBoard':
-                  globalStateModel.setDashboard(history, '/league');
+                  globalStateModel.setDashboard(navigate, '/league');
                   break;
                 case 'Stars':
-                  globalStateModel.setDashboard(history, '/competitor/presentation');
+                  globalStateModel.setDashboard(navigate, '/competitor/presentation');
                   break;
                 default:
                   return null;

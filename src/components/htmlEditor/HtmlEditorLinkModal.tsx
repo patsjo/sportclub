@@ -6,7 +6,6 @@ import { TFunction } from 'i18next';
 import { IGlobalStateModel } from 'models/globalStateModel';
 import { IMobxClubModel } from 'models/mobxClubModel';
 import { ISessionModel } from 'models/sessionModel';
-import React from 'react';
 import { PostJsonData } from '../../utils/api';
 import { errorRequiredField, hasErrors } from '../../utils/formHelper';
 import FormItem from '../formItems/FormItem';

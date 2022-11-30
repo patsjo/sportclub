@@ -8,7 +8,7 @@ interface IResultWizardStore {
 }
 
 const ResultWizardStoreContext = React.createContext<IResultWizardStore>({
-  raceWizardModel: RaceWizard.create({
+  raceWizardModel: new RaceWizard({
     queryStartDate: moment().startOf('year').format('YYYY-MM-DD'),
     queryEndDate: moment().format('YYYY-MM-DD'),
     paymentModel: payments.defaultFee0And100IfNotStarted,

@@ -1,15 +1,15 @@
 import { IPersonRaceResult, IPersonResult, ITeamMemberRaceResult, ITeamMemberResult } from 'models/iof.xsd-3.0';
 import {
-  IRaceClassClassificationSnapshotIn,
-  IRaceClassLevelSnapshotIn,
+  IRaceClassClassificationProps,
+  IRaceClassLevelProps,
   IRaceClub,
   IRaceClubs,
   IRaceEvent,
-  IRaceEventClassificationSnapshotIn,
+  IRaceEventClassificationProps,
   IRaceResult,
-  IRaceResultSnapshotIn,
+  IRaceResultProps,
   IRaceTeamResult,
-  IRaceTeamResultSnapshotIn,
+  IRaceTeamResultProps,
 } from 'models/resultModel';
 import moment from 'moment';
 import { timeFormat } from './formHelper';
@@ -247,9 +247,9 @@ export const GetSecondsWithFractionsPerKiloMeter = (timeString: string, length: 
 };
 
 export const GetRacePoint = (
-  raceEventClassification: IRaceEventClassificationSnapshotIn,
-  raceClassClassification: IRaceClassClassificationSnapshotIn,
-  result: IRaceResultSnapshotIn
+  raceEventClassification: IRaceEventClassificationProps,
+  raceClassClassification: IRaceClassClassificationProps,
+  result: IRaceResultProps
 ): number | null => {
   const basePoint =
     raceEventClassification.basePoint -
@@ -283,9 +283,9 @@ export const GetRacePoint = (
 };
 
 export const GetRaceOldPoint = (
-  raceEventClassification: IRaceEventClassificationSnapshotIn,
-  raceClassClassification: IRaceClassClassificationSnapshotIn,
-  result: IRaceResultSnapshotIn
+  raceEventClassification: IRaceEventClassificationProps,
+  raceClassClassification: IRaceClassClassificationProps,
+  result: IRaceResultProps
 ): number | null => {
   if (
     result.failedReason ||
@@ -321,9 +321,9 @@ export const GetRaceOldPoint = (
 };
 
 export const GetPointRunTo1000 = (
-  raceEventClassification: IRaceEventClassificationSnapshotIn,
-  raceClassClassification: IRaceClassClassificationSnapshotIn,
-  result: IRaceResultSnapshotIn | IRaceTeamResultSnapshotIn
+  raceEventClassification: IRaceEventClassificationProps,
+  raceClassClassification: IRaceClassClassificationProps,
+  result: IRaceResultProps | IRaceTeamResultProps
 ): number | null => {
   const basePoint = raceEventClassification.base1000Point - raceClassClassification.decreaseBase1000Point;
 
@@ -351,8 +351,8 @@ export const GetPointRunTo1000 = (
 
 export const ResetClassClassifications = (
   raceEvent: IRaceEvent,
-  eventClassifications: IRaceEventClassificationSnapshotIn[] | null | undefined,
-  classLevels: IRaceClassLevelSnapshotIn[]
+  eventClassifications: IRaceEventClassificationProps[] | null | undefined,
+  classLevels: IRaceClassLevelProps[]
 ) => {
   let results: IRaceResult[] | IRaceTeamResult[] = [];
   if (raceEvent.results && raceEvent.results.length > 0) {
@@ -378,9 +378,9 @@ export const ResetClassClassifications = (
 
 export const GetCompetitorFee = (
   paymentModel: PaymentTypes,
-  result: IRaceResultSnapshotIn,
+  result: IRaceResultProps,
   age: number | null,
-  classClassification: IRaceClassClassificationSnapshotIn | undefined
+  classClassification: IRaceClassClassificationProps | undefined
 ): number => {
   if (result.originalFee == null || result.lateFee == null) {
     return 0;
@@ -414,7 +414,7 @@ export const GetCompetitorFee = (
 export const CalculateCompetitorsFee = (
   raceEvent: IRaceEvent,
   selectedClub: IRaceClub,
-  eventClassifications: IRaceEventClassificationSnapshotIn[]
+  eventClassifications: IRaceEventClassificationProps[]
 ) => {
   if (raceEvent.results && raceEvent.results.length > 0) {
     raceEvent.results.forEach((result) => {
@@ -471,8 +471,8 @@ export const GetClassShortName = (className?: string | null): string | null => {
 
 export const GetClassClassificationId = (
   eventClassificationId: EventClassificationIdTypes | null | undefined,
-  classLevel: IRaceClassLevelSnapshotIn | null | undefined,
-  eventClassifications: IRaceEventClassificationSnapshotIn[] | null | undefined
+  classLevel: IRaceClassLevelProps | null | undefined,
+  eventClassifications: IRaceEventClassificationProps[] | null | undefined
 ): number | null => {
   if (!eventClassificationId || !classLevel || !eventClassifications) {
     return null;
@@ -498,9 +498,9 @@ export const GetClassClassificationId = (
 };
 
 export const GetAward = (
-  raceEventClassification: IRaceEventClassificationSnapshotIn,
-  classLevels: IRaceClassLevelSnapshotIn[],
-  result: IRaceResultSnapshotIn,
+  raceEventClassification: IRaceEventClassificationProps,
+  classLevels: IRaceClassLevelProps[],
+  result: IRaceResultProps,
   competitorAge: number | null,
   isSprint: boolean
 ): AwardTypes | null => {
@@ -684,7 +684,7 @@ export const CalculateAllAwards = (raceClubs: IRaceClubs, raceEvent: IRaceEvent)
   );
   if (raceEventClassification)
     raceEvent.results?.forEach((result) => {
-      const competitor = raceClubs.selectedClub.competitorById(result.competitorId);
+      const competitor = raceClubs.selectedClub?.competitorById(result.competitorId);
       const age = competitor && raceEvent.raceDate ? GetAge(competitor.birthDay, raceEvent.raceDate) : 21;
 
       result.setCalculatedAward(
@@ -704,7 +704,7 @@ export const CalculateAllAwards = (raceClubs: IRaceClubs, raceEvent: IRaceEvent)
 export const GetRanking = (
   rankingBasetimePerKilometer: string,
   rankingBasepoint: number,
-  result: IRaceResultSnapshotIn | IRaceTeamResultSnapshotIn,
+  result: IRaceResultProps | IRaceTeamResultProps,
   sportCode: SportCodeTypes,
   raceLightCondition: LightConditionTypes
 ): number | null => {

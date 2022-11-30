@@ -1,4 +1,4 @@
-import { cast, Instance, SnapshotIn, types } from 'mobx-state-tree';
+import { action, makeObservable, observable } from 'mobx';
 import moment from 'moment';
 
 export interface ILocalStorageEventSelectorWizard {
@@ -18,7 +18,7 @@ const setLocalStorage = (eventSelectorWizard: ILocalStorageEventSelectorWizard) 
   localStorage.setItem('eventSelectorWizard', JSON.stringify(obj));
 };
 
-export const getLocalStorage = (): IEventSelectorWizardSnapshotIn => {
+export const getLocalStorage = (): IEventSelectorWizardProps => {
   const startDate = moment().startOf('year').format('YYYY-MM-DD');
   const endDate = moment().endOf('year').format('YYYY-MM-DD');
   try {
@@ -29,6 +29,7 @@ export const getLocalStorage = (): IEventSelectorWizardSnapshotIn => {
       queryEndDate: endDate,
       maxDistanceDistrict: 140,
       maxDistanceNearbyAndClub: 80,
+      selectedEvents: [],
       ...(eventSelectorWizardData ? (JSON.parse(eventSelectorWizardData) as ILocalStorageEventSelectorWizard) : {}),
     };
   } catch (error) {
@@ -37,54 +38,85 @@ export const getLocalStorage = (): IEventSelectorWizardSnapshotIn => {
       queryEndDate: endDate,
       maxDistanceDistrict: 140,
       maxDistanceNearbyAndClub: 80,
+      selectedEvents: [],
     };
   }
 };
-const SelectedEvent = types.model({
-  calendarEventId: types.identifierNumber,
-  eventorId: types.maybeNull(types.integer),
-  eventorRaceId: types.maybeNull(types.integer),
-  name: types.maybeNull(types.string),
-  organiserName: types.maybeNull(types.string),
-  raceDate: types.maybeNull(types.string),
-  raceTime: types.maybeNull(types.string),
-  longitude: types.maybeNull(types.number),
-  latitude: types.maybeNull(types.number),
-  distanceKm: types.maybeNull(types.integer),
-});
-type ISelectedEventSnapshotIn = SnapshotIn<typeof SelectedEvent>;
 
-export const EventSelectorWizard = types
-  .model({
-    queryStartDate: types.string,
-    queryEndDate: types.string,
-    maxDistanceDistrict: types.integer,
-    maxDistanceNearbyAndClub: types.integer,
-    selectedEvents: types.array(SelectedEvent),
-  })
-  .actions((self) => {
-    return {
-      setQueryStartDate(value: string) {
-        self.queryStartDate = value;
-        setLocalStorage(self);
-      },
-      setQueryEndDate(value: string) {
-        self.queryEndDate = value;
-        setLocalStorage(self);
-      },
-      setMaxDistanceDistrict(value: number) {
-        self.maxDistanceDistrict = value;
-        setLocalStorage(self);
-      },
-      setMaxDistanceNearbyAndClub(value: number) {
-        self.maxDistanceNearbyAndClub = value;
-        setLocalStorage(self);
-      },
-      setSelectedEvents(value: ISelectedEventSnapshotIn[]) {
-        self.selectedEvents = cast(value);
-        setLocalStorage(self);
-      },
-    };
-  });
-export type IEventSelectorWizard = Instance<typeof EventSelectorWizard>;
-type IEventSelectorWizardSnapshotIn = SnapshotIn<typeof EventSelectorWizard>;
+interface ISelectedEventProps {
+  calendarEventId: number;
+  eventorId?: number | null;
+  eventorRaceId?: number | null;
+  name?: string | null;
+  organiserName?: string | null;
+  raceDate?: string | null;
+  raceTime?: string | null;
+  longitude?: number | null;
+  latitude?: number | null;
+  distanceKm?: number | null;
+}
+
+interface IEventSelectorWizardProps {
+  queryStartDate: string;
+  queryEndDate: string;
+  maxDistanceDistrict: number;
+  maxDistanceNearbyAndClub: number;
+  selectedEvents: ISelectedEventProps[];
+}
+
+export interface IEventSelectorWizard extends IEventSelectorWizardProps {
+  setQueryStartDate: (value: string) => void;
+  setQueryEndDate: (value: string) => void;
+  setMaxDistanceDistrict: (value: number) => void;
+  setMaxDistanceNearbyAndClub: (value: number) => void;
+  setSelectedEvents: (value: ISelectedEventProps[]) => void;
+}
+
+export class EventSelectorWizard implements IEventSelectorWizard {
+  queryStartDate = '';
+  queryEndDate = '';
+  maxDistanceDistrict = 140;
+  maxDistanceNearbyAndClub = 80;
+  selectedEvents: ISelectedEventProps[] = [];
+
+  constructor(options?: Partial<IEventSelectorWizardProps>) {
+    options && Object.assign(this, options);
+    makeObservable(this, {
+      queryStartDate: observable,
+      queryEndDate: observable,
+      maxDistanceDistrict: observable,
+      maxDistanceNearbyAndClub: observable,
+      selectedEvents: observable,
+      setQueryStartDate: action,
+      setQueryEndDate: action,
+      setMaxDistanceDistrict: action,
+      setMaxDistanceNearbyAndClub: action,
+      setSelectedEvents: action,
+    });
+  }
+
+  setQueryStartDate(value: string) {
+    this.queryStartDate = value;
+    setLocalStorage(this);
+  }
+
+  setQueryEndDate(value: string) {
+    this.queryEndDate = value;
+    setLocalStorage(this);
+  }
+
+  setMaxDistanceDistrict(value: number) {
+    this.maxDistanceDistrict = value;
+    setLocalStorage(this);
+  }
+
+  setMaxDistanceNearbyAndClub(value: number) {
+    this.maxDistanceNearbyAndClub = value;
+    setLocalStorage(this);
+  }
+
+  setSelectedEvents(value: ISelectedEventProps[]) {
+    this.selectedEvents = [...value];
+    setLocalStorage(this);
+  }
+}

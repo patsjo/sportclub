@@ -1,6 +1,6 @@
-import { IMobxClubModelSnapshotIn } from 'models/mobxClubModel';
+import { IMobxClubModelProps } from 'models/mobxClubModel';
 
-const okorion: IMobxClubModelSnapshotIn = {
+const okorion: IMobxClubModelProps = {
   title: 'OK Orion',
   defaultLanguage: 'sv',
   map: {

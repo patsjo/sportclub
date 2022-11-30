@@ -184,7 +184,7 @@ const FadeOutItem = observer(
         <Modal
           closable={false}
           maskClosable={false}
-          visible={showModalItem}
+          open={showModalItem}
           onCancel={closeModal}
           width="calc(100% - 80px)"
           style={{ top: 40, minWidth: 560, maxWidth: 800 }}

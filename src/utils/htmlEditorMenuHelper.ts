@@ -1,4 +1,4 @@
-import { IMenuSnapshotIn } from 'models/htmlEditorModel';
+import { IMenu } from 'models/htmlEditorModel';
 import { IMenuResponse } from './responseInterfaces';
 
 interface ISplittedMenu {
@@ -8,7 +8,7 @@ interface ISplittedMenu {
   linkId?: number;
   url?: string;
 }
-const getMenuLevels = (splittedMenus: ISplittedMenu[], level = 1, prevMenus = ''): IMenuSnapshotIn => ({
+const getMenuLevels = (splittedMenus: ISplittedMenu[], level = 1, prevMenus = ''): IMenu => ({
   menuItems: splittedMenus
     .filter((m) => m.menuPaths.length === level && m.menuPaths.slice(0, level - 1).join('/') === prevMenus)
     .map((m) => ({
@@ -36,7 +36,7 @@ const getMenuLevels = (splittedMenus: ISplittedMenu[], level = 1, prevMenus = ''
     })),
 });
 
-export const getMenus = (menus: IMenuResponse[]): IMenuSnapshotIn => {
+export const getMenus = (menus: IMenuResponse[]): IMenu => {
   const splittedMenus: ISplittedMenu[] = menus
     .sort((a, b) =>
       a.menuPath.toLowerCase() > b.menuPath.toLowerCase()
@@ -57,7 +57,7 @@ export const getMenus = (menus: IMenuResponse[]): IMenuSnapshotIn => {
   return menuLevels;
 };
 
-export const getPageId = (menu: IMenuSnapshotIn, menuPath: string, level = 0): number | null | undefined => {
+export const getPageId = (menu: IMenu, menuPath: string, level = 0): number | null | undefined => {
   if (!menu) {
     return null;
   }

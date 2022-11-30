@@ -1,8 +1,8 @@
 import { Col, DatePicker, Form, Input, Row, Select } from 'antd';
 import { ISessionModel } from 'models/sessionModel';
-import { ICouncilModelSnapshotIn, IGroupModelSnapshotIn, IUserModelSnapshotIn } from 'models/userModel';
+import { ICouncilModel, IGroupModel, IUserModel } from 'models/userModel';
 import moment from 'moment';
-import React, { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { dateFormat, errorRequiredField, FormSelect, hasErrors } from '../../utils/formHelper';
 import FormItem from '../formItems/FormItem';
@@ -10,9 +10,9 @@ import FormItem from '../formItems/FormItem';
 const { Option } = Select;
 
 interface IEditUserProps {
-  groups: IGroupModelSnapshotIn[];
-  councils: ICouncilModelSnapshotIn[];
-  user: IUserModelSnapshotIn;
+  groups: IGroupModel[];
+  councils: ICouncilModel[];
+  user: IUserModel;
   sessionModel: ISessionModel;
   onValidate: (valid: boolean) => void;
 }

@@ -2,7 +2,7 @@ import { Alert, Col, Form, InputNumber, Row } from 'antd';
 import { FormInstance } from 'antd/lib/form';
 import InputTime from 'components/formItems/InputTime';
 import { observer } from 'mobx-react';
-import React, { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMobxStore } from 'utils/mobxStore';
 import { useResultWizardStore } from 'utils/resultWizardStore';
@@ -233,15 +233,9 @@ const ResultWizardStep3Ranking = observer(({ saving, onValidate }: IResultWizard
               step={0.01}
               decimalSeparator=","
               style={{ width: '100%' }}
-              onChange={(value?: string | number) => {
+              onChange={(value: number | null) => {
                 try {
-                  const val =
-                    typeof value === 'string' && value.indexOf('.') === value.length - 1
-                      ? parseFloat(`${value}0`)
-                      : typeof value === 'string'
-                      ? parseFloat(value)
-                      : value;
-                  raceWizardModel.raceEvent?.setNumberValueOrNull('rankingBasepoint', val);
+                  raceWizardModel.raceEvent?.setNumberValueOrNull('rankingBasepoint', value);
                 } catch (error) {
                   console.error(error);
                 }

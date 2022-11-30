@@ -4,21 +4,22 @@ import { FormInstance } from 'antd/lib/form';
 import { ModalFuncProps } from 'antd/lib/modal';
 import { ColumnType } from 'antd/lib/table';
 import InputTime from 'components/formItems/InputTime';
+import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
-import { applySnapshot, getSnapshot } from 'mobx-state-tree';
 import { IRace, IResultListType, ITeamMemberRaceResult, ITeamMemberResult, ResultStatus } from 'models/iof.xsd-3.0';
 import {
   IRaceCompetitor,
   IRaceEventBasic,
-  IRaceEventSnapshotIn,
-  IRaceResultMultiDaySnapshotIn,
-  IRaceResultSnapshotIn,
-  IRaceTeamResultSnapshotIn,
+  IRaceEventProps,
+  IRaceResultMultiDayProps,
+  IRaceResultProps,
+  IRaceTeamResultProps,
 } from 'models/resultModel';
-import { IWinnerResultSnapshotIn } from 'models/resultWizardModel';
+import { IWinnerResultProps } from 'models/resultWizardModel';
 import moment from 'moment';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { PostJsonData } from 'utils/api';
 import { correctPhpEventorProxyXmlResponseForResult } from 'utils/iofXsd30ResponseHelper';
 import { useMobxStore } from 'utils/mobxStore';
 import {
@@ -38,7 +39,6 @@ import {
   IEventorTeamResult,
 } from 'utils/responseEventorInterfaces';
 import { useResultWizardStore } from 'utils/resultWizardStore';
-import { PostJsonData } from '../../utils/api';
 import { dateFormat, errorRequiredField, FormSelect, shortTimeFormat } from '../../utils/formHelper';
 import {
   distances,
@@ -83,35 +83,6 @@ import EditResultRelay, { IExtendedRaceTeamResult } from './EditResultRelay';
 
 const { info } = Modal;
 
-interface IEventRaceResult {
-  key: string;
-  resultId?: number;
-  teamResultId?: number;
-  edit: undefined;
-  competitorId: number;
-  className: string;
-  classClassificationId?: string | null;
-  difficulty?: string | null;
-  lengthInMeter?: number | null;
-  failedReason?: string | null;
-  competitorTime?: string | null;
-  winnerTime?: string | null;
-  secondTime?: string | null;
-  position?: number | null;
-  nofStartsInClass?: number | null;
-  deviantEventClassificationId?: string | null;
-
-  award?: string | null;
-  isAwardTouched?: boolean;
-  fee?: number | null;
-  totalFeeToClub?: number | null;
-
-  stageText?: string | null;
-  deltaPositions?: number | null;
-  deltaTimeBehind?: string | null;
-  deviantRaceLightCondition?: string | null;
-}
-
 interface IResultWizardStep2EditRaceProps {
   visible: boolean;
   onValidate: (valid: boolean) => void;
@@ -128,7 +99,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
 
   const handleEventorResults = useCallback(
     async (
-      editResultJson: IRaceEventSnapshotIn | undefined,
+      editResultJson: IRaceEventProps | undefined,
       resultJson: IEventorResults | undefined,
       totalIofResults: IResultListType | undefined,
       entriesJson: IEventorEntries | undefined,
@@ -177,7 +148,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
         eventClasses = Array.isArray(classJson.EventClass) ? classJson.EventClass : [classJson.EventClass];
       }
 
-      let raceEvent: IRaceEventSnapshotIn | undefined = !raceWizardModel.overwrite ? editResultJson : undefined;
+      let raceEvent: IRaceEventProps | undefined = !raceWizardModel.overwrite ? editResultJson : undefined;
       let eventRace: IEventorEventRace | undefined;
       if (resultJson != null) {
         if (Array.isArray(resultJson.Event.EventRace)) {
@@ -220,12 +191,13 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
             rankingBaseDescription: editResultJson?.rankingBaseDescription,
             rankingBasetimePerKilometer: editResultJson?.rankingBasetimePerKilometer,
             rankingBasepoint: editResultJson?.rankingBasepoint,
+            invoiceVerified: false,
           };
         }
       }
 
       if (resultJson != null && resultJson.ClassResult != null) {
-        const raceWinnerResults: IWinnerResultSnapshotIn[] = [];
+        const raceWinnerResults: IWinnerResultProps[] = [];
         const classResults: IEventorClassResult[] = Array.isArray(resultJson.ClassResult)
           ? resultJson.ClassResult
           : [resultJson.ClassResult];
@@ -317,23 +289,23 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                     (personResult.Organisation.OrganisationId === clubModel.eventor?.organisationId.toString() ||
                       (personResult.Organisation.OrganisationId ===
                         clubModel.eventor?.districtOrganisationId.toString() &&
-                        clubModel.raceClubs?.selectedClub.competitorByEventorId(
+                        clubModel.raceClubs?.selectedClub?.competitorByEventorId(
                           parseInt(personResult.Person.PersonId)
                         ) != null))
                 );
 
                 for (let j = 0; j < clubPersonResults.length; j++) {
                   const personResult = clubPersonResults[j];
-                  let competitor;
+                  let competitor: IRaceCompetitor | undefined;
                   if (typeof personResult.Person.PersonId === 'string' && personResult.Person.PersonId.length > 0) {
                     if (!competitor) {
-                      competitor = clubModel.raceClubs?.selectedClub.competitorByEventorId(
+                      competitor = clubModel.raceClubs?.selectedClub?.competitorByEventorId(
                         parseInt(personResult.Person.PersonId)
                       );
                     }
 
                     if (!competitor) {
-                      competitor = clubModel.raceClubs?.selectedClub.competitors.find(
+                      competitor = clubModel.raceClubs?.selectedClub?.competitors.find(
                         (c) =>
                           c.firstName === personResult.Person.PersonName.Given &&
                           c.lastName === personResult.Person.PersonName.Family &&
@@ -348,7 +320,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                       }
                     }
                   }
-                  if (!competitor) {
+                  if (!competitor && clubModel.raceClubs?.selectedClub) {
                     competitor = await AddMapCompetitorConfirmModal(
                       t,
                       -1,
@@ -364,7 +336,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                             : personResult.Person['@attributes'].sex === 'F'
                             ? genders.FeMale
                             : genders.Male,
-                        iClubId: clubModel.raceClubs!.selectedClub.clubId,
+                        iClubId: clubModel.raceClubs.selectedClub.clubId,
                         iStartDate: '1930-01-01',
                         iEndDate: null,
                         iEventorCompetitorId:
@@ -417,7 +389,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                     !!currentClass && currentClass.ClassShortName.indexOf('Ö') > -1
                   );
 
-                  let resultMultiDay: IRaceResultMultiDaySnapshotIn | undefined;
+                  let resultMultiDay: IRaceResultMultiDayProps | undefined;
                   if (totalIofResults && totalIofResults.ClassResult) {
                     const totalEventRace = totalIofResults.Event.Race?.find(
                       (eventRace) => eventRace.Extensions.EventRaceId == raceWizardModel.selectedEventorRaceId
@@ -468,7 +440,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                     }
                   }
 
-                  const raceResult: IRaceResultSnapshotIn = {
+                  const raceResult: IRaceResultProps = {
                     resultId: -1 - 10000 * i - j,
                     competitorId: competitor?.competitorId ?? -1,
                     resultMultiDay: null,
@@ -609,7 +581,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                     (hasClubMembers || hasDistrictMembers) &&
                     typeof teamMemberResult.Person.PersonId === 'string' &&
                     teamMemberResult.Person.PersonId.length > 0
-                      ? clubModel.raceClubs?.selectedClub.competitorByEventorId(
+                      ? clubModel.raceClubs?.selectedClub?.competitorByEventorId(
                           parseInt(teamMemberResult.Person.PersonId)
                         )
                       : null;
@@ -642,7 +614,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                   teamMemberResult.Person.PersonId.length > 0
                 ) {
                   if (!competitor) {
-                    competitor = clubModel.raceClubs?.selectedClub.competitors.find(
+                    competitor = clubModel.raceClubs?.selectedClub?.competitors.find(
                       (c) =>
                         c.firstName === teamMemberResult.Person.PersonName.Given &&
                         c.lastName === teamMemberResult.Person.PersonName.Family &&
@@ -657,7 +629,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                     }
                   }
                 }
-                if (!competitor) {
+                if (!competitor && clubModel.raceClubs?.selectedClub) {
                   competitor = await AddMapCompetitorConfirmModal(
                     t,
                     -1,
@@ -674,7 +646,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                           : teamMemberResult.Person['@attributes'].sex === 'F'
                           ? genders.FeMale
                           : genders.Male,
-                      iClubId: clubModel.raceClubs!.selectedClub.clubId,
+                      iClubId: clubModel.raceClubs.selectedClub.clubId,
                       iStartDate: '1930-01-01',
                       iEndDate: null,
                       iEventorCompetitorId:
@@ -740,7 +712,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                 }
 
                 const legSplitTimes = allLegsSplitTimes.find((lst) => lst.leg === teamMemberResult.Leg);
-                const raceTeamResult: IRaceTeamResultSnapshotIn = {
+                const raceTeamResult: IRaceTeamResultProps = {
                   teamResultId: -1 - i * 20000 - j,
                   competitorId: competitor?.competitorId ?? -1,
                   className: shortClassName ?? '',
@@ -821,7 +793,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
 
   const handleIOFResults = useCallback(
     async (
-      editResultJson: IRaceEventSnapshotIn | undefined,
+      editResultJson: IRaceEventProps | undefined,
       iofResults: IResultListType | undefined,
       totalIofResults: IResultListType | undefined,
       entriesJson: IEventorEntries | undefined,
@@ -863,7 +835,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
         eventClasses = Array.isArray(classJson.EventClass) ? classJson.EventClass : [classJson.EventClass];
       }
 
-      let raceEvent: IRaceEventSnapshotIn | undefined = !raceWizardModel.overwrite ? editResultJson : undefined;
+      let raceEvent: IRaceEventProps | undefined = !raceWizardModel.overwrite ? editResultJson : undefined;
       let eventRace: IRace | undefined;
       if (iofResults != null) {
         eventRace = iofResults.Event.Race?.find(
@@ -904,12 +876,13 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
             rankingBaseDescription: editResultJson?.rankingBaseDescription,
             rankingBasetimePerKilometer: editResultJson?.rankingBasetimePerKilometer,
             rankingBasepoint: editResultJson?.rankingBasepoint,
+            invoiceVerified: false,
           };
         }
       }
 
       if (iofResults != null && iofResults.ClassResult != null) {
-        const raceWinnerResults: IWinnerResultSnapshotIn[] = [];
+        const raceWinnerResults: IWinnerResultProps[] = [];
         const classResults = iofResults.ClassResult;
         if (!eventIsRelay) {
           for (let i = 0; i < classResults.length; i++) {
@@ -995,7 +968,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                     personResult.Organisation &&
                     (personResult.Organisation.Id == clubModel.eventor?.organisationId ||
                       (personResult.Organisation.Id == clubModel.eventor?.districtOrganisationId &&
-                        clubModel.raceClubs?.selectedClub.competitorByEventorId(
+                        clubModel.raceClubs?.selectedClub?.competitorByEventorId(
                           parseInt(personResult.Person.Id?.find(() => true) as string)
                         ) != null))
                 );
@@ -1003,14 +976,14 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                 for (let j = 0; j < clubPersonResults.length; j++) {
                   const personResult = clubPersonResults[j];
                   const personId = personResult.Person.Id?.find(() => true);
-                  let competitor;
+                  let competitor: IRaceCompetitor | undefined;
                   if (personId && personId.length > 0) {
                     if (!competitor) {
-                      competitor = clubModel.raceClubs?.selectedClub.competitorByEventorId(parseInt(personId));
+                      competitor = clubModel.raceClubs?.selectedClub?.competitorByEventorId(parseInt(personId));
                     }
 
                     if (!competitor) {
-                      competitor = clubModel.raceClubs?.selectedClub.competitors.find(
+                      competitor = clubModel.raceClubs?.selectedClub?.competitors.find(
                         (c) =>
                           c.firstName === personResult.Person.Name.Given &&
                           c.lastName === personResult.Person.Name.Family &&
@@ -1025,7 +998,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                       }
                     }
                   }
-                  if (!competitor) {
+                  if (!competitor && clubModel.raceClubs?.selectedClub) {
                     competitor = await AddMapCompetitorConfirmModal(
                       t,
                       -1,
@@ -1044,7 +1017,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                             : personResult.Person['@attributes'].sex === 'F'
                             ? genders.FeMale
                             : genders.Male,
-                        iClubId: clubModel.raceClubs!.selectedClub.clubId,
+                        iClubId: clubModel.raceClubs.selectedClub.clubId,
                         iStartDate: '1930-01-01',
                         iEndDate: null,
                         iEventorCompetitorId: personId && personId.length > 0 ? personId : null,
@@ -1092,7 +1065,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                     !!currentClass && currentClass.ClassShortName.indexOf('Ö') > -1
                   );
 
-                  let resultMultiDay: IRaceResultMultiDaySnapshotIn | undefined;
+                  let resultMultiDay: IRaceResultMultiDayProps | undefined;
                   if (totalIofResults && totalIofResults.ClassResult) {
                     const totalEventRace = totalIofResults.Event.Race?.find(
                       (eventRace) => eventRace.Extensions.EventRaceId == raceWizardModel.selectedEventorRaceId
@@ -1143,7 +1116,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                     }
                   }
 
-                  const raceResult: IRaceResultSnapshotIn = {
+                  const raceResult: IRaceResultProps = {
                     resultId: -1 - 10000 * i - j,
                     competitorId: competitor?.competitorId ?? -1,
                     resultMultiDay: resultMultiDay,
@@ -1319,7 +1292,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                   const personId = teamMemberResult.Person?.Id?.find(() => true);
                   const competitor =
                     (hasClubMembers || hasDistrictMembers) && personId && personId.length > 0
-                      ? clubModel.raceClubs?.selectedClub.competitorByEventorId(parseInt(personId))
+                      ? clubModel.raceClubs?.selectedClub?.competitorByEventorId(parseInt(personId))
                       : null;
 
                   if (
@@ -1351,7 +1324,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                 let competitor = teamMemberResult.Competitor;
                 if (personId && personId.length > 0) {
                   if (!competitor) {
-                    competitor = clubModel.raceClubs?.selectedClub.competitors.find(
+                    competitor = clubModel.raceClubs?.selectedClub?.competitors.find(
                       (c) =>
                         c.firstName === teamMemberResult.Person?.Name.Given &&
                         c.lastName === teamMemberResult.Person?.Name.Family &&
@@ -1366,7 +1339,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                     }
                   }
                 }
-                if (!competitor) {
+                if (!competitor && clubModel.raceClubs?.selectedClub) {
                   competitor = await AddMapCompetitorConfirmModal(
                     t,
                     -1,
@@ -1385,7 +1358,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                           : teamMemberResult.Person['@attributes'].sex === 'F'
                           ? genders.FeMale
                           : genders.Male,
-                      iClubId: clubModel.raceClubs!.selectedClub.clubId,
+                      iClubId: clubModel.raceClubs.selectedClub.clubId,
                       iStartDate: '1930-01-01',
                       iEndDate: null,
                       iEventorCompetitorId: personId ?? null,
@@ -1455,7 +1428,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                   (lst) => lst.leg === teamMemberResult.Result?.Leg?.toString()
                 );
 
-                const raceTeamResult: IRaceTeamResultSnapshotIn = {
+                const raceTeamResult: IRaceTeamResultProps = {
                   teamResultId: -1 - i * 20000 - j,
                   competitorId: competitor?.competitorId ?? -1,
                   className: shortClassName ?? '',
@@ -1536,7 +1509,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
       if (!url || !clubModel.raceClubs || !clubModel.eventor) return;
 
       try {
-        let editResultJson: IRaceEventSnapshotIn | undefined;
+        let editResultJson: IRaceEventProps | undefined;
         if (raceWizardModel.selectedEventId != null && raceWizardModel.selectedEventId > 0)
           editResultJson = await PostJsonData(
             url,
@@ -1770,7 +1743,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
         }
 
         if (raceWizardModel.overwrite && clubModel.raceClubs && raceWizardModel.raceEvent) {
-          if (!eventIsRelay) {
+          if (!eventIsRelay && clubModel.raceClubs.selectedClub) {
             CalculateCompetitorsFee(
               raceWizardModel.raceEvent,
               clubModel.raceClubs.selectedClub,
@@ -1814,6 +1787,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
         eventClassificationId: 'F',
         results: [],
         teamResults: [],
+        invoiceVerified: false,
       });
       onValidate(!!raceWizardModel.raceEvent?.valid);
       setIsRelay(false);
@@ -1845,7 +1819,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                 width: 800,
                 icon: <StyledIcon type="edit" />,
                 title: `${t('results.Edit')} (${
-                  clubModel.raceClubs?.selectedClub.competitorById(record.competitorId)?.fullName
+                  clubModel.raceClubs?.selectedClub?.competitorById(record.competitorId)?.fullName
                 }, ${record.className})`,
                 content:
                   raceWizardModel.raceEvent && clubModel.raceClubs ? (
@@ -1862,7 +1836,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                       }
                       result={resultObject}
                       results={raceWizardModel.raceEvent.results}
-                      competitorsOptions={clubModel.raceClubs.selectedClub.competitorsOptions}
+                      competitorsOptions={clubModel.raceClubs.selectedClub?.competitorsOptions ?? []}
                       onValidate={(valid) =>
                         confirmModal.update({
                           okButtonProps: {
@@ -1882,7 +1856,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                     (r) => r.resultId === resultObject.resultId
                   );
                   if (mobxResult) {
-                    applySnapshot(mobxResult, resultObject);
+                    mobxResult.setValues(resultObject);
                     mobxResult.setIsAwardTouched(clubModel.raceClubs!, raceWizardModel.raceEvent as IRaceEventBasic);
                   }
                   onValidate(!!raceWizardModel.raceEvent?.valid);
@@ -1910,7 +1884,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
       dataIndex: 'competitorId',
       key: 'competitorId',
       render: (id) =>
-        id == null ? <MissingTag t={t} /> : clubModel.raceClubs?.selectedClub.competitorById(id)?.fullName,
+        id == null ? <MissingTag t={t} /> : clubModel.raceClubs?.selectedClub?.competitorById(id)?.fullName,
     },
     {
       title: t('results.Class'),
@@ -2037,7 +2011,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                 width: 800,
                 icon: <StyledIcon type="edit" />,
                 title: `${t('results.Edit')} (${
-                  clubModel.raceClubs?.selectedClub.competitorById(record.competitorId)?.fullName
+                  clubModel.raceClubs?.selectedClub?.competitorById(record.competitorId)?.fullName
                 }, ${record.className})`,
                 content:
                   raceWizardModel.raceEvent && clubModel.raceClubs ? (
@@ -2051,7 +2025,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                       raceLightCondition={raceWizardModel.raceEvent.raceLightCondition as LightConditionTypes}
                       result={resultObject}
                       results={raceWizardModel.raceEvent.teamResults}
-                      competitorsOptions={clubModel.raceClubs.selectedClub.competitorsOptions}
+                      competitorsOptions={clubModel.raceClubs.selectedClub?.competitorsOptions ?? []}
                       onValidate={(valid) =>
                         confirmModal.update({
                           okButtonProps: {
@@ -2070,7 +2044,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                   const mobxResult = raceWizardModel.raceEvent?.teamResults.find(
                     (r) => r.teamResultId === resultObject.teamResultId
                   );
-                  if (mobxResult) applySnapshot(mobxResult, resultObject);
+                  if (mobxResult) mobxResult.setValues(resultObject);
                   onValidate(!!raceWizardModel.raceEvent?.valid);
                 },
               });
@@ -2096,7 +2070,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
       dataIndex: 'competitorId',
       key: 'competitorId',
       render: (id) =>
-        id == null ? <MissingTag t={t} /> : clubModel.raceClubs?.selectedClub.competitorById(id)?.fullName,
+        id == null ? <MissingTag t={t} /> : clubModel.raceClubs?.selectedClub?.competitorById(id)?.fullName,
     },
     {
       title: t('results.Class'),
@@ -2368,7 +2342,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                 }
                 CalculateCompetitorsFee(
                   raceWizardModel.raceEvent!,
-                  clubModel.raceClubs!.selectedClub,
+                  clubModel.raceClubs!.selectedClub!,
                   clubModel.raceClubs!.eventClassifications
                 );
                 onValidate(!!raceWizardModel.raceEvent?.valid);
@@ -2459,7 +2433,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
         <StyledTable
           columns={teamColumns as ColumnType<any>[]}
           dataSource={raceWizardModel.raceEvent.teamResults.map((result) => ({
-            ...getSnapshot(result),
+            ...toJS(result),
             stageText: `${result.stage} ${t('common.Of')} ${result.totalStages}`,
           }))}
           pagination={{ pageSize: 5 }}
@@ -2469,7 +2443,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
         <StyledTable
           columns={columns as ColumnType<any>[]}
           dataSource={raceWizardModel.raceEvent.results.map((result) => ({
-            ...getSnapshot(result),
+            ...toJS(result),
             isAwardTouched: result.isAwardTouched,
             fee: `${result.originalFee != null && result.lateFee != null ? result.originalFee + result.lateFee : null}`,
           }))}

@@ -1,6 +1,6 @@
 import { Form, Input, message, Modal } from 'antd';
 import { observer } from 'mobx-react';
-import React, { useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { useMobxStore } from 'utils/mobxStore';
@@ -77,7 +77,7 @@ const CompetitorPresentationModal = observer(
         closable={false}
         maskClosable={false}
         title={`${t('competitor.Edit')} - ${name}`}
-        visible={open}
+        open={open}
         okText={t('common.Save')}
         okButtonProps={{ loading: saving }}
         cancelText={t('common.Cancel')}

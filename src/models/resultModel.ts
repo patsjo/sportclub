@@ -1,8 +1,8 @@
 import { INewCompetitorForm } from 'components/results/AddMapCompetitor';
-import { cast, flow, Instance, SnapshotIn, types } from 'mobx-state-tree';
+import { action, computed, makeObservable, observable } from 'mobx';
 import moment from 'moment';
-import { datetimeFormat, INumberOption } from 'utils/formHelper';
-import { PostJsonData } from '../utils/api';
+import { PostJsonData } from 'utils/api';
+import { datetimeFormat, INumberOption, IOption } from 'utils/formHelper';
 import {
   AwardTypes,
   DifficultyTypes,
@@ -13,336 +13,593 @@ import {
   LightConditionTypes,
   PaymentTypes,
   SportCodeTypes,
-} from '../utils/resultConstants';
-import { GetAge, GetAward } from '../utils/resultHelper';
+} from 'utils/resultConstants';
+import { GetAge, GetAward } from 'utils/resultHelper';
+import { PickRequired } from './typescriptPartial';
 
-const RaceCompetitor = types
-  .model({
-    competitorId: types.identifierNumber,
-    firstName: types.string,
-    lastName: types.string,
-    birthDay: types.string,
-    gender: types.string,
-    excludeResults: types.boolean,
-    excludeTime: types.maybeNull(types.string),
-    startDate: types.string,
-    endDate: types.maybeNull(types.string),
-    eventorCompetitorIds: types.array(types.integer),
-  })
-  .actions((self) => {
-    return {
-      addEventorId: flow(function* addEventorId(url: string, id: string, authorizationHeader: Record<string, string>) {
-        try {
-          yield PostJsonData(
-            url,
-            { iType: 'EVENTOR_COMPETITOR_ID', iCompetitorId: self.competitorId, iEventorCompetitorId: id },
-            false,
-            authorizationHeader
-          );
-          self.eventorCompetitorIds.push(parseInt(id));
-        } catch (error) {
-          console.error(error);
-        }
-      }),
-      renounce() {
-        self.excludeResults = true;
-        self.excludeTime = moment().format(datetimeFormat);
-      },
-      regretRenounce() {
-        self.excludeResults = false;
-        self.excludeTime = moment().format(datetimeFormat);
-      },
-    };
-  })
-  .views((self) => ({
-    get fullName() {
-      return `${self.firstName} ${self.lastName}`;
-    },
-  }));
-export type IRaceCompetitor = Instance<typeof RaceCompetitor>;
-export type IRaceCompetitorSnapshotIn = SnapshotIn<typeof RaceCompetitor>;
+interface IRaceCompetitorProps {
+  competitorId: number;
+  firstName: string;
+  lastName: string;
+  birthDay: string;
+  gender: string;
+  excludeResults: boolean;
+  excludeTime?: string;
+  startDate: string;
+  endDate?: string;
+  eventorCompetitorIds: number[];
+}
 
-const RaceClassLevel = types.model({
-  classShortName: types.identifier,
-  classTypeShortName: types.string,
-  age: types.integer,
-  difficulty: types.string,
-});
-export type IRaceClassLevelSnapshotIn = SnapshotIn<typeof RaceClassLevel>;
+export interface IRaceCompetitor extends IRaceCompetitorProps {
+  addEventorId: (url: string, id: string, authorizationHeader: Record<string, string>) => Promise<void>;
+  renounce: () => void;
+  regretRenounce: () => void;
+  fullName: string;
+}
 
-const RaceClassClassification = types.model({
-  classClassificationId: types.identifierNumber,
-  description: types.string,
-  classTypeShortName: types.maybeNull(types.string),
-  ageUpperLimit: types.maybeNull(types.integer),
-  ageLowerLimit: types.maybeNull(types.integer),
-  decreaseBasePoint: types.integer,
-  decreaseBase1000Point: types.integer,
-  decreaseOldBasePoint: types.integer,
-});
-export type IRaceClassClassificationSnapshotIn = SnapshotIn<typeof RaceClassClassification>;
+class RaceCompetitor implements IRaceCompetitor {
+  competitorId = -1;
+  firstName = '';
+  lastName = '';
+  birthDay = '';
+  gender = '';
+  excludeResults = false;
+  excludeTime?: string;
+  startDate = '';
+  endDate? = '';
+  eventorCompetitorIds: number[] = [];
 
-const RaceEventClassification = types.model({
-  eventClassificationId: types.identifier,
-  description: types.string,
-  basePoint: types.integer,
-  base1000Point: types.integer,
-  oldBasePoint: types.integer,
-  oldPositionBasePoint: types.integer,
-  classClassifications: types.array(RaceClassClassification),
-});
-export type IRaceEventClassificationSnapshotIn = SnapshotIn<typeof RaceEventClassification>;
+  constructor(options: PickRequired<IRaceCompetitorProps, 'competitorId'>) {
+    options && Object.assign(this, options);
+    makeObservable(this, {
+      competitorId: observable,
+      firstName: observable,
+      lastName: observable,
+      birthDay: observable,
+      gender: observable,
+      excludeResults: observable,
+      excludeTime: observable,
+      startDate: observable,
+      endDate: observable,
+      eventorCompetitorIds: observable,
+      addEventorId: action,
+      renounce: action,
+      regretRenounce: action,
+      fullName: computed,
+    });
+  }
 
-const RaceSport = types.model({
-  sportCode: types.identifier,
-  description: types.string,
-});
+  async addEventorId(url: string, id: string, authorizationHeader: Record<string, string>) {
+    try {
+      await PostJsonData(
+        url,
+        { iType: 'EVENTOR_COMPETITOR_ID', iCompetitorId: this.competitorId, iEventorCompetitorId: id },
+        false,
+        authorizationHeader
+      );
+      this.eventorCompetitorIds.push(parseInt(id));
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
-const RaceClub = types
-  .model({
-    clubId: types.identifierNumber,
-    name: types.string,
-    eventorOrganisationId: types.integer,
-    competitors: types.array(RaceCompetitor),
-  })
-  .actions((self) => {
-    return {
-      addCompetitor: flow(function* addCompetitor(
-        url: string,
-        competitor: INewCompetitorForm,
-        authorizationHeader: Record<string, string>
-      ) {
-        try {
-          const responseJson: IRaceCompetitorSnapshotIn = yield PostJsonData(
-            url,
-            competitor,
-            false,
-            authorizationHeader
-          );
-          self.competitors.push(responseJson);
-          return responseJson.competitorId;
-        } catch (error) {
-          return undefined;
-        }
-      }),
-    };
-  })
-  .views((self) => ({
-    competitorById(id: number): IRaceCompetitor | undefined {
-      return self.competitors.find((competitor) => competitor.competitorId === id);
-    },
-    competitorByEventorId(id: number): IRaceCompetitor | undefined {
-      return self.competitors.find((competitor) => competitor.eventorCompetitorIds.includes(id));
-    },
-    get competitorsOptions() {
-      return self.competitors
-        .slice()
-        .sort((a, b) =>
-          a.lastName.toLowerCase() === b.lastName.toLowerCase()
-            ? a.firstName.toLowerCase() > b.firstName.toLowerCase()
-              ? 1
-              : -1
-            : a.lastName.toLowerCase() > b.lastName.toLowerCase()
+  renounce() {
+    this.excludeResults = true;
+    this.excludeTime = moment().format(datetimeFormat);
+  }
+
+  regretRenounce() {
+    this.excludeResults = false;
+    this.excludeTime = moment().format(datetimeFormat);
+  }
+
+  get fullName() {
+    return `${this.firstName} ${this.lastName}`;
+  }
+}
+
+export interface IRaceClassLevelProps {
+  classShortName: string;
+  classTypeShortName: string;
+  age: number;
+  difficulty: string;
+}
+
+export interface IRaceClassClassificationProps {
+  classClassificationId: number;
+  description: string;
+  classTypeShortName?: string | null;
+  ageUpperLimit?: number | null;
+  ageLowerLimit?: number | null;
+  decreaseBasePoint: number;
+  decreaseBase1000Point: number;
+  decreaseOldBasePoint: number;
+}
+
+export interface IRaceEventClassificationProps {
+  eventClassificationId: string;
+  description: string;
+  basePoint: number;
+  base1000Point: number;
+  oldBasePoint: number;
+  oldPositionBasePoint: number;
+  classClassifications: IRaceClassClassificationProps[];
+}
+
+interface IRaceSportProps {
+  sportCode: string;
+  description: string;
+}
+
+interface IRaceClubProps {
+  clubId: number;
+  name: string;
+  eventorOrganisationId: number;
+  competitors: IRaceCompetitorProps[];
+}
+
+export interface IRaceClub extends Omit<IRaceClubProps, 'competitors'> {
+  competitors: IRaceCompetitor[];
+  addCompetitor: (
+    url: string,
+    competitor: INewCompetitorForm,
+    authorizationHeader: Record<string, string>
+  ) => Promise<number | undefined>;
+  competitorById: (id: number) => IRaceCompetitor | undefined;
+  competitorByEventorId: (id: number) => IRaceCompetitor | undefined;
+  competitorsOptions: INumberOption[];
+}
+
+class RaceClub implements IRaceClubProps {
+  clubId = -1;
+  name = '';
+  eventorOrganisationId = -1;
+  competitors: IRaceCompetitor[] = [];
+
+  constructor(options: PickRequired<IRaceClubProps, 'clubId' | 'name' | 'eventorOrganisationId'>) {
+    if (options) {
+      const { competitors, ...rest } = options;
+      Object.assign(this, rest);
+      if (competitors) this.competitors = competitors.map((c) => new RaceCompetitor(c));
+    }
+
+    makeObservable(this, {
+      clubId: observable,
+      name: observable,
+      eventorOrganisationId: observable,
+      competitors: observable,
+      addCompetitor: action,
+      competitorsOptions: computed,
+    });
+  }
+
+  async addCompetitor(url: string, competitor: INewCompetitorForm, authorizationHeader: Record<string, string>) {
+    try {
+      const responseJson: IRaceCompetitorProps = await PostJsonData(url, competitor, false, authorizationHeader);
+      this.competitors.push(new RaceCompetitor(responseJson));
+      return responseJson.competitorId;
+    } catch (error) {
+      return undefined;
+    }
+  }
+
+  competitorById(id: number): IRaceCompetitor | undefined {
+    return this.competitors.find((competitor) => competitor.competitorId === id);
+  }
+
+  competitorByEventorId(id: number): IRaceCompetitor | undefined {
+    return this.competitors.find((competitor) => competitor.eventorCompetitorIds.includes(id));
+  }
+
+  get competitorsOptions() {
+    return this.competitors
+      .slice()
+      .sort((a, b) =>
+        a.lastName.toLowerCase() === b.lastName.toLowerCase()
+          ? a.firstName.toLowerCase() > b.firstName.toLowerCase()
             ? 1
             : -1
-        )
-        .map(
-          (competitor): INumberOption => ({
-            code: competitor.competitorId,
-            description: `${competitor.fullName} (${competitor.birthDay})`,
-          })
-        );
-    },
-  }));
-export type IRaceClub = Instance<typeof RaceClub>;
-
-export const RaceClubs = types
-  .model({
-    clubs: types.array(RaceClub),
-    selectedClub: types.reference(RaceClub),
-    eventClassifications: types.array(RaceEventClassification),
-    classLevels: types.array(RaceClassLevel),
-    sports: types.array(RaceSport),
-  })
-  .actions((self) => {
-    return {
-      setSelectedClub(code: number) {
-        self.selectedClub = code as any;
-      },
-    };
-  })
-  .views((self) => ({
-    classClassification(eventClassificationId: EventClassificationIdTypes, classClassificationId: number) {
-      const eventClassification = self.eventClassifications.find(
-        (ec) => ec.eventClassificationId === eventClassificationId
+          : a.lastName.toLowerCase() > b.lastName.toLowerCase()
+          ? 1
+          : -1
+      )
+      .map(
+        (competitor): INumberOption => ({
+          code: competitor.competitorId,
+          description: `${competitor.fullName} (${competitor.birthDay})`,
+        })
       );
-      const classClassification = eventClassification?.classClassifications.find(
-        (cc) => cc.classClassificationId === classClassificationId
-      );
-      return classClassification ? classClassification.description : null;
-    },
-    classClassificationOptions(eventClassificationId: EventClassificationIdTypes) {
-      const eventClassification = self.eventClassifications.find(
-        (ec) => ec.eventClassificationId === eventClassificationId
-      );
-      return eventClassification?.classClassifications.map((cc) => ({
-        code: cc.classClassificationId.toString(),
-        description: cc.description,
-      }));
-    },
-    get eventClassificationOptions() {
-      return self.eventClassifications.map((ec) => ({
-        code: ec.eventClassificationId,
-        description: ec.description,
-      }));
-    },
-    get clubOptions() {
-      return self.clubs.map((club) => ({
-        code: club.clubId.toString(),
-        description: club.name,
-      }));
-    },
-    get sportOptions() {
-      return self.sports.map((sport) => ({
-        code: sport.sportCode,
-        description: sport.description,
-      }));
-    },
-  }));
-export type IRaceClubs = Instance<typeof RaceClubs>;
-export type IRaceClubsSnapshotIn = SnapshotIn<typeof RaceClubs>;
+  }
+}
 
-const RaceTeamResult = types
-  .model({
-    teamResultId: types.identifierNumber,
-    className: types.string,
-    deviantEventClassificationId: types.maybeNull(types.string),
-    classClassificationId: types.maybeNull(types.integer),
-    difficulty: types.maybeNull(types.string),
-    teamName: types.maybeNull(types.string),
-    competitorId: types.integer,
-    lengthInMeter: types.maybeNull(types.integer),
-    failedReason: types.maybeNull(types.string),
-    teamFailedReason: types.maybeNull(types.string),
-    competitorTime: types.maybeNull(types.string),
-    winnerTime: types.maybeNull(types.string),
-    secondTime: types.maybeNull(types.string),
-    position: types.maybeNull(types.integer),
-    nofStartsInClass: types.maybeNull(types.integer),
-    stage: types.integer,
-    totalStages: types.integer,
-    deviantRaceLightCondition: types.maybeNull(types.string),
-    deltaPositions: types.maybeNull(types.integer),
-    deltaTimeBehind: types.maybeNull(types.string),
-    totalStagePosition: types.maybeNull(types.integer),
-    totalStageTimeBehind: types.maybeNull(types.string),
-    totalPosition: types.maybeNull(types.integer),
-    totalNofStartsInClass: types.maybeNull(types.integer),
-    totalTimeBehind: types.maybeNull(types.string),
-    points1000: types.maybeNull(types.integer),
-    ranking: types.maybeNull(types.number),
-    missingTime: types.maybeNull(types.string),
-    speedRanking: types.maybeNull(types.number),
-    technicalRanking: types.maybeNull(types.number),
-    serviceFeeToClub: types.optional(types.number, 0),
-    serviceFeeDescription: types.maybeNull(types.string),
-  })
-  .actions((self) => {
-    return {
-      setDeviantEventClassificationId(value: EventClassificationIdTypes) {
-        self.deviantEventClassificationId = value;
-      },
-      setDifficulty(value: DifficultyTypes) {
-        self.difficulty = value;
-      },
-      setFailedReason(value: FailedReasonTypes) {
-        self.failedReason = value;
-      },
-      setTeamFailedReason(value: FailedReasonTypes) {
-        self.teamFailedReason = value;
-      },
-      setDeviantRaceLightCondition(value: LightConditionTypes) {
-        self.deviantRaceLightCondition = value;
-      },
-      setStringValue(key: 'className', value: string) {
-        self[key] = value;
-      },
-      setStringValueOrNull(
-        key:
-          | 'teamName'
-          | 'competitorTime'
-          | 'winnerTime'
-          | 'secondTime'
-          | 'deltaTimeBehind'
-          | 'totalStageTimeBehind'
-          | 'totalTimeBehind'
-          | 'missingTime'
-          | 'serviceFeeDescription',
-        value?: string | null
-      ) {
-        self[key] = value != null ? value : null;
-      },
-      setNumberValue(key: 'competitorId' | 'stage' | 'totalStages' | 'serviceFeeToClub', value: number) {
-        self[key] = value;
-      },
-      setNumberValueOrNull(
-        key:
-          | 'classClassificationId'
-          | 'lengthInMeter'
-          | 'position'
-          | 'nofStartsInClass'
-          | 'deltaPositions'
-          | 'totalStagePosition'
-          | 'totalPosition'
-          | 'totalNofStartsInClass'
-          | 'points1000'
-          | 'ranking'
-          | 'speedRanking'
-          | 'technicalRanking',
-        value?: number | null
-      ) {
-        self[key] = value != null ? value : null;
-      },
-    };
-  })
-  .views((self) => ({
-    get valid() {
-      return (
-        self.competitorId != null &&
-        self.teamName != null &&
-        self.className != null &&
-        self.classClassificationId != null &&
-        self.difficulty != null &&
-        self.stage != null &&
-        self.totalStages != null &&
-        (self.failedReason != null ||
-          (self.lengthInMeter != null &&
-            self.competitorTime != null &&
-            self.winnerTime != null &&
-            self.position != null &&
-            self.nofStartsInClass != null)) &&
-        (self.teamFailedReason != null ||
-          (self.totalTimeBehind != null && self.totalPosition != null && self.totalNofStartsInClass != null))
-      );
-    },
-  }));
-export type IRaceTeamResult = Instance<typeof RaceTeamResult>;
-export type IRaceTeamResultSnapshotIn = SnapshotIn<typeof RaceTeamResult>;
+export interface IRaceClubsProps {
+  clubs: IRaceClubProps[];
+  eventClassifications: IRaceEventClassificationProps[];
+  classLevels: IRaceClassLevelProps[];
+  sports: IRaceSportProps[];
+}
 
-const RaceResultMultiDay = types.model({
-  multiDayResultId: types.identifierNumber,
-  stage: types.integer,
-  totalStages: types.integer,
-  totalLengthInMeter: types.maybeNull(types.integer),
-  totalFailedReason: types.maybeNull(types.string),
-  totalTime: types.maybeNull(types.string),
-  totalWinnerTime: types.maybeNull(types.string),
-  totalSecondTime: types.maybeNull(types.string),
-  totalPosition: types.maybeNull(types.integer),
-  totalNofStartsInClass: types.maybeNull(types.integer),
-});
+export interface IRaceClubs extends Omit<IRaceClubsProps, 'clubs'> {
+  clubs: IRaceClub[];
+  selectedClub?: IRaceClub;
+  setSelectedClub: (code: number) => void;
+  classClassification: (
+    eventClassificationId: EventClassificationIdTypes,
+    classClassificationId: number
+  ) => string | null;
+  classClassificationOptions: (eventClassificationId: EventClassificationIdTypes) => IOption[];
+  eventClassificationOptions: IOption[];
+  clubOptions: IOption[];
+  sportOptions: IOption[];
+}
 
-export type IRaceResultMultiDaySnapshotIn = SnapshotIn<typeof RaceResultMultiDay>;
+export class RaceClubs implements IRaceClubs {
+  clubs: IRaceClub[] = [];
+  eventClassifications: IRaceEventClassificationProps[] = [];
+  classLevels: IRaceClassLevelProps[] = [];
+  sports: IRaceSportProps[] = [];
+  selectedClub?: IRaceClub;
+
+  constructor(options?: Partial<IRaceClubsProps>) {
+    if (options) {
+      const { clubs, ...rest } = options;
+      Object.assign(this, rest);
+      if (clubs) this.clubs = clubs.map((c) => new RaceClub(c));
+    }
+
+    makeObservable(this, {
+      clubs: observable,
+      eventClassifications: observable,
+      classLevels: observable,
+      sports: observable,
+      selectedClub: observable,
+      setSelectedClub: action,
+      eventClassificationOptions: computed,
+      clubOptions: computed,
+      sportOptions: computed,
+    });
+  }
+
+  setSelectedClub(code: number) {
+    this.selectedClub = this.clubs.find((c) => c.clubId === code);
+  }
+
+  classClassification(eventClassificationId: EventClassificationIdTypes, classClassificationId: number) {
+    const eventClassification = this.eventClassifications.find(
+      (ec) => ec.eventClassificationId === eventClassificationId
+    );
+    const classClassification = eventClassification?.classClassifications.find(
+      (cc) => cc.classClassificationId === classClassificationId
+    );
+    return classClassification ? classClassification.description : null;
+  }
+
+  classClassificationOptions(eventClassificationId: EventClassificationIdTypes) {
+    const eventClassification = this.eventClassifications.find(
+      (ec) => ec.eventClassificationId === eventClassificationId
+    );
+    return (
+      eventClassification?.classClassifications.map(
+        (cc): IOption => ({
+          code: cc.classClassificationId.toString(),
+          description: cc.description,
+        })
+      ) ?? []
+    );
+  }
+
+  get eventClassificationOptions() {
+    return this.eventClassifications.map((ec) => ({
+      code: ec.eventClassificationId,
+      description: ec.description,
+    }));
+  }
+
+  get clubOptions() {
+    return this.clubs.map((club) => ({
+      code: club.clubId.toString(),
+      description: club.name,
+    }));
+  }
+
+  get sportOptions() {
+    return this.sports.map((sport) => ({
+      code: sport.sportCode,
+      description: sport.description,
+    }));
+  }
+}
+
+export interface IRaceTeamResultProps {
+  teamResultId: number;
+  className: string;
+  deviantEventClassificationId?: string | null;
+  classClassificationId?: number | null;
+  difficulty?: string | null;
+  teamName?: string | null;
+  competitorId: number;
+  lengthInMeter?: number | null;
+  failedReason?: string | null;
+  teamFailedReason?: string | null;
+  competitorTime?: string | null;
+  winnerTime?: string | null;
+  secondTime?: string | null;
+  position?: number | null;
+  nofStartsInClass?: number | null;
+  stage: number;
+  totalStages: number;
+  deviantRaceLightCondition?: string | null;
+  deltaPositions?: number | null;
+  deltaTimeBehind?: string | null;
+  totalStagePosition?: number | null;
+  totalStageTimeBehind?: string | null;
+  totalPosition?: number | null;
+  totalNofStartsInClass?: number | null;
+  totalTimeBehind?: string | null;
+  points1000?: number | null;
+  ranking?: number | null;
+  missingTime?: string | null;
+  speedRanking?: number | null;
+  technicalRanking?: number | null;
+  serviceFeeToClub?: number | null;
+  serviceFeeDescription?: string | null;
+}
+
+export interface IRaceTeamResult extends IRaceTeamResultProps {
+  setValues: (values: Partial<IRaceTeamResultProps>) => void;
+  setDeviantEventClassificationId: (value: EventClassificationIdTypes) => void;
+  setDifficulty: (value: DifficultyTypes) => void;
+  setFailedReason: (value: FailedReasonTypes) => void;
+  setTeamFailedReason: (value: FailedReasonTypes) => void;
+  setDeviantRaceLightCondition: (value: LightConditionTypes) => void;
+  setStringValue: (key: 'className', value: string) => void;
+  setStringValueOrNull: (
+    key:
+      | 'teamName'
+      | 'competitorTime'
+      | 'winnerTime'
+      | 'secondTime'
+      | 'deltaTimeBehind'
+      | 'totalStageTimeBehind'
+      | 'totalTimeBehind'
+      | 'missingTime'
+      | 'serviceFeeDescription',
+    value?: string | null
+  ) => void;
+  setNumberValue: (key: 'competitorId' | 'stage' | 'totalStages' | 'serviceFeeToClub', value: number) => void;
+  setNumberValueOrNull: (
+    key:
+      | 'classClassificationId'
+      | 'lengthInMeter'
+      | 'position'
+      | 'nofStartsInClass'
+      | 'deltaPositions'
+      | 'totalStagePosition'
+      | 'totalPosition'
+      | 'totalNofStartsInClass'
+      | 'points1000'
+      | 'ranking'
+      | 'speedRanking'
+      | 'technicalRanking',
+    value?: number | null
+  ) => void;
+  valid: boolean;
+}
+
+class RaceTeamResult implements IRaceTeamResult {
+  teamResultId = -1;
+  className = '';
+  deviantEventClassificationId?: string | null;
+  classClassificationId?: number | null;
+  difficulty?: string | null;
+  teamName?: string | null;
+  competitorId = -1;
+  lengthInMeter?: number | null;
+  failedReason?: string | null;
+  teamFailedReason?: string | null;
+  competitorTime?: string | null;
+  winnerTime?: string | null;
+  secondTime?: string | null;
+  position?: number | null;
+  nofStartsInClass?: number | null;
+  stage = 1;
+  totalStages = 3;
+  deviantRaceLightCondition?: string | null;
+  deltaPositions?: number | null;
+  deltaTimeBehind?: string | null;
+  totalStagePosition?: number | null;
+  totalStageTimeBehind?: string | null;
+  totalPosition?: number | null;
+  totalNofStartsInClass?: number | null;
+  totalTimeBehind?: string | null;
+  points1000?: number | null;
+  ranking?: number | null;
+  missingTime?: string | null;
+  speedRanking?: number | null;
+  technicalRanking?: number | null;
+  serviceFeeToClub = 0;
+  serviceFeeDescription?: string | null;
+
+  constructor(options: PickRequired<IRaceTeamResultProps, 'teamResultId' | 'className'>) {
+    options && Object.assign(this, options);
+    makeObservable(this, {
+      teamResultId: observable,
+      className: observable,
+      deviantEventClassificationId: observable,
+      classClassificationId: observable,
+      difficulty: observable,
+      teamName: observable,
+      competitorId: observable,
+      lengthInMeter: observable,
+      failedReason: observable,
+      teamFailedReason: observable,
+      competitorTime: observable,
+      winnerTime: observable,
+      secondTime: observable,
+      position: observable,
+      nofStartsInClass: observable,
+      stage: observable,
+      totalStages: observable,
+      deviantRaceLightCondition: observable,
+      deltaPositions: observable,
+      deltaTimeBehind: observable,
+      totalStagePosition: observable,
+      totalStageTimeBehind: observable,
+      totalPosition: observable,
+      totalNofStartsInClass: observable,
+      totalTimeBehind: observable,
+      points1000: observable,
+      ranking: observable,
+      missingTime: observable,
+      speedRanking: observable,
+      technicalRanking: observable,
+      serviceFeeToClub: observable,
+      serviceFeeDescription: observable,
+      setDeviantEventClassificationId: action,
+      setDifficulty: action,
+      setFailedReason: action,
+      setTeamFailedReason: action,
+      setDeviantRaceLightCondition: action,
+      setStringValue: action,
+      setStringValueOrNull: action,
+      setNumberValue: action,
+      setNumberValueOrNull: action,
+      valid: computed,
+    });
+  }
+
+  setValues(values: Partial<IRaceTeamResultProps>) {
+    Object.assign(this, values);
+  }
+
+  setDeviantEventClassificationId(value: EventClassificationIdTypes) {
+    this.deviantEventClassificationId = value;
+  }
+
+  setDifficulty(value: DifficultyTypes) {
+    this.difficulty = value;
+  }
+
+  setFailedReason(value: FailedReasonTypes) {
+    this.failedReason = value;
+  }
+
+  setTeamFailedReason(value: FailedReasonTypes) {
+    this.teamFailedReason = value;
+  }
+
+  setDeviantRaceLightCondition(value: LightConditionTypes) {
+    this.deviantRaceLightCondition = value;
+  }
+
+  setStringValue(key: 'className', value: string) {
+    this[key] = value;
+  }
+
+  setStringValueOrNull(
+    key:
+      | 'teamName'
+      | 'competitorTime'
+      | 'winnerTime'
+      | 'secondTime'
+      | 'deltaTimeBehind'
+      | 'totalStageTimeBehind'
+      | 'totalTimeBehind'
+      | 'missingTime'
+      | 'serviceFeeDescription',
+    value?: string | null
+  ) {
+    this[key] = value != null ? value : null;
+  }
+
+  setNumberValue(key: 'competitorId' | 'stage' | 'totalStages' | 'serviceFeeToClub', value: number) {
+    this[key] = value;
+  }
+
+  setNumberValueOrNull(
+    key:
+      | 'classClassificationId'
+      | 'lengthInMeter'
+      | 'position'
+      | 'nofStartsInClass'
+      | 'deltaPositions'
+      | 'totalStagePosition'
+      | 'totalPosition'
+      | 'totalNofStartsInClass'
+      | 'points1000'
+      | 'ranking'
+      | 'speedRanking'
+      | 'technicalRanking',
+    value?: number | null
+  ) {
+    this[key] = value != null ? value : null;
+  }
+
+  get valid() {
+    return (
+      this.competitorId != null &&
+      this.teamName != null &&
+      this.className != null &&
+      this.classClassificationId != null &&
+      this.difficulty != null &&
+      this.stage != null &&
+      this.totalStages != null &&
+      (this.failedReason != null ||
+        (this.lengthInMeter != null &&
+          this.competitorTime != null &&
+          this.winnerTime != null &&
+          this.position != null &&
+          this.nofStartsInClass != null)) &&
+      (this.teamFailedReason != null ||
+        (this.totalTimeBehind != null && this.totalPosition != null && this.totalNofStartsInClass != null))
+    );
+  }
+}
+
+export interface IRaceResultMultiDayProps {
+  multiDayResultId: number;
+  stage: number;
+  totalStages: number;
+  totalLengthInMeter?: number | null;
+  totalFailedReason?: string | null;
+  totalTime?: string | null;
+  totalWinnerTime?: string | null;
+  totalSecondTime?: string | null;
+  totalPosition?: number | null;
+  totalNofStartsInClass?: number | null;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface IRaceResultMultiDay extends IRaceResultMultiDayProps {}
+
+class RaceResultMultiDay implements IRaceResultMultiDay {
+  multiDayResultId = -1;
+  stage = 1;
+  totalStages = 2;
+  totalLengthInMeter?: number | null;
+  totalFailedReason?: string | null;
+  totalTime?: string | null;
+  totalWinnerTime?: string | null;
+  totalSecondTime?: string | null;
+  totalPosition?: number | null;
+  totalNofStartsInClass?: number | null;
+
+  constructor(options: PickRequired<IRaceResultMultiDayProps, 'multiDayResultId'>) {
+    options && Object.assign(this, options);
+    makeObservable(this, {
+      multiDayResultId: observable,
+      stage: observable,
+      totalStages: observable,
+      totalLengthInMeter: observable,
+      totalFailedReason: observable,
+      totalTime: observable,
+      totalWinnerTime: observable,
+      totalSecondTime: observable,
+      totalPosition: observable,
+      totalNofStartsInClass: observable,
+    });
+  }
+}
 
 export interface IRaceEventBasic {
   eventClassificationId: string;
@@ -351,244 +608,460 @@ export interface IRaceEventBasic {
   raceDistance: DistanceTypes;
 }
 
-const RaceResult = types
-  .model({
-    resultId: types.identifierNumber,
-    competitorId: types.integer,
-    resultMultiDay: types.maybeNull(RaceResultMultiDay),
-    className: types.string,
-    deviantEventClassificationId: types.maybeNull(types.string),
-    classClassificationId: types.maybeNull(types.integer),
-    difficulty: types.maybeNull(types.string),
-    lengthInMeter: types.maybeNull(types.integer),
-    failedReason: types.maybeNull(types.string),
-    competitorTime: types.maybeNull(types.string),
-    winnerTime: types.maybeNull(types.string),
-    secondTime: types.maybeNull(types.string),
-    position: types.maybeNull(types.integer),
-    nofStartsInClass: types.maybeNull(types.integer),
-    originalFee: types.maybeNull(types.number),
-    lateFee: types.maybeNull(types.number),
-    feeToClub: types.maybeNull(types.number),
-    serviceFeeToClub: types.optional(types.number, 0),
-    serviceFeeDescription: types.maybeNull(types.string),
-    award: types.maybeNull(types.string),
-    points: types.maybeNull(types.integer),
-    pointsOld: types.maybeNull(types.integer),
-    points1000: types.maybeNull(types.integer),
-    ranking: types.maybeNull(types.number),
-    missingTime: types.maybeNull(types.string),
-    speedRanking: types.maybeNull(types.number),
-    technicalRanking: types.maybeNull(types.number),
-  })
-  .volatile((self) => ({
-    isAwardTouched: false,
-  }))
-  .actions((self) => {
-    return {
-      setAward(value: AwardTypes) {
-        self.award = value;
-        self.isAwardTouched = true;
-      },
-      setDeviantEventClassificationId(value?: EventClassificationIdTypes | null) {
-        self.deviantEventClassificationId = value != null ? value : null;
-      },
-      setDifficulty(value: DifficultyTypes) {
-        self.difficulty = value;
-      },
-      setFailedReason(value: FailedReasonTypes) {
-        self.failedReason = value;
-      },
-      setStringValue(key: 'className', value: string) {
-        self[key] = value;
-      },
-      setStringValueOrNull(
-        key: 'competitorTime' | 'winnerTime' | 'secondTime' | 'missingTime' | 'serviceFeeDescription',
-        value?: string | null
-      ) {
-        self[key] = value != null ? value : null;
-      },
-      setNumberValue(key: 'competitorId' | 'serviceFeeToClub', value: number) {
-        self[key] = value;
-      },
-      setNumberValueOrNull(
-        key:
-          | 'classClassificationId'
-          | 'lengthInMeter'
-          | 'position'
-          | 'nofStartsInClass'
-          | 'originalFee'
-          | 'lateFee'
-          | 'feeToClub'
-          | 'points'
-          | 'pointsOld'
-          | 'points1000'
-          | 'ranking'
-          | 'speedRanking'
-          | 'technicalRanking',
-        value?: number | null
-      ) {
-        self[key] = value != null ? value : null;
-      },
-      setIsAwardTouched(raceClubs: IRaceClubs, raceEvent: IRaceEventBasic) {
-        const raceEventClassification = raceClubs.eventClassifications?.find(
-          (ec) => ec.eventClassificationId === raceEvent.eventClassificationId
-        );
-        const competitor = raceClubs.selectedClub?.competitorById(self.competitorId);
-        const age = competitor && GetAge(competitor.birthDay, raceEvent.raceDate);
-        const calculatedAward =
-          raceEvent.meetsAwardRequirements && raceEventClassification
-            ? GetAward(
-                raceEventClassification,
-                raceClubs.classLevels,
-                self,
-                age !== undefined ? age : null,
-                raceEvent.raceDistance === distances.sprint
-              )
-            : null;
-        self.isAwardTouched =
-          self.isAwardTouched || !((!calculatedAward && !self.award) || calculatedAward === self.award);
-      },
-      setCalculatedAward(value: AwardTypes | null) {
-        if (!self.isAwardTouched) {
-          self.award = value;
-        }
-      },
-    };
-  })
-  .views((self) => ({
-    get valid() {
-      return (
-        self.competitorId != null &&
-        self.className != null &&
-        self.classClassificationId != null &&
-        self.difficulty != null &&
-        self.originalFee != null &&
-        self.lateFee != null &&
-        self.feeToClub != null &&
-        (self.failedReason != null ||
-          (self.lengthInMeter != null &&
-            self.competitorTime != null &&
-            self.winnerTime != null &&
-            self.position != null &&
-            self.nofStartsInClass != null))
-      );
-    },
-  }));
-export type IRaceResult = Instance<typeof RaceResult>;
-export type IRaceResultSnapshotIn = SnapshotIn<typeof RaceResult>;
+export interface IRaceResultProps {
+  resultId: number;
+  competitorId: number;
+  resultMultiDay?: IRaceResultMultiDayProps | null;
+  className: string;
+  deviantEventClassificationId?: string | null;
+  classClassificationId?: number | null;
+  difficulty?: string | null;
+  lengthInMeter?: number | null;
+  failedReason?: string | null;
+  competitorTime?: string | null;
+  winnerTime?: string | null;
+  secondTime?: string | null;
+  position?: number | null;
+  nofStartsInClass?: number | null;
+  originalFee?: number | null;
+  lateFee?: number | null;
+  feeToClub?: number | null;
+  serviceFeeToClub?: number | null;
+  serviceFeeDescription?: string | null;
+  award?: string | null;
+  points?: number | null;
+  pointsOld?: number | null;
+  points1000?: number | null;
+  ranking?: number | null;
+  missingTime?: string | null;
+  speedRanking?: number | null;
+  technicalRanking?: number | null;
+}
 
-export const RaceEvent = types
-  .model({
-    eventId: types.identifierNumber,
-    eventorId: types.maybeNull(types.integer),
-    eventorRaceId: types.maybeNull(types.integer),
-    name: types.maybeNull(types.string),
-    organiserName: types.maybeNull(types.string),
-    raceDate: types.maybeNull(types.string),
-    raceTime: types.maybeNull(types.string),
-    sportCode: types.string,
-    isRelay: types.boolean,
-    eventClassificationId: types.string,
-    raceLightCondition: types.maybeNull(types.string),
-    raceDistance: types.maybeNull(types.string),
-    paymentModel: types.integer,
-    meetsAwardRequirements: types.boolean,
-    results: types.array(RaceResult),
-    teamResults: types.array(RaceTeamResult),
-    rankingBasetimePerKilometer: types.maybeNull(types.string),
-    rankingBasepoint: types.maybeNull(types.number),
-    rankingBaseDescription: types.maybeNull(types.string),
-    longitude: types.maybeNull(types.number),
-    latitude: types.maybeNull(types.number),
-    invoiceVerified: types.optional(types.boolean, false),
-  })
-  .actions((self) => {
-    return {
-      setEventClassificationId(value: EventClassificationIdTypes) {
-        self.eventClassificationId = value;
-      },
-      setPaymentModel(value: PaymentTypes) {
-        self.paymentModel = value;
-      },
-      setRaceDistance(value: DistanceTypes) {
-        self.raceDistance = value;
-      },
-      setRaceLightCondition(value: LightConditionTypes) {
-        self.raceLightCondition = value;
-      },
-      setSportCode(value: SportCodeTypes | string) {
-        self.sportCode = value;
-      },
-      setStringValueOrNull(
-        key:
-          | 'name'
-          | 'organiserName'
-          | 'raceDate'
-          | 'raceTime'
-          | 'rankingBasetimePerKilometer'
-          | 'rankingBaseDescription',
-        value?: string | null
-      ) {
-        self[key] = value != null ? value : null;
-      },
-      setBooleanValue(key: 'isRelay' | 'meetsAwardRequirements' | 'invoiceVerified', value: boolean) {
-        self[key] = value;
-      },
-      setNumberValueOrNull(
-        key: 'eventorId' | 'eventorRaceId' | 'rankingBasepoint' | 'longitude' | 'latitude',
-        value?: number | null
-      ) {
-        self[key] = value != null ? value : null;
-      },
-      addResult(result: IRaceResultSnapshotIn) {
-        self.results.push(result);
-      },
-      removeResult(result: IRaceResultSnapshotIn) {
-        self.results = cast(self.results.filter((item) => item.resultId !== result.resultId));
-      },
-      addTeamResult(result: IRaceTeamResultSnapshotIn) {
-        self.teamResults.push(result);
-      },
-      removeTeamResult(result: IRaceTeamResultSnapshotIn) {
-        self.teamResults = cast(self.teamResults.filter((item) => item.teamResultId !== result.teamResultId));
-      },
-    };
-  })
-  .views((self) => ({
-    get valid() {
-      return (
-        self.name != null &&
-        self.organiserName != null &&
-        self.raceDate != null &&
-        self.sportCode != null &&
-        self.eventClassificationId != null &&
-        self.paymentModel != null &&
-        self.raceLightCondition != null &&
-        self.raceDistance != null &&
-        (self.results.length > 0 || self.teamResults.length > 0) &&
-        !self.results.some((result) => !result.valid) &&
-        !self.teamResults.some((result) => !result.valid)
-      );
-    },
-    get validRanking() {
-      return (
-        self.name != null &&
-        self.organiserName != null &&
-        self.raceDate != null &&
-        self.sportCode != null &&
-        self.eventClassificationId != null &&
-        self.paymentModel != null &&
-        self.raceLightCondition != null &&
-        self.raceDistance != null &&
-        (self.results.length > 0 || self.teamResults.length > 0) &&
-        !self.results.some((result) => !result.valid) &&
-        !self.teamResults.some((result) => !result.valid) &&
-        self.rankingBasetimePerKilometer != null &&
-        self.rankingBasepoint != null &&
-        self.rankingBaseDescription != null
-      );
-    },
-  }));
-export type IRaceEvent = Instance<typeof RaceEvent>;
-export type IRaceEventSnapshotIn = SnapshotIn<typeof RaceEvent>;
+export interface IRaceResult extends Omit<IRaceResultProps, 'resultMultiDay'> {
+  resultMultiDay?: IRaceResultMultiDay | null;
+  isAwardTouched: boolean;
+  setValues: (values: Partial<IRaceResultProps>) => void;
+  setAward: (value: AwardTypes) => void;
+  setDeviantEventClassificationId: (value?: EventClassificationIdTypes | null) => void;
+  setDifficulty: (value: DifficultyTypes) => void;
+  setFailedReason: (value: FailedReasonTypes) => void;
+  setStringValue: (key: 'className', value: string) => void;
+  setStringValueOrNull: (
+    key: 'competitorTime' | 'winnerTime' | 'secondTime' | 'missingTime' | 'serviceFeeDescription',
+    value?: string | null
+  ) => void;
+  setNumberValue: (key: 'competitorId' | 'serviceFeeToClub', value: number) => void;
+  setNumberValueOrNull: (
+    key:
+      | 'classClassificationId'
+      | 'lengthInMeter'
+      | 'position'
+      | 'nofStartsInClass'
+      | 'originalFee'
+      | 'lateFee'
+      | 'feeToClub'
+      | 'points'
+      | 'pointsOld'
+      | 'points1000'
+      | 'ranking'
+      | 'speedRanking'
+      | 'technicalRanking',
+    value?: number | null
+  ) => void;
+  setIsAwardTouched: (raceClubs: IRaceClubs, raceEvent: IRaceEventBasic) => void;
+  setCalculatedAward: (value: AwardTypes | null) => void;
+  valid: boolean;
+}
+
+class RaceResult implements IRaceResult {
+  resultId = -1;
+  competitorId = -1;
+  resultMultiDay?: IRaceResultMultiDay | null;
+  className = '';
+  deviantEventClassificationId?: string | null;
+  classClassificationId?: number | null;
+  difficulty?: string | null;
+  lengthInMeter?: number | null;
+  failedReason?: string | null;
+  competitorTime?: string | null;
+  winnerTime?: string | null;
+  secondTime?: string | null;
+  position?: number | null;
+  nofStartsInClass?: number | null;
+  originalFee?: number | null;
+  lateFee?: number | null;
+  feeToClub?: number | null;
+  serviceFeeToClub = 0;
+  serviceFeeDescription?: string | null;
+  award?: string | null;
+  points?: number | null;
+  pointsOld?: number | null;
+  points1000?: number | null;
+  ranking?: number | null;
+  missingTime?: string | null;
+  speedRanking?: number | null;
+  technicalRanking?: number | null;
+  isAwardTouched = false;
+
+  constructor(options: PickRequired<IRaceResultProps, 'resultId' | 'className'>) {
+    if (options) {
+      const { resultMultiDay, ...rest } = options;
+      Object.assign(this, rest);
+      if (resultMultiDay) this.resultMultiDay = new RaceResultMultiDay(resultMultiDay);
+    }
+
+    makeObservable(this, {
+      resultId: observable,
+      competitorId: observable,
+      resultMultiDay: observable,
+      className: observable,
+      deviantEventClassificationId: observable,
+      classClassificationId: observable,
+      difficulty: observable,
+      lengthInMeter: observable,
+      failedReason: observable,
+      competitorTime: observable,
+      winnerTime: observable,
+      secondTime: observable,
+      position: observable,
+      nofStartsInClass: observable,
+      originalFee: observable,
+      lateFee: observable,
+      feeToClub: observable,
+      serviceFeeToClub: observable,
+      serviceFeeDescription: observable,
+      award: observable,
+      points: observable,
+      pointsOld: observable,
+      points1000: observable,
+      ranking: observable,
+      missingTime: observable,
+      speedRanking: observable,
+      technicalRanking: observable,
+      isAwardTouched: observable,
+      setAward: action,
+      setDeviantEventClassificationId: action,
+      setDifficulty: action,
+      setFailedReason: action,
+      setStringValue: action,
+      setStringValueOrNull: action,
+      setNumberValue: action,
+      setNumberValueOrNull: action,
+      setIsAwardTouched: action,
+      setCalculatedAward: action,
+      valid: computed,
+    });
+  }
+
+  setValues(values: Partial<IRaceResultProps>) {
+    Object.assign(this, values);
+  }
+
+  setAward(value: AwardTypes) {
+    this.award = value;
+    this.isAwardTouched = true;
+  }
+
+  setDeviantEventClassificationId(value?: EventClassificationIdTypes | null) {
+    this.deviantEventClassificationId = value != null ? value : null;
+  }
+
+  setDifficulty(value: DifficultyTypes) {
+    this.difficulty = value;
+  }
+
+  setFailedReason(value: FailedReasonTypes) {
+    this.failedReason = value;
+  }
+
+  setStringValue(key: 'className', value: string) {
+    this[key] = value;
+  }
+
+  setStringValueOrNull(
+    key: 'competitorTime' | 'winnerTime' | 'secondTime' | 'missingTime' | 'serviceFeeDescription',
+    value?: string | null
+  ) {
+    this[key] = value != null ? value : null;
+  }
+
+  setNumberValue(key: 'competitorId' | 'serviceFeeToClub', value: number) {
+    this[key] = value;
+  }
+
+  setNumberValueOrNull(
+    key:
+      | 'classClassificationId'
+      | 'lengthInMeter'
+      | 'position'
+      | 'nofStartsInClass'
+      | 'originalFee'
+      | 'lateFee'
+      | 'feeToClub'
+      | 'points'
+      | 'pointsOld'
+      | 'points1000'
+      | 'ranking'
+      | 'speedRanking'
+      | 'technicalRanking',
+    value?: number | null
+  ) {
+    this[key] = value != null ? value : null;
+  }
+
+  setIsAwardTouched(raceClubs: IRaceClubs, raceEvent: IRaceEventBasic) {
+    const raceEventClassification = raceClubs.eventClassifications?.find(
+      (ec) => ec.eventClassificationId === raceEvent.eventClassificationId
+    );
+    const competitor = raceClubs.selectedClub?.competitorById(this.competitorId);
+    const age = competitor && GetAge(competitor.birthDay, raceEvent.raceDate);
+    const calculatedAward =
+      raceEvent.meetsAwardRequirements && raceEventClassification
+        ? GetAward(
+            raceEventClassification,
+            raceClubs.classLevels,
+            this,
+            age !== undefined ? age : null,
+            raceEvent.raceDistance === distances.sprint
+          )
+        : null;
+    this.isAwardTouched = this.isAwardTouched || !((!calculatedAward && !this.award) || calculatedAward === this.award);
+  }
+
+  setCalculatedAward(value: AwardTypes | null) {
+    if (!this.isAwardTouched) {
+      this.award = value;
+    }
+  }
+
+  get valid() {
+    return (
+      this.competitorId != null &&
+      this.className != null &&
+      this.classClassificationId != null &&
+      this.difficulty != null &&
+      this.originalFee != null &&
+      this.lateFee != null &&
+      this.feeToClub != null &&
+      (this.failedReason != null ||
+        (this.lengthInMeter != null &&
+          this.competitorTime != null &&
+          this.winnerTime != null &&
+          this.position != null &&
+          this.nofStartsInClass != null))
+    );
+  }
+}
+
+export interface IRaceEventProps {
+  eventId: number;
+  eventorId?: number | null;
+  eventorRaceId?: number | null;
+  name?: string | null;
+  organiserName?: string | null;
+  raceDate?: string | null;
+  raceTime?: string | null;
+  sportCode: string;
+  isRelay: boolean;
+  eventClassificationId: string;
+  raceLightCondition?: string | null;
+  raceDistance?: string | null;
+  paymentModel: number;
+  meetsAwardRequirements: boolean;
+  results: IRaceResultProps[];
+  teamResults: IRaceTeamResultProps[];
+  rankingBasetimePerKilometer?: string | null;
+  rankingBasepoint?: number | null;
+  rankingBaseDescription?: string | null;
+  longitude?: number | null;
+  latitude?: number | null;
+  invoiceVerified: boolean;
+}
+
+export interface IRaceEvent extends Omit<IRaceEventProps, 'results' | 'teamResults'> {
+  results: IRaceResult[];
+  teamResults: IRaceTeamResult[];
+  setEventClassificationId: (value: EventClassificationIdTypes) => void;
+  setPaymentModel: (value: PaymentTypes) => void;
+  setRaceDistance: (value: DistanceTypes) => void;
+  setRaceLightCondition: (value: LightConditionTypes) => void;
+  setSportCode: (value: SportCodeTypes | string) => void;
+  setStringValueOrNull: (
+    key: 'name' | 'organiserName' | 'raceDate' | 'raceTime' | 'rankingBasetimePerKilometer' | 'rankingBaseDescription',
+    value?: string | null
+  ) => void;
+  setBooleanValue: (key: 'isRelay' | 'meetsAwardRequirements' | 'invoiceVerified', value: boolean) => void;
+  setNumberValueOrNull: (
+    key: 'eventorId' | 'eventorRaceId' | 'rankingBasepoint' | 'longitude' | 'latitude',
+    value?: number | null
+  ) => void;
+  addResult: (result: IRaceResultProps) => void;
+  removeResult: (result: IRaceResultProps) => void;
+  addTeamResult: (result: IRaceTeamResultProps) => void;
+  removeTeamResult: (result: IRaceTeamResultProps) => void;
+  valid: boolean;
+  validRanking: boolean;
+}
+
+export class RaceEvent {
+  eventId = -1;
+  eventorId?: number | null;
+  eventorRaceId?: number | null;
+  name?: string | null;
+  organiserName?: string | null;
+  raceDate?: string | null;
+  raceTime?: string | null;
+  sportCode = 'OL';
+  isRelay = false;
+  eventClassificationId = 'F';
+  raceLightCondition?: string | null;
+  raceDistance?: string | null;
+  paymentModel = 0;
+  meetsAwardRequirements = false;
+  results: IRaceResult[] = [];
+  teamResults: IRaceTeamResult[] = [];
+  rankingBasetimePerKilometer?: string | null;
+  rankingBasepoint?: number | null;
+  rankingBaseDescription?: string | null;
+  longitude?: number | null;
+  latitude?: number | null;
+  invoiceVerified = false;
+
+  constructor(options: PickRequired<IRaceEventProps, 'eventId' | 'sportCode'>) {
+    if (options) {
+      const { results, teamResults, ...rest } = options;
+      Object.assign(this, rest);
+      if (results) this.results = results.map((r) => new RaceResult(r));
+      if (teamResults) this.teamResults = teamResults.map((r) => new RaceTeamResult(r));
+    }
+
+    makeObservable(this, {
+      eventId: observable,
+      eventorId: observable,
+      eventorRaceId: observable,
+      name: observable,
+      organiserName: observable,
+      raceDate: observable,
+      raceTime: observable,
+      sportCode: observable,
+      isRelay: observable,
+      eventClassificationId: observable,
+      raceLightCondition: observable,
+      raceDistance: observable,
+      paymentModel: observable,
+      meetsAwardRequirements: observable,
+      results: observable,
+      teamResults: observable,
+      rankingBasetimePerKilometer: observable,
+      rankingBasepoint: observable,
+      rankingBaseDescription: observable,
+      longitude: observable,
+      latitude: observable,
+      invoiceVerified: observable,
+      setEventClassificationId: action,
+      setPaymentModel: action,
+      setRaceDistance: action,
+      setRaceLightCondition: action,
+      setSportCode: action,
+      setStringValueOrNull: action,
+      setBooleanValue: action,
+      setNumberValueOrNull: action,
+      addResult: action,
+      removeResult: action,
+      addTeamResult: action,
+      removeTeamResult: action,
+      valid: computed,
+      validRanking: computed,
+    });
+  }
+
+  setEventClassificationId(value: EventClassificationIdTypes) {
+    this.eventClassificationId = value;
+  }
+
+  setPaymentModel(value: PaymentTypes) {
+    this.paymentModel = value;
+  }
+
+  setRaceDistance(value: DistanceTypes) {
+    this.raceDistance = value;
+  }
+
+  setRaceLightCondition(value: LightConditionTypes) {
+    this.raceLightCondition = value;
+  }
+
+  setSportCode(value: SportCodeTypes | string) {
+    this.sportCode = value;
+  }
+
+  setStringValueOrNull(
+    key: 'name' | 'organiserName' | 'raceDate' | 'raceTime' | 'rankingBasetimePerKilometer' | 'rankingBaseDescription',
+    value?: string | null
+  ) {
+    this[key] = value != null ? value : null;
+  }
+
+  setBooleanValue(key: 'isRelay' | 'meetsAwardRequirements' | 'invoiceVerified', value: boolean) {
+    this[key] = value;
+  }
+
+  setNumberValueOrNull(
+    key: 'eventorId' | 'eventorRaceId' | 'rankingBasepoint' | 'longitude' | 'latitude',
+    value?: number | null
+  ) {
+    this[key] = value != null ? value : null;
+  }
+
+  addResult(result: IRaceResultProps) {
+    this.results = [...this.results, new RaceResult(result)];
+  }
+
+  removeResult(result: IRaceResultProps) {
+    this.results = [...this.results.filter((item) => item.resultId !== result.resultId)];
+  }
+
+  addTeamResult(result: IRaceTeamResultProps) {
+    this.teamResults = [...this.teamResults, new RaceTeamResult(result)];
+  }
+
+  removeTeamResult(result: IRaceTeamResultProps) {
+    this.teamResults = [...this.teamResults.filter((item) => item.teamResultId !== result.teamResultId)];
+  }
+
+  get valid() {
+    return (
+      this.name != null &&
+      this.organiserName != null &&
+      this.raceDate != null &&
+      this.sportCode != null &&
+      this.eventClassificationId != null &&
+      this.paymentModel != null &&
+      this.raceLightCondition != null &&
+      this.raceDistance != null &&
+      (this.results.length > 0 || this.teamResults.length > 0) &&
+      !this.results.some((result) => !result.valid) &&
+      !this.teamResults.some((result) => !result.valid)
+    );
+  }
+
+  get validRanking() {
+    return (
+      this.name != null &&
+      this.organiserName != null &&
+      this.raceDate != null &&
+      this.sportCode != null &&
+      this.eventClassificationId != null &&
+      this.paymentModel != null &&
+      this.raceLightCondition != null &&
+      this.raceDistance != null &&
+      (this.results.length > 0 || this.teamResults.length > 0) &&
+      !this.results.some((result) => !result.valid) &&
+      !this.teamResults.some((result) => !result.valid) &&
+      this.rankingBasetimePerKilometer != null &&
+      this.rankingBasepoint != null &&
+      this.rankingBaseDescription != null
+    );
+  }
+}

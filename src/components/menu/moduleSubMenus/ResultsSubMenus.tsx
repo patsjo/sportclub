@@ -1,11 +1,11 @@
 import { AuditOutlined } from '@ant-design/icons';
 import { message } from 'antd';
 import { observer } from 'mobx-react';
-import { IRaceClubsSnapshotIn, IRaceCompetitor } from 'models/resultModel';
+import { IRaceClubsProps, IRaceCompetitor } from 'models/resultModel';
 import moment from 'moment';
 import React, { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { PostJsonData } from 'utils/api';
 import { useMobxStore } from 'utils/mobxStore';
 import MenuItem from '../MenuItem';
@@ -23,7 +23,7 @@ const ResultsSubMenus = observer(() => {
   const [renounceModalIsOpen, setRenounceModalIsOpen] = useState(false);
   const [competitor, setCompetitor] = useState<IRaceCompetitor>();
   const [loadingCompetitor, setLoadingCompetitor] = useState(true);
-  const history = useHistory();
+  const navigate = useNavigate();
   const daysSinceRenounce = useMemo(
     () => (!competitor?.excludeTime ? 0 : moment().diff(moment(competitor.excludeTime), 'days')),
     [competitor?.excludeTime]
@@ -71,7 +71,7 @@ const ResultsSubMenus = observer(() => {
       true,
       sessionModel.authorizationHeader
     )
-      .then((clubsJson: IRaceClubsSnapshotIn) => {
+      .then((clubsJson: IRaceClubsProps) => {
         clubModel.setRaceClubs(clubsJson);
         if (clubModel.raceClubs?.selectedClub) {
           setCompetitor(clubModel.raceClubs.selectedClub.competitorByEventorId(sessionModel.eventorPersonId!));
@@ -119,7 +119,7 @@ const ResultsSubMenus = observer(() => {
         isSubMenu
         onClick={() => {
           globalStateModel.setRightMenuVisible(false);
-          globalStateModel.setDashboard(history, '/results');
+          globalStateModel.setDashboard(navigate, '/results');
         }}
       />
       <MenuItem
@@ -130,7 +130,7 @@ const ResultsSubMenus = observer(() => {
         isSubMenu
         onClick={() => {
           globalStateModel.setRightMenuVisible(false);
-          globalStateModel.setDashboard(history, '/results/individual');
+          globalStateModel.setDashboard(navigate, '/results/individual');
         }}
       />
       <MenuItem
@@ -163,7 +163,7 @@ const ResultsSubMenus = observer(() => {
         isSubMenu
         onClick={() => {
           globalStateModel.setRightMenuVisible(false);
-          globalStateModel.setDashboard(history, '/results/fees');
+          globalStateModel.setDashboard(navigate, '/results/fees');
         }}
       />
       <MenuItem

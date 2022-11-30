@@ -2,7 +2,6 @@ import { SettingOutlined } from '@ant-design/icons';
 import { InputNumber, Modal, Radio, Switch, Table, Tabs } from 'antd';
 import { ColumnsType } from 'antd/lib/table';
 import { TFunction } from 'i18next';
-import React from 'react';
 import styled from 'styled-components';
 import { IPrintSettings, IPrintSettingsColumn } from 'utils/responseInterfaces';
 

@@ -3,7 +3,7 @@ import { ColumnType } from 'antd/lib/table';
 import { TFunction } from 'i18next';
 import { observer } from 'mobx-react';
 import moment from 'moment';
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { useMobxStore } from 'utils/mobxStore';

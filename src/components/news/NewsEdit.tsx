@@ -1,8 +1,8 @@
 import { DatePicker, Form, Input, message, Modal, Select, Switch } from 'antd';
 import { observer } from 'mobx-react';
-import { INewsItem, INewsItemSnapshotIn } from 'models/newsModel';
+import { INewsItem, INewsItemProps } from 'models/newsModel';
 import moment from 'moment';
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { useMobxStore } from 'utils/mobxStore';
@@ -26,7 +26,7 @@ const StyledModalContent = styled.div``;
 interface INewsEditProps {
   newsObject: INewsItem;
   open?: boolean;
-  onChange: (insertedNewsObject: INewsItemSnapshotIn) => void;
+  onChange: (insertedNewsObject: INewsItemProps) => void;
   onClose?: () => void;
 }
 const NewsEdit = observer(({ newsObject, open, onClose, onChange }: INewsEditProps) => {
@@ -99,7 +99,7 @@ const NewsEdit = observer(({ newsObject, open, onClose, onChange }: INewsEditPro
       closable={false}
       maskClosable={false}
       title={t('news.Edit')}
-      visible={open}
+      open={open}
       okText={t('common.Save')}
       okButtonProps={{ disabled: !valid, loading: saving }}
       cancelText={t('common.Cancel')}

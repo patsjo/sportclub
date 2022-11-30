@@ -4,7 +4,7 @@ import { observer } from 'mobx-react';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useMobxStore } from 'utils/mobxStore';
 import { ICalendarActivity, ICalendarDomains } from 'utils/responseCalendarInterfaces';
 import { PostJsonData } from '../../../utils/api';
@@ -40,7 +40,7 @@ const CalendarSubMenus = observer(() => {
   const [addCalendarModalIsOpen, setAddCalendarModalIsOpen] = useState(false);
   const [eventSelectorWizardModalIsOpen, setEventSelectorWizardModalIsOpen] = useState(false);
   const [domains, setDomains] = useState<ICalendarDomains>();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const url = clubModel.modules.find((module) => module.name === 'Calendar')?.queryUrl;
@@ -86,7 +86,7 @@ const CalendarSubMenus = observer(() => {
         isSubMenu
         onClick={() => {
           globalStateModel.setDashboard(
-            history,
+            navigate,
             '/calendar',
             moment().startOf('month').format(dateFormat),
             moment().endOf('month').format(dateFormat),

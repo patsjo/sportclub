@@ -1,7 +1,7 @@
 import { Col, Form, Input, InputNumber, Row, Select } from 'antd';
 import InputTime, { stringToMilliSeconds } from 'components/formItems/InputTime';
 import { IMobxClubModel } from 'models/mobxClubModel';
-import { IRaceResult, IRaceResultSnapshotIn } from 'models/resultModel';
+import { IRaceResult, IRaceResultProps } from 'models/resultModel';
 import { IRaceWizard } from 'models/resultWizardModel';
 import { ISessionModel } from 'models/sessionModel';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -36,7 +36,7 @@ const ColorOptionContent = styled.div<IColorOptionContentProps>`
   margin-top: 6px;
 `;
 
-export interface IExtendedRaceResult extends IRaceResultSnapshotIn {
+export interface IExtendedRaceResult extends IRaceResultProps {
   isAwardTouched: boolean;
   fee: number;
 }
@@ -78,7 +78,7 @@ const EditResultIndividual = ({
     clubModel.raceClubs?.eventClassifications.find((ec) => ec.eventClassificationId === eventClassificationId)
   );
   const competitor = useMemo(
-    () => clubModel.raceClubs?.selectedClub.competitorById(result.competitorId),
+    () => clubModel.raceClubs?.selectedClub?.competitorById(result.competitorId),
     [clubModel.raceClubs?.selectedClub]
   );
   const [failedReason, setFailedReason] = useState(result.failedReason);
@@ -104,7 +104,7 @@ const EditResultIndividual = ({
     }, 0);
   }, [formRef.current]);
 
-  return raceClubs ? (
+  return raceClubs?.selectedClub ? (
     <Form
       id={formId}
       ref={formRef}
@@ -162,38 +162,39 @@ const EditResultIndividual = ({
           <StyledIcon
             type="edit"
             onClick={() => {
-              AddMapCompetitorConfirmModal(
-                t,
-                result.competitorId,
-                undefined,
-                {
-                  iType: 'COMPETITOR',
-                  iFirstName: null,
-                  iLastName: null,
-                  iGender: null,
-                  iBirthDay: null,
-                  iClubId: raceClubs.selectedClub.clubId,
-                  iStartDate: '1930-01-01',
-                  iEndDate: null,
-                  iEventorCompetitorId: null,
-                },
-                result.className,
-                clubModel,
-                sessionModel
-              )
-                .then((competitor) => {
-                  result.competitorId = competitor ? competitor.competitorId : -1;
-                  result.feeToClub = GetCompetitorFee(paymentModel, result, age, classClassification);
-                  formRef.current.setFieldsValue({
-                    iCompetitorId: result.competitorId == null ? undefined : result.competitorId,
-                    iFeeToClub: result.feeToClub,
+              raceClubs.selectedClub &&
+                AddMapCompetitorConfirmModal(
+                  t,
+                  result.competitorId,
+                  undefined,
+                  {
+                    iType: 'COMPETITOR',
+                    iFirstName: null,
+                    iLastName: null,
+                    iGender: null,
+                    iBirthDay: null,
+                    iClubId: raceClubs.selectedClub.clubId,
+                    iStartDate: '1930-01-01',
+                    iEndDate: null,
+                    iEventorCompetitorId: null,
+                  },
+                  result.className,
+                  clubModel,
+                  sessionModel
+                )
+                  .then((competitor) => {
+                    result.competitorId = competitor ? competitor.competitorId : -1;
+                    result.feeToClub = GetCompetitorFee(paymentModel, result, age, classClassification);
+                    formRef.current.setFieldsValue({
+                      iCompetitorId: result.competitorId == null ? undefined : result.competitorId,
+                      iFeeToClub: result.feeToClub,
+                    });
+                    setAge(competitor ? GetAge(competitor.birthDay, raceDate) : null);
+                    formRef.current.validateFields(['iCompetitorId', 'iFeeToClub'], { force: true });
+                  })
+                  .catch((error) => {
+                    console.error(error);
                   });
-                  setAge(competitor ? GetAge(competitor.birthDay, raceDate) : null);
-                  formRef.current.validateFields(['iCompetitorId', 'iFeeToClub'], { force: true });
-                })
-                .catch((error) => {
-                  console.error(error);
-                });
             }}
           />
         </Col>
@@ -389,8 +390,8 @@ const EditResultIndividual = ({
               max={100000}
               step={100}
               style={{ width: '100%' }}
-              onChange={(value?: number | string) => {
-                result.lengthInMeter = value as number | undefined;
+              onChange={(value: number | null) => {
+                result.lengthInMeter = value;
                 const resultsWithSameClass = results.filter(
                   (r) => r.className === result.className && r.resultId !== result.resultId
                 );
@@ -474,7 +475,7 @@ const EditResultIndividual = ({
                   );
                   const winnerTime = stringToMilliSeconds(value, timeFormat);
                   if (competitorTime > 0 && winnerTime > 0 && competitorTime < winnerTime) {
-                    callback(t('results.WinnerTimeLessOrEqualThanTime'));
+                    callback(t('results.WinnerTimeLessOrEqualThanTime') ?? undefined);
                   }
                   callback();
                 },
@@ -507,7 +508,7 @@ const EditResultIndividual = ({
                   const winnerTime = stringToMilliSeconds(formRef.current.getFieldValue('iWinnerTime'), timeFormat);
                   const secondTime = stringToMilliSeconds(value, timeFormat);
                   if (winnerTime > 0 && secondTime > 0 && secondTime < winnerTime) {
-                    callback(t('results.SecondTimeGreaterOrEqualThanWinnerTime'));
+                    callback(t('results.SecondTimeGreaterOrEqualThanWinnerTime') ?? undefined);
                   }
                   callback();
                 },
@@ -547,8 +548,8 @@ const EditResultIndividual = ({
               max={100000}
               step={1}
               style={{ width: '100%' }}
-              onChange={(value?: string | number) => {
-                result.position = value as number | undefined;
+              onChange={(value: number | null) => {
+                result.position = value;
                 formRef.current.validateFields(['iNofStartsInClass'], { force: true });
               }}
             />
@@ -567,7 +568,7 @@ const EditResultIndividual = ({
                 validator: (rule, value, callback) => {
                   const position = formRef.current.getFieldValue('iPosition');
                   if (position && value && value < position) {
-                    callback(t('results.PositionGreaterThanStarts'));
+                    callback(t('results.PositionGreaterThanStarts') ?? undefined);
                   }
                   callback();
                 },
@@ -579,8 +580,8 @@ const EditResultIndividual = ({
               max={100000}
               step={1}
               style={{ width: '100%' }}
-              onChange={(value?: string | number) => {
-                result.nofStartsInClass = value as number | undefined;
+              onChange={(value: number | null) => {
+                result.nofStartsInClass = value;
                 const resultsWithSameClass = results.filter(
                   (r) => r.className === result.className && r.resultId !== result.resultId
                 );
@@ -636,8 +637,8 @@ const EditResultIndividual = ({
               precision={2}
               decimalSeparator=","
               style={{ width: '100%' }}
-              onChange={(value?: string | number) => {
-                result.originalFee = value as number | undefined;
+              onChange={(value: number | null) => {
+                result.originalFee = value;
                 result.feeToClub = GetCompetitorFee(paymentModel, result, age, classClassification);
                 formRef.current.setFieldsValue({
                   iFeeToClub: result.feeToClub,
@@ -675,8 +676,8 @@ const EditResultIndividual = ({
               precision={2}
               decimalSeparator=","
               style={{ width: '100%' }}
-              onChange={(value?: string | number) => {
-                result.lateFee = value as number | undefined;
+              onChange={(value: number | null) => {
+                result.lateFee = value;
                 result.feeToClub = GetCompetitorFee(paymentModel, result, age, classClassification);
                 formRef.current.setFieldsValue({
                   iFeeToClub: result.feeToClub,
@@ -707,8 +708,8 @@ const EditResultIndividual = ({
               precision={2}
               decimalSeparator=","
               style={{ width: '100%' }}
-              onChange={(value?: string | number) => {
-                result.feeToClub = value as number | undefined;
+              onChange={(value: number | null) => {
+                result.feeToClub = value;
                 formRef.current.setFieldsValue({
                   iTotalFeeToClub: (result.feeToClub ?? 0) + (result.serviceFeeToClub ?? 0),
                 });
@@ -736,8 +737,8 @@ const EditResultIndividual = ({
               precision={2}
               decimalSeparator=","
               style={{ width: '100%' }}
-              onChange={(value?: string | number) => {
-                result.serviceFeeToClub = value as number | undefined;
+              onChange={(value: number | null) => {
+                result.serviceFeeToClub = value!;
                 formRef.current.setFieldsValue({
                   iTotalFeeToClub: (result.feeToClub ?? 0) + (result.serviceFeeToClub ?? 0),
                 });

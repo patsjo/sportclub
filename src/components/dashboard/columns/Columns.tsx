@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { createReparentableSpace } from 'react-reparenting';
 import styled from 'styled-components';
 import Column from './Column';
 import ColumnItem from './ColumnItem';
@@ -10,8 +9,6 @@ import {
   maxColumns,
   recalculateChildDistribution,
 } from './mapNodesToColumns';
-
-const { Reparentable, sendReparentableChild } = createReparentableSpace();
 
 const flatten = (list: (IChildColumnElement[] | IChildColumnElement | null)[]): IChildColumnElement[] =>
   list
@@ -57,10 +54,10 @@ const Columns = ({ children }: IColumnsProps) => {
   const [childHeights, setChildHeights] = useState<Record<React.Key, number>>({});
   const [childDistribution, setChildDistribution] = useState<IChildColumn[][]>([...Array(maxColumns)].map(() => []));
 
-  const onHeightChange = useCallback((key, height) => {
+  const onHeightChange = useCallback((key: React.Key, height: number) => {
     setChildHeights((oldHeights) => {
       const newHeights = { ...oldHeights };
-      newHeights[key] = height;
+      if (height > 0) newHeights[key] = height;
       return newHeights;
     });
   }, []);
@@ -88,20 +85,14 @@ const Columns = ({ children }: IColumnsProps) => {
         return existingChild ? existingChild : getDefaultChild(reactChild, columns);
       });
 
-      return recalculateChildDistribution(
-        updatedChilds,
-        childHeights,
-        columns,
-        columns !== oldColumns.current,
-        sendReparentableChild
-      );
+      return recalculateChildDistribution(updatedChilds, childHeights, columns, columns !== oldColumns.current);
     });
   }, [allReactChildren.map((child) => child?.key).join(','), JSON.stringify(childHeights), columns]);
 
   return (
     <StyledColumns key="columns">
       {childDistribution.map((column, i) => (
-        <Column Reparentable={Reparentable} columns={columns} index={i}>
+        <Column key={`column#${i}`} columns={columns} index={i}>
           {column.map((child) => (
             <ColumnItem key={`columnItem#${child.key}`} onHeightChange={(height) => onHeightChange(child.key, height)}>
               {child.reactChild}

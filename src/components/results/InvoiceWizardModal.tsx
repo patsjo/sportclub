@@ -1,10 +1,10 @@
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import { Button, message, Modal, Spin, Steps } from 'antd';
 import { FormInstance } from 'antd/lib/form';
+import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
-import { getSnapshot } from 'mobx-state-tree';
-import { IRaceClubsSnapshotIn } from 'models/resultModel';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { IRaceClubsProps } from 'models/resultModel';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { useMobxStore } from 'utils/mobxStore';
@@ -32,7 +32,7 @@ interface IInvoiceWizardModalProps {
 const InvoiceWizardModal = observer(({ open, onClose }: IInvoiceWizardModalProps) => {
   const { t } = useTranslation();
   const { clubModel, sessionModel } = useMobxStore();
-  const raceWizardModel = useRef(RaceWizard.create(getLocalStorage()));
+  const raceWizardModel = useRef(new RaceWizard(getLocalStorage()));
   const [wizardStep, setWizardStep] = useState(-1);
   const [nextStepValid, setNextStepValid] = useState(true);
   const [inputForm, setInputForm] = useState<FormInstance>();
@@ -62,7 +62,7 @@ const InvoiceWizardModal = observer(({ open, onClose }: IInvoiceWizardModalProps
     if (!raceEvent || !saveUrl) return;
 
     setSaving(true);
-    const snapshot = getSnapshot(raceEvent);
+    const snapshot = toJS(raceEvent);
 
     PostJsonData(
       saveUrl,
@@ -111,7 +111,7 @@ const InvoiceWizardModal = observer(({ open, onClose }: IInvoiceWizardModalProps
       true,
       sessionModel.authorizationHeader
     )
-      .then((clubsJson: IRaceClubsSnapshotIn) => {
+      .then((clubsJson: IRaceClubsProps) => {
         clubModel.setRaceClubs(clubsJson);
         setWizardStep(0);
         setLoaded(true);
@@ -128,7 +128,7 @@ const InvoiceWizardModal = observer(({ open, onClose }: IInvoiceWizardModalProps
         closable={false}
         maskClosable={false}
         title={t('results.InvoiceVerifier')}
-        visible={open}
+        open={open}
         onCancel={onClose}
         width="calc(100% - 80px)"
         style={{ top: 40, minWidth: 1250 }}

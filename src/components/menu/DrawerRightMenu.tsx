@@ -1,8 +1,7 @@
 import { Drawer, Form, Menu, Spin } from 'antd';
 import { observer } from 'mobx-react';
-import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useMobxStore } from 'utils/mobxStore';
 import { DefaultMenuPath } from '../htmlEditor/HtmlEditor';
@@ -42,7 +41,7 @@ const DrawerRightMenu = observer(() => {
   const { t } = useTranslation();
   const { clubModel, globalStateModel, sessionModel } = useMobxStore();
   const [htmEditorLinkform] = Form.useForm();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   return (
     <StyledDrawer
@@ -50,7 +49,7 @@ const DrawerRightMenu = observer(() => {
       placement="right"
       closable={false}
       width={360}
-      visible={globalStateModel.rightMenuVisible}
+      open={globalStateModel.rightMenuVisible}
       onClose={() => globalStateModel.setRightMenuVisible(false)}
     >
       <StyledMenu mode="inline" onClick={() => globalStateModel.setRightMenuVisible(false)}>
@@ -59,7 +58,7 @@ const DrawerRightMenu = observer(() => {
           icon={'HomeIcon'}
           name={t('modules.Home')}
           onClick={() => {
-            globalStateModel.setDashboard(history, '/');
+            globalStateModel.setDashboard(navigate, '/');
           }}
         />
         <LoginMenuItem />
@@ -95,7 +94,7 @@ const DrawerRightMenu = observer(() => {
             {globalStateModel.htmlEditorMenu ? (
               getHtmlEditorMenus(
                 globalStateModel.htmlEditorMenu,
-                (path: string) => globalStateModel.setHtmlEditor(history, path),
+                (path: string) => globalStateModel.setHtmlEditor(navigate, path),
                 '',
                 htmEditorLinkform,
                 t,
@@ -112,7 +111,7 @@ const DrawerRightMenu = observer(() => {
               name={t('modules.HtmlEditor')}
               disabled={!sessionModel.loggedIn || !sessionModel.isAdmin}
               onClick={() => {
-                globalStateModel.setHtmlEditor(history, '/page/new');
+                globalStateModel.setHtmlEditor(navigate, '/page/new');
               }}
             />
             <MenuItem
@@ -154,7 +153,7 @@ const DrawerRightMenu = observer(() => {
             icon={'bank'}
             name={t('common.OurSponsors')}
             onClick={() => {
-              globalStateModel.setDashboard(history, '/sponsors');
+              globalStateModel.setDashboard(navigate, '/sponsors');
             }}
           />
         ) : null}

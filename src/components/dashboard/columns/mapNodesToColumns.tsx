@@ -2,9 +2,10 @@ import React from 'react';
 import styled from 'styled-components';
 
 export interface IChildContainerProps {
-  key: React.Key | null;
+  key: React.Key;
   column: number | undefined;
   preferredColumn?: number;
+  preferredHeight?: number;
   marginBottom?: number;
 }
 export interface IChildColumn extends IChildContainerProps {
@@ -64,11 +65,11 @@ export const maxColumns = 5;
 
 export const getDefaultChild = (reactChild: IChildColumnElement, columns: number): IChildColumn => {
   const child: IChildColumn = {
-    key: reactChild!.key,
+    key: reactChild!.key!,
     preferredColumn: reactChild!.props.column,
     reactChild: reactChild,
     column: 0,
-    height: 0,
+    height: reactChild.props.preferredHeight ?? 0,
   };
   child.column = getColumn(child, columns, [...Array(columns)].fill(0), 0);
 
@@ -79,14 +80,7 @@ export const recalculateChildDistribution = (
   updatedChilds: IChildColumn[],
   childHeights: Record<React.Key, number>,
   columns: number,
-  recalculateAll: boolean,
-  sendReparentableChild: (
-    fromParentId: string,
-    toParentId: string,
-    childSelector: string | number,
-    position: string | number,
-    skipUpdate?: boolean | undefined
-  ) => number
+  recalculateAll: boolean
 ) => {
   let aboveChildAlreadyCalculated = !recalculateAll;
   const heights = [...Array(columns)].fill(0);
@@ -104,13 +98,7 @@ export const recalculateChildDistribution = (
         const index = getColumn(child, columns, heights, totalHeight);
         heights[index] += child.height;
         if (child.column !== index) {
-          sendReparentableChild(
-            `column#${child.column}`,
-            `column#${index}`,
-            `columnItem#${child.key}`,
-            newChildDistribution[index].length,
-            false
-          );
+          //TODO Move column without recreate (npm react-reparenting not supported in react 18)
           child.column = index;
         }
       }

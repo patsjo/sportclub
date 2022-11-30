@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react';
-import { ISponsorSnapshotIn } from 'models/mobxClubModel';
+import { ISponsorProps } from 'models/mobxClubModel';
 import React from 'react';
 import styled from 'styled-components';
 import { useMobxStore } from 'utils/mobxStore';
@@ -20,7 +20,7 @@ const SponsorImage = styled.img`
 
 const AllSponsors = observer(() => {
   const { clubModel } = useMobxStore();
-  const sponsors = React.useMemo<ISponsorSnapshotIn[] | undefined>(
+  const sponsors = React.useMemo<ISponsorProps[] | undefined>(
     () => (clubModel.sponsors ? clubModel.sponsors.filter((s) => s.active) : undefined),
     [clubModel.sponsors]
   );

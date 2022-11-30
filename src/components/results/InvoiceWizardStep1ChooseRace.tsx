@@ -45,7 +45,7 @@ const InvoiceWizardStep1ChooseRace = observer(
 
       const queryData = {
         iType: 'EVENTS',
-        iClubId: clubModel.raceClubs?.selectedClub.clubId,
+        iClubId: clubModel.raceClubs?.selectedClub?.clubId,
         iFromDate: raceWizardModel.queryStartDate,
         iToDate: raceWizardModel.queryEndDate,
       };

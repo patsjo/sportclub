@@ -1,12 +1,11 @@
 import { CaretRightOutlined, FileOutlined, LinkOutlined, SettingOutlined } from '@ant-design/icons';
 import { Menu } from 'antd';
 import { FormInstance } from 'antd/lib/form';
+import { TFunction } from 'i18next';
 import { IGlobalStateModel } from 'models/globalStateModel';
 import { IMenu, IMenuItem } from 'models/htmlEditorModel';
 import { IMobxClubModel } from 'models/mobxClubModel';
 import { ISessionModel } from 'models/sessionModel';
-import React from 'react';
-import { TFunction } from 'react-i18next';
 import styled from 'styled-components';
 import MaterialIcon from '../materialIcon/MaterialIcon';
 import MenuItem from '../menu/MenuItem';

@@ -2,11 +2,11 @@ import { Col, DatePicker, Form, Input, InputNumber, message, Row, Spin } from 'a
 import { FormInstance } from 'antd/lib/form';
 import { ColumnType } from 'antd/lib/table';
 import InputTime from 'components/formItems/InputTime';
+import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
-import { getSnapshot } from 'mobx-state-tree';
-import { IRaceEventSnapshotIn, IRaceResult, IRaceTeamResult } from 'models/resultModel';
+import { IRaceEventProps, IRaceResult, IRaceTeamResult } from 'models/resultModel';
 import moment from 'moment';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMobxStore } from 'utils/mobxStore';
 import { useResultWizardStore } from 'utils/resultWizardStore';
@@ -67,7 +67,7 @@ const InvoiceWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: 
       true,
       sessionModel.authorizationHeader
     )
-      .then(async (editResultJson: IRaceEventSnapshotIn) => {
+      .then(async (editResultJson: IRaceEventProps) => {
         editResultJson.invoiceVerified = true;
         raceWizardModel.setRaceEvent(editResultJson);
         onValidate(true);
@@ -87,7 +87,7 @@ const InvoiceWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: 
       title: t('results.Competitor'),
       dataIndex: 'competitorId',
       key: 'competitorId',
-      render: (id) => clubModel.raceClubs?.selectedClub.competitorById(id)?.fullName,
+      render: (id) => clubModel.raceClubs?.selectedClub?.competitorById(id)?.fullName,
     },
     {
       title: t('results.Class'),
@@ -123,7 +123,7 @@ const InvoiceWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: 
           precision={2}
           decimalSeparator=","
           style={{ width: '100%' }}
-          onChange={(value?: string | number) => {
+          onChange={(value: number | null) => {
             record.serviceFeeToClub = value as number;
             const mobxResult = getMobxResult(record);
             mobxResult?.setNumberValue('serviceFeeToClub', value as number);
@@ -170,10 +170,10 @@ const InvoiceWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: 
             precision={2}
             decimalSeparator=","
             style={{ width: '100%' }}
-            onChange={(value?: string | number) => {
-              record.originalFee = value as number | undefined;
+            onChange={(value: number | null) => {
+              record.originalFee = value;
               const mobxResult = getMobxResult(record) as IRaceResult | undefined;
-              mobxResult?.setNumberValueOrNull('originalFee', value as number | undefined);
+              mobxResult?.setNumberValueOrNull('originalFee', value);
               onValidate(raceWizardModel.raceEvent?.valid ?? false);
             }}
           />
@@ -193,10 +193,10 @@ const InvoiceWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: 
             precision={2}
             decimalSeparator=","
             style={{ width: '100%' }}
-            onChange={(value?: string | number) => {
-              record.lateFee = value as number | undefined;
+            onChange={(value: number | null) => {
+              record.lateFee = value;
               const mobxResult = getMobxResult(record) as IRaceResult | undefined;
-              mobxResult?.setNumberValueOrNull('lateFee', value as number | undefined);
+              mobxResult?.setNumberValueOrNull('lateFee', value);
               onValidate(raceWizardModel.raceEvent?.valid ?? false);
             }}
           />
@@ -216,10 +216,10 @@ const InvoiceWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: 
             precision={2}
             decimalSeparator=","
             style={{ width: '100%' }}
-            onChange={(value?: string | number) => {
-              record.feeToClub = value as number | undefined;
+            onChange={(value: number | null) => {
+              record.feeToClub = value;
               const mobxResult = getMobxResult(record) as IRaceResult | undefined;
-              mobxResult?.setNumberValueOrNull('feeToClub', value as number | undefined);
+              mobxResult?.setNumberValueOrNull('feeToClub', value);
               onValidate(raceWizardModel.raceEvent?.valid ?? false);
             }}
           />
@@ -275,7 +275,7 @@ const InvoiceWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: 
         <StyledTable
           columns={columns as ColumnType<any>[]}
           dataSource={raceWizardModel.raceEvent.teamResults.map((result) => ({
-            ...getSnapshot(result),
+            ...toJS(result),
             key: result.teamResultId.toString(),
           }))}
           pagination={{ pageSize: 6 }}
@@ -285,7 +285,7 @@ const InvoiceWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: 
         <StyledTable
           columns={columns as ColumnType<any>[]}
           dataSource={raceWizardModel.raceEvent.results.map((result) => ({
-            ...getSnapshot(result),
+            ...toJS(result),
             key: result.resultId.toString(),
           }))}
           pagination={{ pageSize: 6 }}

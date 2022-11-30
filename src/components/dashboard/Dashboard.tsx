@@ -3,7 +3,6 @@ import { observer } from 'mobx-react';
 import Feature from 'ol/Feature';
 import { Point } from 'ol/geom';
 import { toLonLat } from 'ol/proj';
-import React from 'react';
 import styled from 'styled-components';
 import { useMobxStore } from 'utils/mobxStore';
 import InfiniteScroll from '../../utils/infinityScroll';
@@ -34,11 +33,11 @@ const Dashboard = observer(() => {
       <Columns key="dashboard#columns#home">
         {newsItems.slice(0, 2)}
         {bannerItems}
-        <ChildContainer column={-2} key="dashboard#weeklyCalendarContainer" marginBottom={12}>
+        <ChildContainer column={-2} key="dashboard#weeklyCalendarContainer" marginBottom={12} preferredHeight={360}>
           <WeeklyCalendar key="dashboard#weeklyCalendar" />
         </ChildContainer>
         {clubModel.map?.center ? (
-          <ChildContainer column={-1} key="dashboard#homeMapContainer" marginBottom={12}>
+          <ChildContainer column={-1} key="dashboard#homeMapContainer" marginBottom={12} preferredHeight={400}>
             <OSMOrienteeringMap
               key="dashboard#homeMap"
               height="400px"
@@ -62,12 +61,12 @@ const Dashboard = observer(() => {
         ) : null}
         {newsItems.slice(2, 5)}
         {clubModel.facebookUrl ? (
-          <ChildContainer column={-2} key="dashboard#facebookTimelineContainer" marginBottom={12}>
+          <ChildContainer column={-2} key="dashboard#facebookTimelineContainer" marginBottom={12} preferredHeight={400}>
             <ShowFacebookTimeline key="dashboard#facebookTimeline" />
           </ChildContainer>
         ) : null}
         {showSponsors ? (
-          <ChildContainer key="dashboard#sponsorsSlideshowContainer" column={-1}>
+          <ChildContainer key="dashboard#sponsorsSlideshowContainer" column={-1} preferredHeight={130}>
             <SponsorsSlideshow key="dashboard#sponsorsSlideshow" />
           </ChildContainer>
         ) : null}

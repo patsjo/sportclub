@@ -1,10 +1,10 @@
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import { Button, message, Modal, Spin, Steps } from 'antd';
 import { FormInstance } from 'antd/lib/form';
+import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
-import { getSnapshot } from 'mobx-state-tree';
-import { IRaceClubsSnapshotIn } from 'models/resultModel';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { IRaceClubsProps } from 'models/resultModel';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { useMobxStore } from 'utils/mobxStore';
@@ -34,7 +34,7 @@ const EventSelectorWizardModal = observer(({ open, onClose }: IEventSelectorWiza
   const [inputForm, setInputForm] = useState<FormInstance>();
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
-  const eventSelectorWizardModel = useMemo(() => EventSelectorWizard.create(getLocalStorage()), []);
+  const eventSelectorWizardModel = useMemo(() => new EventSelectorWizard(getLocalStorage()), []);
 
   useEffect(() => {
     if (loaded) return;
@@ -49,7 +49,7 @@ const EventSelectorWizardModal = observer(({ open, onClose }: IEventSelectorWiza
       true,
       sessionModel.authorizationHeader
     )
-      .then((clubsJson: IRaceClubsSnapshotIn) => {
+      .then((clubsJson: IRaceClubsProps) => {
         clubModel.setRaceClubs(clubsJson);
         setWizardStep(0);
         setLoaded(true);
@@ -81,7 +81,7 @@ const EventSelectorWizardModal = observer(({ open, onClose }: IEventSelectorWiza
 
     setSaving(true);
 
-    const snapshot = getSnapshot(eventSelectorWizardModel);
+    const snapshot = toJS(eventSelectorWizardModel);
     const data = {
       queryStartDate: snapshot.queryStartDate,
       queryEndDate: snapshot.queryEndDate,
@@ -113,7 +113,7 @@ const EventSelectorWizardModal = observer(({ open, onClose }: IEventSelectorWiza
       closable={false}
       maskClosable={false}
       title={t('calendar.EventSelector')}
-      visible={open}
+      open={open}
       onCancel={onClose}
       width="calc(100% - 80px)"
       style={{ top: 40, minWidth: 560 }}

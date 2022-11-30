@@ -1,4 +1,4 @@
-import { IAnyLayer } from 'models/mobxClubModel';
+import { IAnyLayer, IMapGroupLayer } from 'models/mobxClubModel';
 import { defaults as defaultControls } from 'ol/control';
 import { Group as GroupLayer, Tile as TileLayer } from 'ol/layer';
 import BaseLayer from 'ol/layer/Base';
@@ -17,7 +17,7 @@ const getDefaultLayerVisible = (layers: IAnyLayer[], id: string): boolean | unde
   for (let i = 0; i < layers.length; i++) {
     if (layers[i].id === id) return layers[i].visible;
     if (layers[i].type === 'group') {
-      const visible = getDefaultLayerVisible(layers[i].layers, id);
+      const visible = getDefaultLayerVisible((layers[i] as IMapGroupLayer).layers, id);
       if (visible !== undefined) return visible;
     }
   }

@@ -1,7 +1,7 @@
 import { Button, message, Spin, Tabs } from 'antd';
 import { observer } from 'mobx-react';
 import moment from 'moment';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { useMobxStore } from 'utils/mobxStore';

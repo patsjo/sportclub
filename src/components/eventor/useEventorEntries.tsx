@@ -253,10 +253,11 @@ const useEventorEntries = (clubModel: IMobxClubModel) => {
         header={event.name}
         date={event.date}
         eventObject={event}
+        preferredHeight={100}
       />
     ))
   ) : (
-    <SpinnerDiv key="entryObject#spinner" column={-50}>
+    <SpinnerDiv key="entryObject#spinner" column={-50} preferredHeight={100}>
       <Spin size="large" />
     </SpinnerDiv>
   );

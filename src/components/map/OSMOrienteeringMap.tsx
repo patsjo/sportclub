@@ -206,14 +206,14 @@ const OSMOrienteeringMap = observer(
         text = `${text}${text && text.length && directionText && directionText.length ? '<br/>' : ''}${directionText}`;
         const highlightedUids = highlighted.map((g: any) => g.uid);
         const existingFeature = highlightLayer
-          .getSource()
-          .getFeatures()
+          ?.getSource()
+          ?.getFeatures()
           .find(() => true);
 
         if (existingFeature) {
           existingFeature.getGeometry()?.setCoordinates(event.coordinate);
         } else {
-          highlightLayer.getSource().addFeature(new Feature<Point>(new Point(event.coordinate)));
+          highlightLayer.getSource()?.addFeature(new Feature<Point>(new Point(event.coordinate)));
         }
 
         if (highlight.current && currentUids.current === JSON.stringify(highlightedUids)) {
@@ -224,7 +224,7 @@ const OSMOrienteeringMap = observer(
       if (text && text.length) {
         highlight.current = true;
       } else {
-        highlightLayer.getSource().clear();
+        highlightLayer.getSource()?.clear();
         currentUids.current = undefined;
         highlight.current = false;
         text = undefined;
@@ -326,8 +326,8 @@ const OSMOrienteeringMap = observer(
       if (map && graphicsLayer) {
         const updateGraphics = async (graphics?: IGraphic[]) => {
           if (!map || !graphicsLayer || !graphics) return;
-          graphicsLayer.getSource().clear();
-          graphicsLayer.getSource().addFeatures(
+          graphicsLayer.getSource()?.clear();
+          graphicsLayer.getSource()?.addFeatures(
             graphics.map((graphic) => {
               const feature =
                 graphic.geometry.type === 'circle'
@@ -427,7 +427,7 @@ const OSMOrienteeringMap = observer(
             })
           );
           if (onHighlightClick !== undefined) {
-            graphicsLayer.getSource().addFeatures(
+            graphicsLayer.getSource()?.addFeatures(
               graphics
                 .filter((graphic) => graphic.geometry.type === 'point')
                 .map((graphic) => {
@@ -467,12 +467,13 @@ const OSMOrienteeringMap = observer(
             map.getView().setCenter(fromLonLat(clubModel.map.center, mapProjection));
             map.getView().setZoom(clubModel.map.defaultZoomLevel);
           } else {
-            const geometriesExtent = graphicsLayer.getSource().getExtent();
-            map.getView().fit(geometriesExtent, {
-              padding: [40, 40, 40, 40],
-              maxZoom: 16,
-              duration: 800,
-            });
+            const geometriesExtent = graphicsLayer.getSource()?.getExtent();
+            geometriesExtent &&
+              map.getView().fit(geometriesExtent, {
+                padding: [40, 40, 40, 40],
+                maxZoom: 16,
+                duration: 800,
+              });
           }
         };
         if (defaultGraphics && Array.isArray(defaultGraphics)) {

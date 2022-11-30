@@ -6,7 +6,6 @@ import { IMobxClubModel } from 'models/mobxClubModel';
 import { ISessionModel } from 'models/sessionModel';
 import { toLonLat } from 'ol/proj';
 import { Icon, Style } from 'ol/style';
-import React from 'react';
 import { MobxStoreProvider } from 'utils/mobxStore';
 import OSMOrienteeringMap, { OrienteeringSymbol } from './OSMOrienteeringMap';
 import { mapProjection } from './useOpenLayersMap';
@@ -64,8 +63,8 @@ export const GetPositionModal = (
                   })
                 );
                 selectedPosition = { longitude: coordinates[0], latitude: coordinates[1] };
-                graphicLayer.getSource().clear();
-                graphicLayer.getSource().addFeature(graphic);
+                graphicLayer.getSource()?.clear();
+                graphicLayer.getSource()?.addFeature(graphic);
                 confirmModal.update({
                   okButtonProps: {
                     disabled: false,

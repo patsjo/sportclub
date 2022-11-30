@@ -1,12 +1,4 @@
 const CracoLessPlugin = require('craco-less');
-
-const ENV = process.env.NODE_ENV;
-const babelPlugins = [
-  ['babel-plugin-import', { libraryName: 'antd', libraryDirectory: 'es', style: true }],
-  ['babel-plugin-styled-components', { displayName: true }],
-];
-const babelTestPlugins = [];
-
 const { styles } = require('@ckeditor/ckeditor5-dev-utils');
 const cssRegex = /\.css$/;
 const cssModuleRegex = /\.module\.css$/;
@@ -21,32 +13,34 @@ const enableCKEWebpackConfigPlugin = (webpackConfig, { env, paths }) => {
   // Add the SVG and CSS loaders to the oneOf array
   const additions = [
     {
-      test: /ckeditor5-[^/\\]+[/\\]theme[/\\]icons[/\\][^/\\]+\.svg$/,
-      use: ['raw-loader'],
+        test: /ckeditor5-[^/\\]+[/\\]theme[/\\]icons[/\\][^/\\]+\.svg$/,
+        use: ['raw-loader'],
     },
     {
-      test: /ckeditor5-[^/\\]+[/\\]theme[/\\].+\.css$/,
-      use: [
-        {
-          loader: 'style-loader',
-          options: {
-            injectType: 'singletonStyleTag',
-            attributes: {
-              'data-cke': true,
+        test: /ckeditor5-[^/\\]+[/\\]theme[/\\].+\.css$/,
+        use: [
+            {
+                loader: 'style-loader',
+                options: {
+                    injectType: 'singletonStyleTag',
+                    attributes: {
+                        'data-cke': true,
+                    },
+                },
             },
-          },
-        },
-        {
-          loader: 'postcss-loader',
-          options: styles.getPostCssConfig({
-            themeImporter: {
-              themePath: require.resolve('@ckeditor/ckeditor5-theme-lark'),
+            {
+                loader: 'postcss-loader',
+                options: {
+                    postcssOptions: styles.getPostCssConfig( {
+                        themeImporter: {
+                            themePath: require.resolve('@ckeditor/ckeditor5-theme-lark'),
+                        },
+                        minify: true,
+                    }),
+                },
             },
-            minify: true,
-          }),
-        },
-      ],
-    },
+        ],
+    }
   ];
   additions.forEach((item, index) => {
     oneOf.push(item);
@@ -81,6 +75,7 @@ const enableCKEWebpackConfigPlugin = (webpackConfig, { env, paths }) => {
   // Always return a config object.
   return webpackConfig;
 };
+
 module.exports = {
   webpack: {
     alias: {},
@@ -118,6 +113,5 @@ module.exports = {
         },
       },
     },
-  ],
-  babel: { plugins: ENV === 'test' ? babelTestPlugins : babelPlugins },
+  ]
 };

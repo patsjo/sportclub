@@ -1,6 +1,6 @@
-import { IMobxClubModelSnapshotIn } from 'models/mobxClubModel';
+import { IMobxClubModelProps } from 'models/mobxClubModel';
 
-const varendgn: IMobxClubModelSnapshotIn = {
+const varendgn: IMobxClubModelProps = {
   title: 'Värend GN',
   defaultLanguage: 'sv',
   map: {

@@ -2,9 +2,9 @@ import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import { Col, message, Row, Skeleton } from 'antd';
 import { observer } from 'mobx-react';
 import moment from 'moment';
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useMobxStore } from 'utils/mobxStore';
 import { ICalendarActivity, ICalendarDomains, ICalendarEvent } from 'utils/responseCalendarInterfaces';
@@ -125,11 +125,11 @@ const MonthlyCalendar = observer(() => {
   const [loaded, setLoaded] = useState(false);
   const [activities, setActivities] = useState<ICalendarActivity[]>([]);
   const [domains, setDomains] = useState<ICalendarDomains>({ activityTypes: [], groups: [], users: [] });
-  const history = useHistory();
+  const navigate = useNavigate();
 
   if (globalStateModel.startDate == null) {
     globalStateModel.setDashboard(
-      history,
+      navigate,
       '/calendar',
       moment().startOf('month').format(dateFormat),
       moment().endOf('month').format(dateFormat),
@@ -195,7 +195,7 @@ const MonthlyCalendar = observer(() => {
   const onPrevious = useCallback(
     () =>
       globalStateModel.setDashboard(
-        history,
+        navigate,
         '/calendar',
         moment(globalStateModel.startDate).add(-1, 'months').startOf('month').format(dateFormat),
         moment(globalStateModel.startDate).add(-1, 'months').endOf('month').format(dateFormat),
@@ -207,7 +207,7 @@ const MonthlyCalendar = observer(() => {
   const onNext = useCallback(
     () =>
       globalStateModel.setDashboard(
-        history,
+        navigate,
         '/calendar',
         moment(globalStateModel.startDate).add(1, 'months').startOf('month').format(dateFormat),
         moment(globalStateModel.startDate).add(1, 'months').endOf('month').format(dateFormat),

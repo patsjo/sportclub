@@ -1,12 +1,12 @@
 import { IMobxClubModel } from 'models/mobxClubModel';
-import { INewsItemSnapshotIn } from 'models/newsModel';
-import React, { ReactElement } from 'react';
+import { INewsItemProps } from 'models/newsModel';
+import { ReactElement } from 'react';
 import { StyledComponent } from 'styled-components';
 
 export const getImage = (
   maxSize: number,
   ImageComp: StyledComponent<'img', any, any, never>,
-  newsObject: INewsItemSnapshotIn,
+  newsObject: INewsItemProps,
   clubModel: IMobxClubModel
 ): ReactElement<any, any> | null => {
   let Image: ReactElement<any, any> | null = null;

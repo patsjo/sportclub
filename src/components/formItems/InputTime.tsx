@@ -1,4 +1,4 @@
-import { Input } from 'antd';
+import { Input, InputRef } from 'antd';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 type ValidTimeTypes = 'HH:mm:ss' | 'HH:mm' | 'mm:ss' | 'mm:ss.SSS';
@@ -204,7 +204,7 @@ interface IInputTimeProps {
   onChange?: (value: string | null) => void;
 }
 const InputTime = ({ format, disabled, allowClear, allowNegativeTime, style, value, onChange }: IInputTimeProps) => {
-  const inputRef = useRef<Input>(null);
+  const inputRef = useRef<InputRef>(null);
   const selectionStartRef = useRef<number | null>(null);
   const selectionEndRef = useRef<number | null>(null);
   const placeholder = useMemo(() => `Ex: ${format.replace(/([A-Z]|[a-z])/g, '0')}`, [format]);

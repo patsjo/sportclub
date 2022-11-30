@@ -1,8 +1,7 @@
 import { observer } from 'mobx-react';
 import { IModule } from 'models/mobxClubModel';
-import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useMobxStore } from 'utils/mobxStore';
 import MenuItem from '../MenuItem';
 import CalendarSubMenus from './CalendarSubMenus';
@@ -15,7 +14,7 @@ interface IModuleSubMenuProps {
 const ModuleSubMenu = observer(({ module }: IModuleSubMenuProps) => {
   const { t } = useTranslation();
   const { clubModel, globalStateModel, sessionModel } = useMobxStore();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   switch (module.name) {
     case 'Eventor':
@@ -41,7 +40,7 @@ const ModuleSubMenu = observer(({ module }: IModuleSubMenuProps) => {
           name={t('modules.ScoringBoard')}
           onClick={() => {
             globalStateModel.setRightMenuVisible(false);
-            globalStateModel.setDashboard(history, '/league');
+            globalStateModel.setDashboard(navigate, '/league');
           }}
         />
       );
@@ -53,7 +52,7 @@ const ModuleSubMenu = observer(({ module }: IModuleSubMenuProps) => {
           name={t('modules.Stars')}
           onClick={() => {
             globalStateModel.setRightMenuVisible(false);
-            globalStateModel.setDashboard(history, '/competitor/presentation');
+            globalStateModel.setDashboard(navigate, '/competitor/presentation');
           }}
         />
       );
@@ -66,7 +65,7 @@ const ModuleSubMenu = observer(({ module }: IModuleSubMenuProps) => {
           disabled={!sessionModel.loggedIn}
           onClick={() => {
             globalStateModel.setRightMenuVisible(false);
-            globalStateModel.setDashboard(history, '/users');
+            globalStateModel.setDashboard(navigate, '/users');
           }}
         />
       );

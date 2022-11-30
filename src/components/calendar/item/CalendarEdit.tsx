@@ -3,13 +3,13 @@ import { Button, Col, DatePicker, Form, Input, InputNumber, message, Modal, Row,
 import InputTime from 'components/formItems/InputTime';
 import { observer } from 'mobx-react';
 import moment from 'moment';
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
+import { PostJsonData } from 'utils/api';
 import { useMobxStore } from 'utils/mobxStore';
 import { ICalendarActivity, ICalendarDomains } from 'utils/responseCalendarInterfaces';
 import { v4 as uuidv4 } from 'uuid';
-import { PostJsonData } from '../../../utils/api';
 import {
   dateFormat,
   errorRequiredField,
@@ -165,7 +165,7 @@ const CalendarEdit = observer(({ title, calendarObject, domains, open, onClose, 
       closable={false}
       maskClosable={false}
       title={title}
-      visible={open}
+      open={open}
       okText={t('common.Save')}
       okButtonProps={{ disabled: !valid, loading: saving }}
       cancelText={t('common.Cancel')}

@@ -1,7 +1,7 @@
 import { EditOutlined, UserOutlined } from '@ant-design/icons';
 import { Avatar, Button, message, Skeleton } from 'antd';
 import { observer } from 'mobx-react';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { useMobxStore } from 'utils/mobxStore';

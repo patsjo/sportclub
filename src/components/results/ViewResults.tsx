@@ -3,7 +3,7 @@ import { TFunction } from 'i18next';
 import { observer } from 'mobx-react';
 import { IMobxClubModel } from 'models/mobxClubModel';
 import moment from 'moment';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { useMobxStore } from 'utils/mobxStore';
@@ -92,7 +92,7 @@ const columns = (
       key: 'competitorId',
       fixed: 'left',
       width: 180,
-      render: (id: number) => (id == null ? null : clubModel.raceClubs?.selectedClub.competitorById(id)?.fullName),
+      render: (id: number) => (id == null ? null : clubModel.raceClubs?.selectedClub?.competitorById(id)?.fullName),
     });
   }
 
@@ -476,7 +476,7 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
       if (isIndividual && printCompetitorId) {
         const indResult = printResult as IIndividualViewResultResponse;
         header = `${t('modules.Results')} - ${
-          clubModel.raceClubs?.selectedClub.competitorById(printCompetitorId)?.fullName
+          clubModel.raceClubs?.selectedClub?.competitorById(printCompetitorId)?.fullName
         } ${year}`;
         inputs.push({
           label: t('results.TotalFeeToClub'),
@@ -594,7 +594,7 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
         if (isIndividual) {
           const fromDate = moment(year, 'YYYY').format('YYYY-MM-DD');
           const toDate = moment(fromDate, 'YYYY-MM-DD').add(1, 'years').subtract(1, 'days').format('YYYY-MM-DD');
-          competitorsOptions = clubModel.raceClubs.selectedClub.competitorsOptions;
+          competitorsOptions = clubModel.raceClubs.selectedClub?.competitorsOptions ?? [];
 
           for (const option of competitorsOptions) {
             resultJsons.push(
@@ -702,7 +702,9 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
                 disabled={loading}
                 style={{ maxWidth: 600, width: '100%' }}
                 dropdownMatchSelectWidth={false}
-                options={loading || !clubModel.raceClubs ? [] : clubModel.raceClubs.selectedClub.competitorsOptions}
+                options={
+                  loading || !clubModel.raceClubs ? [] : clubModel.raceClubs.selectedClub?.competitorsOptions ?? []
+                }
                 showSearch
                 optionFilterProp="children"
                 filterOption={(input, option) => option?.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
@@ -746,7 +748,7 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
             <td>
               <b>{t('results.Competitor')}:</b>
             </td>
-            <td>{clubModel.raceClubs?.selectedClub.competitorById(competitorId)?.fullName}</td>
+            <td>{clubModel.raceClubs?.selectedClub?.competitorById(competitorId)?.fullName}</td>
             <td>
               <b>{t('calendar.Year')}:</b>
             </td>

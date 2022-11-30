@@ -1,6 +1,5 @@
 import { IChildContainerProps } from 'components/dashboard/columns/mapNodesToColumns';
 import { observer } from 'mobx-react';
-import { applySnapshot } from 'mobx-state-tree';
 import { INewsItem } from 'models/newsModel';
 import React from 'react';
 import styled from 'styled-components';
@@ -138,10 +137,7 @@ const BannerItem = observer(({ ref, newsObject }: IBannerItemProps) => {
       }
       modalColumns={3}
       editFormContent={
-        <NewsEdit
-          newsObject={newsObject}
-          onChange={(updatedNewsObject) => applySnapshot(newsObject, updatedNewsObject)}
-        />
+        <NewsEdit newsObject={newsObject} onChange={(updatedNewsObject) => newsObject.setValues(updatedNewsObject)} />
       }
       deletePromise={() =>
         PostJsonData(

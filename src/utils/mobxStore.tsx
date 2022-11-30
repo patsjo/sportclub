@@ -1,4 +1,4 @@
-import { useLocalStore } from 'mobx-react';
+import { useLocalObservable } from 'mobx-react';
 import { GlobalStateModel, IGlobalStateModel } from 'models/globalStateModel';
 import { IMobxClubModel, MobxClubModel } from 'models/mobxClubModel';
 import { ISessionModel, SessionModel } from 'models/sessionModel';
@@ -11,7 +11,7 @@ interface IMobxStore {
 }
 
 const MobxStoreContext = React.createContext<IMobxStore>({
-  clubModel: MobxClubModel.create({
+  clubModel: new MobxClubModel({
     title: 'No store provider',
     defaultLanguage: 'en',
     logo: { url: 'https://', width: 0, height: 0 },
@@ -39,8 +39,8 @@ const MobxStoreContext = React.createContext<IMobxStore>({
       },
     },
   }),
-  globalStateModel: GlobalStateModel.create({}),
-  sessionModel: SessionModel.create({}),
+  globalStateModel: new GlobalStateModel(),
+  sessionModel: new SessionModel(),
 });
 
 interface IMobxStoreProvider {
@@ -48,7 +48,7 @@ interface IMobxStoreProvider {
   store: IMobxStore;
 }
 export const MobxStoreProvider = ({ children, store }: IMobxStoreProvider) => {
-  const observableStore = useLocalStore(() => store);
+  const observableStore = useLocalObservable(() => store);
   return <MobxStoreContext.Provider value={observableStore}>{children}</MobxStoreContext.Provider>;
 };
 

@@ -1,15 +1,15 @@
 import { Layout, message, Spin } from 'antd';
-import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { BrowserRouter as Router, Link } from 'react-router-dom';
 import styled, { ThemeProvider } from 'styled-components';
-import { MobxStoreProvider } from 'utils/mobxStore';
 import AppContent from './AppContent';
 import Toolbar from './components/toolbar/Toolbar';
 import clubJson from './models/clubs/okorion';
 import { GlobalStateModel } from './models/globalStateModel';
 import { MobxClubModel } from './models/mobxClubModel';
-import { getLocalStorage, SessionModel } from './models/sessionModel';
+import { getLocalStorage, ISessionModel, SessionModel } from './models/sessionModel';
 import { PostJsonData } from './utils/api';
+import { MobxStoreProvider } from './utils/mobxStore';
 
 const StyledLayout = styled(Layout)`
   background-color: #ffffff;
@@ -112,15 +112,15 @@ const StyledEllipsis = styled.div`
 const App = () => {
   const scrollTop = useRef(0);
   const [scrollStickyPos, setScrollStickyPos] = useState(0);
-  const sessionModel = useRef(SessionModel.create(getLocalStorage()));
-  const clubModel = useRef(MobxClubModel.create(clubJson));
+  const sessionModel = useRef<ISessionModel>(new SessionModel(getLocalStorage()));
+  const clubModel = useRef(new MobxClubModel(clubJson));
   const logoHeight = 80;
   const logoWidth = clubModel.current.logo.width * (80 / clubModel.current.logo.height);
   const titleWidth = clubModel.current.titleLogo
     ? clubModel.current.titleLogo.width * (24 / clubModel.current.titleLogo.height)
     : 0;
   const globalStateModel = useRef(
-    GlobalStateModel.create({
+    new GlobalStateModel({
       news: {
         newsItems: [],
         limit: 10,

@@ -117,8 +117,15 @@ const GetHolidayColor = (date: moment.Moment): 'grey' | 'red' | 'black' | undefi
   }
 };
 
+interface IDate {
+  date: moment.Moment;
+  dayOfWeek: string;
+  color: 'grey' | 'red' | 'black' | undefined;
+  holidayName?: string;
+}
+
 export const GetDates = (startDate: moment.Moment, numberOfDates: number, t: TFunction) => {
-  const dates = [];
+  const dates: IDate[] = [];
 
   for (let i = 0; i < numberOfDates; i++) {
     const date = startDate.clone().add(i, 'days');
