@@ -37,7 +37,7 @@ const HtmlEditor = observer(() => {
       location.pathname === '/page/new'
         ? -1
         : globalStateModel.htmlEditorMenu
-        ? getPageId(globalStateModel.htmlEditorMenu, location.pathname) ?? -1000
+        ? getPageId(globalStateModel.htmlEditorMenu, decodeURI(location.pathname)) ?? -1000
         : undefined,
     [globalStateModel.htmlEditorMenu, location.pathname]
   );
