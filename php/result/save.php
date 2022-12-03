@@ -331,7 +331,7 @@ elseif ($input->iType == "EVENT")
     \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
     $result->resultId = \db\mysql_insert_id();
 
-    if (!is_null($result->resultMultiDay)) {
+    if (isset($result->resultMultiDay) && !is_null($result->resultMultiDay)) {
       $query = sprintf("INSERT INTO RACE_EVENT_RESULTS_MULTI_DAY " .
       "(" .
       "  RESULT_ID, TOTAL_LENGTH_IN_METER, TOTAL_FAILED_REASON," .
