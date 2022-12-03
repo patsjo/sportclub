@@ -34,6 +34,10 @@ $json = file_get_contents('php://input');
 // Converts it into a PHP object
 $input = json_decode($json);
 
+if(!isset($input->iIncludeFees))
+{
+  $input->iIncludeFees = false;
+}
 if(!isset($input->offset))
 {
   $input->offset = 0;
@@ -325,7 +329,24 @@ if ($input->iType == "EVENT" || $input->iType == "COMPETITOR")
 }
 elseif ($input->iType == "EVENTS")
 {
-  $sql = "SELECT * FROM RACE_EVENT WHERE 1=1" . $whereStartDate . $whereEndDate . " ORDER BY RACEDATE ASC";
+  if ($input->iIncludeFees)
+    $sql = "SELECT RACE_EVENT.EVENT_ID, EVENTOR_ID, EVENTOR_RACE_ID, NAME, RACEDATE, RACETIME, IS_RELAY, INVOICE_VERIFIED, FEE, FEE_TO_CLUB, SERVICEFEE_TO_CLUB " .
+      "FROM RACE_EVENT " .
+      "LEFT OUTER JOIN (" .
+      "  SELECT EVENT_ID, SUM(ORIGINAL_FEE + LATE_FEE) AS FEE, SUM(FEE_TO_CLUB) AS FEE_TO_CLUB, SUM(SERVICEFEE_TO_CLUB) AS SERVICEFEE_TO_CLUB " .
+      "  FROM RACE_EVENT_RESULTS " .
+      "  GROUP BY EVENT_ID " .
+      "  UNION ALL " .
+      "  SELECT EVENT_ID, 0 AS FEE, 0 AS FEE_TO_CLUB, SUM(SERVICEFEE_TO_CLUB) AS SERVICEFEE_TO_CLUB " .
+      "  FROM RACE_EVENT_RESULTS_TEAM " .
+      "  GROUP BY EVENT_ID " .
+      ") ALL_RACE_EVENT_RESULTS ON (RACE_EVENT.EVENT_ID = ALL_RACE_EVENT_RESULTS.EVENT_ID) " .
+      "WHERE 1=1" . $whereStartDate . $whereEndDate . " ORDER BY RACEDATE ASC";
+  else
+    $sql = "SELECT EVENT_ID, EVENTOR_ID, EVENTOR_RACE_ID, NAME, RACEDATE, RACETIME, IS_RELAY, INVOICE_VERIFIED " .
+      "FROM RACE_EVENT " .
+      "WHERE 1=1" . $whereStartDate . $whereEndDate . " ORDER BY RACEDATE ASC";
+
   $result = \db\mysql_query($sql);
   if (!$result)
   {
@@ -345,6 +366,11 @@ elseif ($input->iType == "EVENTS")
       $x->time                  = is_null($row['RACETIME']) ? NULL : time2StringWithSeconds(strtotime($row['RACETIME']));
       $x->isRelay               = boolval($row['IS_RELAY']);
       $x->invoiceVerified       = boolval($row['INVOICE_VERIFIED']);
+      if ($input->iIncludeFees) {
+        $x->fee = is_null($row['FEE']) ? NULL : floatval($row['FEE']);
+        $x->feeToClub = is_null($row['FEE_TO_CLUB']) ? NULL : floatval($row['FEE_TO_CLUB']);
+        $x->serviceFeeToClub = is_null($row['SERVICEFEE_TO_CLUB']) ? NULL : floatval($row['SERVICEFEE_TO_CLUB']);
+      }
       array_push($rows, $x);
     }
   }

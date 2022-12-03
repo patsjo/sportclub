@@ -223,6 +223,7 @@ export interface IRaceClubs extends Omit<IRaceClubsProps, 'clubs'> {
   clubs: IRaceClub[];
   selectedClub?: IRaceClub;
   setSelectedClub: (code: number) => void;
+  setSelectedClubByEventorId: (code: number) => void;
   classClassification: (
     eventClassificationId: EventClassificationIdTypes,
     classClassificationId: number
@@ -254,6 +255,7 @@ export class RaceClubs implements IRaceClubs {
       sports: observable,
       selectedClub: observable,
       setSelectedClub: action,
+      setSelectedClubByEventorId: action,
       eventClassificationOptions: computed,
       clubOptions: computed,
       sportOptions: computed,
@@ -262,6 +264,10 @@ export class RaceClubs implements IRaceClubs {
 
   setSelectedClub(code: number) {
     this.selectedClub = this.clubs.find((c) => c.clubId === code);
+  }
+
+  setSelectedClubByEventorId(code: number) {
+    this.selectedClub = this.clubs.find((c) => c.eventorOrganisationId === code);
   }
 
   classClassification(eventClassificationId: EventClassificationIdTypes, classClassificationId: number) {

@@ -437,7 +437,7 @@ export class MobxClubModel implements IMobxClubModel {
 
   setRaceClubs(raceClubs: IRaceClubsProps) {
     this.raceClubs = new RaceClubs(raceClubs);
-    this.eventor?.organisationId && this.raceClubs.setSelectedClub(this.eventor.organisationId);
+    this.eventor?.organisationId && this.raceClubs.setSelectedClubByEventorId(this.eventor.organisationId);
   }
 
   module(name: ModuleNameTypes) {

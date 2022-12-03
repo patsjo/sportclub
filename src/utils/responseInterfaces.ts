@@ -107,6 +107,9 @@ export interface IEventViewResultResponse {
   isRelay: boolean;
   name: string;
   time: string;
+  fee?: number;
+  feeToClub?: number;
+  serviceFeeToClub?: number;
 }
 
 export interface ILeagueCompetitor {

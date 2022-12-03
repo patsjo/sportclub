@@ -45,6 +45,10 @@ const InvoiceWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: 
   const formId = useMemo(() => 'invoiceWizardFormStep2EditRace' + Math.floor(Math.random() * 1000000000000000), []);
   const [loaded, setLoaded] = useState(false);
   const [isRelay, setIsRelay] = useState(false);
+  const [totalOriginalFee, setTotalOriginalFee] = useState(0);
+  const [totalLateFee, setTotalLateFee] = useState(0);
+  const [totalFeeToClub, setTotalFeeToClub] = useState(0);
+  const [totalServiceFeeToClub, setTotalServiceFeeToClub] = useState(0);
 
   const getMobxResult = useCallback(
     (resultObject: IInvoiceRaceResult): IRaceResult | IRaceTeamResult | undefined => {
@@ -72,6 +76,34 @@ const InvoiceWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: 
         raceWizardModel.setRaceEvent(editResultJson);
         onValidate(true);
         setIsRelay(editResultJson.isRelay);
+        if (raceWizardModel.raceEvent?.isRelay) {
+          setTotalServiceFeeToClub(
+            raceWizardModel.raceEvent?.teamResults.reduce((a, b) => {
+              return a + (b.serviceFeeToClub ?? 0);
+            }, 0)
+          );
+        } else {
+          setTotalOriginalFee(
+            raceWizardModel.raceEvent?.results.reduce((a, b) => {
+              return a + (b.originalFee ?? 0);
+            }, 0) ?? 0
+          );
+          setTotalLateFee(
+            raceWizardModel.raceEvent?.results.reduce((a, b) => {
+              return a + (b.lateFee ?? 0);
+            }, 0) ?? 0
+          );
+          setTotalFeeToClub(
+            raceWizardModel.raceEvent?.results.reduce((a, b) => {
+              return a + (b.feeToClub ?? 0);
+            }, 0) ?? 0
+          );
+          setTotalServiceFeeToClub(
+            raceWizardModel.raceEvent?.results.reduce((a, b) => {
+              return a + (b.serviceFeeToClub ?? 0);
+            }, 0) ?? 0
+          );
+        }
         setLoaded(true);
       })
       .catch((e) => {
@@ -127,6 +159,19 @@ const InvoiceWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: 
             record.serviceFeeToClub = value as number;
             const mobxResult = getMobxResult(record);
             mobxResult?.setNumberValue('serviceFeeToClub', value as number);
+            if (raceWizardModel.raceEvent?.isRelay) {
+              setTotalServiceFeeToClub(
+                raceWizardModel.raceEvent?.teamResults.reduce((a, b) => {
+                  return a + (b.serviceFeeToClub ?? 0);
+                }, 0)
+              );
+            } else {
+              setTotalServiceFeeToClub(
+                raceWizardModel.raceEvent?.results.reduce((a, b) => {
+                  return a + (b.serviceFeeToClub ?? 0);
+                }, 0) ?? 0
+              );
+            }
             onValidate(raceWizardModel.raceEvent?.valid ?? false);
           }}
         />
@@ -174,6 +219,11 @@ const InvoiceWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: 
               record.originalFee = value;
               const mobxResult = getMobxResult(record) as IRaceResult | undefined;
               mobxResult?.setNumberValueOrNull('originalFee', value);
+              setTotalOriginalFee(
+                raceWizardModel.raceEvent?.results.reduce((a, b) => {
+                  return a + (b.originalFee ?? 0);
+                }, 0) ?? 0
+              );
               onValidate(raceWizardModel.raceEvent?.valid ?? false);
             }}
           />
@@ -197,6 +247,11 @@ const InvoiceWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: 
               record.lateFee = value;
               const mobxResult = getMobxResult(record) as IRaceResult | undefined;
               mobxResult?.setNumberValueOrNull('lateFee', value);
+              setTotalLateFee(
+                raceWizardModel.raceEvent?.results.reduce((a, b) => {
+                  return a + (b.lateFee ?? 0);
+                }, 0) ?? 0
+              );
               onValidate(raceWizardModel.raceEvent?.valid ?? false);
             }}
           />
@@ -220,6 +275,11 @@ const InvoiceWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: 
               record.feeToClub = value;
               const mobxResult = getMobxResult(record) as IRaceResult | undefined;
               mobxResult?.setNumberValueOrNull('feeToClub', value);
+              setTotalFeeToClub(
+                raceWizardModel.raceEvent?.results.reduce((a, b) => {
+                  return a + (b.feeToClub ?? 0);
+                }, 0) ?? 0
+              );
               onValidate(raceWizardModel.raceEvent?.valid ?? false);
             }}
           />
@@ -278,7 +338,19 @@ const InvoiceWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: 
             ...toJS(result),
             key: result.teamResultId.toString(),
           }))}
-          pagination={{ pageSize: 6 }}
+          pagination={{ pageSize: 5 }}
+          summary={() => (
+            <StyledTable.Summary fixed>
+              <StyledTable.Summary.Row>
+                <StyledTable.Summary.Cell index={0}>Total</StyledTable.Summary.Cell>
+                <StyledTable.Summary.Cell index={1} />
+                <StyledTable.Summary.Cell index={2} />
+                <StyledTable.Summary.Cell index={3} />
+                <StyledTable.Summary.Cell index={4}>{totalServiceFeeToClub}</StyledTable.Summary.Cell>
+                <StyledTable.Summary.Cell index={5} />
+              </StyledTable.Summary.Row>
+            </StyledTable.Summary>
+          )}
           size="middle"
         />
       ) : (
@@ -288,7 +360,23 @@ const InvoiceWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: 
             ...toJS(result),
             key: result.resultId.toString(),
           }))}
-          pagination={{ pageSize: 6 }}
+          pagination={{ pageSize: 5 }}
+          summary={() => (
+            <StyledTable.Summary fixed>
+              <StyledTable.Summary.Row>
+                <StyledTable.Summary.Cell index={0}>Total</StyledTable.Summary.Cell>
+                <StyledTable.Summary.Cell index={1} />
+                <StyledTable.Summary.Cell index={2} />
+                <StyledTable.Summary.Cell index={3} />
+                <StyledTable.Summary.Cell index={4}>{totalOriginalFee}</StyledTable.Summary.Cell>
+                <StyledTable.Summary.Cell index={5}>{totalLateFee}</StyledTable.Summary.Cell>
+                <StyledTable.Summary.Cell index={6}>{totalFeeToClub}</StyledTable.Summary.Cell>
+                <StyledTable.Summary.Cell index={7}>{totalServiceFeeToClub}</StyledTable.Summary.Cell>
+                <StyledTable.Summary.Cell index={8} />
+                <StyledTable.Summary.Cell index={9}>{totalFeeToClub + totalServiceFeeToClub}</StyledTable.Summary.Cell>
+              </StyledTable.Summary.Row>
+            </StyledTable.Summary>
+          )}
           size="middle"
         />
       )}

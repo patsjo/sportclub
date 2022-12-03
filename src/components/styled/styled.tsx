@@ -1,7 +1,7 @@
 import { DeleteTwoTone, EditTwoTone, PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import { Table, Tag } from 'antd';
 import { TFunction } from 'i18next';
-import React, { MouseEventHandler } from 'react';
+import { MouseEventHandler } from 'react';
 import styled from 'styled-components';
 
 const StyledDeleteTwoTone = styled(DeleteTwoTone)`
@@ -78,7 +78,13 @@ export const StyledTable = styled(Table)`
     margin-bottom: 0;
   }
   &&& .ant-table-thead > tr > th,
-  .ant-table-tbody > tr > td {
+  .ant-table-tbody > tr > td,
+  .ant-table-summary > tr > td {
     padding: 4px 8px !important;
+  }
+  &&& .ant-table-thead > tr > th,
+  .ant-table-summary > tr > td {
+    background: #fafafa !important;
+    font-weight: 600;
   }
 `;

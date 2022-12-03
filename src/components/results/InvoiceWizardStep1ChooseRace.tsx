@@ -27,6 +27,9 @@ const InvoiceWizardStep1ChooseRace = observer(
     const [loaded, setLoaded] = useState(false);
     const [events, setEvents] = useState<IInvoiceEvent[]>([]);
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>();
+    const [totalFee, setTotalFee] = useState(0);
+    const [totalFeeToClub, setTotalFeeToClub] = useState(0);
+    const [totalServiceFeeToClub, setTotalServiceFeeToClub] = useState(0);
 
     const onSelectChange = useCallback((keys: React.Key[]) => {
       const selectedEventId = Array.isArray(keys) ? keys[0] : keys;
@@ -45,6 +48,7 @@ const InvoiceWizardStep1ChooseRace = observer(
 
       const queryData = {
         iType: 'EVENTS',
+        iIncludeFees: true,
         iClubId: clubModel.raceClubs?.selectedClub?.clubId,
         iFromDate: raceWizardModel.queryStartDate,
         iToDate: raceWizardModel.queryEndDate,
@@ -62,6 +66,21 @@ const InvoiceWizardStep1ChooseRace = observer(
 
           setSelectedRowKeys(undefined);
           setEvents(data);
+          setTotalFee(
+            data.reduce((a, b) => {
+              return a + (b.fee ?? 0);
+            }, 0)
+          );
+          setTotalFeeToClub(
+            data.reduce((a, b) => {
+              return a + (b.feeToClub ?? 0);
+            }, 0)
+          );
+          setTotalServiceFeeToClub(
+            data.reduce((a, b) => {
+              return a + (b.serviceFeeToClub ?? 0);
+            }, 0)
+          );
           setLoaded(true);
         })
         .catch((e) => {
@@ -111,6 +130,21 @@ const InvoiceWizardStep1ChooseRace = observer(
         key: 'invoiceVerified',
         render: (invoiceVerified: boolean) => (invoiceVerified ? t('common.Yes') : t('common.No')),
       },
+      {
+        title: t('results.EventFee'),
+        dataIndex: 'fee',
+        key: 'fee',
+      },
+      {
+        title: t('results.FeeToClub'),
+        dataIndex: 'feeToClub',
+        key: 'feeToClub',
+      },
+      {
+        title: t('results.ServiceFeeToClub'),
+        dataIndex: 'serviceFeeToClub',
+        key: 'serviceFeeToClub',
+      },
     ];
 
     return loaded && visible ? (
@@ -124,6 +158,20 @@ const InvoiceWizardStep1ChooseRace = observer(
         columns={columns as ColumnType<any>[]}
         dataSource={events}
         pagination={{ pageSize: 8 }}
+        summary={() => (
+          <StyledTable.Summary fixed>
+            <StyledTable.Summary.Row>
+              <StyledTable.Summary.Cell index={0} />
+              <StyledTable.Summary.Cell index={1}>Total</StyledTable.Summary.Cell>
+              <StyledTable.Summary.Cell index={2} />
+              <StyledTable.Summary.Cell index={3} />
+              <StyledTable.Summary.Cell index={4} />
+              <StyledTable.Summary.Cell index={5}>{totalFee}</StyledTable.Summary.Cell>
+              <StyledTable.Summary.Cell index={6}>{totalFeeToClub}</StyledTable.Summary.Cell>
+              <StyledTable.Summary.Cell index={7}>{totalServiceFeeToClub}</StyledTable.Summary.Cell>
+            </StyledTable.Summary.Row>
+          </StyledTable.Summary>
+        )}
         size="middle"
       />
     ) : visible ? (
