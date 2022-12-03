@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react';
 import { lazy } from 'react';
-import { Route, Routes, useLocation } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import styled from 'styled-components';
 const Dashboard = lazy(() => import('./components/dashboard/Dashboard'));
 const News = lazy(() => import('./components/news/News'));
@@ -32,11 +32,10 @@ const ContentArea = styled.div`
 `;
 
 const AppContent = observer(() => {
-  const location = useLocation();
-
   return (
     <ContentArea>
       <Routes>
+        <Route path="/" element={<Dashboard key="dashboard" />} />
         <Route path="/news" element={<News key="news" />} />
         <Route path="/users" element={<Users key="users" />} />
         <Route
@@ -59,8 +58,7 @@ const AppContent = observer(() => {
         <Route path="/results/fees" element={<ResultsFees key="resultsFees" />} />
         <Route path="/results" element={<ViewResults key="clubViewResult" isIndividual={false} />} />
         <Route path="/sponsors" element={<AllSponsors key="individualViewResult" />} />
-        <Route path="/" element={<Dashboard key="dashboard" />} />
-        <Route path="*" element={<HtmlEditor key="htmlEditor" path={location.pathname} />} />
+        <Route path="/*" element={<HtmlEditor key="htmlEditor" />} />
       </Routes>
     </ContentArea>
   );

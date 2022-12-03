@@ -4,9 +4,9 @@ import { Alert, Button, Form, Input, message, Popconfirm, Select, Spin } from 'a
 import copy from 'copy-to-clipboard';
 import { observer } from 'mobx-react';
 import { ICouncilModel, IGroupModel, IUserModel } from 'models/userModel';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useMobxStore } from 'utils/mobxStore';
 import { IHtmlPageGroupResponse, IHtmlPageResponse } from 'utils/responseInterfaces';
@@ -27,16 +27,23 @@ const StyledButton = styled(Button)`
   }
 `;
 
-interface IHtmlEditorProps {
-  path: string;
-}
-const HtmlEditor = observer(({ path }: IHtmlEditorProps) => {
+const HtmlEditor = observer(() => {
+  const location = useLocation();
   const { clubModel, globalStateModel, sessionModel } = useMobxStore();
   const { t } = useTranslation();
   const [pageId, setPageId] = useState(-1);
+  const pageIdFromLocation = useMemo(
+    () =>
+      location.pathname === '/page/new'
+        ? -1
+        : globalStateModel.htmlEditorMenu
+        ? getPageId(globalStateModel.htmlEditorMenu, location.pathname) ?? -1000
+        : undefined,
+    [globalStateModel.htmlEditorMenu, location.pathname]
+  );
   const [error, setError] = useState<string | undefined>();
-  const [isReadOnly, setIsReadOnly] = useState(path !== '/page/new');
-  const [isEditable, setEditable] = useState(path === '/page/new');
+  const [isReadOnly, setIsReadOnly] = useState(location.pathname !== '/page/new');
+  const [isEditable, setEditable] = useState(location.pathname === '/page/new');
   const [form] = Form.useForm();
   const [data, setData] = useState(DefaultData);
   const [menuPath, setMenuPath] = useState(DefaultMenuPath);
@@ -50,9 +57,16 @@ const HtmlEditor = observer(({ path }: IHtmlEditorProps) => {
   const [currentEditor, setCurrentEditor] = useState<ClassicEditor>();
 
   useEffect(() => {
+    if (pageIdFromLocation === undefined) return;
+    else if (pageIdFromLocation === -1000) {
+      setError('404 - Page not found');
+      setLoading(false);
+      return;
+    }
+
     setError(undefined);
     setLoading(true);
-    if (path === '/page/new' || globalStateModel.htmlEditorMenu === undefined || !htmlEditorModule) {
+    if (location.pathname === '/page/new' || !htmlEditorModule) {
       setPageId(-1);
       setData(DefaultData);
       setMenuPath(DefaultMenuPath);
@@ -78,17 +92,11 @@ const HtmlEditor = observer(({ path }: IHtmlEditorProps) => {
     }
     setEditable(false);
     setIsReadOnly(true);
-    const pageId = globalStateModel.htmlEditorMenu && getPageId(globalStateModel.htmlEditorMenu, path);
-    if (!pageId) {
-      setError('404 - Page not found');
-      setLoading(false);
-      return;
-    }
     PostJsonData(
       htmlEditorModule.queryUrl,
       {
         iType: 'PAGE',
-        iPageID: pageId,
+        iPageID: pageIdFromLocation,
         username: sessionModel.username,
         password: sessionModel.password,
       },
@@ -122,8 +130,8 @@ const HtmlEditor = observer(({ path }: IHtmlEditorProps) => {
     sessionModel.authorizationHeader,
     sessionModel.username,
     sessionModel.password,
-    globalStateModel.htmlEditorMenu,
-    path,
+    location.pathname,
+    pageIdFromLocation,
     form,
   ]);
 
@@ -154,13 +162,14 @@ const HtmlEditor = observer(({ path }: IHtmlEditorProps) => {
           setData(htmlData);
           setSaving(false);
           htmlEditorModule && globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, sessionModel, message);
+          if (values.iMenuPath !== location.pathname) navigate(values.iMenuPath, { replace: true });
         })
         .catch((e) => {
           message.error(e.message);
           setSaving(false);
         });
     });
-  }, [globalStateModel, sessionModel, htmlEditorModule, currentEditor, form, pageId, valid]);
+  }, [location.pathname, globalStateModel, sessionModel, htmlEditorModule, currentEditor, form, pageId, valid]);
 
   return loading || saving ? (
     <SpinnerDiv>
@@ -252,7 +261,8 @@ const HtmlEditor = observer(({ path }: IHtmlEditorProps) => {
                 sessionModel.authorizationHeader
               )
                 .then(() => {
-                  globalStateModel.setDashboard(navigate, '/');
+                  htmlEditorModule && globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, sessionModel, message);
+                  navigate('/', { replace: true });
                 })
                 .catch((e) => {
                   message.error(e.message);
