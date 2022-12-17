@@ -158,7 +158,7 @@ const HtmlEditor = observer(() => {
         sessionModel.authorizationHeader
       )
         .then((pageResponse) => {
-          setPageId(pageResponse.pageId);
+          setPageId(pageResponse.iPageID);
           setData(htmlData);
           setSaving(false);
           htmlEditorModule && globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, sessionModel, message);
