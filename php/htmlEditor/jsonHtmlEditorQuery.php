@@ -153,6 +153,7 @@ else
 {
   trigger_error('Wrong iType parameter', E_USER_ERROR);
 }
+CloseDatabase();
 
 header("Content-Type: application/json");
 ini_set( 'precision', 20 );

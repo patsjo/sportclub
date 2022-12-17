@@ -716,6 +716,9 @@ else
   trigger_error('Wrong iType parameter', E_USER_ERROR);
 }
 
+\db\mysql_free_result($result);
+CloseDatabase();
+
 header("Access-Control-Allow-Credentials: true");
 if (isset($_SERVER['HTTP_ORIGIN']))
 {
@@ -726,7 +729,4 @@ header("Content-Type: application/json");
 ini_set( 'precision', 20 );
 ini_set( 'serialize_precision', 14 );
 echo json_encode($rows);
-
-\db\mysql_free_result($result);
-
 ?>

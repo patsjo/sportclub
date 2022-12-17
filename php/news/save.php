@@ -402,12 +402,11 @@ if (\db\mysql_num_rows($result) > 0) {
       $x->modifiedBy            = $row['first_name'] . " " . $row['last_name'];
     }
 }
+CloseDatabase();
   
 header("Access-Control-Allow-Credentials: true");
 header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);
 header("Access-Control-Allow-Headers: *");
 header("Content-Type: application/json");
 echo json_encode($x);
-
-CloseDatabase();
 ?>

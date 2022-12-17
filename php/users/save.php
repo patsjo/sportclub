@@ -121,8 +121,8 @@ if (\db\mysql_num_rows($result) > 0) {
   }
 }
   
+CloseDatabase();
+
 header("Content-Type: application/json");
 echo json_encode($x);
-
-CloseDatabase();
 ?>

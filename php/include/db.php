@@ -20,6 +20,9 @@ include_once($_SERVER["DOCUMENT_ROOT"] . "/include/db_mysql.php");
 function OpenDatabase()
 {
   global $db_conn;
+  if (isset($db_conn)) {
+    return;
+  }
   $db_conn=mysqli_connect("hostname.com.mysql", "USERNAME", "PASSWORD", "DATABASE");
   if (!$db_conn) {
     trigger_error('Could not connect: ' . mysqli_connect_error(), E_USER_ERROR);
@@ -28,11 +31,14 @@ function OpenDatabase()
   if (!$db_conn->set_charset('utf8')) {
     trigger_error('Could not set character set to utf8', E_USER_ERROR);
   }
+  mysqli_autocommit($db_conn, FALSE);
+  mysqli_begin_transaction($db_conn);
 }
 
 function CloseDatabase()
 {
   global $db_conn;
+  mysqli_commit($db_conn);
   mysqli_close($db_conn);
 }
 ?>

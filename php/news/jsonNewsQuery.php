@@ -130,6 +130,7 @@ if (\db\mysql_num_rows($result) > 0) {
       array_push($rows, $x);
     }
 }
+CloseDatabase();
 
 header("Access-Control-Allow-Credentials: true");
 if (isset($_SERVER['HTTP_ORIGIN']))

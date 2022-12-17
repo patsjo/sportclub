@@ -126,6 +126,7 @@ function saveActivity($iActivityID, $iGroupID, $iActivityTypeID,
   {
     trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
   }
+  CloseDatabase();
 }
 
 ?>

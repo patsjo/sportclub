@@ -109,6 +109,7 @@ if (\db\mysql_num_rows($result) > 0)
 }
 
 \db\mysql_free_result($result);
+CloseDatabase();
 
 header("Content-Type: application/json");
 ini_set( 'precision', 20 );

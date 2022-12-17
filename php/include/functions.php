@@ -599,11 +599,13 @@ function getRequestTime($param, $paramDate = null)
 error_reporting(E_USER_ERROR | E_ERROR | E_USER_WARNING | E_USER_NOTICE);
 function error_handler($errno, $errstr, $errfile, $errline)
 {
+  global $db_conn;
   ob_flush();
   flush();  // needed ob_flush
 
   if (isset($db_conn)) {
     mysqli_rollback($db_conn);
+    mysqli_close($db_conn);
   }
   ob_end_clean();
   header('HTTP/1.1 500 Internal Server Error');

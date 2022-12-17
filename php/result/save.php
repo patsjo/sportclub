@@ -459,7 +459,6 @@ else
   trigger_error(sprintf('Unsupported type (%s)', $input->iType), E_USER_ERROR);
 }
   
-mysqli_commit($db_conn);
 CloseDatabase();
 
 header("Content-Type: application/json");

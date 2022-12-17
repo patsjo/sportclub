@@ -62,7 +62,5 @@ if (!\db\mysql_query($sql))
   trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
 }
 
-\db\mysql_query("COMMIT");
-
 CloseDatabase();
 ?>

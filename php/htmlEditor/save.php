@@ -46,7 +46,7 @@ if (isset($input->iPageID))
   $input->iData = \db\mysql_real_escape_string($input->iData);
   if (!strlen($input->iData))
   {
-    trigger_error('Kunde ej l�sa den uppladdade filen.', E_USER_ERROR);
+    trigger_error('Kunde ej läsa den uppladdade filen.', E_USER_ERROR);
   }
   
   if ($input->iPageID > 0)
@@ -107,13 +107,8 @@ if (isset($input->iPageID))
   }
   unset($input->iGroupIds);
 }
-else
+elseif (isset($input->iUrl))
 {
-  if(!isset($input->iUrl))
-  {
-    trigger_error('Felaktig parameter "iUrl"', E_USER_ERROR);
-  }
-  
   if ($input->iLinkID > 0)
   {
     $query = sprintf("UPDATE HTMLEDITOR_LINKS " .
@@ -145,8 +140,13 @@ else
       trigger_error("Can't get the 'link_id' auto_increment value", E_USER_ERROR);
     }
   }
+
   unset($input->iMenuPath);
   unset($input->iUrl);
+}
+else
+{
+  trigger_error('Parameter "iPageID" eller "iUrl" saknas.', E_USER_ERROR);
 }
 
 CloseDatabase();
