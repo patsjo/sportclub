@@ -65,6 +65,18 @@ export const HtmlEditorLinkModal = (
                 required: true,
                 message: errorRequiredField(t, 'htmlEditor.Path'),
               },
+              {
+                validator: (rule, value: string, callback) => {
+                  if (value.startsWith('http')) {
+                    callback(t('htmlEditor.NoUrlError') ?? undefined);
+                  } else if (value.includes('//')) {
+                    callback(t('htmlEditor.DoubleSlashError') ?? undefined);
+                  } else if (!value.startsWith('/') || value.endsWith('/')) {
+                    callback(t('htmlEditor.FormatError') ?? undefined);
+                  }
+                  callback();
+                },
+              },
             ]}
           >
             <Input />
