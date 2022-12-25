@@ -7,11 +7,9 @@ CREATE TABLE folders (
   need_password char(3) NOT NULL DEFAULT '',
   allowed_group_id int(10) UNSIGNED NOT NULL DEFAULT 0,
   cre_by_user_id int(10) UNSIGNED NOT NULL DEFAULT 0,
-  cre_date datetime NOT NULL DEFAULT '0000-00-00 00:00:00'
-) ENGINE=InnoDB;
-
-ALTER TABLE folders
-  ADD PRIMARY KEY (folder_id);
+  cre_date datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  PRIMARY KEY (folder_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO folders (folder_id, folder_name, parent_folder_id, pre_story, post_story, need_password, allowed_group_id, cre_by_user_id, cre_date) VALUES(1, 'Nyheter', 0, NULL, NULL, 'NO', 0, 2, '2010-11-06 18:58:30');
 COMMIT;
@@ -30,8 +28,9 @@ CREATE TABLE files (
   allowed_group_id int(4) UNSIGNED DEFAULT NULL,
   cre_by_user_id int(6) UNSIGNED NOT NULL DEFAULT 0,
   cre_date datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  order_field int(6) UNSIGNED DEFAULT NULL
+  order_field int(6) UNSIGNED DEFAULT NULL,
+  PRIMARY KEY (file_id),
+  INDEX IDX_FILES_FOLDER (folder_id),
+  CONSTRAINT FK_FILES_FOLDER FOREIGN KEY (folder_id)
+  REFERENCES folders(folder_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-ALTER TABLE files
-  ADD PRIMARY KEY (file_id);
