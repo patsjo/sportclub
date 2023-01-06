@@ -12,7 +12,7 @@ export type SportCodeTypes = 'OL' | 'RUN' | 'MTB' | 'MTBO' | 'SKI' | 'SKIO';
 
 export const ManuallyEditedMissingTimePostfix = '.0001';
 
-export const difficulties = {
+export const difficulties: Record<string, DifficultyTypes> = {
   green: 'Grön',
   white: 'Vit',
   yellow: 'Gul',
@@ -23,7 +23,7 @@ export const difficulties = {
   black: 'Svart',
 };
 
-export const failedReasons = {
+export const failedReasons: Record<string, FailedReasonTypes> = {
   NotStarted: 'EJ START',
   NotFinished: 'UTGÅTT',
   Finished: 'FULLFÖ',
@@ -38,7 +38,7 @@ export const failedReasonOptions = (t: TFunction): IOption[] => [
 
 export type GenderType = 'MALE' | 'FEMALE';
 
-export const genders: { FeMale: GenderType; Male: GenderType } = {
+export const genders: Record<string, GenderType> = {
   FeMale: 'FEMALE',
   Male: 'MALE',
 };
@@ -66,7 +66,7 @@ export const paymentOptions = (t: TFunction): IOption[] => [
   { code: payments.defaultFeePaidByCompetitor, description: t('results.DefaultFeePaidByCompetitor') },
 ];
 
-export const lightConditions = {
+export const lightConditions: Record<string, LightConditionTypes> = {
   day: 'Day',
   night: 'Night',
   dusk: 'Dusk',
@@ -80,7 +80,7 @@ export const raceLightConditionOptions = (t: TFunction): IOption[] => [
   { code: lightConditions.dawn, description: t('results.Dawn') },
 ];
 
-export const distances = {
+export const distances: Record<string, DistanceTypes> = {
   sprint: 'Sprint',
   middle: 'Middle',
   long: 'Long',

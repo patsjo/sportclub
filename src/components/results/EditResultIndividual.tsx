@@ -335,7 +335,7 @@ const EditResultIndividual = ({
           >
             <Select
               allowClear={true}
-              onChange={(code: string) => {
+              onChange={(code: DifficultyTypes) => {
                 result.difficulty = code;
                 const resultsWithSameClass = results.filter(
                   (r) => r.className === result.className && r.resultId !== result.resultId

@@ -42,6 +42,7 @@ import { useResultWizardStore } from 'utils/resultWizardStore';
 import { dateFormat, errorRequiredField, FormSelect, shortTimeFormat } from '../../utils/formHelper';
 import {
   distances,
+  DistanceTypes,
   EventClassificationIdTypes,
   failedReasons,
   genders,
@@ -862,11 +863,11 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
             isRelay: eventIsRelay,
             eventClassificationId: eventClassificationId,
             raceLightCondition: raceLightConditionOptions(t).find((option) => option.code === raceLightCondition)
-              ?.code as string | undefined,
+              ?.code as LightConditionTypes | undefined,
             raceDistance: raceDistanceOptions(t).find(
               (option) =>
                 (option.code as string).toLowerCase() === eventRace?.Discipline?.find(() => true)?.toLowerCase()
-            )?.code as string | undefined,
+            )?.code as DistanceTypes | undefined,
             paymentModel: raceWizardModel.paymentModel,
             meetsAwardRequirements: true,
             longitude: eventRace.Position?.['@attributes'].lng,

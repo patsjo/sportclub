@@ -15,6 +15,7 @@ import {
   difficulties,
   distances,
   EventClassificationIdTypes,
+  lightConditions,
   LightConditionTypes,
   PaymentTypes,
   SportCodeTypes,
@@ -145,11 +146,17 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
           raceEvent.rankingBasetimePerKilometer!,
           raceEvent.rankingBasepoint!,
           result,
-          raceEvent.sportCode as SportCodeTypes,
-          raceEvent.raceLightCondition as LightConditionTypes
+          raceEvent.sportCode,
+          raceEvent.raceLightCondition ?? lightConditions.day
         )
       );
-      if (result.missingTime) {
+      if (
+        result.missingTime &&
+        raceEvent.sportCode === 'OL' &&
+        raceEvent.raceDistance !== 'Sprint' &&
+        result.difficulty &&
+        [difficulties.black, difficulties.blue, difficulties.purple].includes(result.difficulty)
+      ) {
         const speedRanking = GetRanking(
           raceEvent.rankingBasetimePerKilometer!,
           raceEvent.rankingBasepoint!,
@@ -164,37 +171,9 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
           raceEvent.raceLightCondition as LightConditionTypes
         );
         result.setNumberValueOrNull('speedRanking', speedRanking);
-        let ranking = result.ranking;
 
-        if (
-          raceEvent.sportCode !== 'OL' ||
-          (raceEvent.raceDistance === distances.sprint &&
-            result.difficulty &&
-            [difficulties.black, difficulties.blue, difficulties.purple].includes(result.difficulty))
-        ) {
-          ranking = GetRanking(
-            raceEvent.rankingBasetimePerKilometer!,
-            raceEvent.rankingBasepoint!,
-            { ...result, difficulty: difficulties.black },
-            raceEvent.sportCode as SportCodeTypes,
-            raceEvent.raceLightCondition as LightConditionTypes
-          );
-          ranking != null && (ranking += 5.0);
-        } else if (
-          raceEvent.sportCode === 'OL' &&
-          result.difficulty &&
-          [difficulties.blue, difficulties.purple].includes(result.difficulty)
-        ) {
-          ranking = GetRanking(
-            raceEvent.rankingBasetimePerKilometer!,
-            raceEvent.rankingBasepoint!,
-            { ...result, difficulty: difficulties.black },
-            raceEvent.sportCode as SportCodeTypes,
-            raceEvent.raceLightCondition as LightConditionTypes
-          );
-        }
-
-        const technicalRanking = ranking != null && speedRanking != null ? ranking - 0.9 * speedRanking : null;
+        const technicalRanking =
+          result.ranking != null && speedRanking != null ? result.ranking - 0.9 * speedRanking : null;
         result.setNumberValueOrNull('technicalRanking', technicalRanking);
       } else {
         result.setNumberValueOrNull('speedRanking', null);
@@ -228,7 +207,13 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
           raceEvent.raceLightCondition as LightConditionTypes
         )
       );
-      if (result.missingTime) {
+      if (
+        result.missingTime &&
+        raceEvent.sportCode === 'OL' &&
+        raceEvent.raceDistance !== 'Sprint' &&
+        result.difficulty &&
+        [difficulties.black, difficulties.blue, difficulties.purple].includes(result.difficulty)
+      ) {
         const speedRanking = GetRanking(
           raceEvent.rankingBasetimePerKilometer!,
           raceEvent.rankingBasepoint!,
@@ -243,37 +228,9 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
           raceEvent.raceLightCondition as LightConditionTypes
         );
         result.setNumberValueOrNull('speedRanking', speedRanking);
-        let ranking = result.ranking;
 
-        if (
-          raceEvent.sportCode !== 'OL' ||
-          (raceEvent.raceDistance === distances.sprint &&
-            result.difficulty &&
-            [difficulties.black, difficulties.blue, difficulties.purple].includes(result.difficulty))
-        ) {
-          ranking = GetRanking(
-            raceEvent.rankingBasetimePerKilometer!,
-            raceEvent.rankingBasepoint!,
-            { ...result, difficulty: difficulties.black },
-            raceEvent.sportCode as SportCodeTypes,
-            raceEvent.raceLightCondition as LightConditionTypes
-          );
-          ranking != null && (ranking += 5.0);
-        } else if (
-          raceEvent.sportCode === 'OL' &&
-          result.difficulty &&
-          [difficulties.blue, difficulties.purple].includes(result.difficulty)
-        ) {
-          ranking = GetRanking(
-            raceEvent.rankingBasetimePerKilometer!,
-            raceEvent.rankingBasepoint!,
-            { ...result, difficulty: difficulties.black },
-            raceEvent.sportCode as SportCodeTypes,
-            raceEvent.raceLightCondition as LightConditionTypes
-          );
-        }
-
-        const technicalRanking = ranking != null && speedRanking != null ? ranking - 0.9 * speedRanking : null;
+        const technicalRanking =
+          result.ranking != null && speedRanking != null ? result.ranking - 0.9 * speedRanking : null;
         result.setNumberValueOrNull('technicalRanking', technicalRanking);
       } else {
         result.setNumberValueOrNull('speedRanking', null);

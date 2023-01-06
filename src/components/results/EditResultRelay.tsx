@@ -350,7 +350,7 @@ const EditResultRelay = ({
           >
             <Select
               allowClear={true}
-              onChange={(code: string) => {
+              onChange={(code: DifficultyTypes) => {
                 result.difficulty = code;
                 const resultsWithSameClass = results.filter(
                   (r) =>

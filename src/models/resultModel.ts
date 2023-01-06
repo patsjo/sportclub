@@ -102,7 +102,7 @@ export interface IRaceClassLevelProps {
   classShortName: string;
   classTypeShortName: string;
   age: number;
-  difficulty: string;
+  difficulty: DifficultyTypes;
 }
 
 export interface IRaceClassClassificationProps {
@@ -321,7 +321,7 @@ export interface IRaceTeamResultProps {
   className: string;
   deviantEventClassificationId?: string | null;
   classClassificationId?: number | null;
-  difficulty?: string | null;
+  difficulty?: DifficultyTypes | null;
   teamName?: string | null;
   competitorId: number;
   lengthInMeter?: number | null;
@@ -334,7 +334,7 @@ export interface IRaceTeamResultProps {
   nofStartsInClass?: number | null;
   stage: number;
   totalStages: number;
-  deviantRaceLightCondition?: string | null;
+  deviantRaceLightCondition?: LightConditionTypes | null;
   deltaPositions?: number | null;
   deltaTimeBehind?: string | null;
   totalStagePosition?: number | null;
@@ -397,7 +397,7 @@ class RaceTeamResult implements IRaceTeamResult {
   className = '';
   deviantEventClassificationId?: string | null;
   classClassificationId?: number | null;
-  difficulty?: string | null;
+  difficulty?: DifficultyTypes | null;
   teamName?: string | null;
   competitorId = -1;
   lengthInMeter?: number | null;
@@ -410,7 +410,7 @@ class RaceTeamResult implements IRaceTeamResult {
   nofStartsInClass?: number | null;
   stage = 1;
   totalStages = 3;
-  deviantRaceLightCondition?: string | null;
+  deviantRaceLightCondition?: LightConditionTypes | null;
   deltaPositions?: number | null;
   deltaTimeBehind?: string | null;
   totalStagePosition?: number | null;
@@ -621,7 +621,7 @@ export interface IRaceResultProps {
   className: string;
   deviantEventClassificationId?: string | null;
   classClassificationId?: number | null;
-  difficulty?: string | null;
+  difficulty?: DifficultyTypes | null;
   lengthInMeter?: number | null;
   failedReason?: string | null;
   competitorTime?: string | null;
@@ -634,7 +634,7 @@ export interface IRaceResultProps {
   feeToClub?: number | null;
   serviceFeeToClub?: number | null;
   serviceFeeDescription?: string | null;
-  award?: string | null;
+  award?: AwardTypes | null;
   points?: number | null;
   pointsOld?: number | null;
   points1000?: number | null;
@@ -687,7 +687,7 @@ class RaceResult implements IRaceResult {
   className = '';
   deviantEventClassificationId?: string | null;
   classClassificationId?: number | null;
-  difficulty?: string | null;
+  difficulty?: DifficultyTypes | null;
   lengthInMeter?: number | null;
   failedReason?: string | null;
   competitorTime?: string | null;
@@ -700,7 +700,7 @@ class RaceResult implements IRaceResult {
   feeToClub?: number | null;
   serviceFeeToClub = 0;
   serviceFeeDescription?: string | null;
-  award?: string | null;
+  award?: AwardTypes | null;
   points?: number | null;
   pointsOld?: number | null;
   points1000?: number | null;
@@ -868,12 +868,12 @@ export interface IRaceEventProps {
   organiserName?: string | null;
   raceDate?: string | null;
   raceTime?: string | null;
-  sportCode: string;
+  sportCode: SportCodeTypes;
   isRelay: boolean;
-  eventClassificationId: string;
-  raceLightCondition?: string | null;
-  raceDistance?: string | null;
-  paymentModel: number;
+  eventClassificationId: EventClassificationIdTypes;
+  raceLightCondition?: LightConditionTypes | null;
+  raceDistance?: DistanceTypes | null;
+  paymentModel: PaymentTypes;
   meetsAwardRequirements: boolean;
   results: IRaceResultProps[];
   teamResults: IRaceTeamResultProps[];
@@ -892,7 +892,7 @@ export interface IRaceEvent extends Omit<IRaceEventProps, 'results' | 'teamResul
   setPaymentModel: (value: PaymentTypes) => void;
   setRaceDistance: (value: DistanceTypes) => void;
   setRaceLightCondition: (value: LightConditionTypes) => void;
-  setSportCode: (value: SportCodeTypes | string) => void;
+  setSportCode: (value: SportCodeTypes) => void;
   setStringValueOrNull: (
     key: 'name' | 'organiserName' | 'raceDate' | 'raceTime' | 'rankingBasetimePerKilometer' | 'rankingBaseDescription',
     value?: string | null
@@ -910,7 +910,7 @@ export interface IRaceEvent extends Omit<IRaceEventProps, 'results' | 'teamResul
   validRanking: boolean;
 }
 
-export class RaceEvent {
+export class RaceEvent implements IRaceEvent {
   eventId = -1;
   eventorId?: number | null;
   eventorRaceId?: number | null;
@@ -918,12 +918,12 @@ export class RaceEvent {
   organiserName?: string | null;
   raceDate?: string | null;
   raceTime?: string | null;
-  sportCode = 'OL';
+  sportCode: SportCodeTypes = 'OL';
   isRelay = false;
-  eventClassificationId = 'F';
-  raceLightCondition?: string | null;
-  raceDistance?: string | null;
-  paymentModel = 0;
+  eventClassificationId: EventClassificationIdTypes = 'F';
+  raceLightCondition?: LightConditionTypes | null;
+  raceDistance?: DistanceTypes | null;
+  paymentModel: PaymentTypes = 0;
   meetsAwardRequirements = false;
   results: IRaceResult[] = [];
   teamResults: IRaceTeamResult[] = [];
@@ -998,7 +998,7 @@ export class RaceEvent {
     this.raceLightCondition = value;
   }
 
-  setSportCode(value: SportCodeTypes | string) {
+  setSportCode(value: SportCodeTypes) {
     this.sportCode = value;
   }
 
