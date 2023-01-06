@@ -286,13 +286,13 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
               if (raceWizardModel.overwrite) {
                 const clubPersonResults = personResults.filter(
                   (personResult) =>
-                    personResult.Organisation &&
-                    (personResult.Organisation.OrganisationId === clubModel.eventor?.organisationId.toString() ||
-                      (personResult.Organisation.OrganisationId ===
-                        clubModel.eventor?.districtOrganisationId.toString() &&
-                        clubModel.raceClubs?.selectedClub?.competitorByEventorId(
-                          parseInt(personResult.Person.PersonId)
-                        ) != null))
+                    (raceWizardModel.queryForCompetitorWithNoClub && !personResult.Organisation?.OrganisationId) ||
+                    personResult.Organisation?.OrganisationId === clubModel.eventor?.organisationId.toString() ||
+                    (personResult.Organisation.OrganisationId ===
+                      clubModel.eventor?.districtOrganisationId.toString() &&
+                      clubModel.raceClubs?.selectedClub?.competitorByEventorId(
+                        parseInt(personResult.Person.PersonId)
+                      ) != null)
                 );
 
                 for (let j = 0; j < clubPersonResults.length; j++) {
@@ -351,145 +351,149 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                     );
                   }
 
-                  const entry: IEventorEntry | undefined = entriesJson.Entry.find(
-                    (entry) =>
-                      entry.Competitor?.PersonId === personResult.Person.PersonId ||
-                      entry.Competitor?.Person?.PersonId === personResult.Person.PersonId
-                  );
-                  let entryFees: IEventorEntryClassFee[] = Array.isArray(entry?.EntryEntryFee)
-                    ? entry!.EntryEntryFee
-                    : entry?.EntryEntryFee != null
-                    ? [entry.EntryEntryFee]
-                    : [];
-                  if (entry?.EntryEntryFee == null && currentClass) {
-                    if (Array.isArray(currentClass.ClassEntryFee)) {
-                      entryFees = currentClass.ClassEntryFee;
-                    } else if (currentClass.ClassEntryFee != null) {
-                      entryFees = [currentClass.ClassEntryFee];
-                    }
-                  }
-                  const entryFeeIds = entryFees.map((f) => f.EntryFeeId);
-                  const age = eventRace && competitor ? GetAge(competitor.birthDay, eventRace.RaceDate.Date) : null;
-                  const didNotStart = personResult.Result?.CompetitorStatus['@attributes'].value === 'DidNotStart';
-                  const misPunch = personResult.Result?.CompetitorStatus['@attributes'].value === 'MisPunch';
-                  const ok = personResult.Result?.CompetitorStatus['@attributes'].value === 'OK';
-                  const valid = ok && !didNotStart && !misPunch;
-                  const position =
-                    valid && personResult.Result?.ResultPosition ? parseInt(personResult.Result.ResultPosition) : null;
-                  const secondTime =
-                    valid &&
-                    nofStartsInClass &&
-                    nofStartsInClass > 1 &&
-                    personResults.some((pr) => pr.Result?.ResultPosition === '2')
-                      ? personResults.find((pr) => pr.Result?.ResultPosition === '2')?.Result?.Time
-                      : null;
-                  const fees = GetFees(
-                    entryFeeJson.EntryFee,
-                    entryFeeIds,
-                    age,
-                    !!currentClass && currentClass.ClassShortName.indexOf('Ö') > -1
-                  );
-
-                  let resultMultiDay: IRaceResultMultiDayProps | undefined;
-                  if (totalIofResults && totalIofResults.ClassResult) {
-                    const totalEventRace = totalIofResults.Event.Race?.find(
-                      (eventRace) => eventRace.Extensions.EventRaceId == raceWizardModel.selectedEventorRaceId
+                  if (competitor) {
+                    const entry: IEventorEntry | undefined = entriesJson.Entry.find(
+                      (entry) =>
+                        entry.Competitor?.PersonId === personResult.Person.PersonId ||
+                        entry.Competitor?.Person?.PersonId === personResult.Person.PersonId
                     );
-                    const totalClassPersonResults = totalIofResults.ClassResult.find(
-                      (cr) => cr.Class.Id === currentClass?.EventClassId
-                    )?.PersonResult?.map((pr) => ({
-                      ...pr,
-                      Result: pr.Result?.find((r) => r['@attributes'].raceNumber === totalEventRace?.RaceNumber),
-                    }));
-                    const totalPersonResult = totalClassPersonResults?.find(
-                      (pr) =>
-                        pr.Person.Id?.some((id) => id === personResult.Person.PersonId) &&
-                        pr.Result?.BibNumber === personResult.Result?.BibNumber &&
-                        pr.Result?.Status !== 'NotCompeting'
-                    )?.Result;
-
-                    if (totalPersonResult) {
-                      const totalDidNotStart = totalPersonResult.Status === 'DidNotStart';
-                      const totalMisPunch = totalPersonResult.Status === 'MissingPunch';
-                      const totalOk = totalPersonResult.Status === 'OK';
-                      const totalValid = totalOk && !totalDidNotStart && !totalMisPunch;
-
-                      resultMultiDay = {
-                        multiDayResultId: -1 - 10000 * i - j,
-                        stage: totalEventRace?.RaceNumber ?? 1,
-                        totalStages: totalIofResults.Event.Race?.length ?? 1,
-                        totalFailedReason: totalDidNotStart
-                          ? failedReasons.NotStarted
-                          : !totalOk
-                          ? failedReasons.NotFinished
-                          : !totalPersonResult.Time ||
-                            (totalPersonResult.Position !== 1 && !totalPersonResult.TimeBehind) ||
-                            shortClassName === 'INSK'
-                          ? failedReasons.Finished
-                          : null,
-                        totalLengthInMeter: null,
-                        totalPosition: totalPersonResult.Position,
-                        totalNofStartsInClass: nofStartsInClass,
-                        totalTime:
-                          totalValid && totalPersonResult.Time ? ConvertSecondsToTime(totalPersonResult.Time) : null,
-                        totalWinnerTime:
-                          totalValid && totalPersonResult.Time && totalPersonResult.TimeBehind != null
-                            ? ConvertSecondsToTime(totalPersonResult.Time - totalPersonResult.TimeBehind)
-                            : null,
-                        totalSecondTime: null,
-                      };
+                    let entryFees: IEventorEntryClassFee[] = Array.isArray(entry?.EntryEntryFee)
+                      ? entry!.EntryEntryFee
+                      : entry?.EntryEntryFee != null
+                      ? [entry.EntryEntryFee]
+                      : [];
+                    if (entry?.EntryEntryFee == null && currentClass) {
+                      if (Array.isArray(currentClass.ClassEntryFee)) {
+                        entryFees = currentClass.ClassEntryFee;
+                      } else if (currentClass.ClassEntryFee != null) {
+                        entryFees = [currentClass.ClassEntryFee];
+                      }
                     }
-                  }
+                    const entryFeeIds = entryFees.map((f) => f.EntryFeeId);
+                    const age = eventRace && competitor ? GetAge(competitor.birthDay, eventRace.RaceDate.Date) : null;
+                    const didNotStart = personResult.Result?.CompetitorStatus['@attributes'].value === 'DidNotStart';
+                    const misPunch = personResult.Result?.CompetitorStatus['@attributes'].value === 'MisPunch';
+                    const ok = personResult.Result?.CompetitorStatus['@attributes'].value === 'OK';
+                    const valid = ok && !didNotStart && !misPunch;
+                    const position =
+                      valid && personResult.Result?.ResultPosition
+                        ? parseInt(personResult.Result.ResultPosition)
+                        : null;
+                    const secondTime =
+                      valid &&
+                      nofStartsInClass &&
+                      nofStartsInClass > 1 &&
+                      personResults.some((pr) => pr.Result?.ResultPosition === '2')
+                        ? personResults.find((pr) => pr.Result?.ResultPosition === '2')?.Result?.Time
+                        : null;
+                    const fees = GetFees(
+                      entryFeeJson.EntryFee,
+                      entryFeeIds,
+                      age,
+                      !!currentClass && currentClass.ClassShortName.indexOf('Ö') > -1
+                    );
 
-                  const raceResult: IRaceResultProps = {
-                    resultId: -1 - 10000 * i - j,
-                    competitorId: competitor?.competitorId ?? -1,
-                    resultMultiDay: null,
-                    className: shortClassName ?? '',
-                    deviantEventClassificationId: null,
-                    classClassificationId: GetClassClassificationId(
-                      raceEvent?.eventClassificationId as EventClassificationIdTypes | undefined,
-                      classLevel,
-                      clubModel.raceClubs?.eventClassifications
-                    ),
-                    difficulty: classLevel ? classLevel.difficulty : null,
-                    lengthInMeter: lengthInMeter,
-                    failedReason: didNotStart
-                      ? failedReasons.NotStarted
-                      : !ok
-                      ? failedReasons.NotFinished
-                      : !personResult.Result?.Time ||
-                        (position !== 1 && !personResult.Result.TimeDiff) ||
-                        shortClassName === 'INSK'
-                      ? failedReasons.Finished
-                      : null,
-                    competitorTime: valid && personResult.Result ? GetTimeWithHour(personResult.Result.Time) : null,
-                    winnerTime:
-                      valid && personResult.Result
-                        ? WinnerTime(
-                            personResult.Result.Time,
-                            personResult.Result.TimeDiff,
-                            parseInt(personResult.Result.ResultPosition)
-                          )
+                    let resultMultiDay: IRaceResultMultiDayProps | undefined;
+                    if (totalIofResults && totalIofResults.ClassResult) {
+                      const totalEventRace = totalIofResults.Event.Race?.find(
+                        (eventRace) => eventRace.Extensions.EventRaceId == raceWizardModel.selectedEventorRaceId
+                      );
+                      const totalClassPersonResults = totalIofResults.ClassResult.find(
+                        (cr) => cr.Class.Id === currentClass?.EventClassId
+                      )?.PersonResult?.map((pr) => ({
+                        ...pr,
+                        Result: pr.Result?.find((r) => r['@attributes'].raceNumber === totalEventRace?.RaceNumber),
+                      }));
+                      const totalPersonResult = totalClassPersonResults?.find(
+                        (pr) =>
+                          pr.Person.Id?.some((id) => id === personResult.Person.PersonId) &&
+                          pr.Result?.BibNumber === personResult.Result?.BibNumber &&
+                          pr.Result?.Status !== 'NotCompeting'
+                      )?.Result;
+
+                      if (totalPersonResult) {
+                        const totalDidNotStart = totalPersonResult.Status === 'DidNotStart';
+                        const totalMisPunch = totalPersonResult.Status === 'MissingPunch';
+                        const totalOk = totalPersonResult.Status === 'OK';
+                        const totalValid = totalOk && !totalDidNotStart && !totalMisPunch;
+
+                        resultMultiDay = {
+                          multiDayResultId: -1 - 10000 * i - j,
+                          stage: totalEventRace?.RaceNumber ?? 1,
+                          totalStages: totalIofResults.Event.Race?.length ?? 1,
+                          totalFailedReason: totalDidNotStart
+                            ? failedReasons.NotStarted
+                            : !totalOk
+                            ? failedReasons.NotFinished
+                            : !totalPersonResult.Time ||
+                              (totalPersonResult.Position !== 1 && !totalPersonResult.TimeBehind) ||
+                              shortClassName === 'INSK'
+                            ? failedReasons.Finished
+                            : null,
+                          totalLengthInMeter: null,
+                          totalPosition: totalPersonResult.Position,
+                          totalNofStartsInClass: nofStartsInClass,
+                          totalTime:
+                            totalValid && totalPersonResult.Time ? ConvertSecondsToTime(totalPersonResult.Time) : null,
+                          totalWinnerTime:
+                            totalValid && totalPersonResult.Time && totalPersonResult.TimeBehind != null
+                              ? ConvertSecondsToTime(totalPersonResult.Time - totalPersonResult.TimeBehind)
+                              : null,
+                          totalSecondTime: null,
+                        };
+                      }
+                    }
+
+                    const raceResult: IRaceResultProps = {
+                      resultId: -1 - 10000 * i - j,
+                      competitorId: competitor.competitorId,
+                      resultMultiDay: null,
+                      className: shortClassName ?? '',
+                      deviantEventClassificationId: null,
+                      classClassificationId: GetClassClassificationId(
+                        raceEvent?.eventClassificationId as EventClassificationIdTypes | undefined,
+                        classLevel,
+                        clubModel.raceClubs?.eventClassifications
+                      ),
+                      difficulty: classLevel ? classLevel.difficulty : null,
+                      lengthInMeter: lengthInMeter,
+                      failedReason: didNotStart
+                        ? failedReasons.NotStarted
+                        : !ok
+                        ? failedReasons.NotFinished
+                        : !personResult.Result?.Time ||
+                          (position !== 1 && !personResult.Result.TimeDiff) ||
+                          shortClassName === 'INSK'
+                        ? failedReasons.Finished
                         : null,
-                    secondTime: GetTimeWithHour(secondTime),
-                    position: position,
-                    nofStartsInClass: nofStartsInClass,
-                    originalFee: fees.originalFee,
-                    lateFee: fees.lateFee,
-                    feeToClub: null,
-                    award: null,
-                    points: 0,
-                    pointsOld: 0,
-                    points1000: 0,
-                    missingTime: GetMissingTime(
-                      personResult.Person?.PersonId,
-                      splitTimes,
-                      bestSplitTimes,
-                      secondBestSplitTimes
-                    ),
-                  };
-                  raceEvent && raceEvent.results?.push(raceResult);
+                      competitorTime: valid && personResult.Result ? GetTimeWithHour(personResult.Result.Time) : null,
+                      winnerTime:
+                        valid && personResult.Result
+                          ? WinnerTime(
+                              personResult.Result.Time,
+                              personResult.Result.TimeDiff,
+                              parseInt(personResult.Result.ResultPosition)
+                            )
+                          : null,
+                      secondTime: GetTimeWithHour(secondTime),
+                      position: position,
+                      nofStartsInClass: nofStartsInClass,
+                      originalFee: fees.originalFee,
+                      lateFee: fees.lateFee,
+                      feeToClub: null,
+                      award: null,
+                      points: 0,
+                      pointsOld: 0,
+                      points1000: 0,
+                      missingTime: GetMissingTime(
+                        personResult.Person?.PersonId,
+                        splitTimes,
+                        bestSplitTimes,
+                        secondBestSplitTimes
+                      ),
+                    };
+                    raceEvent && raceEvent.results?.push(raceResult);
+                  }
                 }
               }
             }
@@ -588,8 +592,8 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                       : null;
 
                   if (
-                    (teamMemberResult.Organisation &&
-                      teamMemberResult.Organisation.OrganisationId === clubModel.eventor?.organisationId.toString()) ||
+                    (raceWizardModel.queryForCompetitorWithNoClub && !teamMemberResult.Organisation?.OrganisationId) ||
+                    teamMemberResult.Organisation?.OrganisationId === clubModel.eventor?.organisationId.toString() ||
                     competitor ||
                     (hasClubMembers && teamOrganisations.length === 1)
                   ) {
@@ -662,119 +666,125 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                   );
                 }
 
-                const didNotStart = teamMemberResult.CompetitorStatus['@attributes'].value === 'DidNotStart';
-                const misPunch = teamMemberResult.CompetitorStatus['@attributes'].value === 'MisPunch';
-                const ok = teamMemberResult.CompetitorStatus['@attributes'].value === 'OK';
-                const valid = ok && !didNotStart && !misPunch;
-                const position =
-                  valid && teamMemberResult.Position != null ? parseInt(teamMemberResult.Position) : null;
-                const leg = parseInt(teamMemberResult.Leg);
-                const legRaceInfo = classRaceInfos.find((classRaceInfo) => classRaceInfo.leg === leg);
-                const nofStartsInLeg = valid && legRaceInfo ? legRaceInfo.numberOfStarts : null;
-                //const secondTime =
-                //  valid && nofStartsInClass > 1
-                //    ? personResults.find(pr => pr.Result.ResultPosition === "2").Result.Time
-                //    : null;
+                if (competitor) {
+                  const didNotStart = teamMemberResult.CompetitorStatus['@attributes'].value === 'DidNotStart';
+                  const misPunch = teamMemberResult.CompetitorStatus['@attributes'].value === 'MisPunch';
+                  const ok = teamMemberResult.CompetitorStatus['@attributes'].value === 'OK';
+                  const valid = ok && !didNotStart && !misPunch;
+                  const position =
+                    valid && teamMemberResult.Position != null ? parseInt(teamMemberResult.Position) : null;
+                  const leg = parseInt(teamMemberResult.Leg);
+                  const legRaceInfo = classRaceInfos.find((classRaceInfo) => classRaceInfo.leg === leg);
+                  const nofStartsInLeg = valid && legRaceInfo ? legRaceInfo.numberOfStarts : null;
+                  //const secondTime =
+                  //  valid && nofStartsInClass > 1
+                  //    ? personResults.find(pr => pr.Result.ResultPosition === "2").Result.Time
+                  //    : null;
 
-                const stageOk = teamMemberResult.OverallResult?.TeamStatus['@attributes'].value === 'OK';
-                const teamDidNotStart = teamMemberResult.TeamStatus['@attributes'].value === 'DidNotStart';
-                const teamMisPunch = teamMemberResult.TeamStatus['@attributes'].value === 'MisPunch';
-                const teamOk = teamMemberResult.TeamStatus['@attributes'].value === 'OK';
-                const teamValid = teamOk && !teamDidNotStart && !teamMisPunch;
-                const teamPosition = teamValid ? teamMemberResult.TeamPosition : null;
-                const totalStagePosition =
-                  stageOk && teamMemberResult.OverallResult?.ResultPosition
-                    ? parseInt(teamMemberResult.OverallResult.ResultPosition)
-                    : null;
-                const totalStageTimeBehind = stageOk ? GetTimeWithHour(teamMemberResult.OverallResult?.TimeDiff) : null;
-                let deltaPositions: number | null = null;
-                let deltaTimeBehind: string | null = null;
-                if (leg > 1 && stageOk) {
-                  const prevLeg = (leg - 1).toString();
-                  const prevResult = teamResults
-                    .filter((teamResult) => teamResult.BibNumber === teamMemberResult.BibNumber)
-                    .map((teamResult) => {
-                      const teamMemberResults: IEventorTeamMemberResult[] = Array.isArray(teamResult.TeamMemberResult!)
-                        ? teamResult.TeamMemberResult!
-                        : [teamResult.TeamMemberResult!];
-                      return teamMemberResults;
-                    })
-                    .find(() => true)
-                    ?.find((tmr) => tmr.Leg === prevLeg);
-                  const prevOverallResult = prevResult ? prevResult.OverallResult : null;
-                  const prevStagePosition =
-                    prevOverallResult && prevOverallResult.ResultPosition
-                      ? parseInt(prevOverallResult.ResultPosition)
+                  const stageOk = teamMemberResult.OverallResult?.TeamStatus['@attributes'].value === 'OK';
+                  const teamDidNotStart = teamMemberResult.TeamStatus['@attributes'].value === 'DidNotStart';
+                  const teamMisPunch = teamMemberResult.TeamStatus['@attributes'].value === 'MisPunch';
+                  const teamOk = teamMemberResult.TeamStatus['@attributes'].value === 'OK';
+                  const teamValid = teamOk && !teamDidNotStart && !teamMisPunch;
+                  const teamPosition = teamValid ? teamMemberResult.TeamPosition : null;
+                  const totalStagePosition =
+                    stageOk && teamMemberResult.OverallResult?.ResultPosition
+                      ? parseInt(teamMemberResult.OverallResult.ResultPosition)
                       : null;
-                  const prevStageTimeBehind = prevOverallResult ? GetTimeWithHour(prevOverallResult.TimeDiff) : null;
-                  deltaPositions =
-                    totalStagePosition && prevStagePosition ? totalStagePosition - prevStagePosition : null;
-                  deltaTimeBehind = prevStageTimeBehind ? TimeDiff(prevStageTimeBehind, totalStageTimeBehind) : null;
-                }
+                  const totalStageTimeBehind = stageOk
+                    ? GetTimeWithHour(teamMemberResult.OverallResult?.TimeDiff)
+                    : null;
+                  let deltaPositions: number | null = null;
+                  let deltaTimeBehind: string | null = null;
+                  if (leg > 1 && stageOk) {
+                    const prevLeg = (leg - 1).toString();
+                    const prevResult = teamResults
+                      .filter((teamResult) => teamResult.BibNumber === teamMemberResult.BibNumber)
+                      .map((teamResult) => {
+                        const teamMemberResults: IEventorTeamMemberResult[] = Array.isArray(
+                          teamResult.TeamMemberResult!
+                        )
+                          ? teamResult.TeamMemberResult!
+                          : [teamResult.TeamMemberResult!];
+                        return teamMemberResults;
+                      })
+                      .find(() => true)
+                      ?.find((tmr) => tmr.Leg === prevLeg);
+                    const prevOverallResult = prevResult ? prevResult.OverallResult : null;
+                    const prevStagePosition =
+                      prevOverallResult && prevOverallResult.ResultPosition
+                        ? parseInt(prevOverallResult.ResultPosition)
+                        : null;
+                    const prevStageTimeBehind = prevOverallResult ? GetTimeWithHour(prevOverallResult.TimeDiff) : null;
+                    deltaPositions =
+                      totalStagePosition && prevStagePosition ? totalStagePosition - prevStagePosition : null;
+                    deltaTimeBehind = prevStageTimeBehind ? TimeDiff(prevStageTimeBehind, totalStageTimeBehind) : null;
+                  }
 
-                const legSplitTimes = allLegsSplitTimes.find((lst) => lst.leg === teamMemberResult.Leg);
-                const raceTeamResult: IRaceTeamResultProps = {
-                  teamResultId: -1 - i * 20000 - j,
-                  competitorId: competitor?.competitorId ?? -1,
-                  className: shortClassName ?? '',
-                  deviantEventClassificationId: null,
-                  classClassificationId: GetClassClassificationId(
-                    raceEvent?.eventClassificationId as EventClassificationIdTypes | undefined,
-                    classLevel,
-                    clubModel.raceClubs?.eventClassifications
-                  ),
-                  difficulty: classLevel ? classLevel.difficulty : null,
-                  teamName: teamMemberResult.TeamName,
-                  lengthInMeter: null,
-                  failedReason: didNotStart
-                    ? failedReasons.NotStarted
-                    : !ok
-                    ? failedReasons.NotFinished
-                    : teamMemberResult.Time == null
-                    ? failedReasons.Finished
-                    : null,
-                  teamFailedReason: teamDidNotStart
-                    ? failedReasons.NotStarted
-                    : !teamOk
-                    ? failedReasons.NotFinished
-                    : teamValid && (!teamPosition || !nofStartsInClass || !teamMemberResult.TeamTimeDiff)
-                    ? failedReasons.Finished
-                    : null,
-                  competitorTime: valid ? GetTimeWithHour(teamMemberResult.Time) : null,
-                  winnerTime:
-                    valid && teamMemberResult.Position === '1'
-                      ? GetTimeWithHour(teamMemberResult.Time)
-                      : valid && teamMemberResult.TimeBehind
-                      ? WinnerTime(
-                          teamMemberResult.Time,
-                          ConvertSecondsToTime(parseInt(teamMemberResult.TimeBehind)),
-                          teamMemberResult.Position ? parseInt(teamMemberResult.Position) : 2
+                  const legSplitTimes = allLegsSplitTimes.find((lst) => lst.leg === teamMemberResult.Leg);
+                  const raceTeamResult: IRaceTeamResultProps = {
+                    teamResultId: -1 - i * 20000 - j,
+                    competitorId: competitor?.competitorId ?? -1,
+                    className: shortClassName ?? '',
+                    deviantEventClassificationId: null,
+                    classClassificationId: GetClassClassificationId(
+                      raceEvent?.eventClassificationId as EventClassificationIdTypes | undefined,
+                      classLevel,
+                      clubModel.raceClubs?.eventClassifications
+                    ),
+                    difficulty: classLevel ? classLevel.difficulty : null,
+                    teamName: teamMemberResult.TeamName,
+                    lengthInMeter: null,
+                    failedReason: didNotStart
+                      ? failedReasons.NotStarted
+                      : !ok
+                      ? failedReasons.NotFinished
+                      : teamMemberResult.Time == null
+                      ? failedReasons.Finished
+                      : null,
+                    teamFailedReason: teamDidNotStart
+                      ? failedReasons.NotStarted
+                      : !teamOk
+                      ? failedReasons.NotFinished
+                      : teamValid && (!teamPosition || !nofStartsInClass || !teamMemberResult.TeamTimeDiff)
+                      ? failedReasons.Finished
+                      : null,
+                    competitorTime: valid ? GetTimeWithHour(teamMemberResult.Time) : null,
+                    winnerTime:
+                      valid && teamMemberResult.Position === '1'
+                        ? GetTimeWithHour(teamMemberResult.Time)
+                        : valid && teamMemberResult.TimeBehind
+                        ? WinnerTime(
+                            teamMemberResult.Time,
+                            ConvertSecondsToTime(parseInt(teamMemberResult.TimeBehind)),
+                            teamMemberResult.Position ? parseInt(teamMemberResult.Position) : 2
+                          )
+                        : null,
+                    secondTime: null, //TODO GetTimeWithHour(secondTime),
+                    position: position,
+                    nofStartsInClass: nofStartsInLeg,
+                    stage: leg,
+                    totalStages: numberOfLegs ?? 1,
+                    deltaPositions: deltaPositions,
+                    deltaTimeBehind: deltaTimeBehind,
+                    totalStagePosition: totalStagePosition,
+                    totalStageTimeBehind: totalStageTimeBehind,
+                    totalPosition: teamPosition,
+                    totalNofStartsInClass: nofStartsInClass,
+                    totalTimeBehind: teamValid ? GetTimeWithHour(teamMemberResult.TeamTimeDiff) : null,
+                    points1000: 0,
+                    missingTime: legSplitTimes
+                      ? GetMissingTime(
+                          teamMemberResult.Person.PersonId,
+                          legSplitTimes.splitTimes,
+                          legSplitTimes.bestSplitTimes,
+                          legSplitTimes.secondBestSplitTimes
                         )
                       : null,
-                  secondTime: null, //TODO GetTimeWithHour(secondTime),
-                  position: position,
-                  nofStartsInClass: nofStartsInLeg,
-                  stage: leg,
-                  totalStages: numberOfLegs ?? 1,
-                  deltaPositions: deltaPositions,
-                  deltaTimeBehind: deltaTimeBehind,
-                  totalStagePosition: totalStagePosition,
-                  totalStageTimeBehind: totalStageTimeBehind,
-                  totalPosition: teamPosition,
-                  totalNofStartsInClass: nofStartsInClass,
-                  totalTimeBehind: teamValid ? GetTimeWithHour(teamMemberResult.TeamTimeDiff) : null,
-                  points1000: 0,
-                  missingTime: legSplitTimes
-                    ? GetMissingTime(
-                        teamMemberResult.Person.PersonId,
-                        legSplitTimes.splitTimes,
-                        legSplitTimes.bestSplitTimes,
-                        legSplitTimes.secondBestSplitTimes
-                      )
-                    : null,
-                };
+                  };
 
-                raceEvent && raceEvent.teamResults?.push(raceTeamResult);
+                  raceEvent && raceEvent.teamResults?.push(raceTeamResult);
+                }
               }
             }
           }
@@ -966,12 +976,12 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
               if (raceWizardModel.overwrite) {
                 const clubPersonResults = personResults.filter(
                   (personResult) =>
-                    personResult.Organisation &&
-                    (personResult.Organisation.Id == clubModel.eventor?.organisationId ||
-                      (personResult.Organisation.Id == clubModel.eventor?.districtOrganisationId &&
-                        clubModel.raceClubs?.selectedClub?.competitorByEventorId(
-                          parseInt(personResult.Person.Id?.find(() => true) as string)
-                        ) != null))
+                    (raceWizardModel.queryForCompetitorWithNoClub && !personResult.Organisation?.Id) ||
+                    personResult?.Organisation?.Id == clubModel.eventor?.organisationId ||
+                    (personResult.Organisation?.Id == clubModel.eventor?.districtOrganisationId &&
+                      clubModel.raceClubs?.selectedClub?.competitorByEventorId(
+                        parseInt(personResult.Person.Id?.find(() => true) as string)
+                      ) != null)
                 );
 
                 for (let j = 0; j < clubPersonResults.length; j++) {
@@ -1029,132 +1039,134 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                     );
                   }
 
-                  const entry: IEventorEntry | undefined = entriesJson.Entry.find(
-                    (entry) =>
-                      entry.Competitor?.PersonId === personId || entry.Competitor?.Person?.PersonId === personId
-                  );
-                  let entryFees: IEventorEntryClassFee[] = Array.isArray(entry?.EntryEntryFee)
-                    ? entry!.EntryEntryFee
-                    : entry?.EntryEntryFee != null
-                    ? [entry.EntryEntryFee]
-                    : [];
-                  if (entry?.EntryEntryFee == null && currentClass) {
-                    if (Array.isArray(currentClass.ClassEntryFee)) {
-                      entryFees = currentClass.ClassEntryFee;
-                    } else if (currentClass.ClassEntryFee != null) {
-                      entryFees = [currentClass.ClassEntryFee];
-                    }
-                  }
-                  const entryFeeIds = entryFees.map((f) => f.EntryFeeId);
-                  const age =
-                    eventRace?.StartTime && competitor ? GetAge(competitor.birthDay, eventRace.StartTime.Date) : null;
-                  const didNotStart = personResult.Result?.Status === 'DidNotStart';
-                  const misPunch = personResult.Result?.Status === 'MissingPunch';
-                  const ok = personResult.Result?.Status === 'OK';
-                  const valid = ok && !didNotStart && !misPunch;
-                  const secondTime =
-                    valid &&
-                    nofStartsInClass &&
-                    nofStartsInClass > 1 &&
-                    personResults.some((pr) => pr.Result?.Position === 2)
-                      ? personResults.find((pr) => pr.Result?.Position === 2)?.Result?.Time
-                      : null;
-                  const fees = GetFees(
-                    entryFeeJson.EntryFee,
-                    entryFeeIds,
-                    age,
-                    !!currentClass && currentClass.ClassShortName.indexOf('Ö') > -1
-                  );
-
-                  let resultMultiDay: IRaceResultMultiDayProps | undefined;
-                  if (totalIofResults && totalIofResults.ClassResult) {
-                    const totalEventRace = totalIofResults.Event.Race?.find(
-                      (eventRace) => eventRace.Extensions.EventRaceId == raceWizardModel.selectedEventorRaceId
+                  if (competitor) {
+                    const entry: IEventorEntry | undefined = entriesJson.Entry.find(
+                      (entry) =>
+                        entry.Competitor?.PersonId === personId || entry.Competitor?.Person?.PersonId === personId
                     );
-                    const totalClassPersonResults = totalIofResults.ClassResult.find(
-                      (cr) => cr.Class.Id === classResult.Class.Id
-                    )?.PersonResult?.map((pr) => ({
-                      ...pr,
-                      Result: pr.Result?.find((r) => r['@attributes'].raceNumber === totalEventRace?.RaceNumber),
-                    }));
-                    const totalPersonResult = totalClassPersonResults?.find(
-                      (pr) =>
-                        pr.Person.Id?.some((id) => id === personId) &&
-                        pr.Result?.BibNumber === personResult.Result?.BibNumber &&
-                        pr.Result?.Status !== 'NotCompeting'
-                    )?.Result;
-
-                    if (totalPersonResult) {
-                      const totalDidNotStart = totalPersonResult.Status === 'DidNotStart';
-                      const totalMisPunch = totalPersonResult.Status === 'MissingPunch';
-                      const totalOk = totalPersonResult.Status === 'OK';
-                      const totalValid = totalOk && !totalDidNotStart && !totalMisPunch;
-
-                      resultMultiDay = {
-                        multiDayResultId: -1 - 10000 * i - j,
-                        stage: totalEventRace?.RaceNumber ?? 1,
-                        totalStages: totalIofResults.Event.Race?.length ?? 1,
-                        totalFailedReason: totalDidNotStart
-                          ? failedReasons.NotStarted
-                          : !totalOk
-                          ? failedReasons.NotFinished
-                          : !totalPersonResult?.Time ||
-                            (totalPersonResult.Position !== 1 && !totalPersonResult.TimeBehind) ||
-                            shortClassName === 'INSK'
-                          ? failedReasons.Finished
-                          : null,
-                        totalLengthInMeter: null,
-                        totalPosition: totalPersonResult.Position,
-                        totalNofStartsInClass: nofStartsInClass,
-                        totalTime:
-                          totalValid && totalPersonResult.Time ? ConvertSecondsToTime(totalPersonResult.Time) : null,
-                        totalWinnerTime:
-                          totalValid && totalPersonResult.Time && totalPersonResult.TimeBehind != null
-                            ? ConvertSecondsToTime(totalPersonResult.Time - totalPersonResult.TimeBehind)
-                            : null,
-                        totalSecondTime: null,
-                      };
+                    let entryFees: IEventorEntryClassFee[] = Array.isArray(entry?.EntryEntryFee)
+                      ? entry!.EntryEntryFee
+                      : entry?.EntryEntryFee != null
+                      ? [entry.EntryEntryFee]
+                      : [];
+                    if (entry?.EntryEntryFee == null && currentClass) {
+                      if (Array.isArray(currentClass.ClassEntryFee)) {
+                        entryFees = currentClass.ClassEntryFee;
+                      } else if (currentClass.ClassEntryFee != null) {
+                        entryFees = [currentClass.ClassEntryFee];
+                      }
                     }
-                  }
+                    const entryFeeIds = entryFees.map((f) => f.EntryFeeId);
+                    const age =
+                      eventRace?.StartTime && competitor ? GetAge(competitor.birthDay, eventRace.StartTime.Date) : null;
+                    const didNotStart = personResult.Result?.Status === 'DidNotStart';
+                    const misPunch = personResult.Result?.Status === 'MissingPunch';
+                    const ok = personResult.Result?.Status === 'OK';
+                    const valid = ok && !didNotStart && !misPunch;
+                    const secondTime =
+                      valid &&
+                      nofStartsInClass &&
+                      nofStartsInClass > 1 &&
+                      personResults.some((pr) => pr.Result?.Position === 2)
+                        ? personResults.find((pr) => pr.Result?.Position === 2)?.Result?.Time
+                        : null;
+                    const fees = GetFees(
+                      entryFeeJson.EntryFee,
+                      entryFeeIds,
+                      age,
+                      !!currentClass && currentClass.ClassShortName.indexOf('Ö') > -1
+                    );
 
-                  const raceResult: IRaceResultProps = {
-                    resultId: -1 - 10000 * i - j,
-                    competitorId: competitor?.competitorId ?? -1,
-                    resultMultiDay: resultMultiDay,
-                    className: shortClassName ?? '',
-                    deviantEventClassificationId: null,
-                    classClassificationId: GetClassClassificationId(
-                      raceEvent?.eventClassificationId as EventClassificationIdTypes | undefined,
-                      classLevel,
-                      clubModel.raceClubs?.eventClassifications
-                    ),
-                    difficulty: classLevel ? classLevel.difficulty : null,
-                    lengthInMeter: lengthInMeter,
-                    failedReason: didNotStart
-                      ? failedReasons.NotStarted
-                      : !ok
-                      ? failedReasons.NotFinished
-                      : !personResult.Result?.Time ||
-                        (personResult.Result.Position !== 1 && !personResult.Result.TimeBehind) ||
-                        shortClassName === 'INSK'
-                      ? failedReasons.Finished
-                      : null,
-                    competitorTime:
-                      valid && personResult.Result?.Time ? ConvertSecondsToTime(personResult.Result.Time) : null,
-                    winnerTime: winnerTime,
-                    secondTime: secondTime ? ConvertSecondsToTime(secondTime) : null,
-                    position: personResult.Result?.Position,
-                    nofStartsInClass: nofStartsInClass,
-                    originalFee: fees.originalFee,
-                    lateFee: fees.lateFee,
-                    feeToClub: null,
-                    award: null,
-                    points: 0,
-                    pointsOld: 0,
-                    points1000: 0,
-                    missingTime: GetMissingTime(personId ?? '#', splitTimes, bestSplitTimes, secondBestSplitTimes),
-                  };
-                  raceEvent && raceEvent.results?.push(raceResult);
+                    let resultMultiDay: IRaceResultMultiDayProps | undefined;
+                    if (totalIofResults && totalIofResults.ClassResult) {
+                      const totalEventRace = totalIofResults.Event.Race?.find(
+                        (eventRace) => eventRace.Extensions.EventRaceId == raceWizardModel.selectedEventorRaceId
+                      );
+                      const totalClassPersonResults = totalIofResults.ClassResult.find(
+                        (cr) => cr.Class.Id === classResult.Class.Id
+                      )?.PersonResult?.map((pr) => ({
+                        ...pr,
+                        Result: pr.Result?.find((r) => r['@attributes'].raceNumber === totalEventRace?.RaceNumber),
+                      }));
+                      const totalPersonResult = totalClassPersonResults?.find(
+                        (pr) =>
+                          pr.Person.Id?.some((id) => id === personId) &&
+                          pr.Result?.BibNumber === personResult.Result?.BibNumber &&
+                          pr.Result?.Status !== 'NotCompeting'
+                      )?.Result;
+
+                      if (totalPersonResult) {
+                        const totalDidNotStart = totalPersonResult.Status === 'DidNotStart';
+                        const totalMisPunch = totalPersonResult.Status === 'MissingPunch';
+                        const totalOk = totalPersonResult.Status === 'OK';
+                        const totalValid = totalOk && !totalDidNotStart && !totalMisPunch;
+
+                        resultMultiDay = {
+                          multiDayResultId: -1 - 10000 * i - j,
+                          stage: totalEventRace?.RaceNumber ?? 1,
+                          totalStages: totalIofResults.Event.Race?.length ?? 1,
+                          totalFailedReason: totalDidNotStart
+                            ? failedReasons.NotStarted
+                            : !totalOk
+                            ? failedReasons.NotFinished
+                            : !totalPersonResult?.Time ||
+                              (totalPersonResult.Position !== 1 && !totalPersonResult.TimeBehind) ||
+                              shortClassName === 'INSK'
+                            ? failedReasons.Finished
+                            : null,
+                          totalLengthInMeter: null,
+                          totalPosition: totalPersonResult.Position,
+                          totalNofStartsInClass: nofStartsInClass,
+                          totalTime:
+                            totalValid && totalPersonResult.Time ? ConvertSecondsToTime(totalPersonResult.Time) : null,
+                          totalWinnerTime:
+                            totalValid && totalPersonResult.Time && totalPersonResult.TimeBehind != null
+                              ? ConvertSecondsToTime(totalPersonResult.Time - totalPersonResult.TimeBehind)
+                              : null,
+                          totalSecondTime: null,
+                        };
+                      }
+                    }
+
+                    const raceResult: IRaceResultProps = {
+                      resultId: -1 - 10000 * i - j,
+                      competitorId: competitor?.competitorId ?? -1,
+                      resultMultiDay: resultMultiDay,
+                      className: shortClassName ?? '',
+                      deviantEventClassificationId: null,
+                      classClassificationId: GetClassClassificationId(
+                        raceEvent?.eventClassificationId as EventClassificationIdTypes | undefined,
+                        classLevel,
+                        clubModel.raceClubs?.eventClassifications
+                      ),
+                      difficulty: classLevel ? classLevel.difficulty : null,
+                      lengthInMeter: lengthInMeter,
+                      failedReason: didNotStart
+                        ? failedReasons.NotStarted
+                        : !ok
+                        ? failedReasons.NotFinished
+                        : !personResult.Result?.Time ||
+                          (personResult.Result.Position !== 1 && !personResult.Result.TimeBehind) ||
+                          shortClassName === 'INSK'
+                        ? failedReasons.Finished
+                        : null,
+                      competitorTime:
+                        valid && personResult.Result?.Time ? ConvertSecondsToTime(personResult.Result.Time) : null,
+                      winnerTime: winnerTime,
+                      secondTime: secondTime ? ConvertSecondsToTime(secondTime) : null,
+                      position: personResult.Result?.Position,
+                      nofStartsInClass: nofStartsInClass,
+                      originalFee: fees.originalFee,
+                      lateFee: fees.lateFee,
+                      feeToClub: null,
+                      award: null,
+                      points: 0,
+                      pointsOld: 0,
+                      points1000: 0,
+                      missingTime: GetMissingTime(personId ?? '#', splitTimes, bestSplitTimes, secondBestSplitTimes),
+                    };
+                    raceEvent && raceEvent.results?.push(raceResult);
+                  }
                 }
               }
             }
@@ -1297,8 +1309,8 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                       : null;
 
                   if (
-                    (teamMemberResult.Organisation &&
-                      teamMemberResult.Organisation.Id === clubModel.eventor?.organisationId.toString()) ||
+                    (raceWizardModel.queryForCompetitorWithNoClub && !teamMemberResult.Organisation?.Id) ||
+                    teamMemberResult.Organisation?.Id === clubModel.eventor?.organisationId.toString() ||
                     competitor ||
                     (hasClubMembers && teamResult.Organisation?.length === 1)
                   ) {
@@ -1370,123 +1382,127 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                   );
                 }
 
-                const didNotStart = teamMemberResult.Result?.Status === 'DidNotStart';
-                const misPunch = teamMemberResult.Result?.Status === 'MissingPunch';
-                const ok = teamMemberResult.Result?.Status === 'OK';
-                const valid = ok && !didNotStart && !misPunch;
-                const position =
-                  valid && teamMemberResult.Result?.Position != null ? teamMemberResult.Result.Position : null;
-                const leg = teamMemberResult.Result?.Leg ?? 0;
-                const legRaceInfo = legInfos?.find((classRaceInfo) => classRaceInfo.leg === leg);
-                const nofStartsInLeg = valid && legRaceInfo ? legRaceInfo.numberOfStarts : null;
-                //const secondTime =
-                //  valid && nofStartsInClass > 1
-                //    ? personResults.find(pr => pr.Result.ResultPosition === "2").Result.Time
-                //    : null;
+                if (competitor) {
+                  const didNotStart = teamMemberResult.Result?.Status === 'DidNotStart';
+                  const misPunch = teamMemberResult.Result?.Status === 'MissingPunch';
+                  const ok = teamMemberResult.Result?.Status === 'OK';
+                  const valid = ok && !didNotStart && !misPunch;
+                  const position =
+                    valid && teamMemberResult.Result?.Position != null ? teamMemberResult.Result.Position : null;
+                  const leg = teamMemberResult.Result?.Leg ?? 0;
+                  const legRaceInfo = legInfos?.find((classRaceInfo) => classRaceInfo.leg === leg);
+                  const nofStartsInLeg = valid && legRaceInfo ? legRaceInfo.numberOfStarts : null;
+                  //const secondTime =
+                  //  valid && nofStartsInClass > 1
+                  //    ? personResults.find(pr => pr.Result.ResultPosition === "2").Result.Time
+                  //    : null;
 
-                const stageOk = teamMemberResult.Result?.OverallResult?.Status === 'OK';
-                const teamDidNotStart = teamMemberResult.TeamStatus === 'DidNotStart';
-                const teamMisPunch = teamMemberResult.TeamStatus === 'MissingPunch';
-                const teamOk = teamMemberResult.TeamStatus === 'OK';
-                const teamValid = teamOk && !teamDidNotStart && !teamMisPunch;
-                const teamPosition = teamValid ? teamMemberResult.TeamPosition : null;
-                const totalStagePosition =
-                  stageOk && teamMemberResult.Result?.OverallResult?.Position
-                    ? teamMemberResult.Result.OverallResult.Position
-                    : null;
-                const totalStageTimeBehind =
-                  teamMemberResult.Result?.OverallResult?.Time && stageOk && legRaceInfo?.overallWinnerTime
-                    ? teamMemberResult.Result.OverallResult?.Time - legRaceInfo.overallWinnerTime
-                    : null;
-                let deltaPositions: number | null = null;
-                let deltaTimeBehind: string | null = null;
-                if (leg > 1 && stageOk) {
-                  const prevLeg = (leg - 1).toString();
-                  const prevLegRaceInfo = legInfos?.find((classRaceInfo) => classRaceInfo.leg === leg - 1);
-                  const prevResults = prevLegRaceInfo?.oklegMembers.filter(
-                    (r) => r.Result.BibNumber === teamMemberResult.Result?.BibNumber
-                  );
-                  let prevResult = prevResults?.find((r) =>
-                    r.Result.FinishTime?.isSame(teamMemberResult.Result?.StartTime)
-                  );
-                  if (!prevResult) prevResult = prevResults?.find(() => true);
-                  const prevOverallResult = prevResult ? prevResult.Result.OverallResult : null;
-                  const prevStagePosition =
-                    prevOverallResult && prevOverallResult.Position ? prevOverallResult.Position : null;
-                  const prevStageTimeBehind =
-                    prevOverallResult?.Time && prevLegRaceInfo?.overallWinnerTime
-                      ? prevOverallResult.Time - prevLegRaceInfo.overallWinnerTime
+                  const stageOk = teamMemberResult.Result?.OverallResult?.Status === 'OK';
+                  const teamDidNotStart = teamMemberResult.TeamStatus === 'DidNotStart';
+                  const teamMisPunch = teamMemberResult.TeamStatus === 'MissingPunch';
+                  const teamOk = teamMemberResult.TeamStatus === 'OK';
+                  const teamValid = teamOk && !teamDidNotStart && !teamMisPunch;
+                  const teamPosition = teamValid ? teamMemberResult.TeamPosition : null;
+                  const totalStagePosition =
+                    stageOk && teamMemberResult.Result?.OverallResult?.Position
+                      ? teamMemberResult.Result.OverallResult.Position
                       : null;
-                  deltaPositions =
-                    totalStagePosition && prevStagePosition ? totalStagePosition - prevStagePosition : null;
-                  deltaTimeBehind =
-                    totalStageTimeBehind && prevStageTimeBehind
-                      ? ConvertSecondsToTime(totalStageTimeBehind - prevStageTimeBehind)
+                  const totalStageTimeBehind =
+                    teamMemberResult.Result?.OverallResult?.Time && stageOk && legRaceInfo?.overallWinnerTime
+                      ? teamMemberResult.Result.OverallResult?.Time - legRaceInfo.overallWinnerTime
                       : null;
+                  let deltaPositions: number | null = null;
+                  let deltaTimeBehind: string | null = null;
+                  if (leg > 1 && stageOk) {
+                    const prevLeg = (leg - 1).toString();
+                    const prevLegRaceInfo = legInfos?.find((classRaceInfo) => classRaceInfo.leg === leg - 1);
+                    const prevResults = prevLegRaceInfo?.oklegMembers.filter(
+                      (r) => r.Result.BibNumber === teamMemberResult.Result?.BibNumber
+                    );
+                    let prevResult = prevResults?.find((r) =>
+                      r.Result.FinishTime?.isSame(teamMemberResult.Result?.StartTime)
+                    );
+                    if (!prevResult) prevResult = prevResults?.find(() => true);
+                    const prevOverallResult = prevResult ? prevResult.Result.OverallResult : null;
+                    const prevStagePosition =
+                      prevOverallResult && prevOverallResult.Position ? prevOverallResult.Position : null;
+                    const prevStageTimeBehind =
+                      prevOverallResult?.Time && prevLegRaceInfo?.overallWinnerTime
+                        ? prevOverallResult.Time - prevLegRaceInfo.overallWinnerTime
+                        : null;
+                    deltaPositions =
+                      totalStagePosition && prevStagePosition ? totalStagePosition - prevStagePosition : null;
+                    deltaTimeBehind =
+                      totalStageTimeBehind && prevStageTimeBehind
+                        ? ConvertSecondsToTime(totalStageTimeBehind - prevStageTimeBehind)
+                        : null;
+                  }
+
+                  const legSplitTimes = allLegsSplitTimes.find(
+                    (lst) => lst.leg === teamMemberResult.Result?.Leg?.toString()
+                  );
+
+                  const raceTeamResult: IRaceTeamResultProps = {
+                    teamResultId: -1 - i * 20000 - j,
+                    competitorId: competitor?.competitorId ?? -1,
+                    className: shortClassName ?? '',
+                    deviantEventClassificationId: null,
+                    classClassificationId: GetClassClassificationId(
+                      raceEvent?.eventClassificationId as EventClassificationIdTypes | undefined,
+                      classLevel,
+                      clubModel.raceClubs?.eventClassifications
+                    ),
+                    difficulty: classLevel ? classLevel.difficulty : null,
+                    teamName: teamMemberResult.TeamName,
+                    lengthInMeter: legRaceInfo?.lengthInMeter,
+                    failedReason: didNotStart
+                      ? failedReasons.NotStarted
+                      : !ok
+                      ? failedReasons.NotFinished
+                      : teamMemberResult.Result?.Time == null
+                      ? failedReasons.Finished
+                      : null,
+                    teamFailedReason: teamDidNotStart
+                      ? failedReasons.NotStarted
+                      : !teamOk
+                      ? failedReasons.NotFinished
+                      : teamValid && (!teamPosition || !nofStartsInClass || !teamMemberResult.TeamTimeDiff)
+                      ? failedReasons.Finished
+                      : null,
+                    competitorTime:
+                      valid && teamMemberResult.Result?.Time
+                        ? ConvertSecondsToTime(teamMemberResult.Result.Time)
+                        : null,
+                    winnerTime: legRaceInfo?.legWinnerTime ? ConvertSecondsToTime(legRaceInfo.legWinnerTime) : null,
+                    secondTime: null, //TODO GetTimeWithHour(secondTime),
+                    position: position,
+                    nofStartsInClass: nofStartsInLeg,
+                    stage: leg,
+                    totalStages: numberOfLegs ?? 1,
+                    deltaPositions: deltaPositions,
+                    deltaTimeBehind: deltaTimeBehind,
+                    totalStagePosition: totalStagePosition,
+                    totalStageTimeBehind: totalStageTimeBehind ? ConvertSecondsToTime(totalStageTimeBehind) : null,
+                    totalPosition: teamPosition,
+                    totalNofStartsInClass: nofStartsInClass,
+                    totalTimeBehind:
+                      teamValid && teamMemberResult.TeamTimeDiff
+                        ? ConvertSecondsToTime(teamMemberResult.TeamTimeDiff)
+                        : null,
+                    points1000: 0,
+                    missingTime:
+                      legSplitTimes && personId
+                        ? GetMissingTime(
+                            personId,
+                            legSplitTimes.splitTimes,
+                            legSplitTimes.bestSplitTimes,
+                            legSplitTimes.secondBestSplitTimes
+                          )
+                        : null,
+                  };
+
+                  raceEvent && raceEvent.teamResults?.push(raceTeamResult);
                 }
-
-                const legSplitTimes = allLegsSplitTimes.find(
-                  (lst) => lst.leg === teamMemberResult.Result?.Leg?.toString()
-                );
-
-                const raceTeamResult: IRaceTeamResultProps = {
-                  teamResultId: -1 - i * 20000 - j,
-                  competitorId: competitor?.competitorId ?? -1,
-                  className: shortClassName ?? '',
-                  deviantEventClassificationId: null,
-                  classClassificationId: GetClassClassificationId(
-                    raceEvent?.eventClassificationId as EventClassificationIdTypes | undefined,
-                    classLevel,
-                    clubModel.raceClubs?.eventClassifications
-                  ),
-                  difficulty: classLevel ? classLevel.difficulty : null,
-                  teamName: teamMemberResult.TeamName,
-                  lengthInMeter: legRaceInfo?.lengthInMeter,
-                  failedReason: didNotStart
-                    ? failedReasons.NotStarted
-                    : !ok
-                    ? failedReasons.NotFinished
-                    : teamMemberResult.Result?.Time == null
-                    ? failedReasons.Finished
-                    : null,
-                  teamFailedReason: teamDidNotStart
-                    ? failedReasons.NotStarted
-                    : !teamOk
-                    ? failedReasons.NotFinished
-                    : teamValid && (!teamPosition || !nofStartsInClass || !teamMemberResult.TeamTimeDiff)
-                    ? failedReasons.Finished
-                    : null,
-                  competitorTime:
-                    valid && teamMemberResult.Result?.Time ? ConvertSecondsToTime(teamMemberResult.Result.Time) : null,
-                  winnerTime: legRaceInfo?.legWinnerTime ? ConvertSecondsToTime(legRaceInfo.legWinnerTime) : null,
-                  secondTime: null, //TODO GetTimeWithHour(secondTime),
-                  position: position,
-                  nofStartsInClass: nofStartsInLeg,
-                  stage: leg,
-                  totalStages: numberOfLegs ?? 1,
-                  deltaPositions: deltaPositions,
-                  deltaTimeBehind: deltaTimeBehind,
-                  totalStagePosition: totalStagePosition,
-                  totalStageTimeBehind: totalStageTimeBehind ? ConvertSecondsToTime(totalStageTimeBehind) : null,
-                  totalPosition: teamPosition,
-                  totalNofStartsInClass: nofStartsInClass,
-                  totalTimeBehind:
-                    teamValid && teamMemberResult.TeamTimeDiff
-                      ? ConvertSecondsToTime(teamMemberResult.TeamTimeDiff)
-                      : null,
-                  points1000: 0,
-                  missingTime:
-                    legSplitTimes && personId
-                      ? GetMissingTime(
-                          personId,
-                          legSplitTimes.splitTimes,
-                          legSplitTimes.bestSplitTimes,
-                          legSplitTimes.secondBestSplitTimes
-                        )
-                      : null,
-                };
-
-                raceEvent && raceEvent.teamResults?.push(raceTeamResult);
               }
             }
           }

@@ -61,6 +61,7 @@ i18next
             AllInOnePdf: 'All in one pdf',
             AllDividedInZip: 'Divided into many PDF (ZIP)',
             MarginsLabel: 'Margins [left, top, right, bottom]:',
+            Skip: 'Skip',
           },
           calendar: {
             Calendar: 'Calendar',
@@ -305,6 +306,8 @@ i18next
               'Only the coach still has the opportunity to see my results, to be able to make fair team selections',
             RenounceConfirm: 'I have read the above and understand the meaning',
             RegretRenounce: 'Regret renounce result service',
+            AddWithoutEventor: 'Add (Do not exist in eventor)',
+            KnownEventorId: 'Known Eventor Id',
           },
           eventor: {
             Participant: 'Participant',
@@ -356,6 +359,7 @@ i18next
             AllInOnePdf: 'Alla i en stor pdf',
             AllDividedInZip: 'Uppdelat i flera PDF (ZIP)',
             MarginsLabel: 'Marginaler [vänster, överkant, höger, nederkant]:',
+            Skip: 'Hoppa över',
           },
           calendar: {
             Calendar: 'Kalender',
@@ -601,6 +605,8 @@ i18next
               'Endast UK har fortfarande möjlighet att se mina resultat, för att kunna göra rättvisa laguttagningar',
             RenounceConfirm: 'Jag har läst ovanstående och förstår innebörden',
             RegretRenounce: 'Ångrar avstår resulatservice',
+            AddWithoutEventor: 'Lägg till (ej i eventor)',
+            KnownEventorId: 'Känt Eventor Id',
           },
           eventor: {
             Participant: 'Anmäld',

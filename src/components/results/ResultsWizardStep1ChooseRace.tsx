@@ -85,12 +85,19 @@ const ResultWizardStep1ChooseRace = observer(({ visible, onValidate, onFailed }:
       const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
       if (!url || !clubModel.raceClubs || !clubModel.eventor) return;
 
-      const queryData = {
-        iType: 'EVENTS',
-        iClubId: clubModel.raceClubs.selectedClub?.clubId,
-        iFromDate: moment(raceWizardModel.queryStartDate, dateFormat).add(-7, 'days').format(dateFormat),
-        iToDate: moment(raceWizardModel.queryEndDate, dateFormat).add(7, 'days').format(dateFormat),
-      };
+      const queryData =
+        raceWizardModel.selectedEventorId == null
+          ? {
+              iType: 'EVENTS',
+              iClubId: clubModel.raceClubs.selectedClub?.clubId,
+              iFromDate: moment(raceWizardModel.queryStartDate, dateFormat).add(-7, 'days').format(dateFormat),
+              iToDate: moment(raceWizardModel.queryEndDate, dateFormat).add(7, 'days').format(dateFormat),
+            }
+          : {
+              iType: 'EVENTS',
+              iClubId: clubModel.raceClubs.selectedClub?.clubId,
+              iEventorId: raceWizardModel.selectedEventorId,
+            };
 
       try {
         const alreadySavedEventsJson: IEventViewResultResponse[] = await PostJsonData(
@@ -102,21 +109,52 @@ const ResultWizardStep1ChooseRace = observer(({ visible, onValidate, onFailed }:
         const entriesJson: IEventorEntries = await PostJsonData(
           clubModel.eventorCorsProxy,
           {
-            csurl: encodeURIComponent(
-              clubModel.eventor.entriesUrl +
-                '?organisationIds=' +
-                clubModel.raceClubs.selectedClub?.eventorOrganisationId +
-                '&fromEventDate=' +
-                raceWizardModel.queryStartDate +
-                '&toEventDate=' +
-                raceWizardModel.queryEndDate +
-                '&includeEntryFees=true&includePersonElement=true&includeOrganisationElement=true&includeEventElement=true'
-            ),
+            csurl:
+              raceWizardModel.selectedEventorId == null
+                ? encodeURIComponent(
+                    clubModel.eventor.entriesUrl +
+                      '?organisationIds=' +
+                      clubModel.raceClubs.selectedClub?.eventorOrganisationId +
+                      '&fromEventDate=' +
+                      raceWizardModel.queryStartDate +
+                      '&toEventDate=' +
+                      raceWizardModel.queryEndDate +
+                      '&includeEntryFees=true&includePersonElement=true&includeOrganisationElement=true&includeEventElement=true'
+                  )
+                : encodeURIComponent(
+                    clubModel.eventor.entriesUrl +
+                      '?organisationIds=' +
+                      clubModel.raceClubs.selectedClub?.eventorOrganisationId +
+                      '&eventIds=' +
+                      raceWizardModel.selectedEventorId +
+                      '&includeEntryFees=true&includePersonElement=true&includeOrganisationElement=true&includeEventElement=true'
+                  ),
           },
           true
         );
 
         const noEntriesJson: { Event: IEventorEvent[] } = { Event: [] };
+
+        if (raceWizardModel.selectedEventorId != null) {
+          const eventsJson: IEventorEvents = await PostJsonData(
+            clubModel.eventorCorsProxy,
+            {
+              csurl: encodeURIComponent(
+                clubModel.eventor.eventsUrl +
+                  '?organisationIds=' +
+                  clubModel.eventor.oRingenOrganisationId +
+                  '&eventIds=' +
+                  raceWizardModel.selectedEventorId +
+                  '&includeAttributes=true'
+              ),
+            },
+            true
+          );
+          if (Array.isArray(eventsJson.Event)) {
+            eventsJson.Event.forEach((e) => noEntriesJson.Event.push(e));
+          } else if (eventsJson.Event != null) noEntriesJson.Event.push(eventsJson.Event);
+        }
+
         if (raceWizardModel.queryForEventWithNoEntry) {
           const competitorListJson: IEventorCompetitors = await PostJsonData(
             clubModel.eventorCorsProxy,

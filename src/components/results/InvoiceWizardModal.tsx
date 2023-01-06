@@ -45,7 +45,7 @@ const InvoiceWizardModal = observer(({ open, onClose }: IInvoiceWizardModalProps
   }, []);
 
   const prev = useCallback(() => {
-    setNextStepValid(wizardStep === 1 || (wizardStep === 2 && raceWizardModel.current.selectedEventorId != null));
+    setNextStepValid(wizardStep === 1 || (wizardStep === 2 && raceWizardModel.current.selectedEventId != null));
     setWizardStep((oldStep) => oldStep - 1);
   }, [wizardStep]);
 

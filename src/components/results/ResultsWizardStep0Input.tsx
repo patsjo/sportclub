@@ -48,68 +48,52 @@ const ResultWizardStep0Input = observer(({ onMount }: IResultWizardStep0InputPro
           onChange={(code) => clubModel.raceClubs?.setSelectedClub(code)}
         />
       </FormItem>
-      {raceWizardModel.existInEventor ? (
-        <>
-          <FormItem
-            name="QueryStartDate"
-            label={t('results.QueryStartDate')}
-            rules={[
-              {
-                required: true,
-                type: 'object',
-                message: errorRequiredField(t, 'results.QueryStartDate'),
-              },
-            ]}
-          >
-            <DatePicker
-              format={dateFormat}
-              allowClear={false}
-              onChange={(date) => raceWizardModel.setStringValue('queryStartDate', date!.format(dateFormat))}
-            />
-          </FormItem>
-          <FormItem
-            name="QueryEndDate"
-            label={t('results.QueryEndDate')}
-            rules={[
-              {
-                required: true,
-                type: 'object',
-                message: errorRequiredField(t, 'results.QueryEndDate'),
-              },
-            ]}
-          >
-            <DatePicker
-              format={dateFormat}
-              allowClear={false}
-              onChange={(date) => raceWizardModel.setStringValue('queryEndDate', date!.format(dateFormat))}
-            />
-          </FormItem>
-          <FormItem name="QueryIncludeExisting" label={t('results.QueryIncludeExisting')} valuePropName="checked">
-            <Switch onChange={(checked) => raceWizardModel.setBooleanValue('queryIncludeExisting', checked)} />
-          </FormItem>
-          <FormItem
-            name="QueryForEventWithNoEntry"
-            label={t('results.QueryForEventWithNoEntry')}
-            valuePropName="checked"
-          >
-            <Switch onChange={(checked) => raceWizardModel.setBooleanValue('queryForEventWithNoEntry', checked)} />
-          </FormItem>
-          <FormItem
-            name="QueryForCompetitorWithNoClub"
-            label={t('results.QueryForCompetitorWithNoClub')}
-            valuePropName="checked"
-          >
-            <Switch onChange={(checked) => raceWizardModel.setBooleanValue('queryForCompetitorWithNoClub', checked)} />
-          </FormItem>
-        </>
-      ) : null}
-      <FormItem name="ExistInEventor" label={t('results.ImportEventExistInEventor')} valuePropName="checked">
-        <Switch
-          onChange={(checked) => {
-            raceWizardModel.setBooleanValue('existInEventor', checked);
-            raceWizardModel.setNumberValueOrNull('selectedEventId', -1);
-          }}
+      <FormItem
+        name="QueryStartDate"
+        label={t('results.QueryStartDate')}
+        rules={[
+          {
+            required: true,
+            type: 'object',
+            message: errorRequiredField(t, 'results.QueryStartDate'),
+          },
+        ]}
+      >
+        <DatePicker
+          format={dateFormat}
+          allowClear={false}
+          onChange={(date) => raceWizardModel.setStringValue('queryStartDate', date!.format(dateFormat))}
         />
+      </FormItem>
+      <FormItem
+        name="QueryEndDate"
+        label={t('results.QueryEndDate')}
+        rules={[
+          {
+            required: true,
+            type: 'object',
+            message: errorRequiredField(t, 'results.QueryEndDate'),
+          },
+        ]}
+      >
+        <DatePicker
+          format={dateFormat}
+          allowClear={false}
+          onChange={(date) => raceWizardModel.setStringValue('queryEndDate', date!.format(dateFormat))}
+        />
+      </FormItem>
+      <FormItem name="QueryIncludeExisting" label={t('results.QueryIncludeExisting')} valuePropName="checked">
+        <Switch onChange={(checked) => raceWizardModel.setBooleanValue('queryIncludeExisting', checked)} />
+      </FormItem>
+      <FormItem name="QueryForEventWithNoEntry" label={t('results.QueryForEventWithNoEntry')} valuePropName="checked">
+        <Switch onChange={(checked) => raceWizardModel.setBooleanValue('queryForEventWithNoEntry', checked)} />
+      </FormItem>
+      <FormItem
+        name="QueryForCompetitorWithNoClub"
+        label={t('results.QueryForCompetitorWithNoClub')}
+        valuePropName="checked"
+      >
+        <Switch onChange={(checked) => raceWizardModel.setBooleanValue('queryForCompetitorWithNoClub', checked)} />
       </FormItem>
     </Form>
   ) : null;

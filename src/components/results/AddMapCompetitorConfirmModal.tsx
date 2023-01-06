@@ -18,6 +18,7 @@ export const AddMapCompetitorConfirmModal = (
   sessionModel: ISessionModel
 ): Promise<IRaceCompetitor | undefined> =>
   new Promise((resolve, reject) => {
+    let canReject = true;
     const confirmObject: IAddLinkCompetitor = {
       competitorId: competitorId,
       newCompetitor: newCompetitor,
@@ -56,12 +57,14 @@ export const AddMapCompetitorConfirmModal = (
           }
         />
       ),
+      closable: true,
       okText: t('common.Save'),
       okButtonProps: {
         disabled: true,
       },
-      cancelText: t('common.Cancel'),
+      cancelText: t('common.Skip'),
       onOk() {
+        canReject = false;
         if (selectedTabKey === '1') {
           const comp =
             confirmObject.competitorId != null && confirmObject.competitorId !== -1
@@ -97,7 +100,11 @@ export const AddMapCompetitorConfirmModal = (
         }
       },
       onCancel() {
-        reject();
+        canReject = false;
+        resolve(undefined);
+      },
+      afterClose() {
+        if (canReject) reject();
       },
     });
     if (option) {

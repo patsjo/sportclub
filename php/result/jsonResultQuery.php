@@ -66,6 +66,10 @@ else
 {
   $input->iToDate = string2Date($input->iToDate);
 }
+if(!isset($input->iEventorId))
+{
+  $input->iEventorId = null;
+}
 
 $rows = array();
 
@@ -92,6 +96,15 @@ if (is_null($input->iToDate))
 else
 {
   $whereEndDate = " AND DATE_FORMAT(RACEDATE, '%Y-%m-%d') <= '" . date2String($input->iToDate) . "'";
+}
+
+if (is_null($input->iEventorId))
+  {
+  $whereEventorId = "";
+}
+else
+{
+  $whereEventorId = " AND EVENTOR_ID = " . $input->iEventorId;
 }
 
 if ($input->iType == "EVENT" || $input->iType == "COMPETITOR")
@@ -341,11 +354,11 @@ elseif ($input->iType == "EVENTS")
       "  FROM RACE_EVENT_RESULTS_TEAM " .
       "  GROUP BY EVENT_ID " .
       ") ALL_RACE_EVENT_RESULTS ON (RACE_EVENT.EVENT_ID = ALL_RACE_EVENT_RESULTS.EVENT_ID) " .
-      "WHERE 1=1" . $whereStartDate . $whereEndDate . " ORDER BY RACEDATE ASC";
+      "WHERE 1=1" . $whereStartDate . $whereEndDate . $whereEventorId . " ORDER BY RACEDATE ASC";
   else
     $sql = "SELECT EVENT_ID, EVENTOR_ID, EVENTOR_RACE_ID, NAME, RACEDATE, RACETIME, IS_RELAY, INVOICE_VERIFIED " .
       "FROM RACE_EVENT " .
-      "WHERE 1=1" . $whereStartDate . $whereEndDate . " ORDER BY RACEDATE ASC";
+      "WHERE 1=1" . $whereStartDate . $whereEndDate . $whereEventorId . " ORDER BY RACEDATE ASC";
 
   $result = \db\mysql_query($sql);
   if (!$result)

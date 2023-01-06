@@ -38,6 +38,7 @@ import ResultWizardStep1ChooseRace from './ResultsWizardStep1ChooseRace';
 import ResultWizardStep1ChooseRaceRerun from './ResultsWizardStep1ChooseRaceRerun';
 import ResultWizardStep2EditRace from './ResultsWizardStep2EditRace';
 import ResultWizardStep3Ranking from './ResultsWizardStep3Ranking';
+import { SelectEventorIdConfirmModal } from './SelectEventorIdConfirmModal';
 
 const { confirm } = Modal;
 const StyledModalContent = styled.div``;
@@ -56,7 +57,7 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
   const { t } = useTranslation();
   const { clubModel, sessionModel } = useMobxStore();
   const raceWizardModel = useRef<IRaceWizard>(new RaceWizard(getLocalStorage()));
-  const [wizardStep, setWizardStep] = useState(-1);
+  const [wizardStep, setWizardStep] = useState(0);
   const [nextStepValid, setNextStepValid] = useState(true);
   const [inputForm, setInputForm] = useState<FormInstance>();
   const [loaded, setLoaded] = useState(false);
@@ -101,9 +102,16 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
     if (nextStep === 1 && !raceWizardModel.current.existInEventor) {
       nextStep--;
     }
+    if (nextStep === 0) {
+      raceWizardModel.current.setBooleanValue('existInEventor', true);
+      raceWizardModel.current.setNumberValueOrNull('selectedEventId', -1);
+      raceWizardModel.current.setNumberValueOrNull('selectedEventorId', null);
+    }
     setNextStepValid(
       nextStep === 0 ||
-        (nextStep === 1 && raceWizardModel.current.selectedEventorId != null) ||
+        (nextStep === 1 &&
+          raceWizardModel.current.selectedEventorId != null &&
+          raceWizardModel.current.selectedEventorRaceId != null) ||
         (nextStep === 2 && raceWizardModel.current.raceEvent != null && raceWizardModel.current.raceEvent.valid)
     );
     setWizardStep(nextStep);
@@ -279,6 +287,25 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
     });
   }, [save]);
 
+  const onNoEventorConnection = useCallback(() => {
+    raceWizardModel.current.setBooleanValue('existInEventor', false);
+    raceWizardModel.current.setNumberValueOrNull('selectedEventId', -1);
+    setNextStepValid(raceWizardModel.current.raceEvent != null && raceWizardModel.current.raceEvent.valid);
+    setWizardStep(2);
+  }, []);
+
+  const onKnownEventorId = useCallback(async () => {
+    const eventorId = await SelectEventorIdConfirmModal(t);
+    if (eventorId == null) return;
+    raceWizardModel.current.setBooleanValue('existInEventor', true);
+    raceWizardModel.current.setNumberValueOrNull('selectedEventId', -1);
+    raceWizardModel.current.setNumberValueOrNull('selectedEventorId', eventorId);
+    setNextStepValid(
+      raceWizardModel.current.selectedEventorId != null && raceWizardModel.current.selectedEventorRaceId != null
+    );
+    setWizardStep(1);
+  }, []);
+
   useEffect(() => {
     const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
     if (!url) return;
@@ -428,6 +455,18 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
             <Button disabled={!loaded || !nextStepValid} loading={saving} onClick={(e) => saveAndNextEvent()}>
               <LeftOutlined />
               {t('common.SaveAndNextEvent')}
+            </Button>
+          ) : null,
+          wizardStep === 0 ? (
+            <Button onClick={(e) => onNoEventorConnection()}>
+              {t('results.AddWithoutEventor')}
+              <RightOutlined />
+            </Button>
+          ) : null,
+          wizardStep === 0 ? (
+            <Button onClick={(e) => onKnownEventorId()}>
+              {t('results.KnownEventorId')}
+              <RightOutlined />
             </Button>
           ) : null,
           <Button
