@@ -3,7 +3,6 @@ import { FormInstance } from 'antd/lib/form';
 import { SelectProps } from 'antd/lib/select';
 import { UploadFile } from 'antd/lib/upload/interface';
 import { TFunction } from 'i18next';
-import * as React from 'react';
 import { getFileType } from './fileHelper';
 
 const Option = Select.Option;
@@ -123,3 +122,6 @@ export const hasErrors = (form: FormInstance<any>): Promise<boolean> =>
 
 export const errorRequiredField = (t: TFunction, i18nField: string): string =>
   `${t('error.RequiredField')} ${t(i18nField).toLowerCase()}`;
+
+export const warningIncludeAll = (t: TFunction, i18nField: string): string =>
+  `${t('error.WarningIncludeAll')} ${t(i18nField).toLowerCase()}`;

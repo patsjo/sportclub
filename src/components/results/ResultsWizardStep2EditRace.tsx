@@ -1745,8 +1745,8 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
             lengthHtmlJson,
             eventIsRelay
           );
-        } else {
-          eventIsRelay = editResultJson?.isRelay || !!iofResults!.Event.Form?.some((f) => f === 'Relay');
+        } else if (iofResults) {
+          eventIsRelay = editResultJson?.isRelay || !!iofResults.Event.Form?.some((f) => f === 'Relay');
 
           await handleIOFResults(
             editResultJson,
@@ -1757,6 +1757,8 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
             classJson,
             eventIsRelay
           );
+        } else {
+          raceWizardModel.setRaceEvent(editResultJson ?? null);
         }
 
         if (raceWizardModel.overwrite && clubModel.raceClubs && raceWizardModel.raceEvent) {

@@ -109,6 +109,7 @@ i18next
             FileTypeNotSupported: 'Filetype not supported',
             FileSizeTooLarge: 'File is larger than {0} MB',
             RequiredField: 'Please input your',
+            WarningIncludeAll: 'No filter on',
           },
           map: {
             Map: 'map',
@@ -204,6 +205,7 @@ i18next
             QueryForEventWithNoEntry: 'Query for event with no entry (Takes long time because bad API in eventor)',
             QueryForCompetitorWithNoClub:
               'Include competitors with no club (A popup for each to include/exclude. Sometimes the organizer do not connect the club for direct entries.)',
+            MaxDistanceNational: 'Only show national events within [km]',
             MaxDistanceDistrict: 'Only show regional events within [km]',
             MaxDistanceNearbyAndClub: 'Only show local and club events within [km]',
             ImportEventExistInEventor: 'Edit existing or import race that exists in eventor',
@@ -407,6 +409,7 @@ i18next
             FileTypeNotSupported: 'Denna filtyp kan inte laddas upp',
             FileSizeTooLarge: 'Filen är större än {0} MB',
             RequiredField: 'Vänligen ange',
+            WarningIncludeAll: 'Ingen filtrering på',
           },
           map: {
             Map: 'karta',
@@ -504,6 +507,7 @@ i18next
             QueryForCompetitorWithNoClub:
               'Inkludera tävlande utan klubb (En popup för varje att inkludera/utesluta. Ibland kopplar inte arrangören klubben för direktanmälningar.)',
             ImportEventExistInEventor: 'Redigera eller importera tävling som finns i eventor',
+            MaxDistanceNational: 'Visa endast nationella tävlingar inom [km]',
             MaxDistanceDistrict: 'Visa endast distriktstävlingar inom [km]',
             MaxDistanceNearbyAndClub: 'Visa endast när- och klubbtävlingar inom [km]',
             ExistInEventor: 'Finns i eventor',

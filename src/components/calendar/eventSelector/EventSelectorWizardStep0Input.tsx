@@ -2,15 +2,17 @@ import { Col, DatePicker, Form, InputNumber, Row } from 'antd';
 import { FormInstance } from 'antd/lib/form';
 import { observer } from 'mobx-react';
 import { IEventSelectorWizard } from 'models/eventSelectorWizardModel';
+import { IGraphic } from 'models/graphic';
 import moment from 'moment';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { useMobxStore } from 'utils/mobxStore';
-import { dateFormat, errorRequiredField } from '../../../utils/formHelper';
+import { dateFormat, errorRequiredField, warningIncludeAll } from '../../../utils/formHelper';
 import FormItem from '../../formItems/FormItem';
 import OSMOrienteeringMap from '../../map/OSMOrienteeringMap';
 
+export const MaxDistance = 2000;
 const { RangePicker } = DatePicker;
 
 const MapContainer = styled.div`
@@ -52,6 +54,7 @@ const EventSelectorWizardStep0Input = observer(
                 moment(eventSelectorWizardModel.queryStartDate, dateFormat),
                 moment(eventSelectorWizardModel.queryEndDate, dateFormat),
               ],
+              MaxDistanceNational: eventSelectorWizardModel.maxDistanceNational,
               MaxDistanceDistrict: eventSelectorWizardModel.maxDistanceDistrict,
               MaxDistanceNearbyAndClub: eventSelectorWizardModel.maxDistanceNearbyAndClub,
             }}
@@ -79,22 +82,41 @@ const EventSelectorWizardStep0Input = observer(
               />
             </FormItem>
             <FormItem
-              name="MaxDistanceDistrict"
-              label={t('results.MaxDistanceDistrict')}
+              name="MaxDistanceNational"
+              label={t('results.MaxDistanceNational')}
               rules={[
                 {
-                  required: true,
-                  message: errorRequiredField(t, 'results.MaxDistanceDistrict'),
+                  validator: (_, value, callback) => {
+                    if (value == null) callback(warningIncludeAll(t, 'results.MaxDistanceNational'));
+                  },
+                  warningOnly: true,
                 },
               ]}
             >
               <InputNumber
                 min={10}
-                max={2000}
+                max={MaxDistance}
                 step={10}
-                onChange={(value) =>
-                  value !== undefined && eventSelectorWizardModel.setMaxDistanceDistrict(Number(value))
-                }
+                onChange={(value: number | null) => eventSelectorWizardModel.setMaxDistanceNational(value ?? null)}
+              />
+            </FormItem>
+            <FormItem
+              name="MaxDistanceDistrict"
+              label={t('results.MaxDistanceDistrict')}
+              rules={[
+                {
+                  validator: (_, value, callback) => {
+                    if (value == null) callback(warningIncludeAll(t, 'results.MaxDistanceDistrict'));
+                  },
+                  warningOnly: true,
+                },
+              ]}
+            >
+              <InputNumber
+                min={10}
+                max={MaxDistance}
+                step={10}
+                onChange={(value: number | null) => eventSelectorWizardModel.setMaxDistanceDistrict(value ?? null)}
               />
             </FormItem>
             <FormItem
@@ -102,16 +124,18 @@ const EventSelectorWizardStep0Input = observer(
               label={t('results.MaxDistanceNearbyAndClub')}
               rules={[
                 {
-                  required: true,
-                  message: errorRequiredField(t, 'results.MaxDistanceNearbyAndClub'),
+                  validator: (_, value, callback) => {
+                    if (value == null) callback(warningIncludeAll(t, 'results.MaxDistanceNearbyAndClub'));
+                  },
+                  warningOnly: true,
                 },
               ]}
             >
               <InputNumber
                 min={10}
-                max={2000}
+                max={MaxDistance}
                 step={10}
-                onChange={(value) => eventSelectorWizardModel.setMaxDistanceNearbyAndClub(Number(value))}
+                onChange={(value: number | null) => eventSelectorWizardModel.setMaxDistanceNearbyAndClub(value ?? null)}
               />
             </FormItem>
           </Form>
@@ -125,42 +149,69 @@ const EventSelectorWizardStep0Input = observer(
                 width="100%"
                 containerId="maxDistanceMap"
                 mapCenter={clubModel.map.center}
-                defaultGraphics={[
-                  {
-                    geometry: {
-                      type: 'circle',
-                      center: clubModel.map.center,
-                      geodesic: true,
-                      radius: eventSelectorWizardModel.maxDistanceDistrict * 1000,
-                    },
-                    symbol: {
-                      type: 'gradient-fill',
-                      color: [128, 128, 255, 0.75],
-                      style: 'solid',
-                      outline: {
-                        color: [128, 128, 255, 0.75],
-                        width: 2,
-                      },
-                    },
-                  },
-                  {
-                    geometry: {
-                      type: 'circle',
-                      center: clubModel.map.center,
-                      geodesic: true,
-                      radius: eventSelectorWizardModel.maxDistanceNearbyAndClub * 1000,
-                    },
-                    symbol: {
-                      type: 'gradient-fill',
-                      color: [255, 128, 128, 0.75],
-                      style: 'solid',
-                      outline: {
-                        color: [255, 128, 128, 0.75],
-                        width: 2,
-                      },
-                    },
-                  },
-                ]}
+                defaultGraphics={
+                  (
+                    [
+                      eventSelectorWizardModel.maxDistanceNational
+                        ? {
+                            geometry: {
+                              type: 'circle',
+                              center: clubModel.map.center,
+                              geodesic: true,
+                              radius: eventSelectorWizardModel.maxDistanceNational * 1000,
+                            },
+                            symbol: {
+                              type: 'gradient-fill',
+                              color: [255, 240, 128, 0.75],
+                              style: 'solid',
+                              outline: {
+                                color: [255, 240, 128, 0.75],
+                                width: 2,
+                              },
+                            },
+                          }
+                        : undefined,
+                      eventSelectorWizardModel.maxDistanceDistrict
+                        ? {
+                            geometry: {
+                              type: 'circle',
+                              center: clubModel.map.center,
+                              geodesic: true,
+                              radius: eventSelectorWizardModel.maxDistanceDistrict * 1000,
+                            },
+                            symbol: {
+                              type: 'gradient-fill',
+                              color: [128, 128, 255, 0.75],
+                              style: 'solid',
+                              outline: {
+                                color: [128, 128, 255, 0.75],
+                                width: 2,
+                              },
+                            },
+                          }
+                        : undefined,
+                      eventSelectorWizardModel.maxDistanceNearbyAndClub
+                        ? {
+                            geometry: {
+                              type: 'circle',
+                              center: clubModel.map.center,
+                              geodesic: true,
+                              radius: eventSelectorWizardModel.maxDistanceNearbyAndClub * 1000,
+                            },
+                            symbol: {
+                              type: 'gradient-fill',
+                              color: [255, 128, 128, 0.75],
+                              style: 'solid',
+                              outline: {
+                                color: [255, 128, 128, 0.75],
+                                width: 2,
+                              },
+                            },
+                          }
+                        : undefined,
+                    ] as (IGraphic | undefined)[]
+                  ).filter((graphic) => graphic) as IGraphic[]
+                }
               />
             </MapContainer>
           </Col>

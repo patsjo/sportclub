@@ -6,7 +6,7 @@ interface IPointGeometry {
   latitude: number;
 }
 
-interface ICircleGeometry {
+export interface ICircleGeometry {
   type: 'circle';
   center: number[];
   geodesic: true;

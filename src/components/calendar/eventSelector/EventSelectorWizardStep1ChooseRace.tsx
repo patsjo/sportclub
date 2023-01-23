@@ -150,11 +150,20 @@ const EventSelectorWizardStep1ChooseRace = observer(
               (event) =>
                 event.Event.EventStatusId !== '10' &&
                 event.Event.EventClassificationId &&
-                (['1', '2', '6'].includes(event.Event.EventClassificationId) ||
+                (event.calendarEventId > 0 ||
+                  ['1', '6'].includes(event.Event.EventClassificationId) ||
+                  (event.Event.EventClassificationId === '2' &&
+                    (eventSelectorWizardModel.maxDistanceNational == null ||
+                      (event.distanceKm !== null &&
+                        event.distanceKm <= eventSelectorWizardModel.maxDistanceNational))) ||
                   (event.Event.EventClassificationId === '3' &&
-                    event.distanceKm !== null &&
-                    event.distanceKm <= eventSelectorWizardModel.maxDistanceDistrict) ||
-                  (event.distanceKm !== null && event.distanceKm <= eventSelectorWizardModel.maxDistanceNearbyAndClub))
+                    (eventSelectorWizardModel.maxDistanceDistrict == null ||
+                      (event.distanceKm !== null &&
+                        event.distanceKm <= eventSelectorWizardModel.maxDistanceDistrict))) ||
+                  (['4', '5'].includes(event.Event.EventClassificationId) &&
+                    (eventSelectorWizardModel.maxDistanceNearbyAndClub == null ||
+                      (event.distanceKm !== null &&
+                        event.distanceKm <= eventSelectorWizardModel.maxDistanceNearbyAndClub))))
             )
             .sort((a, b) =>
               a.Event.EventRace.RaceDate.Date > b.Event.EventRace.RaceDate.Date

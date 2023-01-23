@@ -4,13 +4,15 @@ import moment from 'moment';
 export interface ILocalStorageEventSelectorWizard {
   queryStartDate: string;
   queryEndDate: string;
-  maxDistanceDistrict: number;
-  maxDistanceNearbyAndClub: number;
+  maxDistanceNational: number | null;
+  maxDistanceDistrict: number | null;
+  maxDistanceNearbyAndClub: number | null;
 }
 const setLocalStorage = (eventSelectorWizard: ILocalStorageEventSelectorWizard) => {
   const obj: ILocalStorageEventSelectorWizard = {
     queryStartDate: eventSelectorWizard.queryStartDate,
     queryEndDate: eventSelectorWizard.queryEndDate,
+    maxDistanceNational: eventSelectorWizard.maxDistanceNational,
     maxDistanceDistrict: eventSelectorWizard.maxDistanceDistrict,
     maxDistanceNearbyAndClub: eventSelectorWizard.maxDistanceNearbyAndClub,
   };
@@ -19,23 +21,25 @@ const setLocalStorage = (eventSelectorWizard: ILocalStorageEventSelectorWizard) 
 };
 
 export const getLocalStorage = (): IEventSelectorWizardProps => {
-  const startDate = moment().startOf('year').format('YYYY-MM-DD');
-  const endDate = moment().endOf('year').format('YYYY-MM-DD');
+  const startDate = moment().format('YYYY-MM-DD');
+  const endDate = moment().add(2, 'months').endOf('month').format('YYYY-MM-DD');
   try {
     const eventSelectorWizardData = localStorage.getItem('eventSelectorWizard');
 
     return {
-      queryStartDate: startDate,
-      queryEndDate: endDate,
+      maxDistanceNational: null,
       maxDistanceDistrict: 140,
       maxDistanceNearbyAndClub: 80,
       selectedEvents: [],
       ...(eventSelectorWizardData ? (JSON.parse(eventSelectorWizardData) as ILocalStorageEventSelectorWizard) : {}),
+      queryStartDate: startDate,
+      queryEndDate: endDate,
     };
   } catch (error) {
     return {
       queryStartDate: startDate,
       queryEndDate: endDate,
+      maxDistanceNational: null,
       maxDistanceDistrict: 140,
       maxDistanceNearbyAndClub: 80,
       selectedEvents: [],
@@ -59,24 +63,27 @@ interface ISelectedEventProps {
 interface IEventSelectorWizardProps {
   queryStartDate: string;
   queryEndDate: string;
-  maxDistanceDistrict: number;
-  maxDistanceNearbyAndClub: number;
+  maxDistanceNational: number | null;
+  maxDistanceDistrict: number | null;
+  maxDistanceNearbyAndClub: number | null;
   selectedEvents: ISelectedEventProps[];
 }
 
 export interface IEventSelectorWizard extends IEventSelectorWizardProps {
   setQueryStartDate: (value: string) => void;
   setQueryEndDate: (value: string) => void;
-  setMaxDistanceDistrict: (value: number) => void;
-  setMaxDistanceNearbyAndClub: (value: number) => void;
+  setMaxDistanceNational: (value: number | null) => void;
+  setMaxDistanceDistrict: (value: number | null) => void;
+  setMaxDistanceNearbyAndClub: (value: number | null) => void;
   setSelectedEvents: (value: ISelectedEventProps[]) => void;
 }
 
 export class EventSelectorWizard implements IEventSelectorWizard {
   queryStartDate = '';
   queryEndDate = '';
-  maxDistanceDistrict = 140;
-  maxDistanceNearbyAndClub = 80;
+  maxDistanceNational: number | null = null;
+  maxDistanceDistrict: number | null = 140;
+  maxDistanceNearbyAndClub: number | null = 80;
   selectedEvents: ISelectedEventProps[] = [];
 
   constructor(options?: Partial<IEventSelectorWizardProps>) {
@@ -84,11 +91,13 @@ export class EventSelectorWizard implements IEventSelectorWizard {
     makeObservable(this, {
       queryStartDate: observable,
       queryEndDate: observable,
+      maxDistanceNational: observable,
       maxDistanceDistrict: observable,
       maxDistanceNearbyAndClub: observable,
       selectedEvents: observable,
       setQueryStartDate: action,
       setQueryEndDate: action,
+      setMaxDistanceNational: action,
       setMaxDistanceDistrict: action,
       setMaxDistanceNearbyAndClub: action,
       setSelectedEvents: action,
@@ -105,12 +114,17 @@ export class EventSelectorWizard implements IEventSelectorWizard {
     setLocalStorage(this);
   }
 
-  setMaxDistanceDistrict(value: number) {
+  setMaxDistanceNational(value: number | null) {
+    this.maxDistanceNational = value;
+    setLocalStorage(this);
+  }
+
+  setMaxDistanceDistrict(value: number | null) {
     this.maxDistanceDistrict = value;
     setLocalStorage(this);
   }
 
-  setMaxDistanceNearbyAndClub(value: number) {
+  setMaxDistanceNearbyAndClub(value: number | null) {
     this.maxDistanceNearbyAndClub = value;
     setLocalStorage(this);
   }
