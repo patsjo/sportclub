@@ -708,7 +708,13 @@ export const GetRanking = (
   sportCode: SportCodeTypes,
   raceLightCondition: LightConditionTypes
 ): number | null => {
-  if (result.failedReason != null || !result.lengthInMeter || result.lengthInMeter < 500) {
+  if (
+    sportCode === 'INOL' ||
+    sportCode === 'PREO' ||
+    result.failedReason != null ||
+    !result.lengthInMeter ||
+    result.lengthInMeter < 500
+  ) {
     return null;
   }
   const secondsPerMeter = ConvertTimeToSeconds(result.competitorTime) / result.lengthInMeter;

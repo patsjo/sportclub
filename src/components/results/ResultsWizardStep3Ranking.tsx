@@ -84,7 +84,10 @@ const ResultWizardStep3Ranking = observer(({ saving, onValidate }: IResultWizard
     }
   }, []);
 
-  return !saving && raceWizardModel.raceEvent ? (
+  return !saving &&
+    raceWizardModel.raceEvent &&
+    raceWizardModel.raceEvent.sportCode !== 'INOL' &&
+    raceWizardModel.raceEvent.sportCode !== 'PREO' ? (
     <Form
       id={formId}
       ref={formRef}

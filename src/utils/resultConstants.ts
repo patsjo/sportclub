@@ -8,7 +8,7 @@ export type EventClassificationIdTypes = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G'
 export type FailedReasonTypes = 'EJ START' | 'UTGÅTT' | 'FULLFÖ' | 'GODK';
 export type LightConditionTypes = 'Day' | 'Night' | 'Dusk' | 'Dawn';
 export type PaymentTypes = 0 | 1 | 2 | 3 | 4;
-export type SportCodeTypes = 'OL' | 'RUN' | 'MTB' | 'MTBO' | 'SKI' | 'SKIO';
+export type SportCodeTypes = 'OL' | 'RUN' | 'MTB' | 'MTBO' | 'SKI' | 'SKIO' | 'INOL' | 'PREO';
 
 export const ManuallyEditedMissingTimePostfix = '.0001';
 

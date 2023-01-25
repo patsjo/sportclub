@@ -1065,9 +1065,11 @@ export class RaceEvent implements IRaceEvent {
       (this.results.length > 0 || this.teamResults.length > 0) &&
       !this.results.some((result) => !result.valid) &&
       !this.teamResults.some((result) => !result.valid) &&
-      this.rankingBasetimePerKilometer != null &&
-      this.rankingBasepoint != null &&
-      this.rankingBaseDescription != null
+      (this.sportCode === 'INOL' ||
+        this.sportCode === 'PREO' ||
+        (this.rankingBasetimePerKilometer != null &&
+          this.rankingBasepoint != null &&
+          this.rankingBaseDescription != null))
     );
   }
 }

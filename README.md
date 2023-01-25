@@ -1,4 +1,4 @@
-# sportclub 1.1
+# sportclub 1.2
 
 This is a react app for sports like orienteering, volleyball or any other sport.
 
