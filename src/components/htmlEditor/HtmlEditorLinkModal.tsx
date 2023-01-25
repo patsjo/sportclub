@@ -6,11 +6,17 @@ import { TFunction } from 'i18next';
 import { IGlobalStateModel } from 'models/globalStateModel';
 import { IMobxClubModel } from 'models/mobxClubModel';
 import { ISessionModel } from 'models/sessionModel';
+import styled from 'styled-components';
 import { PostJsonData } from '../../utils/api';
 import { errorRequiredField, hasErrors } from '../../utils/formHelper';
 import FormItem from '../formItems/FormItem';
 const { confirm } = Modal;
 declare type ConfigUpdate = ModalFuncProps | ((prevConfig: ModalFuncProps) => ModalFuncProps);
+
+const HelpText = styled.div`
+  margin-top: 20px;
+  font-style: italic;
+`;
 
 export const HtmlEditorLinkModal = (
   t: TFunction,
@@ -26,7 +32,7 @@ export const HtmlEditorLinkModal = (
     const formId = 'htmlEditorForm' + Math.floor(Math.random() * 1000000000000000);
     let confirmModal: {
       destroy: () => void;
-      update: (configUpdate: ModalFuncProps | ((prevConfig: ModalFuncProps) => ModalFuncProps)) => void;
+      update: (configUpdate: ConfigUpdate) => void;
     };
     // eslint-disable-next-line prefer-const
     confirmModal = confirm({
@@ -93,6 +99,7 @@ export const HtmlEditorLinkModal = (
           >
             <Input />
           </FormItem>
+          <HelpText>{t('htmlEditor.MenuLinkHelpText')}</HelpText>
         </Form>
       ),
       okText: t('common.Save'),
