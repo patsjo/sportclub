@@ -1,4 +1,5 @@
-import React, { useLayoutEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
+import { useSize } from 'utils/useSize';
 import { IChildColumnElement } from './mapNodesToColumns';
 
 interface IColumnItemProps {
@@ -7,11 +8,11 @@ interface IColumnItemProps {
 }
 const ColumnItem = ({ onHeightChange, children }: IColumnItemProps) => {
   const ref = useRef<HTMLDivElement>(null);
+  const { height } = useSize(ref, ['height']);
 
-  useLayoutEffect(() => {
-    const newHeight = !ref.current || !ref.current.clientHeight ? 0 : ref.current.clientHeight;
-    onHeightChange(newHeight);
-  }, [ref]);
+  useEffect(() => {
+    onHeightChange(height ?? 0);
+  }, [height]);
 
   return <div ref={ref}>{children}</div>;
 };

@@ -8,6 +8,7 @@ const Users = lazy(() => import('./components/users/Users'));
 const League = lazy(() => import('./components/results/League'));
 const ViewResults = lazy(() => import('./components/results/ViewResults'));
 const ResultsFees = lazy(() => import('./components/results/ResultsFees'));
+const ResultsStatistics = lazy(() => import('./components/results/ResultsStatistics'));
 const WeeklyCalendar = lazy(() => import('./components/calendar/weekly/WeeklyCalendar'));
 const MonthlyCalendar = lazy(() => import('./components/calendar/monthly/MonthlyCalendar'));
 const AllSponsors = lazy(() => import('./components/sponsors/AllSponsors'));
@@ -56,6 +57,7 @@ const AppContent = observer(() => {
         />
         <Route path="/results/individual" element={<ViewResults key="individualViewResult" isIndividual={true} />} />
         <Route path="/results/fees" element={<ResultsFees key="resultsFees" />} />
+        <Route path="/results/statistics" element={<ResultsStatistics key="resultsStatistics" />} />
         <Route path="/results" element={<ViewResults key="clubViewResult" isIndividual={false} />} />
         <Route path="/sponsors" element={<AllSponsors key="individualViewResult" />} />
         <Route path="/*" element={<HtmlEditor key="htmlEditor" />} />

@@ -26,6 +26,7 @@
     "@ckeditor/ckeditor5-typing": "35.3.2",
     "@ckeditor/ckeditor5-upload": "35.3.2",
     "@craco/craco": "7.0.0",
+    "@react-hook/resize-observer": "1.2.6",
     "antd": "4.24.2",
     "antd-img-crop": "4.2.8",
     "copy-to-clipboard": "3.3.3",
@@ -43,6 +44,7 @@
     "react-router-dom": "6.4.3",
     "react-scripts": "5.0.1",
     "react-slideshow-image": "4.0.5",
+    "recharts": "2.3.2",
     "styled-components": "5.3.6",
     "uuid": "9.0.0"
   },

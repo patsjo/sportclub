@@ -1,4 +1,4 @@
-import { AuditOutlined } from '@ant-design/icons';
+import { AreaChartOutlined, AuditOutlined } from '@ant-design/icons';
 import { message } from 'antd';
 import { observer } from 'mobx-react';
 import { IRaceClubsProps, IRaceCompetitor } from 'models/resultModel';
@@ -111,6 +111,16 @@ const ResultsSubMenus = observer(() => {
           />
         </Suspense>
       ) : null}
+      <MenuItem
+        key={'menuItem#resultsStatistics'}
+        icon={<AreaChartOutlined style={{ verticalAlign: 'middle', fontSize: 18 }} />}
+        name={t('results.Statistics')}
+        isSubMenu
+        onClick={() => {
+          globalStateModel.setRightMenuVisible(false);
+          globalStateModel.setDashboard(navigate, '/results/statistics');
+        }}
+      />
       <MenuItem
         key={'menuItem#results'}
         icon={'ResultsIcon'}

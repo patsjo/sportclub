@@ -724,6 +724,344 @@ elseif ($input->iType == "COMPETITOR_INFO")
     }
   }
 }
+elseif ($input->iType == "STATISTICS")
+{
+  $sql = "SELECT eventyear, SUM(individual) AS individual, SUM(relay) AS relay " .
+    "FROM ( " .
+    "SELECT YEAR(racedate) AS eventyear, COUNT(*) AS individual, 0 AS relay " .
+    "FROM `RACE_EVENT_RESULTS` AS R " .
+    "INNER JOIN RACE_EVENT AS e ON e.EVENT_ID = R.EVENT_ID " .
+    "WHERE (`FAILED_REASON` IS NULL OR `FAILED_REASON` != 'EJ START') " .
+    "GROUP BY YEAR(racedate) " .
+    "UNION ALL " .
+    "SELECT  YEAR(racedate) AS eventyear, 0 AS individual, COUNT(*) AS relay " .
+    "FROM `RACE_EVENT_RESULTS_TEAM` AS R " .
+    "INNER JOIN RACE_EVENT AS e ON e.EVENT_ID = R.EVENT_ID " .
+    "WHERE (`FAILED_REASON` IS NULL OR `FAILED_REASON` != 'EJ START') " .
+    "GROUP BY YEAR(racedate) " .
+    ") AS stat GROUP BY eventyear ORDER BY eventyear";
+
+  $result = \db\mysql_query($sql);
+  if (!$result)
+  {
+    trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
+  }
+
+  $statistics = new stdClass();
+  $statistics->typeOfChart = "line";
+  $statistics->title = "startsPerYear";
+  $statistics->dataKey = "year";
+  $statistics->valueKeys = array();
+  array_push($statistics->valueKeys, "individual");
+  array_push($statistics->valueKeys, "relay");
+  $statistics->data = array();
+
+  if (\db\mysql_num_rows($result) > 0)
+  {
+    while($row = \db\mysql_fetch_assoc($result))
+    {
+      $data = new stdClass();
+      $data->year = intval($row['eventyear']);
+      $data->individual = intval($row['individual']);
+      $data->relay = intval($row['relay']);
+      array_push($statistics->data, $data);
+    }
+  }
+  array_push($rows, $statistics);
+  \db\mysql_free_result($result);
+
+  $sql = "SELECT eventyear, " .
+    "  SUM(CASE WHEN age <= 16 and gender = 'MALE' THEN competitors ELSE 0 END) AS boy, " .
+    "  SUM(CASE WHEN age <= 16 and gender = 'FEMALE' THEN competitors ELSE 0 END) AS girl, " .
+    "  SUM(CASE WHEN age >= 17 and age <= 20 and gender = 'MALE' THEN competitors ELSE 0 END) AS juniorman, " .
+    "  SUM(CASE WHEN age >= 17 and age <= 20 and gender = 'FEMALE' THEN competitors ELSE 0 END) AS juniorwoman, " .
+    "  SUM(CASE WHEN age >= 21 and age <= 64 and gender = 'MALE' THEN competitors ELSE 0 END) AS man, " .
+    "  SUM(CASE WHEN age >= 21 and age <= 64 and gender = 'FEMALE' THEN competitors ELSE 0 END) AS woman, " .
+    "  SUM(CASE WHEN age >= 65 and gender = 'MALE' THEN competitors ELSE 0 END) AS oldman, " .
+    "  SUM(CASE WHEN age >= 65 and gender = 'FEMALE' THEN competitors ELSE 0 END) AS oldwoman " .
+    "FROM ( " .
+    "SELECT eventyear, gender, eventyear - YEAR(birthday) AS age, COUNT(*) AS competitors " .
+    "FROM ( " .
+    "SELECT YEAR(racedate) AS eventyear, COMPETITOR_ID " .
+    "FROM `RACE_EVENT_RESULTS` AS R " .
+    "INNER JOIN RACE_EVENT AS e ON e.EVENT_ID = R.EVENT_ID " .
+    "WHERE (`FAILED_REASON` IS NULL OR `FAILED_REASON` != 'EJ START') " .
+    "GROUP BY YEAR(racedate), COMPETITOR_ID " .
+    "UNION " .
+    "SELECT  YEAR(racedate) AS eventyear, COMPETITOR_ID " .
+    "FROM `RACE_EVENT_RESULTS_TEAM` AS R " .
+    "INNER JOIN RACE_EVENT AS e ON e.EVENT_ID = R.EVENT_ID " .
+    "WHERE (`FAILED_REASON` IS NULL OR `FAILED_REASON` != 'EJ START') " .
+    "GROUP BY YEAR(racedate), COMPETITOR_ID " .
+    ") AS stat " .
+    "INNER JOIN RACE_COMPETITORS AS c ON c.COMPETITOR_ID = stat.COMPETITOR_ID " .
+    "GROUP BY eventyear, gender, eventyear - YEAR(birthday) " .
+    ") AS statouter " .
+    "GROUP BY eventyear ORDER BY eventyear";
+
+  $result = \db\mysql_query($sql);
+  if (!$result)
+  {
+    trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
+  }
+
+  $statistics = new stdClass();
+  $statistics->typeOfChart = "stackedbar";
+  $statistics->title = "competitorsPerAgespan";
+  $statistics->dataKey = "year";
+  $statistics->valueKeys = array();
+  array_push($statistics->valueKeys, "boy");
+  array_push($statistics->valueKeys, "girl");
+  array_push($statistics->valueKeys, "juniorman");
+  array_push($statistics->valueKeys, "juniorwoman");
+  array_push($statistics->valueKeys, "man");
+  array_push($statistics->valueKeys, "woman");
+  array_push($statistics->valueKeys, "oldman");
+  array_push($statistics->valueKeys, "oldwoman");
+  $statistics->data = array();
+
+  if (\db\mysql_num_rows($result) > 0)
+  {
+    while($row = \db\mysql_fetch_assoc($result))
+    {
+      $data = new stdClass();
+      $data->year = intval($row['eventyear']);
+      $data->boy = intval($row['boy']);
+      $data->girl = intval($row['girl']);
+      $data->juniorman = intval($row['juniorman']);
+      $data->juniorwoman = intval($row['juniorwoman']);
+      $data->man = intval($row['man']);
+      $data->woman = intval($row['woman']);
+      $data->oldman = intval($row['oldman']);
+      $data->oldwoman = intval($row['oldwoman']);
+      array_push($statistics->data, $data);
+    }
+  }
+  array_push($rows, $statistics);
+  \db\mysql_free_result($result);
+
+  $sql = "SELECT eventyear, " .
+    "  SUM(CASE WHEN SPORT_CODE = 'OL' and RACE_DISTANCE = 'Relay' THEN eventstarts ELSE 0 END) AS olrelay, " .
+    "  SUM(CASE WHEN SPORT_CODE != 'OL' and RACE_DISTANCE = 'Relay' THEN eventstarts ELSE 0 END) AS otherrelay, " .
+    "  SUM(CASE WHEN SPORT_CODE = 'OL' and RACE_DISTANCE != 'Relay' and RACE_LIGHT_CONDITION = 'Night' THEN eventstarts ELSE 0 END) AS night, " .
+    "  SUM(CASE WHEN SPORT_CODE = 'OL' and RACE_DISTANCE = 'Long' and RACE_LIGHT_CONDITION != 'Night' THEN eventstarts ELSE 0 END) AS longdistance, " .
+    "  SUM(CASE WHEN SPORT_CODE = 'OL' and RACE_DISTANCE = 'Middle' and RACE_LIGHT_CONDITION != 'Night' THEN eventstarts ELSE 0 END) AS middle, " .
+    "  SUM(CASE WHEN SPORT_CODE = 'OL' and RACE_DISTANCE = 'Sprint' and RACE_LIGHT_CONDITION != 'Night' THEN eventstarts ELSE 0 END) AS sprint, " .
+    "  SUM(CASE WHEN SPORT_CODE = 'OL' and RACE_DISTANCE = 'UltraLong' and RACE_LIGHT_CONDITION != 'Night' THEN eventstarts ELSE 0 END) AS ultralong, " .
+    "  SUM(CASE WHEN SPORT_CODE = 'SKIO' THEN eventstarts ELSE 0 END) AS skio, " .
+    "  SUM(CASE WHEN SPORT_CODE = 'MTBO' THEN eventstarts ELSE 0 END) AS mtbo, " .
+    "  SUM(CASE WHEN SPORT_CODE = 'INOL' THEN eventstarts ELSE 0 END) AS indoor, " .
+    "  SUM(CASE WHEN SPORT_CODE = 'PREO' THEN eventstarts ELSE 0 END) AS preo, " .
+    "  SUM(CASE WHEN SPORT_CODE != 'OL' AND SPORT_CODE != 'SKIO' AND SPORT_CODE != 'MTBO' AND SPORT_CODE != 'INOL' AND SPORT_CODE != 'PREO' THEN eventstarts ELSE 0 END) AS other " .
+    "FROM ( " .
+    "SELECT YEAR(racedate) AS eventyear, SPORT_CODE, RACE_DISTANCE, RACE_LIGHT_CONDITION, COUNT(*) AS eventstarts " .
+    "FROM `RACE_EVENT_RESULTS` AS R " .
+    "INNER JOIN RACE_EVENT AS e ON e.EVENT_ID = R.EVENT_ID " .
+    "WHERE (`FAILED_REASON` IS NULL OR `FAILED_REASON` != 'EJ START') " .
+    "GROUP BY YEAR(racedate), SPORT_CODE, RACE_DISTANCE, RACE_LIGHT_CONDITION " .
+    "UNION " .
+    "SELECT  YEAR(racedate) AS eventyear, SPORT_CODE, 'Relay' AS RACE_DISTANCE, RACE_LIGHT_CONDITION, COUNT(*) AS eventstarts " .
+    "FROM `RACE_EVENT_RESULTS_TEAM` AS R " .
+    "INNER JOIN RACE_EVENT AS e ON e.EVENT_ID = R.EVENT_ID " .
+    "WHERE (`FAILED_REASON` IS NULL OR `FAILED_REASON` != 'EJ START') " .
+    "GROUP BY YEAR(racedate), SPORT_CODE, RACE_DISTANCE, RACE_LIGHT_CONDITION " .
+    ") AS stat " .
+    "GROUP BY eventyear ORDER BY eventyear";
+
+  $result = \db\mysql_query($sql);
+  if (!$result)
+  {
+    trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
+  }
+
+  $statistics = new stdClass();
+  $statistics->typeOfChart = "stackedbar";
+  $statistics->title = "startsPerSportAndDistance";
+  $statistics->dataKey = "year";
+  $statistics->valueKeys = array();
+  array_push($statistics->valueKeys, "long");
+  array_push($statistics->valueKeys, "relay");
+  array_push($statistics->valueKeys, "night");
+  array_push($statistics->valueKeys, "middle");
+  array_push($statistics->valueKeys, "sprint");
+  array_push($statistics->valueKeys, "ultralong");
+  array_push($statistics->valueKeys, "skio");
+  array_push($statistics->valueKeys, "mtbo");
+  array_push($statistics->valueKeys, "indoor");
+  array_push($statistics->valueKeys, "preo");
+  array_push($statistics->valueKeys, "other");
+  array_push($statistics->valueKeys, "otherrelay");
+  $statistics->data = array();
+
+  if (\db\mysql_num_rows($result) > 0)
+  {
+    while($row = \db\mysql_fetch_assoc($result))
+    {
+      $data = new stdClass();
+      $data->year = intval($row['eventyear']);
+      $data->relay = intval($row['olrelay']);
+      $data->long = intval($row['longdistance']);
+      $data->night = intval($row['night']);
+      $data->middle = intval($row['middle']);
+      $data->sprint = intval($row['sprint']);
+      $data->ultralong = intval($row['ultralong']);
+      $data->skio = intval($row['skio']);
+      $data->mtbo = intval($row['mtbo']);
+      $data->indoor = intval($row['indoor']);
+      $data->preo = intval($row['preo']);
+      $data->other = intval($row['other']);
+      $data->otherrelay = intval($row['otherrelay']);
+      array_push($statistics->data, $data);
+    }
+  }
+  array_push($rows, $statistics);
+  \db\mysql_free_result($result);
+
+  $sql = "SELECT eventyear, " .
+    "  ROUND(SUM(CASE WHEN DIFFICULTY = 'Grön' THEN LENGTH_IN_METER ELSE 0 END)/1000) AS green, " .
+    "  ROUND(SUM(CASE WHEN DIFFICULTY = 'Vit' THEN LENGTH_IN_METER ELSE 0 END)/1000) AS white, " .
+    "  ROUND(SUM(CASE WHEN DIFFICULTY = 'Gul' THEN LENGTH_IN_METER ELSE 0 END)/1000) AS yellow, " .
+    "  ROUND(SUM(CASE WHEN DIFFICULTY = 'Orange' THEN LENGTH_IN_METER ELSE 0 END)/1000) AS orange, " .
+    "  ROUND(SUM(CASE WHEN DIFFICULTY = 'Röd' THEN LENGTH_IN_METER ELSE 0 END)/1000) AS red, " .
+    "  ROUND(SUM(CASE WHEN DIFFICULTY = 'Lila' THEN LENGTH_IN_METER ELSE 0 END)/1000) AS purple, " .
+    "  ROUND(SUM(CASE WHEN DIFFICULTY = 'Blå' THEN LENGTH_IN_METER ELSE 0 END)/1000) AS blue, " .
+    "  ROUND(SUM(CASE WHEN DIFFICULTY = 'Svart' THEN LENGTH_IN_METER ELSE 0 END)/1000) AS black " .
+    "FROM ( " .
+      "SELECT YEAR(racedate) AS eventyear, DIFFICULTY, SUM(LENGTH_IN_METER) AS LENGTH_IN_METER " .
+    "FROM `RACE_EVENT_RESULTS` AS R " .
+    "INNER JOIN RACE_EVENT AS e ON e.EVENT_ID = R.EVENT_ID " .
+    "WHERE (`FAILED_REASON` IS NULL OR `FAILED_REASON` = 'FULLFÖ') " .
+    "GROUP BY YEAR(racedate), DIFFICULTY " .
+    "UNION " .
+    "SELECT  YEAR(racedate) AS eventyear, DIFFICULTY, SUM(LENGTH_IN_METER) AS LENGTH_IN_METER " .
+    "FROM `RACE_EVENT_RESULTS_TEAM` AS R " .
+    "INNER JOIN RACE_EVENT AS e ON e.EVENT_ID = R.EVENT_ID " .
+    "WHERE (`TEAM_FAILED_REASON` IS NULL OR `TEAM_FAILED_REASON` = 'FULLFÖ') " .
+    "GROUP BY YEAR(racedate), DIFFICULTY " .
+    ") AS stat " .
+    "GROUP BY eventyear ORDER BY eventyear";
+
+  $result = \db\mysql_query($sql);
+  if (!$result)
+  {
+    trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
+  }
+
+  $statistics = new stdClass();
+  $statistics->typeOfChart = "stackedbar";
+  $statistics->title = "kmPerLevel";
+  $statistics->dataKey = "year";
+  $statistics->valueKeys = array();
+  $statistics->valueColors = array();
+  array_push($statistics->valueKeys, "green");
+  array_push($statistics->valueColors, "#30f403");
+  array_push($statistics->valueKeys, "white");
+  array_push($statistics->valueColors, "#C0C0C0");
+  array_push($statistics->valueKeys, "yellow");
+  array_push($statistics->valueColors, "#f4df03");
+  array_push($statistics->valueKeys, "orange");
+  array_push($statistics->valueColors, "#f47e03");
+  array_push($statistics->valueKeys, "red");
+  array_push($statistics->valueColors, "#f40303");
+  array_push($statistics->valueKeys, "purple");
+  array_push($statistics->valueColors, "#c603f4");
+  array_push($statistics->valueKeys, "blue");
+  array_push($statistics->valueColors, "#0303c6");
+  array_push($statistics->valueKeys, "black");
+  array_push($statistics->valueColors, "#00161f");
+  $statistics->data = array();
+
+  if (\db\mysql_num_rows($result) > 0)
+  {
+    while($row = \db\mysql_fetch_assoc($result))
+    {
+      $data = new stdClass();
+      $data->year = intval($row['eventyear']);
+      $data->green = intval($row['green']);
+      $data->white = intval($row['white']);
+      $data->yellow = intval($row['yellow']);
+      $data->orange = intval($row['orange']);
+      $data->red = intval($row['red']);
+      $data->purple = intval($row['purple']);
+      $data->blue = intval($row['blue']);
+      $data->black = intval($row['black']);
+      array_push($statistics->data, $data);
+    }
+  }
+  array_push($rows, $statistics);
+  \db\mysql_free_result($result);
+
+  $sql = "SELECT eventyear, " .
+    "  SUM(CASE WHEN POSITION = 1 THEN eventstarts ELSE 0 END) AS gold, " .
+    "  SUM(CASE WHEN POSITION = 2 THEN eventstarts ELSE 0 END) AS silver, " .
+    "  SUM(CASE WHEN POSITION = 3 THEN eventstarts ELSE 0 END) AS bronze, " .
+    "  SUM(CASE WHEN POSITION >= 4 AND POSITION <= 10 THEN eventstarts ELSE 0 END) AS top10, " .
+    "  SUM(CASE WHEN POSITION >= 11 AND POSITION <= 30 THEN eventstarts ELSE 0 END) AS top30 " .
+    "FROM ( " .
+    "SELECT YEAR(racedate) AS eventyear, POSITION, COUNT(*) AS eventstarts " .
+    "FROM `RACE_EVENT_RESULTS` AS R " .
+    "INNER JOIN RACE_EVENT AS e ON e.EVENT_ID = R.EVENT_ID " .
+    "INNER JOIN RACE_CLASS_CLASSIFICATION AS cc ON cc.EVENT_CLASSIFICATION_ID = COALESCE(DEVIANT_EVENT_CLASSIFICATION_ID, e.EVENT_CLASSIFICATION_ID) AND cc.CLASS_CLASSIFICATION_ID = R.CLASS_CLASSIFICATION_ID " .
+    "WHERE (`FAILED_REASON` IS NULL OR `FAILED_REASON` = 'FULLFÖ') " .
+    "  AND COALESCE(DEVIANT_EVENT_CLASSIFICATION_ID, e.EVENT_CLASSIFICATION_ID) IN ('A', 'B') " .
+    "  AND POSITION IS NOT NULL " .
+    "  AND POSITION <= 30 " .
+    "  AND AGE_LOWER_LIMIT IS NULL " .
+    "GROUP BY YEAR(racedate), POSITION " .
+    "UNION " .
+    "SELECT  YEAR(racedate) AS eventyear, TOTAL_POSITION AS POSITION, COUNT(*) AS eventstarts " .
+    "FROM `RACE_EVENT_RESULTS_TEAM` AS R " .
+    "INNER JOIN RACE_EVENT AS e ON e.EVENT_ID = R.EVENT_ID " .
+    "INNER JOIN RACE_CLASS_CLASSIFICATION AS cc ON cc.EVENT_CLASSIFICATION_ID = COALESCE(DEVIANT_EVENT_CLASSIFICATION_ID, e.EVENT_CLASSIFICATION_ID) AND cc.CLASS_CLASSIFICATION_ID = R.CLASS_CLASSIFICATION_ID " .
+    "WHERE (`TEAM_FAILED_REASON` IS NULL OR `TEAM_FAILED_REASON` = 'FULLFÖ') " .
+    "  AND COALESCE(DEVIANT_EVENT_CLASSIFICATION_ID, e.EVENT_CLASSIFICATION_ID) IN ('A', 'B') " .
+    "  AND TOTAL_POSITION IS NOT NULL " .
+    "  AND TOTAL_POSITION <= 30 " .
+    "  AND AGE_LOWER_LIMIT IS NULL " .
+    "GROUP BY YEAR(racedate), TOTAL_POSITION " .
+    ") AS stat " .
+    "GROUP BY eventyear ORDER BY eventyear";
+
+  $result = \db\mysql_query($sql);
+  if (!$result)
+  {
+    trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
+  }
+
+  $statistics = new stdClass();
+  $statistics->typeOfChart = "stackedbar";
+  $statistics->title = "championchips";
+  $statistics->dataKey = "year";
+  $statistics->valueKeys = array();
+  $statistics->valueColors = array();
+  array_push($statistics->valueKeys, "gold");
+  array_push($statistics->valueColors, "#daa520");
+  array_push($statistics->valueKeys, "silver");
+  array_push($statistics->valueColors, "#808080");
+  array_push($statistics->valueKeys, "bronze");
+  array_push($statistics->valueColors, "#b08d57");
+  array_push($statistics->valueKeys, "top10");
+  array_push($statistics->valueColors, "#0303c6");
+  array_push($statistics->valueKeys, "top30");
+  array_push($statistics->valueColors, "#00161f");
+  $statistics->data = array();
+
+  if (\db\mysql_num_rows($result) > 0)
+  {
+    while($row = \db\mysql_fetch_assoc($result))
+    {
+      $data = new stdClass();
+      $data->year = intval($row['eventyear']);
+      $data->gold = intval($row['gold']);
+      $data->silver = intval($row['silver']);
+      $data->bronze = intval($row['bronze']);
+      $data->top10 = intval($row['top10']);
+      $data->top30 = intval($row['top30']);
+      array_push($statistics->data, $data);
+    }
+  }
+  array_push($rows, $statistics);
+}
 else
 {
   trigger_error('Wrong iType parameter', E_USER_ERROR);
