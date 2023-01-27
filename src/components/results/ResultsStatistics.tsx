@@ -34,7 +34,11 @@ const ResultsStatistics = observer(() => {
       true
     )
       .then((statistics: ICustomChart[]) => {
-        setChartData(statistics);
+        setChartData(
+          statistics.filter(
+            (chart) => chart.data.length && chart.data.some((d) => chart.valueKeys.some((valueKey) => !!d[valueKey]))
+          )
+        );
         setLoading(false);
       })
       .catch((e) => {

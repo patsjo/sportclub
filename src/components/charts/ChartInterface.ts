@@ -15,7 +15,12 @@ export const paletteColors = [
 ];
 
 export const getWidth = (dataLength: number, maxWidth?: number, totalWidth?: number) =>
-  maxWidth ? Math.min(maxWidth, 100 * dataLength, totalWidth ?? 400) : Math.min(150 * dataLength, totalWidth ?? 400);
+  Math.max(
+    175,
+    maxWidth
+      ? Math.min(maxWidth, 75 + 100 * dataLength, totalWidth ?? 400)
+      : Math.min(75 + 150 * dataLength, totalWidth ?? 400)
+  );
 
 export interface ICustomChart {
   typeOfChart: 'line' | 'stackedbar';
@@ -42,4 +47,5 @@ export const Col = styled.div<IColProps>`
   vertical-align: bottom;
   height: 300px;
   width: ${({ width }: IColProps) => width};
+  min-width: 400px;
 `;
