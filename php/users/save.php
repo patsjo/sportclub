@@ -73,7 +73,7 @@ $query = sprintf("UPDATE users " .
                  \db\mysql_real_escape_string($input->firstName),
                  \db\mysql_real_escape_string($input->lastName),
                  \db\mysql_real_escape_string($input->address),
-                 \db\mysql_real_escape_string($input->zip),
+                 \db\mysql_real_escape_string((!isset($input->zip) || is_null($input->zip)) ? "NULL" : $input->zip),
                  \db\mysql_real_escape_string($input->city),
                  \db\mysql_real_escape_string($input->email),
                  \db\mysql_real_escape_string($input->phoneNo),
@@ -108,7 +108,7 @@ if (\db\mysql_num_rows($result) > 0) {
       $x->firstName             = $row['FIRST_NAME'];
       $x->lastName              = $row['LAST_NAME'];
       $x->address               = $row['ADDRESS'];
-      $x->zip                   = $row['ZIP'];
+      $x->zip                   = (!isset($row['ZIP']) || is_null($row['ZIP'])) ? null : $row['ZIP'];
       $x->city                  = $row['CITY'];
       $x->email                 = $row['EMAIL'];
       $x->phoneNo               = $row['PHONE_NO'];
