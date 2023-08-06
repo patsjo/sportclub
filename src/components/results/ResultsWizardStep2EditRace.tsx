@@ -60,7 +60,6 @@ import {
   ConvertSecondsToTime,
   ConvertSecondsWithFractionsToTime,
   FormatTime,
-  GetAge,
   GetClassClassificationId,
   GetClassShortName,
   GetFees,
@@ -161,7 +160,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
           eventRace = resultJson.Event.EventRace;
         }
         if (eventRace) {
-          const raceLightCondition = eventRace['@attributes'].raceLightCondition;
+          const raceLightCondition = eventRace['@attributes']?.raceLightCondition;
           raceEvent = {
             eventId: raceWizardModel.selectedEventId ?? -1,
             eventorId: raceWizardModel.selectedEventorId,
@@ -180,7 +179,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
             raceLightCondition: raceLightConditionOptions(t).some((option) => option.code === raceLightCondition)
               ? raceLightCondition
               : null,
-            raceDistance: eventRace['@attributes'].raceDistance,
+            raceDistance: eventRace['@attributes']?.raceDistance,
             paymentModel: raceWizardModel.paymentModel,
             meetsAwardRequirements: true,
             longitude: eventRace.EventCenterPosition
@@ -370,7 +369,6 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                       }
                     }
                     const entryFeeIds = entryFees.map((f) => f.EntryFeeId);
-                    const age = eventRace && competitor ? GetAge(competitor.birthDay, eventRace.RaceDate.Date) : null;
                     const didNotStart = personResult.Result?.CompetitorStatus['@attributes'].value === 'DidNotStart';
                     const misPunch = personResult.Result?.CompetitorStatus['@attributes'].value === 'MisPunch';
                     const ok = personResult.Result?.CompetitorStatus['@attributes'].value === 'OK';
@@ -386,12 +384,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                       personResults.some((pr) => pr.Result?.ResultPosition === '2')
                         ? personResults.find((pr) => pr.Result?.ResultPosition === '2')?.Result?.Time
                         : null;
-                    const fees = GetFees(
-                      entryFeeJson.EntryFee,
-                      entryFeeIds,
-                      age,
-                      !!currentClass && currentClass.ClassShortName.indexOf('Ö') > -1
-                    );
+                    const fees = GetFees(entryFeeJson.EntryFee, entryFeeIds, competitor.birthDay);
 
                     let resultMultiDay: IRaceResultMultiDayProps | undefined;
                     if (totalIofResults && totalIofResults.ClassResult) {
@@ -915,24 +908,24 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
               };
             }
 
-            const nofStartsInClass =
-              classResult.PersonResult?.filter((pr) =>
-                pr.Result?.some(
-                  (r) =>
-                    r['@attributes']?.raceNumber === eventRace?.RaceNumber &&
-                    r.Status !== 'DidNotEnter' &&
-                    r.Status !== 'DidNotStart' &&
-                    r.Status !== 'Moved' &&
-                    r.Status !== 'MovedUp' &&
-                    r.Status !== 'NotCompeting'
-                )
-              )?.length ?? 0;
-
             if (classResult.PersonResult != null && classResult.PersonResult.length > 0) {
-              const personResults = classResult.PersonResult.map((personResult) => ({
+              const personResults = classResult.PersonResult.filter((personResult) =>
+                personResult.Result?.some((r) => r['@attributes'].raceNumber === eventRace?.RaceNumber)
+              ).map((personResult) => ({
                 ...personResult,
-                Result: personResult.Result?.find((r) => r['@attributes'].raceNumber === eventRace?.RaceNumber),
+                Result: personResult.Result?.find(() => true),
               }));
+
+              const nofStartsInClass =
+                personResults?.filter(
+                  (pr) =>
+                    pr.Result &&
+                    pr.Result.Status !== 'DidNotEnter' &&
+                    pr.Result.Status !== 'DidNotStart' &&
+                    pr.Result.Status !== 'Moved' &&
+                    pr.Result.Status !== 'MovedUp' &&
+                    pr.Result.Status !== 'NotCompeting'
+                )?.length ?? 0;
 
               const { splitTimes, bestSplitTimes, secondBestSplitTimes } = GetIOFSplitTimes(personResults);
               const shortClassName = GetClassShortName(currentClass?.ClassShortName);
@@ -940,9 +933,9 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                 .raceClubs!.classLevels.filter((cl) => shortClassName && shortClassName.indexOf(cl.classShortName) >= 0)
                 .sort((a, b) => (a.classShortName.length < b.classShortName.length ? 1 : -1))
                 .find(() => true);
-              const lengthInMeter = classResult.Course?.find(
-                (c) => c['@attributes'].raceNumber === eventRace?.RaceNumber
-              )?.Length;
+              const lengthInMeter =
+                classResult.Course?.find((c) => c['@attributes'].raceNumber === eventRace?.RaceNumber)?.Length ??
+                personResults.find(() => true)?.Result?.Course?.Length;
               const winnerResult = personResults.find((personResult) => personResult.Result?.Position === 1);
               const winnerTime = winnerResult?.Result?.Time
                 ? ConvertSecondsToTime(winnerResult.Result.Time)
@@ -1057,8 +1050,6 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                       }
                     }
                     const entryFeeIds = entryFees.map((f) => f.EntryFeeId);
-                    const age =
-                      eventRace?.StartTime && competitor ? GetAge(competitor.birthDay, eventRace.StartTime.Date) : null;
                     const didNotStart = personResult.Result?.Status === 'DidNotStart';
                     const misPunch = personResult.Result?.Status === 'MissingPunch';
                     const ok = personResult.Result?.Status === 'OK';
@@ -1070,12 +1061,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                       personResults.some((pr) => pr.Result?.Position === 2)
                         ? personResults.find((pr) => pr.Result?.Position === 2)?.Result?.Time
                         : null;
-                    const fees = GetFees(
-                      entryFeeJson.EntryFee,
-                      entryFeeIds,
-                      age,
-                      !!currentClass && currentClass.ClassShortName.indexOf('Ö') > -1
-                    );
+                    const fees = GetFees(entryFeeJson.EntryFee, entryFeeIds, competitor.birthDay);
 
                     let resultMultiDay: IRaceResultMultiDayProps | undefined;
                     if (totalIofResults && totalIofResults.ClassResult) {
@@ -1084,10 +1070,14 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                       );
                       const totalClassPersonResults = totalIofResults.ClassResult.find(
                         (cr) => cr.Class.Id === classResult.Class.Id
-                      )?.PersonResult?.map((pr) => ({
-                        ...pr,
-                        Result: pr.Result?.find((r) => r['@attributes'].raceNumber === totalEventRace?.RaceNumber),
-                      }));
+                      )
+                        ?.PersonResult?.filter((pr) =>
+                          pr.Result?.some((r) => r['@attributes'].raceNumber === totalEventRace?.RaceNumber)
+                        )
+                        ?.map((personResult) => ({
+                          ...personResult,
+                          Result: personResult.Result?.find(() => true),
+                        }));
                       const totalPersonResult = totalClassPersonResults?.find(
                         (pr) =>
                           pr.Person.Id?.some((id) => id === personId) &&
@@ -1198,9 +1188,11 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
               let shortClassName: string | null = null;
               const teamResults = classResult.TeamResult.map((teamResult) => ({
                 ...teamResult,
-                TeamMemberResult: teamResult.TeamMemberResult?.map((teamMemberResult) => ({
+                TeamMemberResult: teamResult.TeamMemberResult?.filter((teamMemberResult) =>
+                  teamMemberResult.Result?.some((r) => r['@attributes'].raceNumber === eventRace?.RaceNumber)
+                )?.map((teamMemberResult) => ({
                   ...teamMemberResult,
-                  Result: teamMemberResult.Result?.find((r) => r['@attributes'].raceNumber === eventRace?.RaceNumber),
+                  Result: teamMemberResult.Result?.find(() => true),
                 })),
               }));
               const allLegsSplitTimes = GetIOFRelaySplitTimes(teamResults);
@@ -2041,7 +2033,7 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                       eventClassificationId={
                         raceWizardModel.raceEvent.eventClassificationId as EventClassificationIdTypes
                       }
-                      raceLightCondition={raceWizardModel.raceEvent.raceLightCondition as LightConditionTypes}
+                      raceLightCondition={raceWizardModel.raceEvent.raceLightCondition ?? undefined}
                       result={resultObject}
                       results={raceWizardModel.raceEvent.teamResults}
                       competitorsOptions={clubModel.raceClubs.selectedClub?.competitorsOptions ?? []}

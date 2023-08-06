@@ -7,15 +7,15 @@ import { ISessionModel } from 'models/sessionModel';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
-import { errorRequiredField, FormSelect, hasErrors, INumberOption, timeFormat } from '../../utils/formHelper';
+import { FormSelect, INumberOption, errorRequiredField, hasErrors, timeFormat } from '../../utils/formHelper';
 import {
-  difficulties,
   DifficultyTypes,
   EventClassificationIdTypes,
-  failedReasonOptions,
-  failedReasons,
   LightConditionTypes,
   ManuallyEditedMissingTimePostfix,
+  difficulties,
+  failedReasonOptions,
+  failedReasons,
   raceLightConditionOptions,
 } from '../../utils/resultConstants';
 import { GetClassClassificationId } from '../../utils/resultHelper';
@@ -44,7 +44,7 @@ interface IEditResultRelayProps {
   sessionModel: ISessionModel;
   raceWizardModel: IRaceWizard;
   eventClassificationId: EventClassificationIdTypes;
-  raceLightCondition: LightConditionTypes;
+  raceLightCondition?: LightConditionTypes;
   result: IExtendedRaceTeamResult;
   results: IRaceTeamResult[];
   competitorsOptions: INumberOption[];

@@ -1,4 +1,4 @@
-const RETRIES = 5;
+const RETRIES = 3;
 const rxOne = /^[\],:{}\s]*$/;
 const rxTwo = /\\(?:["\\/bfnrt]|u[0-9a-fA-F]{4})/g;
 const rxThree = /"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?/g;

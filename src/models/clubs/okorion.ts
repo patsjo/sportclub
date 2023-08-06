@@ -492,6 +492,16 @@ const okorion: IMobxClubModelProps = {
       active: true,
     },
     {
+      name: 'Destination Kosta',
+      logo: {
+        url: 'https://okorion.com/images/sponsors/destinationkosta.png',
+        width: 986,
+        height: 591,
+      },
+      url: 'https://destinationkosta.se/',
+      active: true,
+    },
+    {
       name: 'Länsförsäkringar Blekinge',
       logo: {
         url: 'https://okorion.com/images/sponsors/lansforsakringar.png',

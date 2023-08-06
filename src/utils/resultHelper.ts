@@ -22,15 +22,15 @@ import {
 } from './responseEventorInterfaces';
 import {
   AwardTypes,
-  difficulties,
-  distances,
   EventClassificationIdTypes,
-  failedReasons,
-  lightConditions,
   LightConditionTypes,
-  payments,
   PaymentTypes,
   SportCodeTypes,
+  difficulties,
+  distances,
+  failedReasons,
+  lightConditions,
+  payments,
 } from './resultConstants';
 const minMissingPercentageQuota = 0.04;
 const minMissingTimeSeconds = 4;
@@ -106,11 +106,12 @@ const ConvertTimeWithFractionsToSeconds = (timeString: string | null): number =>
 };
 
 export const ConvertSecondsToTime = (timeInSeconds: number): string => {
-  const hours = Math.floor(timeInSeconds / 3600);
-  const minutes = Math.floor((timeInSeconds - hours * 3600) / 60);
-  const seconds = Math.floor(timeInSeconds - hours * 3600 - minutes * 60);
+  const absTimeInSeconds = Math.abs(timeInSeconds);
+  const hours = Math.floor(absTimeInSeconds / 3600);
+  const minutes = Math.floor((absTimeInSeconds - hours * 3600) / 60);
+  const seconds = Math.floor(absTimeInSeconds - hours * 3600 - minutes * 60);
   const time = moment({ hours: hours, minutes: minutes, seconds: seconds });
-  return time.format('HH:mm:ss');
+  return timeInSeconds < 0 ? `-${time.format('HH:mm:ss')}` : time.format('HH:mm:ss');
 };
 
 export const ConvertSecondsWithFractionsToTime = (timeInSeconds: number): string => {
@@ -166,52 +167,46 @@ interface IFees {
   originalFee: number;
   lateFee: number;
 }
-export const GetFees = (
-  entryFees: IEventorEntryFee[],
-  entryFeeIds: string[],
-  age: number | null,
-  isOpenClass: boolean
-): IFees => {
+export const GetFees = (entryFees: IEventorEntryFee[], entryFeeIds: string[], competitorBirthday: string): IFees => {
   const fees: IFees = { originalFee: 0, lateFee: 0 };
   if (entryFeeIds == null) {
     return fees;
   }
-  const competitorEntryFees = entryFees
-    .filter((fee) => entryFeeIds.includes(fee.EntryFeeId))
-    .sort((a, b) =>
-      !a.ValidFromDate ? -1 : !b.ValidFromDate ? 1 : a.ValidFromDate.Date < b.ValidFromDate.Date ? -1 : 1
-    );
+  const competitorEntryFees = entryFees.filter(
+    (fee) =>
+      entryFeeIds.includes(fee.EntryFeeId) &&
+      (!fee.FromDateOfBirth || moment(competitorBirthday, 'yyyy-mm-dd').isSameOrAfter(fee.FromDateOfBirth.Date)) &&
+      (!fee.ToDateOfBirth || moment(competitorBirthday, 'yyyy-mm-dd').isSameOrBefore(fee.ToDateOfBirth.Date))
+  );
   if (competitorEntryFees == null || competitorEntryFees.length === 0) {
     return fees;
   }
-  const firstValidFromDate = competitorEntryFees[0].ValidFromDate
-    ? competitorEntryFees[0].ValidFromDate.Date
-    : undefined;
-  const originalFees = competitorEntryFees.filter(
-    (fee) =>
-      (!fee.ValidFromDate || fee.ValidFromDate.Date === firstValidFromDate) &&
-      fee['@attributes'].valueOperator === 'fixed'
-  );
+  const firstValidToDate = competitorEntryFees
+    .map((fee) => (fee.ValidToDate ? `${fee.ValidToDate.Date} ${fee.ValidToDate.Clock}` : ''))
+    .filter((dateTime) => dateTime !== '')
+    .sort()
+    .find(() => true);
+  const originalFees =
+    competitorEntryFees.length <= 1
+      ? competitorEntryFees
+      : competitorEntryFees.filter(
+          (fee) =>
+            (!fee.ValidFromDate || (fee.ValidToDate && fee.ValidToDate.Date === firstValidToDate)) &&
+            (fee['@attributes'].valueOperator ?? 'fixed') === 'fixed'
+        );
   const lateFees = competitorEntryFees.filter(
     (fee) =>
       !originalFees.map((oFee) => oFee.EntryFeeId).includes(fee.EntryFeeId) &&
-      fee['@attributes'].valueOperator === 'fixed'
+      (fee['@attributes'].valueOperator ?? 'fixed') === 'fixed'
   );
   const extraPercentage = competitorEntryFees.find((fee) => fee['@attributes'].valueOperator === 'percent');
 
-  if (isOpenClass) {
-    if (age && age <= 16) {
-      fees.originalFee = Math.min(...originalFees.map((fee) => parseInt(fee.Amount)));
-    } else {
-      fees.originalFee = Math.max(...originalFees.map((fee) => parseInt(fee.Amount)));
-    }
-  } else {
-    fees.originalFee = originalFees.map((fee) => parseInt(fee.Amount)).reduce((a, b) => a + b, 0);
-    fees.lateFee = lateFees.map((fee) => parseInt(fee.Amount)).reduce((a, b) => a + b, 0);
-    if (extraPercentage != null) {
-      fees.lateFee += (fees.originalFee * parseInt(extraPercentage.Amount)) / 100;
-    }
+  fees.originalFee = originalFees.map((fee) => parseInt(fee.Amount)).reduce((a, b) => a + b, 0);
+  fees.lateFee = lateFees.map((fee) => parseInt(fee.Amount)).reduce((a, b) => a + b, 0);
+  if (extraPercentage != null) {
+    fees.lateFee += (fees.originalFee * parseInt(extraPercentage.Amount)) / 100;
   }
+
   return fees;
 };
 
@@ -670,6 +665,8 @@ export const GetAward = (
     if (
       !isSprint &&
       ['A', 'B', 'C'].includes(raceEventClassification.eventClassificationId) &&
+      classLevel.age != null &&
+      classLevel.age < 35 &&
       timeInMinutes <= maxMinutes(20)
     ) {
       award = 'G';

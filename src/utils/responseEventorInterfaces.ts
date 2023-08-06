@@ -156,15 +156,17 @@ export interface IEventorEntryFee {
   EntryFeeId: string;
   '@attributes': {
     taxIncluded: 'Y' | 'N';
-    valueOperator: 'fixed' | 'percent';
-    entryFeeType: 'elite' | 'adult';
-    type: 'elite' | 'adult';
+    valueOperator?: 'fixed' | 'percent';
+    entryFeeType: 'elite' | 'adult' | 'youth';
+    type: 'elite' | 'adult' | 'youth';
   };
   Amount: string;
   ExternalFee: string;
   Name: string;
   ValidFromDate?: IEventorDateTime;
   ValidToDate: IEventorDateTime;
+  FromDateOfBirth?: IEventorDate;
+  ToDateOfBirth?: IEventorDate;
 }
 
 export interface IEventorEntryFees {

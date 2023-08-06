@@ -298,6 +298,7 @@ const ResultWizardStep1ChooseRace = observer(({ visible, onValidate, onFailed }:
                 ? e.Event.EventRace.map((er) => er.EventRaceId).includes(eventRace.EventRaceId)
                 : e.EventRaceId === eventRace.EventRaceId
             )?.Event;
+            let entryEventName = '';
             if (entryEvent == null) {
               entryEvent = oringenEvents.find((e) =>
                 Array.isArray(e.EventRace)
@@ -306,9 +307,8 @@ const ResultWizardStep1ChooseRace = observer(({ visible, onValidate, onFailed }:
               );
             }
             if (entryEvent) {
-              entryEvent.Name =
+              entryEventName =
                 entryEvent.Name +
-                ', ' +
                 (JSON.stringify(eventRace.Name) === JSON.stringify({}) || !eventRace.Name ? '' : ', ' + eventRace.Name);
             }
             const alreadySaved = alreadySavedEventsJson.find(
@@ -336,7 +336,7 @@ const ResultWizardStep1ChooseRace = observer(({ visible, onValidate, onFailed }:
               eventorId: entryEvent ? parseInt(entryEvent.EventId) : -1,
               eventorRaceId: parseInt(eventRace.EventRaceId),
               invoiceVerified: alreadySaved ? alreadySaved.invoiceVerified : false,
-              name: entryEvent?.Name ?? '',
+              name: entryEventName,
               time: entryEvent ? eventRace.RaceDate.Clock : '',
               alreadySaved: !!alreadySaved,
               alreadySavedEventsNotInEventor: false,
