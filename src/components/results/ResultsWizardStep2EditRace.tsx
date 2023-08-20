@@ -351,11 +351,13 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                   }
 
                   if (competitor) {
-                    const entry: IEventorEntry | undefined = entriesJson.Entry.find(
-                      (entry) =>
-                        entry.Competitor?.PersonId === personResult.Person.PersonId ||
-                        entry.Competitor?.Person?.PersonId === personResult.Person.PersonId
-                    );
+                    const entry: IEventorEntry | undefined = personResult.Person.PersonId
+                      ? entriesJson.Entry.find(
+                          (entry) =>
+                            entry.Competitor?.PersonId === personResult.Person.PersonId ||
+                            entry.Competitor?.Person?.PersonId === personResult.Person.PersonId
+                        )
+                      : undefined;
                     let entryFees: IEventorEntryClassFee[] = Array.isArray(entry?.EntryEntryFee)
                       ? entry!.EntryEntryFee
                       : entry?.EntryEntryFee != null
@@ -1033,10 +1035,12 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
                   }
 
                   if (competitor) {
-                    const entry: IEventorEntry | undefined = entriesJson.Entry.find(
-                      (entry) =>
-                        entry.Competitor?.PersonId === personId || entry.Competitor?.Person?.PersonId === personId
-                    );
+                    const entry: IEventorEntry | undefined = personId
+                      ? entriesJson.Entry.find(
+                          (entry) =>
+                            entry.Competitor?.PersonId === personId || entry.Competitor?.Person?.PersonId === personId
+                        )
+                      : undefined;
                     let entryFees: IEventorEntryClassFee[] = Array.isArray(entry?.EntryEntryFee)
                       ? entry!.EntryEntryFee
                       : entry?.EntryEntryFee != null
