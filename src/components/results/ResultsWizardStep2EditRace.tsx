@@ -108,12 +108,15 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
       lengthHtmlJson: string,
       eventIsRelay: boolean
     ) => {
-      // 1 = championchip, 2 = National, 3 = District, 4 = Nearby, 5 = Club, 6 = International
+      // 0 = International, 1 = championchip, 2 = National, 3 = District, 4 = Nearby, 5 = Club, 6 = International
       const eventorEventClassificationId =
         resultJson && resultJson.Event ? resultJson.Event.EventClassificationId : null;
       let eventClassificationId: EventClassificationIdTypes = 'F';
       if (eventorEventClassificationId != null) {
         switch (eventorEventClassificationId) {
+          case '0':
+            eventClassificationId = 'D';
+            break;
           case '1':
             eventClassificationId = 'E';
             break;
@@ -173,7 +176,14 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
               : resultJson.Event.Organiser?.Organisation?.Name,
             raceDate: eventRace.RaceDate.Date,
             raceTime: eventRace.RaceDate.Clock === '00:00:00' ? null : eventRace.RaceDate.Clock,
-            sportCode: 'OL',
+            sportCode:
+              resultJson.Event.DisciplineId === '1'
+                ? 'OL'
+                : resultJson.Event.DisciplineId === '2'
+                ? 'MTBO'
+                : resultJson.Event.DisciplineId === '3'
+                ? 'SKIO'
+                : 'OL',
             isRelay: !!eventIsRelay,
             eventClassificationId: eventClassificationId,
             raceLightCondition: raceLightConditionOptions(t).some((option) => option.code === raceLightCondition)
@@ -864,7 +874,14 @@ const ResultWizardStep2EditRace = observer(({ visible, onValidate, onFailed }: I
               : undefined,
             raceDate: eventRace.StartTime?.Date,
             raceTime: eventRace.StartTime?.Time === '00:00' ? null : eventRace.StartTime?.Time,
-            sportCode: 'OL',
+            sportCode:
+              eventRace.Extensions?.Discipline === 'Foot'
+                ? 'OL'
+                : eventRace.Extensions?.Discipline === 'MountainBike'
+                ? 'MTBO'
+                : eventRace.Extensions?.Discipline === 'Ski'
+                ? 'SKIO'
+                : 'OL',
             isRelay: eventIsRelay,
             eventClassificationId: eventClassificationId,
             raceLightCondition: raceLightConditionOptions(t).find((option) => option.code === raceLightCondition)

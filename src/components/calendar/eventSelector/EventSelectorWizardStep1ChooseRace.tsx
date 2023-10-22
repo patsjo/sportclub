@@ -145,13 +145,13 @@ const EventSelectorWizardStep1ChooseRace = observer(
               };
             })
             // EventStatusId: 10 Canceled
-            // 1 = championchip, 2 = National, 3 = District, 4 = Nearby, 5 = Club, 6 = International
+            // EventClassificationId: 0 = International, 1 = championchip, 2 = National, 3 = District, 4 = Nearby, 5 = Club, 6 = International
             .filter(
               (event) =>
                 event.Event.EventStatusId !== '10' &&
                 event.Event.EventClassificationId &&
                 (event.calendarEventId > 0 ||
-                  ['1', '6'].includes(event.Event.EventClassificationId) ||
+                  ['0', '1', '6'].includes(event.Event.EventClassificationId) ||
                   (event.Event.EventClassificationId === '2' &&
                     (eventSelectorWizardModel.maxDistanceNational == null ||
                       (event.distanceKm !== null &&

@@ -6,6 +6,7 @@ const arrayAttributesNodes = [
   'Account',
   'AllowedOnLeg',
   'AssignedFee',
+  'Extensions/Attribute',
   'ClassList/Class',
   'Competitor/Class',
   'Event/Class',
@@ -26,7 +27,7 @@ const arrayAttributesNodes = [
   'RaceCourseData/Course',
   'CourseControl',
   'Description',
-  'Discipline',
+  'Race/Discipline',
   'IEventListType/Event', //IEventListType is TopLevel (handle this outside)
   'Class/Fee',
   'RaceClass/Fee',

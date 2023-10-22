@@ -730,7 +730,8 @@ interface IEventorRaceExtensions {
   EventRaceId?: number;
   StartListExists?: string;
   ResultListExists?: string;
-  Discipline?: 'Foot';
+  Discipline?: 'Foot' | 'Ski' | 'MountainBike';
+  Attribute?: ('Orientering Terräng' | 'Orientering Stad')[];
   LightCondition?: 'Day' | 'Night' | 'Dusk' | 'Dawn';
 }
 
