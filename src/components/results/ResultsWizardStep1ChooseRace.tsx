@@ -1,4 +1,4 @@
-import { message, Spin } from 'antd';
+import { message, Progress, Spin } from 'antd';
 import { ColumnType, TableRowSelection } from 'antd/lib/table/interface';
 import { observer } from 'mobx-react';
 import moment from 'moment';
@@ -8,6 +8,7 @@ import { PostJsonData } from 'utils/api';
 import { dateFormat } from 'utils/formHelper';
 import { useMobxStore } from 'utils/mobxStore';
 import {
+  IEventorCompetitor,
   IEventorCompetitorResult,
   IEventorCompetitors,
   IEventorEntries,
@@ -21,6 +22,12 @@ import {
 import { IEventViewResultResponse } from 'utils/responseInterfaces';
 import { useResultWizardStore } from 'utils/resultWizardStore';
 import { SpinnerDiv, StyledTable } from '../styled/styled';
+
+const stringFormat = (value: string, ...args) => {
+  return value.replace(/{(\d+)}/g, function (match, number) {
+    return typeof args[number] != 'undefined' ? args[number] : match;
+  });
+};
 
 const flatten = (list: (IEventorEventRace[] | IEventorEventRace)[]): IEventorEventRace[] =>
   list.reduce(
@@ -57,6 +64,9 @@ const ResultWizardStep1ChooseRace = observer(({ visible, onValidate, onFailed }:
   const [loaded, setLoaded] = useState(false);
   const [events, setEvents] = useState<IResultEvent[]>([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>();
+  const [processed, setProcessed] = useState(0);
+  const [total, setTotal] = useState(5);
+  const [currentEvent, setCurrentEvent] = useState<string | null>(null);
 
   const onSelectChange = useCallback((keys: React.Key[]) => {
     const selected: IResultEventKey =
@@ -82,6 +92,9 @@ const ResultWizardStep1ChooseRace = observer(({ visible, onValidate, onFailed }:
 
   useEffect(() => {
     const fetchData = async () => {
+      setTotal(5);
+      setProcessed(0);
+      setCurrentEvent(t('results.loadSavedResults'));
       const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
       if (!url || !clubModel.raceClubs || !clubModel.eventor) return;
 
@@ -106,6 +119,8 @@ const ResultWizardStep1ChooseRace = observer(({ visible, onValidate, onFailed }:
           true,
           sessionModel.authorizationHeader
         );
+        setProcessed((prev) => prev + 1);
+        setCurrentEvent(t('results.loadEntries'));
         const entriesJson: IEventorEntries = await PostJsonData(
           clubModel.eventorCorsProxy,
           {
@@ -132,6 +147,8 @@ const ResultWizardStep1ChooseRace = observer(({ visible, onValidate, onFailed }:
           },
           true
         );
+        setProcessed((prev) => prev + 1);
+        setCurrentEvent(t('results.loadEvent'));
 
         const noEntriesJson: { Event: IEventorEvent[] } = { Event: [] };
 
@@ -154,8 +171,10 @@ const ResultWizardStep1ChooseRace = observer(({ visible, onValidate, onFailed }:
             eventsJson.Event.forEach((e) => noEntriesJson.Event.push(e));
           } else if (eventsJson.Event != null) noEntriesJson.Event.push(eventsJson.Event);
         }
+        setProcessed((prev) => prev + 1);
 
         if (raceWizardModel.queryForEventWithNoEntry) {
+          setCurrentEvent(t('results.loadCompetitors'));
           const competitorListJson: IEventorCompetitors = await PostJsonData(
             clubModel.eventorCorsProxy,
             {
@@ -169,26 +188,33 @@ const ResultWizardStep1ChooseRace = observer(({ visible, onValidate, onFailed }:
           );
 
           if (competitorListJson && Array.isArray(competitorListJson.Competitor)) {
+            setTotal((prev) => prev + (competitorListJson.Competitor as IEventorCompetitor[]).length);
             const competitorsJsons: IEventorCompetitorResult[] = [];
             for (const c of competitorListJson.Competitor) {
-              competitorsJsons.push(
-                (await PostJsonData(
-                  clubModel.eventorCorsProxy,
-                  {
-                    csurl: encodeURIComponent(
-                      clubModel.eventor?.personResultUrl +
-                        '?personId=' +
-                        c.Person?.PersonId +
-                        '&fromDate=' +
-                        raceWizardModel.queryStartDate +
-                        '&toDate=' +
-                        raceWizardModel.queryEndDate
-                    ),
-                  },
-                  true
-                )) as IEventorCompetitorResult
+              setCurrentEvent(
+                stringFormat(
+                  t('results.loadCompetitor'),
+                  `${c.Person?.PersonName?.Given} ${c.Person?.PersonName?.Family}`
+                )
               );
+              const competitorResults = (await PostJsonData(
+                clubModel.eventorCorsProxy,
+                {
+                  csurl: encodeURIComponent(
+                    clubModel.eventor?.personResultUrl +
+                      '?personId=' +
+                      c.Person?.PersonId +
+                      '&fromDate=' +
+                      raceWizardModel.queryStartDate +
+                      '&toDate=' +
+                      raceWizardModel.queryEndDate
+                  ),
+                },
+                true
+              )) as IEventorCompetitorResult;
+              competitorsJsons.push(competitorResults);
               await new Promise((resolve) => setTimeout(resolve, Math.floor(Math.random() * 200)));
+              setProcessed((prev) => prev + 1);
             }
 
             competitorsJsons.forEach((c) => {
@@ -253,6 +279,7 @@ const ResultWizardStep1ChooseRace = observer(({ visible, onValidate, onFailed }:
           }
         }
 
+        setCurrentEvent(t('results.loadOringenEvents'));
         const oringenEventsJson: IEventorEvents = await PostJsonData(
           clubModel.eventorCorsProxy,
           {
@@ -269,6 +296,8 @@ const ResultWizardStep1ChooseRace = observer(({ visible, onValidate, onFailed }:
           },
           true
         );
+        setProcessed((prev) => prev + 1);
+        setCurrentEvent(t('results.calculateResults'));
 
         let entries: IEventorEntry[] = [];
         let oringenEvents: IEventorEvent[] = [];
@@ -469,6 +498,12 @@ const ResultWizardStep1ChooseRace = observer(({ visible, onValidate, onFailed }:
       pagination={{ pageSize: 8 }}
       size="middle"
     />
+  ) : visible && total > 0 ? (
+    <SpinnerDiv>
+      <Progress type="circle" percent={(100 * processed) / total} format={() => `${processed}/${total}`} />
+      <div>{currentEvent}...</div>
+      <Spin size="large" />
+    </SpinnerDiv>
   ) : visible ? (
     <SpinnerDiv>
       <Spin size="large" />

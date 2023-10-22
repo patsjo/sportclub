@@ -8,8 +8,8 @@ import { useMobxStore } from 'utils/mobxStore';
 import {
   IEventorEventRace,
   IEventorOrganisation,
-  IEventorResults,
   IEventorResultStatus,
+  IEventorResults,
   IEventorTeamMemberResult,
   IEventorTeamResult,
 } from 'utils/responseEventorInterfaces';
@@ -17,7 +17,7 @@ import { IEventViewResultResponse } from 'utils/responseInterfaces';
 import { useResultWizardStore } from 'utils/resultWizardStore';
 import { PostJsonData } from '../../utils/api';
 import { dateFormat } from '../../utils/formHelper';
-import { genders, ManuallyEditedMissingTimePostfix } from '../../utils/resultConstants';
+import { ManuallyEditedMissingTimePostfix, genders } from '../../utils/resultConstants';
 import { GetMissingTime, GetRelaySplitTimes, GetSplitTimes, GetTimeWithHour } from '../../utils/resultHelper';
 import { SpinnerDiv } from '../styled/styled';
 import { AddMapCompetitorConfirmModal } from './AddMapCompetitorConfirmModal';
@@ -418,8 +418,9 @@ const ResultWizardStep1ChooseRaceRerun = observer(
 
     return total > 0 ? (
       <SpinnerDiv>
-        <Progress type="circle" percent={(100 * processed) / total} />
+        <Progress type="circle" percent={(100 * processed) / total} format={() => `${processed}/${total}`} />
         <div>{currentEvent}</div>
+        <Spin size="large" />
       </SpinnerDiv>
     ) : (
       <SpinnerDiv>
