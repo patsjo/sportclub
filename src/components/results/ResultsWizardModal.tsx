@@ -1,24 +1,24 @@
 import { LeftOutlined, PlusOutlined, RightOutlined } from '@ant-design/icons';
-import { Button, message, Modal, Popconfirm, Spin, Steps } from 'antd';
+import { Button, Modal, Popconfirm, Spin, Steps, message } from 'antd';
 import { FormInstance } from 'antd/lib/form';
 import { ModalFuncProps } from 'antd/lib/modal';
 import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
 import { IRaceClubsProps } from 'models/resultModel';
-import { getLocalStorage, IRaceWizard, RaceWizard } from 'models/resultWizardModel';
+import { IRaceWizard, RaceWizard, getLocalStorage } from 'models/resultWizardModel';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { PostJsonData } from 'utils/api';
 import { useMobxStore } from 'utils/mobxStore';
 import {
-  difficulties,
-  distances,
   EventClassificationIdTypes,
-  lightConditions,
   LightConditionTypes,
   PaymentTypes,
   SportCodeTypes,
+  difficulties,
+  distances,
+  lightConditions,
 } from 'utils/resultConstants';
 import {
   ConvertSecondsToTime,
@@ -62,6 +62,7 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
   const [inputForm, setInputForm] = useState<FormInstance>();
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [ctrlAltDown, setCtrlAltDown] = useState(false);
 
   const next = useCallback(
     (e) => {
@@ -329,6 +330,24 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
       });
   }, []);
 
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      setCtrlAltDown(event.altKey && event.ctrlKey);
+    };
+
+    const onKeyUp = (event: KeyboardEvent) => {
+      setCtrlAltDown(event.altKey && event.ctrlKey);
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup', onKeyUp);
+    };
+  }, []);
+
   return (
     <ResultWizardStoreProvider store={{ raceWizardModel: raceWizardModel.current }}>
       <Modal
@@ -475,7 +494,11 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
             loading={saving}
             onClick={(e) => (wizardStep === 3 ? save(true) : next(e))}
           >
-            {wizardStep === 3 ? t('common.Save') : t('common.Next')}
+            {wizardStep === 0 && ctrlAltDown
+              ? t('common.Recalculate')
+              : wizardStep === 3
+              ? t('common.Save')
+              : t('common.Next')}
             {wizardStep === 3 ? null : <RightOutlined />}
           </Button>,
           wizardStep >= 2 ? (

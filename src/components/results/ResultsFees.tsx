@@ -15,6 +15,8 @@ import FormItem from '../formItems/FormItem';
 import { SpinnerDiv, StyledTable } from '../styled/styled';
 import TablePrintSettingButtons from '../tableSettings/TablePrintSettingButtons';
 
+let abortLoading = false;
+
 const StyledRow = styled.div`
   display: block;
   white-space: nowrap;
@@ -103,6 +105,10 @@ const ResultsFees = observer(() => {
       });
   }, []);
 
+  const onAbortLoading = () => {
+    abortLoading = true;
+  };
+
   const updateEventYear = React.useCallback(
     (year: number) => {
       const fromDate = moment(year, 'YYYY').format('YYYY-MM-DD');
@@ -154,28 +160,27 @@ const ResultsFees = observer(() => {
         });
       }
 
+      if (abortLoading) throw new Error();
+
       return { header, inputs, tables };
     },
     [t, clubModel, year, fees]
   );
 
   const onPrint = React.useCallback(
-    (settings): Promise<void> => {
-      return new Promise((resolve, reject) => {
+    async (settings): Promise<void> => {
+      abortLoading = false;
+      try {
         const printObject = getPrintObject(settings);
         if (!clubModel.corsProxy) {
-          reject();
           return;
         }
-        getPdf(clubModel.corsProxy, clubModel.logo.url, printObject.header, [printObject], settings.pdf)
-          .then(resolve)
-          .catch((e) => {
-            if (e && e.message) {
-              message.error(e.message);
-            }
-            reject();
-          });
-      });
+        await getPdf(clubModel.corsProxy, clubModel.logo.url, printObject.header, [printObject], settings.pdf);
+      } catch (e: any) {
+        if (e && e.message) {
+          message.error(e.message);
+        }
+      }
     },
     [clubModel, getPrintObject]
   );
@@ -217,6 +222,11 @@ const ResultsFees = observer(() => {
             columns={columns(t, clubModel)}
             disablePrint={loading || !fees || fees.length === 0}
             disablePrintAll={true}
+            processed={0}
+            total={1}
+            spinnerTitle={t('results.calculateResults')}
+            spinnerText={null}
+            onAbortLoading={onAbortLoading}
             onPrint={onPrint}
             onTableColumns={setColumnsSetting}
           />

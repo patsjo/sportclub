@@ -1,10 +1,11 @@
 import { DownOutlined, FileZipOutlined, PrinterOutlined, SettingOutlined } from '@ant-design/icons';
-import { Button, Dropdown, Menu } from 'antd';
+import { Button, Dropdown, Menu, Modal, Progress, Spin } from 'antd';
+import { SpinnerDiv } from 'components/styled/styled';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { IPrintSettings, IPrintSettingsColumn } from 'utils/responseInterfaces';
-import { getLocalStorage, TableSettingModal } from './TableSettingModal';
+import { TableSettingModal, getLocalStorage } from './TableSettingModal';
 
 const ButtonsContainer = styled.div`
   min-width: 150px;
@@ -15,6 +16,11 @@ interface ITablePrintSettingButtonsProps {
   columns: IPrintSettingsColumn[];
   disablePrint: boolean;
   disablePrintAll: boolean;
+  processed: number;
+  total: number;
+  spinnerTitle: string | null;
+  spinnerText: string | null;
+  onAbortLoading: () => void;
   onPrint: (settings: IPrintSettings) => Promise<void>;
   onPrintAll?: (settings: IPrintSettings, allInOnePdf: boolean) => Promise<void>;
   onTableColumns: React.Dispatch<React.SetStateAction<IPrintSettingsColumn[]>>;
@@ -25,6 +31,11 @@ const TablePrintSettingButtons = ({
   columns,
   disablePrint,
   disablePrintAll,
+  processed,
+  total,
+  spinnerTitle,
+  spinnerText,
+  onAbortLoading,
   onPrint,
   onPrintAll,
   onTableColumns,
@@ -36,6 +47,11 @@ const TablePrintSettingButtons = ({
   useEffect(() => {
     onTableColumns(settings.table.columns);
   }, [settings]);
+
+  const onCancel = () => {
+    setLoading(false);
+    onAbortLoading();
+  };
 
   const printAllmenu = (
     <Menu>
@@ -82,12 +98,16 @@ const TablePrintSettingButtons = ({
             .catch(() => setLoading(false));
         }}
       />
-      {onPrintAll ? (
+      {onPrintAll && !disablePrintAll && !loading ? (
         <Dropdown overlay={printAllmenu} placement="bottomLeft">
           <Button style={{ marginRight: 5 }} disabled={disablePrintAll} loading={loading}>
             {t('common.All')} <DownOutlined />
           </Button>
         </Dropdown>
+      ) : onPrintAll ? (
+        <Button style={{ marginRight: 5 }} disabled={disablePrintAll} loading={loading}>
+          {t('common.All')} <DownOutlined />
+        </Button>
       ) : null}
       <Button
         icon={<SettingOutlined />}
@@ -97,6 +117,21 @@ const TablePrintSettingButtons = ({
           })
         }
       />
+      <Modal
+        title={spinnerTitle}
+        open={loading && total > 0}
+        onCancel={onCancel}
+        okButtonProps={{ hidden: true }}
+        maskClosable={false}
+      >
+        {total > 1 ? (
+          <SpinnerDiv>
+            <Progress type="circle" percent={(100 * processed) / total} format={() => `${processed}/${total}`} />
+            <div>{spinnerText}...</div>
+            <Spin size="large" />
+          </SpinnerDiv>
+        ) : null}
+      </Modal>
     </ButtonsContainer>
   );
 };

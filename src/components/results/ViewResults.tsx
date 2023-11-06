@@ -30,6 +30,8 @@ import FormItem from '../formItems/FormItem';
 import { SpinnerDiv, StyledTable } from '../styled/styled';
 import TablePrintSettingButtons from '../tableSettings/TablePrintSettingButtons';
 
+let abortLoading = false;
+
 const StyledTable2 = styled.table`
   &&& {
     margin-top: 8px;
@@ -333,6 +335,10 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
   const [loading, setLoading] = useState(true);
   const formId = useMemo(() => 'viewResultsForm' + Math.floor(Math.random() * 10000000000000000), []);
   const [columnsSetting, setColumnsSetting] = useState<IPrintSettingsColumn[]>([]);
+  const [processed, setProcessed] = useState(0);
+  const [total, setTotal] = useState(0);
+  const [spinnerTitle, setSpinnerTitle] = useState<string | null>(null);
+  const [spinnerText, setSpinnerText] = useState<string | null>(null);
 
   useEffect(() => {
     const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
@@ -358,6 +364,10 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
         message.error(e.message);
       });
   }, []);
+
+  const onAbortLoading = () => {
+    abortLoading = true;
+  };
 
   const updateEventYear = useCallback(
     (newYear: number) => {
@@ -478,6 +488,7 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
         header = `${t('modules.Results')} - ${
           clubModel.raceClubs?.selectedClub?.competitorById(printCompetitorId)?.fullName
         } ${year}`;
+        setSpinnerText(header);
         inputs.push({
           label: t('results.TotalFeeToClub'),
           value: (
@@ -500,6 +511,7 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
       } else if (!isIndividual) {
         const clubResult = printResult as IClubViewResultResponse;
         header = `${t('modules.Results')} - ${clubResult.raceDate} ${clubResult.name}`;
+        setSpinnerText(header);
         inputs.push({ label: t('results.Club'), value: clubResult.organiserName ?? '' });
         inputs.push({
           label: t('results.RaceLightCondition'),
@@ -556,28 +568,36 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
         });
       }
 
+      if (abortLoading) throw new Error();
+      setProcessed((oldValue) => oldValue + 1);
+
       return { header, inputs, tables };
     },
     [t, clubModel, isIndividual, year]
   );
 
   const onPrint = useCallback(
-    (settings: IPrintSettings): Promise<void> => {
-      return new Promise((resolve, reject) => {
-        if (!result || !clubModel.corsProxy) {
-          resolve();
-          return;
-        }
+    async (settings: IPrintSettings): Promise<void> => {
+      if (!result || !clubModel.corsProxy) {
+        return;
+      }
+      setSpinnerTitle(t('results.calculateResults'));
+      setSpinnerText(null);
+      setTotal(1);
+      setProcessed(0);
+      abortLoading = false;
+
+      try {
         const printObject = getPrintObject(settings, result, competitorId);
-        getPdf(clubModel.corsProxy, clubModel.logo.url, printObject.header, [printObject], settings.pdf)
-          .then(resolve)
-          .catch((e) => {
-            if (e && e.message) {
-              message.error(e.message);
-            }
-            reject();
-          });
-      });
+        await getPdf(clubModel.corsProxy, clubModel.logo.url, printObject.header, [printObject], settings.pdf);
+      } catch (e: any) {
+        if (e && e.message) {
+          message.error(e.message);
+        }
+      }
+      setTotal(0);
+      setSpinnerTitle(null);
+      setSpinnerText(null);
     },
     [clubModel, getPrintObject, result, competitorId]
   );
@@ -590,13 +610,20 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
 
       if (!url || !clubModel.raceClubs || !clubModel.corsProxy) return;
 
+      setSpinnerTitle(t('results.loadSavedResults'));
+      setSpinnerText(null);
+      setProcessed(0);
+      abortLoading = false;
+
       try {
         if (isIndividual) {
           const fromDate = moment(year, 'YYYY').format('YYYY-MM-DD');
           const toDate = moment(fromDate, 'YYYY-MM-DD').add(1, 'years').subtract(1, 'days').format('YYYY-MM-DD');
           competitorsOptions = clubModel.raceClubs.selectedClub?.competitorsOptions ?? [];
+          setTotal(competitorsOptions?.length ?? 1);
 
           for (const option of competitorsOptions) {
+            setSpinnerText(option.description);
             resultJsons.push(
               (await PostJsonData(
                 url,
@@ -606,9 +633,14 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
               )) as IIndividualViewResultResponse
             );
             await new Promise((resolve) => setTimeout(resolve, Math.floor(Math.random() * 200)));
+            if (abortLoading) throw new Error();
+            setProcessed((oldValue) => oldValue + 1);
           }
         } else {
+          setTotal(events?.length ?? 1);
+
           for (const event of events.slice().reverse()) {
+            setSpinnerText(event.name);
             resultJsons.push(
               (await PostJsonData(
                 url,
@@ -618,9 +650,14 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
               )) as IClubViewResultResponse
             );
             await new Promise((resolve) => setTimeout(resolve, Math.floor(Math.random() * 200)));
+            if (abortLoading) throw new Error();
+            setProcessed((oldValue) => oldValue + 1);
           }
         }
 
+        setSpinnerTitle(t('results.calculateResults'));
+        setSpinnerText(null);
+        setProcessed(0);
         const printObjects = resultJsons
           .filter((printResult) => printResult && (printResult.results?.length || printResult.teamResults?.length))
           .map((printResult, index) => {
@@ -655,6 +692,9 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
           message.error(e.message);
         }
       }
+      setTotal(0);
+      setSpinnerTitle(null);
+      setSpinnerText(null);
     },
     [t, clubModel, sessionModel, isIndividual, year, events, getPrintObject]
   );
@@ -736,6 +776,11 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
             ].filter((col, idx, arr) => arr.findIndex((c) => c.key === col.key) === idx)}
             disablePrint={loading || !result}
             disablePrintAll={loading}
+            processed={processed}
+            total={total}
+            spinnerTitle={spinnerTitle}
+            spinnerText={spinnerText}
+            onAbortLoading={onAbortLoading}
             onPrint={onPrint}
             onPrintAll={onPrintAll}
             onTableColumns={(newColumnsSetting) => setColumnsSetting(newColumnsSetting)}
