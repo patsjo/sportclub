@@ -1,7 +1,7 @@
 import { action, computed, makeObservable, observable } from 'mobx';
 import moment from 'moment';
 import { IOption } from 'utils/formHelper';
-import { difficulties, PaymentModelTypes, payments } from 'utils/resultConstants';
+import { DifficultyTypes, PaymentModelTypes, difficulties, payments } from 'utils/resultConstants';
 import { ConvertSecondsWithFractionsToTime, GetSecondsWithFractionsPerKiloMeter } from 'utils/resultHelper';
 import { IRaceEvent, IRaceEventProps, RaceEvent } from './resultModel';
 
@@ -69,7 +69,7 @@ export interface IWinnerResultProps {
   id: number;
   personName: string;
   className: string;
-  difficulty?: string | null;
+  difficulty?: DifficultyTypes | null;
   lengthInMeter?: number | null;
   winnerTime?: string;
   secondsPerKilometer?: number;
@@ -78,14 +78,15 @@ export interface IWinnerResultProps {
 
 export interface IWinnerResult extends IWinnerResultProps {
   setLengthInMeter: (value: number) => void;
-  setDifficulty: (value: string) => void;
+  setDifficulty: (value: DifficultyTypes) => void;
+  setWinnerTime: (value: string) => void;
 }
 
 class WinnerResult implements IWinnerResult {
   id = -1;
   personName = '';
   className = '';
-  difficulty?: string;
+  difficulty?: DifficultyTypes;
   lengthInMeter?: number;
   winnerTime?: string;
   secondsPerKilometer?: number;
@@ -104,6 +105,7 @@ class WinnerResult implements IWinnerResult {
       timePerKilometer: observable,
       setLengthInMeter: action,
       setDifficulty: action,
+      setWinnerTime: action,
     });
   }
 
@@ -118,8 +120,19 @@ class WinnerResult implements IWinnerResult {
       : undefined;
   }
 
-  setDifficulty(value: string) {
+  setDifficulty(value: DifficultyTypes) {
     this.difficulty = value;
+  }
+
+  setWinnerTime(value: string) {
+    this.winnerTime = value;
+    this.secondsPerKilometer =
+      this.winnerTime && this.lengthInMeter
+        ? GetSecondsWithFractionsPerKiloMeter(this.winnerTime, this.lengthInMeter) ?? undefined
+        : undefined;
+    this.timePerKilometer = this.secondsPerKilometer
+      ? ConvertSecondsWithFractionsToTime(this.secondsPerKilometer)
+      : undefined;
   }
 }
 
@@ -164,6 +177,7 @@ export interface IRaceWizard extends Omit<IRaceWizardProps, 'raceEvent' | 'raceW
   ) => void;
   setRaceEvent: (value: IRaceEventProps | null) => void;
   setRaceWinnerResults: (values: IWinnerResultProps[]) => void;
+  addRaceWinnerResult: (value: Omit<IWinnerResultProps, 'secondsPerKilometer' | 'timePerKilometer'>) => void;
   addImportedId: (id: number) => void;
   raceWinnerResultOptions: IOption[];
 }
@@ -210,6 +224,7 @@ export class RaceWizard implements IRaceWizard {
       setNumberValueOrNull: action,
       setRaceEvent: action,
       setRaceWinnerResults: action,
+      addRaceWinnerResult: action,
       addImportedId: action,
       raceWinnerResultOptions: computed,
     });
@@ -255,13 +270,21 @@ export class RaceWizard implements IRaceWizard {
     setLocalStorage(this);
   }
 
+  addRaceWinnerResult(value: Omit<IWinnerResultProps, 'secondsPerKilometer' | 'timePerKilometer'>) {
+    const newWinnerResult = new WinnerResult(value);
+    value.lengthInMeter && value.winnerTime && newWinnerResult.setWinnerTime(value.winnerTime);
+    this.raceWinnerResults = [...this.raceWinnerResults, newWinnerResult];
+  }
+
   addImportedId(id: number) {
     this.importedIds = [...this.importedIds, id];
   }
 
   get raceWinnerResultOptions() {
     return this.raceWinnerResults
-      .slice()
+      .filter(
+        (wr) => wr.difficulty && [difficulties.purple, difficulties.blue, difficulties.black].includes(wr.difficulty)
+      )
       .sort((a, b) => {
         if (a.difficulty === difficulties.black && b.difficulty !== difficulties.black) {
           return -1;

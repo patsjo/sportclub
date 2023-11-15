@@ -48,6 +48,7 @@ interface IEditResultRelayProps {
   result: IExtendedRaceTeamResult;
   results: IRaceTeamResult[];
   competitorsOptions: INumberOption[];
+  autoUpdateResultWithSameClass: boolean;
   onValidate: (valid: boolean) => void;
 }
 const EditResultRelay = ({
@@ -59,12 +60,14 @@ const EditResultRelay = ({
   result,
   results,
   competitorsOptions,
+  autoUpdateResultWithSameClass,
   onValidate,
 }: IEditResultRelayProps) => {
   const { t } = useTranslation();
   const formRef = useRef<any>(null);
   const formId = useMemo(() => 'editResultRelay' + Math.floor(Math.random() * 1000000000000000), []);
   const [failedReason, setFailedReason] = useState(result.failedReason);
+  const [teamFailedReason, setTeamFailedReason] = useState(result.teamFailedReason);
   const { raceClubs } = clubModel;
 
   useEffect(() => {
@@ -92,7 +95,7 @@ const EditResultRelay = ({
         iMissingTime: result.missingTime != null ? result.missingTime.substr(0, 8) : null,
         iPosition: result.position,
         iNofStartsInClass: result.nofStartsInClass,
-        iStage: result.stage,
+        iStage: result.stage > 0 ? result.stage : null,
         iTotalStages: result.totalStages,
         iDeltaPositions: result.deltaPositions,
         iDeltaTimeBehind: result.deltaTimeBehind,
@@ -224,6 +227,76 @@ const EditResultRelay = ({
                   iDifficulty: result.difficulty,
                 });
                 formRef.current.validateFields(['iClassClassificationId', 'iDifficulty'], { force: true });
+                const resultWithSameClass = results.find(
+                  (r) =>
+                    r.className === result.className &&
+                    r.failedReason == null &&
+                    r.teamResultId !== result.teamResultId &&
+                    r.classClassificationId != null &&
+                    r.difficulty != null
+                );
+                if (resultWithSameClass && autoUpdateResultWithSameClass) {
+                  result.classClassificationId = resultWithSameClass.classClassificationId;
+                  result.totalStages = resultWithSameClass.totalStages;
+                  result.totalNofStartsInClass = resultWithSameClass.totalNofStartsInClass;
+                  result.deviantEventClassificationId = resultWithSameClass.deviantEventClassificationId;
+                  formRef.current.setFieldsValue({
+                    iClassClassificationId:
+                      result.classClassificationId == null ? undefined : result.classClassificationId.toString(),
+                    iDifficulty: result.difficulty,
+                    iLengthInMeter: result.lengthInMeter,
+                    iNofStartsInClass: result.nofStartsInClass,
+                    iTotalStages: result.totalStages,
+                    iTotalNofStartsInClass: result.totalNofStartsInClass,
+                    iDeviantEventClassificationId: result.deviantEventClassificationId,
+                  });
+                  formRef.current.validateFields(
+                    [
+                      'iClassClassificationId',
+                      'iDifficulty',
+                      'iLengthInMeter',
+                      'iNofStartsInClass',
+                      'iTotalStages',
+                      'iTotalNofStartsInClass',
+                      'iDeviantEventClassificationId',
+                    ],
+                    { force: true }
+                  );
+                }
+                const resultWithSameClassAndTeam = results.find(
+                  (r) =>
+                    r.className === result.className &&
+                    r.teamName === result.teamName &&
+                    r.failedReason == null &&
+                    r.teamResultId !== result.teamResultId &&
+                    r.classClassificationId != null &&
+                    r.difficulty != null &&
+                    r.teamName != null
+                );
+                if (resultWithSameClassAndTeam && autoUpdateResultWithSameClass) {
+                  result.teamFailedReason = resultWithSameClassAndTeam.teamFailedReason;
+                  result.totalPosition = resultWithSameClassAndTeam.totalPosition;
+                  result.totalTimeBehind = resultWithSameClassAndTeam.totalTimeBehind;
+                  result.serviceFeeToClub = resultWithSameClassAndTeam.serviceFeeToClub;
+                  result.serviceFeeDescription = resultWithSameClassAndTeam.serviceFeeDescription;
+                  formRef.current.setFieldsValue({
+                    iTeamFailedReason: result.teamFailedReason,
+                    iTotalPosition: result.totalPosition,
+                    iTotalTimeBehind: result.totalTimeBehind,
+                    iServiceFeeToClub: result.serviceFeeToClub,
+                    iServiceFeeDescription: result.serviceFeeDescription,
+                  });
+                  formRef.current.validateFields(
+                    [
+                      'iTeamFailedReason',
+                      'iTotalPosition',
+                      'iTotalTimeBehind',
+                      'iServiceFeeToClub',
+                      'iServiceFeeDescription',
+                    ],
+                    { force: true }
+                  );
+                }
               }}
             />
           </FormItem>
@@ -246,6 +319,7 @@ const EditResultRelay = ({
               style={{ width: '100%' }}
               onChange={(value: number | null) => {
                 result.stage = value as number;
+                formRef.current.validateFields(['iTotalStages'], { force: true });
                 const resultWithSameClass = results.find(
                   (r) =>
                     r.className === result.className &&
@@ -255,48 +329,32 @@ const EditResultRelay = ({
                     r.classClassificationId != null &&
                     r.difficulty != null
                 );
-                if (resultWithSameClass) {
-                  result.classClassificationId = resultWithSameClass.classClassificationId;
+                if (resultWithSameClass && autoUpdateResultWithSameClass) {
                   result.difficulty = resultWithSameClass.difficulty;
                   result.lengthInMeter = resultWithSameClass.lengthInMeter;
                   result.winnerTime = resultWithSameClass.winnerTime;
                   result.secondTime = resultWithSameClass.secondTime;
                   result.nofStartsInClass = resultWithSameClass.nofStartsInClass;
-                  result.totalStages = resultWithSameClass.totalStages;
                   result.deviantRaceLightCondition = resultWithSameClass.deviantRaceLightCondition;
-                  result.totalNofStartsInClass = resultWithSameClass.totalNofStartsInClass;
-                  result.deviantEventClassificationId = resultWithSameClass.deviantEventClassificationId;
                   formRef.current.setFieldsValue({
-                    iClassClassificationId:
-                      result.classClassificationId == null ? undefined : result.classClassificationId.toString(),
                     iDifficulty: result.difficulty,
                     iLengthInMeter: result.lengthInMeter,
                     iWinnerTime: result.winnerTime,
                     iSecondTime: result.secondTime,
                     iNofStartsInClass: result.nofStartsInClass,
-                    iTotalStages: result.totalStages,
                     iDeviantRaceLightCondition: result.deviantRaceLightCondition,
-                    iTotalNofStartsInClass: result.totalNofStartsInClass,
-                    iDeviantEventClassificationId: result.deviantEventClassificationId,
                   });
                   formRef.current.validateFields(
                     [
-                      'iClassClassificationId',
                       'iDifficulty',
                       'iLengthInMeter',
                       'iWinnerTime',
                       'iSecondTime',
                       'iNofStartsInClass',
-                      'iTotalStages',
                       'iDeviantRaceLightCondition',
-                      'iTotalNofStartsInClass',
-                      'iDeviantEventClassificationId',
-                      'iTotalStages',
                     ],
                     { force: true }
                   );
-                } else {
-                  formRef.current.validateFields(['iTotalStages'], { force: true });
                 }
               }}
             />
@@ -324,15 +382,17 @@ const EditResultRelay = ({
               }
               onChange={(code) => {
                 result.classClassificationId = code == null ? undefined : parseInt(code);
-                const resultsWithSameClass = results.filter(
-                  (r) =>
-                    r.className === result.className &&
-                    r.stage === result.stage &&
-                    r.teamResultId !== result.teamResultId
-                );
-                resultsWithSameClass.forEach((r) =>
-                  r.setNumberValueOrNull('classClassificationId', result.classClassificationId)
-                );
+                if (autoUpdateResultWithSameClass) {
+                  const resultsWithSameClass = results.filter(
+                    (r) =>
+                      r.className === result.className &&
+                      r.stage === result.stage &&
+                      r.teamResultId !== result.teamResultId
+                  );
+                  resultsWithSameClass.forEach((r) =>
+                    r.setNumberValueOrNull('classClassificationId', result.classClassificationId)
+                  );
+                }
               }}
             />
           </FormItem>
@@ -352,17 +412,34 @@ const EditResultRelay = ({
               allowClear={true}
               onChange={(code: DifficultyTypes) => {
                 result.difficulty = code;
-                const resultsWithSameClass = results.filter(
-                  (r) =>
-                    r.className === result.className &&
-                    r.stage === result.stage &&
-                    r.teamResultId !== result.teamResultId
-                );
-                resultsWithSameClass.forEach((r) => r.setDifficulty(result.difficulty as DifficultyTypes));
                 const raceWinnerResult = raceWizardModel.raceWinnerResults.find(
                   (wr) => wr.className === `${result.className} - ${result.stage}`
                 );
                 if (raceWinnerResult && result.difficulty) raceWinnerResult.setDifficulty(result.difficulty);
+                if (
+                  !raceWinnerResult &&
+                  result.className &&
+                  result.stage &&
+                  result.lengthInMeter &&
+                  result.winnerTime?.length === timeFormat.length
+                )
+                  raceWizardModel.addRaceWinnerResult({
+                    id: raceWizardModel.raceWinnerResults.length,
+                    personName: 'Unknown',
+                    className: `${result.className} - ${result.stage}`,
+                    difficulty: result.difficulty,
+                    lengthInMeter: result.lengthInMeter,
+                    winnerTime: result.winnerTime,
+                  });
+                if (autoUpdateResultWithSameClass) {
+                  const resultsWithSameClass = results.filter(
+                    (r) =>
+                      r.className === result.className &&
+                      r.stage === result.stage &&
+                      r.teamResultId !== result.teamResultId
+                  );
+                  resultsWithSameClass.forEach((r) => r.setDifficulty(result.difficulty as DifficultyTypes));
+                }
               }}
             >
               <Option value={difficulties.green}>
@@ -410,17 +487,34 @@ const EditResultRelay = ({
               style={{ width: '100%' }}
               onChange={(value: number | null) => {
                 result.lengthInMeter = value;
-                const resultsWithSameClass = results.filter(
-                  (r) =>
-                    r.className === result.className &&
-                    r.stage === result.stage &&
-                    r.teamResultId !== result.teamResultId
-                );
-                resultsWithSameClass.forEach((r) => r.setNumberValueOrNull('lengthInMeter', result.lengthInMeter));
+                if (autoUpdateResultWithSameClass) {
+                  const resultsWithSameClass = results.filter(
+                    (r) =>
+                      r.className === result.className &&
+                      r.stage === result.stage &&
+                      r.teamResultId !== result.teamResultId
+                  );
+                  resultsWithSameClass.forEach((r) => r.setNumberValueOrNull('lengthInMeter', result.lengthInMeter));
+                }
                 const raceWinnerResult = raceWizardModel.raceWinnerResults.find(
                   (wr) => wr.className === `${result.className} - ${result.stage}`
                 );
                 if (raceWinnerResult && result.lengthInMeter) raceWinnerResult.setLengthInMeter(result.lengthInMeter);
+                if (
+                  !raceWinnerResult &&
+                  result.className &&
+                  result.stage &&
+                  result.lengthInMeter &&
+                  result.winnerTime?.length === timeFormat.length
+                )
+                  raceWizardModel.addRaceWinnerResult({
+                    id: raceWizardModel.raceWinnerResults.length,
+                    personName: 'Unknown',
+                    className: `${result.className} - ${result.stage}`,
+                    difficulty: result.difficulty,
+                    lengthInMeter: result.lengthInMeter,
+                    winnerTime: result.winnerTime,
+                  });
               }}
             />
           </FormItem>
@@ -497,15 +591,37 @@ const EditResultRelay = ({
               style={{ width: '100%' }}
               onChange={(time) => {
                 result.winnerTime = time;
-                formRef.current.validateFields(['iSecondTime'], { force: true });
-                const resultsWithSameClass = results.filter(
-                  (r) =>
-                    r.className === result.className &&
-                    r.stage === result.stage &&
-                    r.teamResultId !== result.teamResultId
+                const raceWinnerResult = raceWizardModel.raceWinnerResults.find(
+                  (wr) => wr.className === `${result.className} - ${result.stage}`
                 );
-                result.winnerTime &&
+                if (raceWinnerResult && result.lengthInMeter) raceWinnerResult.setLengthInMeter(result.lengthInMeter);
+                if (raceWinnerResult && result.winnerTime?.length === timeFormat.length)
+                  raceWinnerResult.setWinnerTime(result.winnerTime);
+                if (
+                  !raceWinnerResult &&
+                  result.className &&
+                  result.stage &&
+                  result.lengthInMeter &&
+                  result.winnerTime?.length === timeFormat.length
+                )
+                  raceWizardModel.addRaceWinnerResult({
+                    id: raceWizardModel.raceWinnerResults.length,
+                    personName: 'Unknown',
+                    className: `${result.className} - ${result.stage}`,
+                    difficulty: result.difficulty,
+                    lengthInMeter: result.lengthInMeter,
+                    winnerTime: result.winnerTime,
+                  });
+                formRef.current.validateFields(['iSecondTime'], { force: true });
+                if (autoUpdateResultWithSameClass) {
+                  const resultsWithSameClass = results.filter(
+                    (r) =>
+                      r.className === result.className &&
+                      r.stage === result.stage &&
+                      r.teamResultId !== result.teamResultId
+                  );
                   resultsWithSameClass.forEach((r) => r.setStringValueOrNull('winnerTime', result.winnerTime));
+                }
               }}
             />
           </FormItem>
@@ -533,14 +649,15 @@ const EditResultRelay = ({
               style={{ width: '100%' }}
               onChange={(time) => {
                 result.secondTime = time;
-                const resultsWithSameClass = results.filter(
-                  (r) =>
-                    r.className === result.className &&
-                    r.stage === result.stage &&
-                    r.teamResultId !== result.teamResultId
-                );
-                result.secondTime &&
+                if (autoUpdateResultWithSameClass) {
+                  const resultsWithSameClass = results.filter(
+                    (r) =>
+                      r.className === result.className &&
+                      r.stage === result.stage &&
+                      r.teamResultId !== result.teamResultId
+                  );
                   resultsWithSameClass.forEach((r) => r.setStringValueOrNull('secondTime', result.secondTime));
+                }
               }}
             />
           </FormItem>
@@ -597,15 +714,17 @@ const EditResultRelay = ({
               style={{ width: '100%' }}
               onChange={(value: number | null) => {
                 result.nofStartsInClass = value;
-                const resultsWithSameClass = results.filter(
-                  (r) =>
-                    r.className === result.className &&
-                    r.stage === result.stage &&
-                    r.teamResultId !== result.teamResultId
-                );
-                resultsWithSameClass.forEach((r) =>
-                  r.setNumberValueOrNull('nofStartsInClass', result.nofStartsInClass)
-                );
+                if (autoUpdateResultWithSameClass) {
+                  const resultsWithSameClass = results.filter(
+                    (r) =>
+                      r.className === result.className &&
+                      r.stage === result.stage &&
+                      r.teamResultId !== result.teamResultId
+                  );
+                  resultsWithSameClass.forEach((r) =>
+                    r.setNumberValueOrNull('nofStartsInClass', result.nofStartsInClass)
+                  );
+                }
               }}
             />
           </FormItem>
@@ -637,10 +756,12 @@ const EditResultRelay = ({
               style={{ width: '100%' }}
               onChange={(value: number | null) => {
                 result.totalStages = value as number;
-                const resultsWithSameClass = results.filter(
-                  (r) => r.className === result.className && r.teamResultId !== result.teamResultId
-                );
-                resultsWithSameClass.forEach((r) => r.setNumberValue('totalStages', result.totalStages));
+                if (autoUpdateResultWithSameClass) {
+                  const resultsWithSameClass = results.filter(
+                    (r) => r.className === result.className && r.teamResultId !== result.teamResultId
+                  );
+                  resultsWithSameClass.forEach((r) => r.setNumberValue('totalStages', result.totalStages));
+                }
               }}
             />
           </FormItem>
@@ -720,6 +841,7 @@ const EditResultRelay = ({
               options={failedReasonOptions(t)}
               onChange={(code) => {
                 result.teamFailedReason = code;
+                setTeamFailedReason(code);
                 formRef.current.validateFields(['iTotalTimeBehind', 'iTotalPosition', 'iTotalNofStartsInClass'], {
                   force: true,
                 });
@@ -728,7 +850,16 @@ const EditResultRelay = ({
           </FormItem>
         </Col>
         <Col span={6}>
-          <FormItem name="iTotalPosition" label={t('results.TotalPosition')}>
+          <FormItem
+            name="iTotalPosition"
+            label={t('results.TotalPosition')}
+            rules={[
+              {
+                required: !teamFailedReason,
+                message: errorRequiredField(t, 'results.TotalPosition'),
+              },
+            ]}
+          >
             <InputNumber
               min={1}
               max={100000}
@@ -747,6 +878,10 @@ const EditResultRelay = ({
             label={t('results.TotalNofStartsInClass')}
             rules={[
               {
+                required: !teamFailedReason,
+                message: errorRequiredField(t, 'results.TotalNofStartsInClass'),
+              },
+              {
                 validator: (rule, value, callback) => {
                   const totalPosition = formRef.current.getFieldValue('iTotalPosition');
                   if (totalPosition && value && value < totalPosition) {
@@ -764,18 +899,29 @@ const EditResultRelay = ({
               style={{ width: '100%' }}
               onChange={(value: number | null) => {
                 result.totalNofStartsInClass = value;
-                const resultsWithSameClass = results.filter(
-                  (r) => r.className === result.className && r.teamResultId !== result.teamResultId
-                );
-                resultsWithSameClass.forEach((r) =>
-                  r.setNumberValueOrNull('totalNofStartsInClass', result.totalNofStartsInClass)
-                );
+                if (autoUpdateResultWithSameClass) {
+                  const resultsWithSameClass = results.filter(
+                    (r) => r.className === result.className && r.teamResultId !== result.teamResultId
+                  );
+                  resultsWithSameClass.forEach((r) =>
+                    r.setNumberValueOrNull('totalNofStartsInClass', result.totalNofStartsInClass)
+                  );
+                }
               }}
             />
           </FormItem>
         </Col>
         <Col span={6}>
-          <FormItem name="iTotalTimeBehind" label={t('results.TotalTimeBehind')}>
+          <FormItem
+            name="iTotalTimeBehind"
+            label={t('results.TotalTimeBehind')}
+            rules={[
+              {
+                required: !teamFailedReason,
+                message: errorRequiredField(t, 'results.TotalTimeBehind'),
+              },
+            ]}
+          >
             <InputTime
               format={timeFormat}
               allowClear={true}
@@ -815,7 +961,10 @@ const EditResultRelay = ({
             <FormSelect
               dropdownMatchSelectWidth={false}
               allowClear={true}
-              options={raceClubs.eventClassificationOptions}
+              options={raceClubs.eventClassificationOptions.map((option) => ({
+                ...option,
+                disabled: option.code === eventClassificationId,
+              }))}
               onChange={(code) => {
                 result.deviantEventClassificationId = code;
                 const classLevel = raceClubs.classLevels
@@ -826,10 +975,6 @@ const EditResultRelay = ({
                   code ? code : eventClassificationId,
                   classLevel,
                   raceClubs.eventClassifications
-                );
-                const newEventClassificationId = code ? code : eventClassificationId;
-                const raceEventClassification = raceClubs.eventClassifications.find(
-                  (ec) => ec.eventClassificationId === newEventClassificationId
                 );
                 formRef.current.setFieldsValue({
                   iClassClassificationId:

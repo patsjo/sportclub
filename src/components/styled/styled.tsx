@@ -66,6 +66,10 @@ export const StyledIcon = ({ type, ...props }: IStyledIconProps) => {
 };
 
 export const StyledTable = styled(Table)`
+  .table-row-red,
+  .table-row-red:hover {
+    background-color: #ffccc7;
+  }
   &&& {
     margin-top: 8px;
     min-width: ${({ minWidth }: { minWidth?: number }) => (minWidth ? `${minWidth}px` : 'unset')};

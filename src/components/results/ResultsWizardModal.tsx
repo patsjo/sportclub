@@ -1,5 +1,5 @@
 import { LeftOutlined, PlusOutlined, RightOutlined } from '@ant-design/icons';
-import { Button, Modal, Popconfirm, Spin, Steps, message } from 'antd';
+import { Button, Modal, Popconfirm, Space, Spin, Steps, Switch, Typography, message } from 'antd';
 import { FormInstance } from 'antd/lib/form';
 import { ModalFuncProps } from 'antd/lib/modal';
 import { toJS } from 'mobx';
@@ -63,6 +63,7 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
   const [ctrlAltDown, setCtrlAltDown] = useState(false);
+  const [autoUpdateResultWithSameClass, setAutoUpdateResultWithSameClass] = useState(true);
 
   const next = useCallback(
     (e) => {
@@ -360,6 +361,14 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
         style={{ top: 40, minWidth: 1250 }}
         footer={[
           wizardStep === 2 ? (
+            <Space>
+              <Switch checked={autoUpdateResultWithSameClass} onChange={setAutoUpdateResultWithSameClass} />
+              <Typography.Text onClick={() => setAutoUpdateResultWithSameClass((oldValue) => !oldValue)}>
+                {t('results.AutoUpdateResultWithSameClass')}
+              </Typography.Text>
+            </Space>
+          ) : null,
+          wizardStep === 2 ? (
             <Popconfirm
               title={t('common.Confirm')}
               okText={t('common.Yes')}
@@ -391,7 +400,7 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
                 teamResultId: -100000 - Math.floor(Math.random() * 100000000),
                 competitorId: -1,
                 className: '',
-                stage: 1,
+                stage: -1,
                 stageText: '',
                 totalStages: 1,
               };
@@ -421,6 +430,7 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
                       }
                       result={resultObject}
                       results={raceWizardModel.current.raceEvent.results}
+                      autoUpdateResultWithSameClass={autoUpdateResultWithSameClass}
                       competitorsOptions={clubModel.raceClubs.selectedClub?.competitorsOptions ?? []}
                       onValidate={(valid) =>
                         confirmModal.update({
@@ -441,6 +451,7 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
                       raceLightCondition={raceWizardModel.current.raceEvent.raceLightCondition as LightConditionTypes}
                       result={teamResultObject}
                       results={raceWizardModel.current.raceEvent.teamResults}
+                      autoUpdateResultWithSameClass={autoUpdateResultWithSameClass}
                       competitorsOptions={clubModel.raceClubs.selectedClub?.competitorsOptions ?? []}
                       onValidate={(valid) =>
                         confirmModal.update({
@@ -532,7 +543,12 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
             <ResultWizardStep1ChooseRaceRerun onFailed={prev} onSave={() => save(false)} onClose={onClose} />
           ) : null}
           {wizardStep >= 2 ? (
-            <ResultWizardStep2EditRace onValidate={onValidate} visible={wizardStep === 2} onFailed={prev} />
+            <ResultWizardStep2EditRace
+              autoUpdateResultWithSameClass={autoUpdateResultWithSameClass}
+              visible={wizardStep === 2}
+              onValidate={onValidate}
+              onFailed={prev}
+            />
           ) : null}
           {wizardStep === 3 ? <ResultWizardStep3Ranking saving={saving} onValidate={onValidate} /> : null}
           {!loaded ? (

@@ -114,7 +114,8 @@ export const ConvertSecondsToTime = (timeInSeconds: number): string => {
   return timeInSeconds < 0 ? `-${time.format('HH:mm:ss')}` : time.format('HH:mm:ss');
 };
 
-export const ConvertSecondsWithFractionsToTime = (timeInSeconds: number): string => {
+export const ConvertSecondsWithFractionsToTime = (timeInSeconds?: number): string | undefined => {
+  if (timeInSeconds == null) return undefined;
   const hours = Math.floor(timeInSeconds / 3600);
   const minutes = Math.floor((timeInSeconds - hours * 3600) / 60);
   const seconds = Math.floor(timeInSeconds - hours * 3600 - minutes * 60);

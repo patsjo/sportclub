@@ -7,18 +7,23 @@ import { ISessionModel } from 'models/sessionModel';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
-import { errorRequiredField, FormSelect, hasErrors, INumberOption, timeFormat } from '../../utils/formHelper';
+import { FormSelect, INumberOption, errorRequiredField, hasErrors, timeFormat } from '../../utils/formHelper';
 import {
   AwardTypes,
-  difficulties,
   DifficultyTypes,
   EventClassificationIdTypes,
-  failedReasonOptions,
-  failedReasons,
   ManuallyEditedMissingTimePostfix,
   PaymentTypes,
+  difficulties,
+  failedReasonOptions,
+  failedReasons,
 } from '../../utils/resultConstants';
-import { GetAge, GetAward, GetClassClassificationId, GetCompetitorFee } from '../../utils/resultHelper';
+import {
+  GetAge,
+  GetAward,
+  GetClassClassificationId,
+  GetCompetitorFee
+} from '../../utils/resultHelper';
 import FormItem from '../formItems/FormItem';
 import { StyledIcon } from '../styled/styled';
 import { AddMapCompetitorConfirmModal } from './AddMapCompetitorConfirmModal';
@@ -52,6 +57,7 @@ interface IEditResultIndividualProps {
   result: IExtendedRaceResult;
   results: IRaceResult[];
   competitorsOptions: INumberOption[];
+  autoUpdateResultWithSameClass: boolean;
   onValidate: (valid: boolean) => void;
 }
 const EditResultIndividual = ({
@@ -66,6 +72,7 @@ const EditResultIndividual = ({
   result,
   results,
   competitorsOptions,
+  autoUpdateResultWithSameClass,
   onValidate,
 }: IEditResultIndividualProps) => {
   const { t } = useTranslation();
@@ -222,7 +229,7 @@ const EditResultIndividual = ({
                     r.classClassificationId != null &&
                     r.difficulty != null
                 );
-                if (resultWithSameClass) {
+                if (resultWithSameClass && autoUpdateResultWithSameClass) {
                   result.classClassificationId = resultWithSameClass.classClassificationId;
                   result.difficulty = resultWithSameClass.difficulty;
                   result.lengthInMeter = resultWithSameClass.lengthInMeter;
@@ -305,12 +312,6 @@ const EditResultIndividual = ({
                   (cc) => cc.classClassificationId === result.classClassificationId
                 );
                 result.feeToClub = GetCompetitorFee(paymentModel, result, age, tempClassClassification);
-                const resultsWithSameClass = results.filter(
-                  (r) => r.className === result.className && r.resultId !== result.resultId
-                );
-                resultsWithSameClass.forEach((r) =>
-                  r.setNumberValueOrNull('classClassificationId', result.classClassificationId)
-                );
                 formRef.current.setFieldsValue({
                   iFeeToClub: result.feeToClub,
                 });
@@ -318,6 +319,14 @@ const EditResultIndividual = ({
                 formRef.current.validateFields(['iFeeToClub'], {
                   force: true,
                 });
+                if (autoUpdateResultWithSameClass) {
+                  const resultsWithSameClass = results.filter(
+                    (r) => r.className === result.className && r.resultId !== result.resultId
+                  );
+                  resultsWithSameClass.forEach((r) =>
+                    r.setNumberValueOrNull('classClassificationId', result.classClassificationId)
+                  );
+                }
               }}
             />
           </FormItem>
@@ -337,14 +346,30 @@ const EditResultIndividual = ({
               allowClear={true}
               onChange={(code: DifficultyTypes) => {
                 result.difficulty = code;
-                const resultsWithSameClass = results.filter(
-                  (r) => r.className === result.className && r.resultId !== result.resultId
-                );
-                resultsWithSameClass.forEach((r) => r.setDifficulty(result.difficulty as DifficultyTypes));
                 const raceWinnerResult = raceWizardModel.raceWinnerResults.find(
                   (wr) => wr.className === result.className
                 );
                 if (raceWinnerResult && result.difficulty) raceWinnerResult.setDifficulty(result.difficulty);
+                if (
+                  !raceWinnerResult &&
+                  result.className &&
+                  result.lengthInMeter &&
+                  result.winnerTime?.length === timeFormat.length
+                )
+                  raceWizardModel.addRaceWinnerResult({
+                    id: raceWizardModel.raceWinnerResults.length,
+                    personName: 'Unknown',
+                    className: result.className,
+                    difficulty: result.difficulty,
+                    lengthInMeter: result.lengthInMeter,
+                    winnerTime: result.winnerTime
+                  });
+                if (autoUpdateResultWithSameClass) {
+                  const resultsWithSameClass = results.filter(
+                    (r) => r.className === result.className && r.resultId !== result.resultId
+                  );
+                  resultsWithSameClass.forEach((r) => r.setDifficulty(result.difficulty as DifficultyTypes));
+                }
               }}
             >
               <Option value={difficulties.green}>
@@ -392,14 +417,30 @@ const EditResultIndividual = ({
               style={{ width: '100%' }}
               onChange={(value: number | null) => {
                 result.lengthInMeter = value;
-                const resultsWithSameClass = results.filter(
-                  (r) => r.className === result.className && r.resultId !== result.resultId
-                );
-                resultsWithSameClass.forEach((r) => r.setNumberValueOrNull('lengthInMeter', result.lengthInMeter));
                 const raceWinnerResult = raceWizardModel.raceWinnerResults.find(
                   (wr) => wr.className === result.className
                 );
                 if (raceWinnerResult && result.lengthInMeter) raceWinnerResult.setLengthInMeter(result.lengthInMeter);
+                if (
+                  !raceWinnerResult &&
+                  result.className &&
+                  result.lengthInMeter &&
+                  result.winnerTime?.length === timeFormat.length
+                )
+                  raceWizardModel.addRaceWinnerResult({
+                    id: raceWizardModel.raceWinnerResults.length,
+                    personName: 'Unknown',
+                    className: result.className,
+                    difficulty: result.difficulty,
+                    lengthInMeter: result.lengthInMeter,
+                    winnerTime: result.winnerTime
+                  });
+                if (autoUpdateResultWithSameClass) {
+                  const resultsWithSameClass = results.filter(
+                    (r) => r.className === result.className && r.resultId !== result.resultId
+                  );
+                  resultsWithSameClass.forEach((r) => r.setNumberValueOrNull('lengthInMeter', result.lengthInMeter));
+                }
               }}
             />
           </FormItem>
@@ -488,12 +529,32 @@ const EditResultIndividual = ({
               style={{ width: '100%' }}
               onChange={(time) => {
                 result.winnerTime = time;
-                formRef.current.validateFields(['iSecondTime'], { force: true });
-                const resultsWithSameClass = results.filter(
-                  (r) => r.className === result.className && r.resultId !== result.resultId
+                const raceWinnerResult = raceWizardModel.raceWinnerResults.find(
+                  (wr) => wr.className === result.className
                 );
-                result.winnerTime &&
+                if (raceWinnerResult && result.winnerTime?.length === timeFormat.length)
+                  raceWinnerResult.setWinnerTime(result.winnerTime);
+                if (
+                  !raceWinnerResult &&
+                  result.className &&
+                  result.lengthInMeter &&
+                  result.winnerTime?.length === timeFormat.length
+                )
+                  raceWizardModel.addRaceWinnerResult({
+                    id: raceWizardModel.raceWinnerResults.length,
+                    personName: 'Unknown',
+                    className: result.className,
+                    difficulty: result.difficulty,
+                    lengthInMeter: result.lengthInMeter,
+                    winnerTime: result.winnerTime
+                  });
+                formRef.current.validateFields(['iSecondTime'], { force: true });
+                if (autoUpdateResultWithSameClass) {
+                  const resultsWithSameClass = results.filter(
+                    (r) => r.className === result.className && r.resultId !== result.resultId
+                  );
                   resultsWithSameClass.forEach((r) => r.setStringValueOrNull('winnerTime', result.winnerTime));
+                }
               }}
             />
           </FormItem>
@@ -521,11 +582,12 @@ const EditResultIndividual = ({
               style={{ width: '100%' }}
               onChange={(time) => {
                 result.secondTime = time;
-                const resultsWithSameClass = results.filter(
-                  (r) => r.className === result.className && r.resultId !== result.resultId
-                );
-                result.secondTime &&
+                if (autoUpdateResultWithSameClass) {
+                  const resultsWithSameClass = results.filter(
+                    (r) => r.className === result.className && r.resultId !== result.resultId
+                  );
                   resultsWithSameClass.forEach((r) => r.setStringValueOrNull('secondTime', result.secondTime));
+                }
               }}
             />
           </FormItem>
@@ -582,12 +644,14 @@ const EditResultIndividual = ({
               style={{ width: '100%' }}
               onChange={(value: number | null) => {
                 result.nofStartsInClass = value;
-                const resultsWithSameClass = results.filter(
-                  (r) => r.className === result.className && r.resultId !== result.resultId
-                );
-                resultsWithSameClass.forEach((r) =>
-                  r.setNumberValueOrNull('nofStartsInClass', result.nofStartsInClass)
-                );
+                if (autoUpdateResultWithSameClass) {
+                  const resultsWithSameClass = results.filter(
+                    (r) => r.className === result.className && r.resultId !== result.resultId
+                  );
+                  resultsWithSameClass.forEach((r) =>
+                    r.setNumberValueOrNull('nofStartsInClass', result.nofStartsInClass)
+                  );
+                }
               }}
             />
           </FormItem>
@@ -647,13 +711,15 @@ const EditResultIndividual = ({
                 formRef.current.validateFields(['iFeeToClub'], {
                   force: true,
                 });
-                const resultsWithSameClass = results.filter(
-                  (r) => r.className === result.className && r.resultId !== result.resultId
-                );
-                resultsWithSameClass.forEach((r) => {
-                  r.setNumberValueOrNull('originalFee', result.originalFee);
-                  r.setNumberValueOrNull('feeToClub', GetCompetitorFee(paymentModel, r, age, classClassification));
-                });
+                if (autoUpdateResultWithSameClass) {
+                  const resultsWithSameClass = results.filter(
+                    (r) => r.className === result.className && r.resultId !== result.resultId
+                  );
+                  resultsWithSameClass.forEach((r) => {
+                    r.setNumberValueOrNull('originalFee', result.originalFee);
+                    r.setNumberValueOrNull('feeToClub', GetCompetitorFee(paymentModel, r, age, classClassification));
+                  });
+                }
               }}
             />
           </FormItem>
@@ -772,7 +838,10 @@ const EditResultIndividual = ({
           <FormItem name="iDeviantEventClassificationId" label={t('results.DeviantEventClassification')}>
             <FormSelect
               allowClear={true}
-              options={raceClubs.eventClassificationOptions}
+              options={raceClubs.eventClassificationOptions.map((option) => ({
+                ...option,
+                disabled: option.code === eventClassificationId,
+              }))}
               onChange={(code?: string) => {
                 result.deviantEventClassificationId = code;
                 const classLevel = raceClubs.classLevels
@@ -794,15 +863,17 @@ const EditResultIndividual = ({
                 });
                 setRaceEventClassification(raceEventClassification);
                 formRef.current.validateFields(['iClassClassificationId'], { force: true });
-                const resultsWithSameClass = results.filter(
-                  (r) => r.className === result.className && r.resultId !== result.resultId
-                );
-                resultsWithSameClass.forEach((r) => {
-                  r.setDeviantEventClassificationId(
-                    result.deviantEventClassificationId as EventClassificationIdTypes | undefined
+                if (autoUpdateResultWithSameClass) {
+                  const resultsWithSameClass = results.filter(
+                    (r) => r.className === result.className && r.resultId !== result.resultId
                   );
-                  r.setNumberValueOrNull('classClassificationId', result.classClassificationId);
-                });
+                  resultsWithSameClass.forEach((r) => {
+                    r.setDeviantEventClassificationId(
+                      result.deviantEventClassificationId as EventClassificationIdTypes | undefined
+                    );
+                    r.setNumberValueOrNull('classClassificationId', result.classClassificationId);
+                  });
+                }
               }}
             />
           </FormItem>

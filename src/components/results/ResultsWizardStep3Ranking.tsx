@@ -6,7 +6,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMobxStore } from 'utils/mobxStore';
 import { useResultWizardStore } from 'utils/resultWizardStore';
-import { errorRequiredField, FormSelect } from '../../utils/formHelper';
+import { FormSelect, errorRequiredField } from '../../utils/formHelper';
 import { lightConditions } from '../../utils/resultConstants';
 import FormItem from '../formItems/FormItem';
 
@@ -129,7 +129,7 @@ const ResultWizardStep3Ranking = observer(({ saving, onValidate }: IResultWizard
             />
           )}
           <Row gutter={8}>
-            {raceWizardModel.existInEventor && !raceWizardModel.raceEvent.isRelay ? (
+            {raceWizardModel.raceWinnerResultOptions.length ? (
               <Col span={12}>
                 <FormItem name="iWinnerTime" label={t('results.WinnerTime')}>
                   <FormSelect
