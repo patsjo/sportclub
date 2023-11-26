@@ -1,8 +1,11 @@
 import { observer } from 'mobx-react';
 import { IGraphic } from 'models/graphic';
-import { Control, FullScreen, ZoomToExtent } from 'ol/control';
 import Feature from 'ol/Feature';
-import { Circle, Geometry, Point } from 'ol/geom';
+import { Control, FullScreen, ZoomToExtent } from 'ol/control';
+import { Options } from 'ol/control/ZoomToExtent';
+import { Extent, buffer, getSize } from 'ol/extent';
+import { Circle, Geometry, GeometryCollection, Point } from 'ol/geom';
+import { fromCircle } from 'ol/geom/Polygon';
 import { Vector as VectorLayer } from 'ol/layer';
 import * as proj from 'ol/proj';
 import { fromLonLat } from 'ol/proj';
@@ -11,7 +14,7 @@ import { Vector as VectorSource } from 'ol/source';
 import * as wgs84Sphere from 'ol/sphere';
 import { Fill, Icon, Stroke, Style } from 'ol/style';
 import CircleStyle from 'ol/style/Circle';
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { useMobxStore } from 'utils/mobxStore';
@@ -20,6 +23,16 @@ import { LayerListControl } from './LayerListControl';
 import Loader from './Loader';
 import { TrackingControl } from './TrackingControl';
 import { mapProjection, useOpenLayersMap } from './useOpenLayersMap';
+
+class HomeExtent extends ZoomToExtent {
+  constructor(options: Options) {
+    super(options);
+  }
+
+  public setExtent(extent: Extent | null) {
+    this.extent = extent ?? this.extent;
+  }
+}
 
 interface IMapDivProps {
   height: string;
@@ -112,12 +125,42 @@ export const OrienteeringSymbol = {
   height: 20,
 };
 
+const getExtent = (graphics: IGraphic[] | undefined) => {
+  if (!graphics?.length) return undefined;
+  const extent = buffer(
+    new GeometryCollection(
+      graphics.map((graphic) => {
+        const coordinate =
+          graphic.geometry.type === 'circle'
+            ? fromLonLat(graphic.geometry.center!, mapProjection)
+            : fromLonLat([graphic.geometry.longitude, graphic.geometry.latitude], mapProjection);
+        const radius = graphic.geometry.type === 'circle' ? graphic.geometry.radius : 500;
+        const polygon = fromCircle(new Circle(coordinate, getMapLength(coordinate, radius)));
+        return polygon;
+      })
+    ).getExtent(),
+    1.2
+  );
+  const size = getSize(extent);
+  return buffer(extent, Math.min(...size) * 0.2);
+};
+
+const getMapLength = (point: number[], units: number) =>
+  units > 0
+    ? (units * units) /
+      wgs84Sphere.getDistance(
+        proj.transform(point, mapProjection, 'EPSG:4326'),
+        proj.transform([point[0] + units, point[1]], mapProjection, 'EPSG:4326')
+      )
+    : 0;
+
 interface IOSMOrienteeringMapProps {
   containerId: string;
   height: string;
   width: string;
   defaultGraphics?: IGraphic[];
   useAllWidgets?: boolean;
+  useDefaultGraphicsAsHome?: boolean;
   mapCenter?: number[];
   onClick?: (graphicsLayer: VectorLayer<VectorSource<Geometry>>, graphic: Feature<Point>) => void;
   onHighlightClick?: (graphic: Feature<Point>) => void;
@@ -130,6 +173,7 @@ const OSMOrienteeringMap = observer(
     width,
     defaultGraphics = undefined,
     useAllWidgets = false,
+    useDefaultGraphicsAsHome = false,
     mapCenter,
     onClick,
     onHighlightClick = undefined,
@@ -140,6 +184,7 @@ const OSMOrienteeringMap = observer(
     const map = useOpenLayersMap();
     const mapRef = useRef<HTMLDivElement>(null);
     const mapInfoRef = useRef<HTMLDivElement>(null);
+    const homeExtent = useRef<HomeExtent>();
     const highlight = useRef<boolean>(false);
     const currentUids = useRef<string>();
     const mapinfoControl = useRef<Control>();
@@ -148,99 +193,98 @@ const OSMOrienteeringMap = observer(
     const [trackingText, setTrackingText] = useState<string>();
     const [highlightText, setHighlightText] = useState<string>();
 
-    const onMapClick = (event: any, newGraphicsLayer: VectorLayer<VectorSource<Geometry>>) => {
-      const highlighted: Feature<Point>[] = [];
-      map!.forEachFeatureAtPixel(
-        event.pixel,
-        (feature) => {
-          highlighted.push(feature as Feature<Point>);
-          return undefined;
-        },
-        {
-          layerFilter: (layer) => layer === newGraphicsLayer,
-        }
-      );
-
-      onClick &&
-        onClick(
-          newGraphicsLayer,
-          new Feature<Point>({
-            geometry: new Point(event.coordinate),
-            symbol: OrienteeringSymbol,
-          })
+    const onMapClick = useCallback(
+      (event: any, newGraphicsLayer: VectorLayer<VectorSource<Geometry>>) => {
+        const highlighted: Feature<Point>[] = [];
+        map!.forEachFeatureAtPixel(
+          event.pixel,
+          (feature) => {
+            highlighted.push(feature as Feature<Point>);
+            return undefined;
+          },
+          {
+            layerFilter: (layer) => layer === newGraphicsLayer,
+          }
         );
-      const highLightedDirections = highlighted.filter((g: any) => g.getProperties().attributes?.direction);
-      if (highLightedDirections.length > 0 && onHighlightClick !== undefined) {
-        onHighlightClick(highLightedDirections[0]);
-      }
-    };
 
-    const onMapPointerMove = (
-      event: any,
-      newGraphicsLayer: VectorLayer<VectorSource<Geometry>>,
-      highlightLayer: VectorLayer<VectorSource<Point>>
-    ) => {
-      const highlighted: (RenderFeature | Feature<Geometry>)[] = [];
-      map!.forEachFeatureAtPixel(
-        event.pixel,
-        (feature) => {
-          highlighted.push(feature);
-          return undefined;
-        },
-        {
-          layerFilter: (layer) => layer === newGraphicsLayer,
+        onClick &&
+          onClick(
+            newGraphicsLayer,
+            new Feature<Point>({
+              geometry: new Point(event.coordinate),
+              symbol: OrienteeringSymbol,
+            })
+          );
+        const highLightedDirections = highlighted.filter((g: any) => g.getProperties().attributes?.direction);
+        if (highLightedDirections.length > 0 && onHighlightClick !== undefined) {
+          onHighlightClick(highLightedDirections[0]);
         }
-      );
+      },
+      [map, onClick, onHighlightClick]
+    );
 
-      let text: string | undefined = undefined;
+    const onMapPointerMove = useCallback(
+      (
+        event: any,
+        newGraphicsLayer: VectorLayer<VectorSource<Geometry>>,
+        highlightLayer: VectorLayer<VectorSource<Point>>
+      ) => {
+        const highlighted: (RenderFeature | Feature<Geometry>)[] = [];
+        map!.forEachFeatureAtPixel(
+          event.pixel,
+          (feature) => {
+            highlighted.push(feature);
+            return undefined;
+          },
+          {
+            layerFilter: (layer) => layer === newGraphicsLayer,
+          }
+        );
 
-      if (highlighted.length) {
-        text = highlighted
-          .filter((g) => !g.getProperties().attributes.direction)
-          .map((g) => g.getProperties().attributes)
-          .map((a) => `${a.time ? a.time : ''} ${a.name}`)
-          .join('<br/>');
-        const directionText = highlighted.some((g: any) => g.getProperties().attributes.direction)
-          ? t('map.ClickForDirection')
-          : '';
-        text = `${text}${text && text.length && directionText && directionText.length ? '<br/>' : ''}${directionText}`;
-        const highlightedUids = highlighted.map((g: any) => g.uid);
-        const existingFeature = highlightLayer
-          ?.getSource()
-          ?.getFeatures()
-          .find(() => true);
+        let text: string | undefined = undefined;
 
-        if (existingFeature) {
-          existingFeature.getGeometry()?.setCoordinates(event.coordinate);
+        if (highlighted.length) {
+          text = highlighted
+            .filter((g) => !g.getProperties().attributes.direction)
+            .map((g) => g.getProperties().attributes)
+            .map((a) => `${a.time ? a.time : ''} ${a.name}`)
+            .join('<br/>');
+          const directionText = highlighted.some((g: any) => g.getProperties().attributes.direction)
+            ? t('map.ClickForDirection')
+            : '';
+          text = `${text}${
+            text && text.length && directionText && directionText.length ? '<br/>' : ''
+          }${directionText}`;
+          const highlightedUids = highlighted.map((g: any) => g.uid);
+          const existingFeature = highlightLayer
+            ?.getSource()
+            ?.getFeatures()
+            .find(() => true);
+
+          if (existingFeature) {
+            existingFeature.getGeometry()?.setCoordinates(event.coordinate);
+          } else {
+            highlightLayer.getSource()?.addFeature(new Feature<Point>(new Point(event.coordinate)));
+          }
+
+          if (highlight.current && currentUids.current === JSON.stringify(highlightedUids)) {
+            return;
+          }
+          currentUids.current = JSON.stringify(highlightedUids);
+        }
+        if (text && text.length) {
+          highlight.current = true;
         } else {
-          highlightLayer.getSource()?.addFeature(new Feature<Point>(new Point(event.coordinate)));
+          highlightLayer.getSource()?.clear();
+          currentUids.current = undefined;
+          highlight.current = false;
+          text = undefined;
         }
 
-        if (highlight.current && currentUids.current === JSON.stringify(highlightedUids)) {
-          return;
-        }
-        currentUids.current = JSON.stringify(highlightedUids);
-      }
-      if (text && text.length) {
-        highlight.current = true;
-      } else {
-        highlightLayer.getSource()?.clear();
-        currentUids.current = undefined;
-        highlight.current = false;
-        text = undefined;
-      }
-
-      setHighlightText(text);
-    };
-
-    const getMapLength = (point: number[], units: number) =>
-      units > 0
-        ? (units * units) /
-          wgs84Sphere.getDistance(
-            proj.transform(point, mapProjection, 'EPSG:4326'),
-            proj.transform([point[0] + units, point[1]], mapProjection, 'EPSG:4326')
-          )
-        : 0;
+        setHighlightText(text);
+      },
+      [map, t]
+    );
 
     React.useEffect(() => {
       if (map && mapRef.current && mapInfoRef.current && !loaded) {
@@ -266,12 +310,11 @@ const OSMOrienteeringMap = observer(
         const homeIconContainer = document.createElement('span');
         homeIconContainer.innerHTML =
           '<svg viewBox="64 64 896 896" focusable="false" data-icon="home" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M946.5 505L560.1 118.8l-25.9-25.9a31.5 31.5 0 00-44.4 0L77.5 505a63.9 63.9 0 00-18.8 46c.4 35.2 29.7 63.3 64.9 63.3h42.5V940h691.8V614.3h43.4c17.1 0 33.2-6.7 45.3-18.8a63.6 63.6 0 0018.7-45.3c0-17-6.7-33.1-18.8-45.2zM568 868H456V664h112v204zm217.9-325.7V868H632V640c0-22.1-17.9-40-40-40H432c-22.1 0-40 17.9-40 40v228H238.1V542.3h-96l370-369.7 23.1 23.1L882 542.3h-96.1z"></path></svg>';
-        map.addControl(
-          new ZoomToExtent({
-            extent: defaultExtent,
-            label: homeIconContainer,
-          })
-        );
+        homeExtent.current = new HomeExtent({
+          extent: defaultExtent,
+          label: homeIconContainer,
+        });
+        map.addControl(homeExtent.current);
 
         if (useAllWidgets) {
           map.addControl(new FullScreen());
@@ -306,6 +349,18 @@ const OSMOrienteeringMap = observer(
         setGraphicsLayer(newGraphicsLayer);
       }
     }, [map, clubModel, loaded]);
+
+    React.useEffect(() => {
+      const zoomGraphics = defaultGraphics?.filter(
+        (graphic) =>
+          graphic.geometry.type !== 'point' ||
+          graphic.geometry.longitude !== clubModel.map!.center[0] ||
+          graphic.geometry.latitude !== clubModel.map!.center[1]
+      );
+      if (useDefaultGraphicsAsHome && homeExtent.current && graphicsLayer && zoomGraphics?.length) {
+        homeExtent.current.setExtent(getExtent(zoomGraphics) ?? null);
+      }
+    }, [useDefaultGraphicsAsHome, graphicsLayer, defaultGraphics]);
 
     React.useEffect(() => {
       if (mapInfoRef.current) {
@@ -468,9 +523,10 @@ const OSMOrienteeringMap = observer(
             map.getView().setZoom(clubModel.map.defaultZoomLevel);
           } else {
             const geometriesExtent = graphicsLayer.getSource()?.getExtent();
+            const size = geometriesExtent && getSize(geometriesExtent);
             geometriesExtent &&
-              map.getView().fit(geometriesExtent, {
-                padding: [40, 40, 40, 40],
+              size &&
+              map.getView().fit(buffer(geometriesExtent, Math.min(...size) * 0.2), {
                 maxZoom: 16,
                 duration: 800,
               });

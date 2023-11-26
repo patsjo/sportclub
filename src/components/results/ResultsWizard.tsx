@@ -1,13 +1,14 @@
 import { LeftOutlined, PlusOutlined, RightOutlined } from '@ant-design/icons';
 import { Button, Modal, Popconfirm, Space, Spin, Steps, Switch, Typography, message } from 'antd';
-import { FormInstance } from 'antd/lib/form';
 import { ModalFuncProps } from 'antd/lib/modal';
+import FullScreenWizard from 'components/styled/FullscreenWizard';
 import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
 import { IRaceClubsProps } from 'models/resultModel';
 import { IRaceWizard, RaceWizard, getLocalStorage } from 'models/resultWizardModel';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { PostJsonData } from 'utils/api';
 import { useMobxStore } from 'utils/mobxStore';
@@ -29,6 +30,7 @@ import {
   GetRanking,
 } from 'utils/resultHelper';
 import { ResultWizardStoreProvider } from 'utils/resultWizardStore';
+import { useSize } from 'utils/useSize';
 import { SpinnerDiv, StyledIcon } from '../styled/styled';
 import { ConfirmOverwriteOrEdit } from './ConfirmOverwriteOrEditPromise';
 import EditResultIndividual, { IExtendedRaceResult } from './EditResultIndividual';
@@ -41,29 +43,27 @@ import ResultWizardStep3Ranking from './ResultsWizardStep3Ranking';
 import { SelectEventorIdConfirmModal } from './SelectEventorIdConfirmModal';
 
 const { confirm } = Modal;
-const StyledModalContent = styled.div``;
-const StyledSteps = styled(Steps)`
-  &&& {
-    margin-bottom: 16px;
-  }
-`;
 const { Step } = Steps;
+const StyledFullWidth = styled.div`
+  width: 100%;
+  padding-bottom: 8px;
+`;
+const StyledModalContent = styled.div``;
 
-interface IResultsWizardModalProps {
-  open: boolean;
-  onClose: () => void;
-}
-const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps) => {
+const ResultsWizard = observer(() => {
   const { t } = useTranslation();
-  const { clubModel, sessionModel } = useMobxStore();
+  const { clubModel, globalStateModel, sessionModel } = useMobxStore();
   const raceWizardModel = useRef<IRaceWizard>(new RaceWizard(getLocalStorage()));
   const [wizardStep, setWizardStep] = useState(0);
   const [nextStepValid, setNextStepValid] = useState(true);
-  const [inputForm, setInputForm] = useState<FormInstance>();
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [contentOffsetHeight, setContentOffsetHeight] = useState(0);
+  const stepsRef = useRef<HTMLDivElement>(null);
+  const { height: stepsHeight } = useSize(stepsRef, ['height'], 'offset');
   const [ctrlAltDown, setCtrlAltDown] = useState(false);
   const [autoUpdateResultWithSameClass, setAutoUpdateResultWithSameClass] = useState(true);
+  const navigate = useNavigate();
 
   const next = useCallback(
     (e) => {
@@ -126,6 +126,10 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
 
   const onValidate = useCallback((valid: boolean) => {
     setNextStepValid(valid);
+  }, []);
+
+  const onClose = useCallback(() => {
+    globalStateModel.setDashboard(navigate, '/');
   }, []);
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -351,14 +355,8 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
 
   return (
     <ResultWizardStoreProvider store={{ raceWizardModel: raceWizardModel.current }}>
-      <Modal
-        closable={false}
-        maskClosable={false}
+      <FullScreenWizard
         title={t('results.Add')}
-        open={open}
-        onCancel={onClose}
-        width="calc(100% - 80px)"
-        style={{ top: 40, minWidth: 1250 }}
         footer={[
           wizardStep === 2 ? (
             <Space>
@@ -386,101 +384,102 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
               {t('common.Previous')}
             </Button>
           ),
-          <Button
-            style={wizardStep === 2 ? {} : { display: 'none' }}
-            onClick={() => {
-              const resultObject: IExtendedRaceResult = {
-                resultId: -100000 - Math.floor(Math.random() * 100000000),
-                competitorId: -1,
-                className: '',
-                fee: 0,
-                isAwardTouched: false,
-              };
-              const teamResultObject: IExtendedRaceTeamResult = {
-                teamResultId: -100000 - Math.floor(Math.random() * 100000000),
-                competitorId: -1,
-                className: '',
-                stage: -1,
-                stageText: '',
-                totalStages: 1,
-              };
-              let confirmModal: {
-                destroy: () => void;
-                update: (configUpdate: ModalFuncProps | ((prevConfig: ModalFuncProps) => ModalFuncProps)) => void;
-              };
-              // eslint-disable-next-line prefer-const
-              confirmModal = confirm({
-                width: 800,
-                icon: <StyledIcon type="plus" />,
-                title: t('results.AddCompetitor'),
-                content:
-                  clubModel.raceClubs &&
-                  raceWizardModel.current.raceEvent &&
-                  !raceWizardModel.current.raceEvent?.isRelay ? (
-                    <EditResultIndividual
-                      clubModel={clubModel}
-                      sessionModel={sessionModel}
-                      raceWizardModel={raceWizardModel.current}
-                      meetsAwardRequirements={raceWizardModel.current.raceEvent.meetsAwardRequirements}
-                      isSprint={raceWizardModel.current.raceEvent.raceDistance === distances.sprint}
-                      raceDate={raceWizardModel.current.raceEvent.raceDate ?? ''}
-                      paymentModel={raceWizardModel.current.raceEvent.paymentModel as PaymentTypes}
-                      eventClassificationId={
-                        raceWizardModel.current.raceEvent.eventClassificationId as EventClassificationIdTypes
-                      }
-                      result={resultObject}
-                      results={raceWizardModel.current.raceEvent.results}
-                      autoUpdateResultWithSameClass={autoUpdateResultWithSameClass}
-                      competitorsOptions={clubModel.raceClubs.selectedClub?.competitorsOptions ?? []}
-                      onValidate={(valid) =>
-                        confirmModal.update({
-                          okButtonProps: {
-                            disabled: !valid,
-                          },
-                        })
-                      }
-                    />
-                  ) : clubModel.raceClubs && raceWizardModel.current.raceEvent ? (
-                    <EditResultRelay
-                      clubModel={clubModel}
-                      sessionModel={sessionModel}
-                      raceWizardModel={raceWizardModel.current}
-                      eventClassificationId={
-                        raceWizardModel.current.raceEvent.eventClassificationId as EventClassificationIdTypes
-                      }
-                      raceLightCondition={raceWizardModel.current.raceEvent.raceLightCondition as LightConditionTypes}
-                      result={teamResultObject}
-                      results={raceWizardModel.current.raceEvent.teamResults}
-                      autoUpdateResultWithSameClass={autoUpdateResultWithSameClass}
-                      competitorsOptions={clubModel.raceClubs.selectedClub?.competitorsOptions ?? []}
-                      onValidate={(valid) =>
-                        confirmModal.update({
-                          okButtonProps: {
-                            disabled: !valid,
-                          },
-                        })
-                      }
-                    />
-                  ) : null,
-                okText: t('common.Save'),
-                okButtonProps: {
-                  disabled: true,
-                },
-                cancelText: t('common.Cancel'),
-                onOk() {
-                  if (raceWizardModel.current.raceEvent?.isRelay) {
-                    raceWizardModel.current.raceEvent.addTeamResult(teamResultObject);
-                  } else {
-                    raceWizardModel.current.raceEvent?.addResult(resultObject);
-                  }
-                  onValidate(!!raceWizardModel.current.raceEvent?.valid);
-                },
-              });
-            }}
-          >
-            <PlusOutlined />
-            {t('results.AddCompetitor')}
-          </Button>,
+          wizardStep === 2 ? (
+            <Button
+              onClick={() => {
+                const resultObject: IExtendedRaceResult = {
+                  resultId: -100000 - Math.floor(Math.random() * 100000000),
+                  competitorId: -1,
+                  className: '',
+                  fee: 0,
+                  isAwardTouched: false,
+                };
+                const teamResultObject: IExtendedRaceTeamResult = {
+                  teamResultId: -100000 - Math.floor(Math.random() * 100000000),
+                  competitorId: -1,
+                  className: '',
+                  stage: -1,
+                  stageText: '',
+                  totalStages: 1,
+                };
+                let confirmModal: {
+                  destroy: () => void;
+                  update: (configUpdate: ModalFuncProps | ((prevConfig: ModalFuncProps) => ModalFuncProps)) => void;
+                };
+                // eslint-disable-next-line prefer-const
+                confirmModal = confirm({
+                  width: 800,
+                  icon: <StyledIcon type="plus" />,
+                  title: t('results.AddCompetitor'),
+                  content:
+                    clubModel.raceClubs &&
+                    raceWizardModel.current.raceEvent &&
+                    !raceWizardModel.current.raceEvent?.isRelay ? (
+                      <EditResultIndividual
+                        clubModel={clubModel}
+                        sessionModel={sessionModel}
+                        raceWizardModel={raceWizardModel.current}
+                        meetsAwardRequirements={raceWizardModel.current.raceEvent.meetsAwardRequirements}
+                        isSprint={raceWizardModel.current.raceEvent.raceDistance === distances.sprint}
+                        raceDate={raceWizardModel.current.raceEvent.raceDate ?? ''}
+                        paymentModel={raceWizardModel.current.raceEvent.paymentModel as PaymentTypes}
+                        eventClassificationId={
+                          raceWizardModel.current.raceEvent.eventClassificationId as EventClassificationIdTypes
+                        }
+                        result={resultObject}
+                        results={raceWizardModel.current.raceEvent.results}
+                        autoUpdateResultWithSameClass={autoUpdateResultWithSameClass}
+                        competitorsOptions={clubModel.raceClubs.selectedClub?.competitorsOptions ?? []}
+                        onValidate={(valid) =>
+                          confirmModal.update({
+                            okButtonProps: {
+                              disabled: !valid,
+                            },
+                          })
+                        }
+                      />
+                    ) : clubModel.raceClubs && raceWizardModel.current.raceEvent ? (
+                      <EditResultRelay
+                        clubModel={clubModel}
+                        sessionModel={sessionModel}
+                        raceWizardModel={raceWizardModel.current}
+                        eventClassificationId={
+                          raceWizardModel.current.raceEvent.eventClassificationId as EventClassificationIdTypes
+                        }
+                        raceLightCondition={raceWizardModel.current.raceEvent.raceLightCondition as LightConditionTypes}
+                        result={teamResultObject}
+                        results={raceWizardModel.current.raceEvent.teamResults}
+                        autoUpdateResultWithSameClass={autoUpdateResultWithSameClass}
+                        competitorsOptions={clubModel.raceClubs.selectedClub?.competitorsOptions ?? []}
+                        onValidate={(valid) =>
+                          confirmModal.update({
+                            okButtonProps: {
+                              disabled: !valid,
+                            },
+                          })
+                        }
+                      />
+                    ) : null,
+                  okText: t('common.Save'),
+                  okButtonProps: {
+                    disabled: true,
+                  },
+                  cancelText: t('common.Cancel'),
+                  onOk() {
+                    if (raceWizardModel.current.raceEvent?.isRelay) {
+                      raceWizardModel.current.raceEvent.addTeamResult(teamResultObject);
+                    } else {
+                      raceWizardModel.current.raceEvent?.addResult(resultObject);
+                    }
+                    onValidate(!!raceWizardModel.current.raceEvent?.valid);
+                  },
+                });
+              }}
+            >
+              <PlusOutlined />
+              {t('results.AddCompetitor')}
+            </Button>
+          ) : null,
           wizardStep === 3 && raceWizardModel.current.existInEventor ? (
             <Button disabled={!loaded || !nextStepValid} loading={saving} onClick={(e) => saveAndNextEvent()}>
               <LeftOutlined />
@@ -526,24 +525,33 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
               {t('common.Cancel')}
             </Button>
           ),
-        ]}
+        ].filter((component) => !!component)}
+        onContentOffsetHeight={setContentOffsetHeight}
       >
         <StyledModalContent>
-          <StyledSteps current={wizardStep}>
-            <Step key="ResultsWizardModalStep0" title={t('results.Step0Input')} />
-            <Step key="ResultsWizardModalStep1" title={t('results.Step1ChooseRace')} />
-            <Step key="ResultsWizardModalStep2" title={t('results.Step2EditRace')} />
-            <Step key="ResultsWizardModalStep3" title={t('results.Step3Ranking')} />
-          </StyledSteps>
-          {wizardStep === 0 ? <ResultWizardStep0Input onMount={setInputForm} /> : null}
+          <StyledFullWidth ref={stepsRef}>
+            <Steps current={wizardStep}>
+              <Step key="ResultsWizardStep0" title={t('results.Step0Input')} />
+              <Step key="ResultsWizardStep1" title={t('results.Step1ChooseRace')} />
+              <Step key="ResultsWizardStep2" title={t('results.Step2EditRace')} />
+              <Step key="ResultsWizardStep3" title={t('results.Step3Ranking')} />
+            </Steps>
+          </StyledFullWidth>
+          {wizardStep === 0 ? <ResultWizardStep0Input /> : null}
           {wizardStep >= 1 && raceWizardModel.current.existInEventor ? (
-            <ResultWizardStep1ChooseRace onValidate={onValidate} visible={wizardStep === 1} onFailed={prev} />
+            <ResultWizardStep1ChooseRace
+              height={Math.max(128, contentOffsetHeight - (stepsHeight ?? 32))}
+              onValidate={onValidate}
+              visible={wizardStep === 1}
+              onFailed={prev}
+            />
           ) : null}
           {wizardStep === -100 ? (
             <ResultWizardStep1ChooseRaceRerun onFailed={prev} onSave={() => save(false)} onClose={onClose} />
           ) : null}
           {wizardStep >= 2 ? (
             <ResultWizardStep2EditRace
+              height={Math.max(276, contentOffsetHeight - (stepsHeight ?? 32))}
               autoUpdateResultWithSameClass={autoUpdateResultWithSameClass}
               visible={wizardStep === 2}
               onValidate={onValidate}
@@ -557,9 +565,9 @@ const ResultsWizardModal = observer(({ open, onClose }: IResultsWizardModalProps
             </SpinnerDiv>
           ) : null}
         </StyledModalContent>
-      </Modal>
+      </FullScreenWizard>
     </ResultWizardStoreProvider>
   );
 });
 
-export default ResultsWizardModal;
+export default ResultsWizard;

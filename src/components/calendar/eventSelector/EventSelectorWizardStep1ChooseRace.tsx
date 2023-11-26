@@ -44,12 +44,13 @@ interface IStateEvent {
 
 interface IEventSelectorWizardStep1ChooseRaceProps {
   eventSelectorWizardModel: IEventSelectorWizard;
+  height: number;
   visible: boolean;
   onFailed: () => void;
   onValidate: (valid: boolean) => void;
 }
 const EventSelectorWizardStep1ChooseRace = observer(
-  ({ eventSelectorWizardModel, visible, onFailed, onValidate }: IEventSelectorWizardStep1ChooseRaceProps) => {
+  ({ eventSelectorWizardModel, height, visible, onFailed, onValidate }: IEventSelectorWizardStep1ChooseRaceProps) => {
     const { t } = useTranslation();
     const { clubModel, sessionModel } = useMobxStore();
     const [loaded, setLoaded] = useState(false);
@@ -231,26 +232,39 @@ const EventSelectorWizardStep1ChooseRace = observer(
         title: t('results.Date'),
         dataIndex: 'raceDate',
         key: 'raceDate',
+        ellipsis: true,
+        width: 100,
+        fixed: 'left',
       },
       {
         title: t('results.Time'),
         dataIndex: 'raceTime',
         key: 'raceTime',
+        ellipsis: true,
+        width: 80,
+        fixed: 'left',
       },
       {
         title: t('results.Club'),
         dataIndex: 'organiserName',
         key: 'organiserName',
+        ellipsis: true,
+        width: 200,
       },
       {
         title: t('results.Name'),
         dataIndex: 'name',
         key: 'name',
+        ellipsis: true,
+        width: 200,
       },
       {
         title: t('results.DistanceKm'),
         dataIndex: 'distanceKm',
         key: 'distanceKm',
+        ellipsis: true,
+        width: 120,
+        fixed: 'right',
       },
     ];
 
@@ -264,7 +278,9 @@ const EventSelectorWizardStep1ChooseRace = observer(
         }}
         columns={columns as ColumnType<any>[]}
         dataSource={events.map((event) => ({ ...event, key: event.calendarEventId }))}
-        pagination={{ pageSize: 8 }}
+        pagination={{ pageSize: Math.trunc((height - 96) / 32), hideOnSinglePage: true, showSizeChanger: false }}
+        scroll={{ x: true }}
+        tableLayout="fixed"
         size="middle"
       />
     ) : visible ? (

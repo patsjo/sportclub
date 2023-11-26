@@ -2,6 +2,7 @@ import { SearchOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
 import { observer } from 'mobx-react-lite';
 import { Map } from 'ol';
+import { buffer, getSize } from 'ol/extent';
 import React from 'react';
 import styled from 'styled-components';
 
@@ -32,8 +33,8 @@ interface ILayerListProps {
 const LayerListItem = observer(({ map, title, zoomExtent }: ILayerListProps) => {
   const onZoom = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
-    map.getView().fit(zoomExtent, {
-      padding: [40, 40, 40, 40],
+    const size = zoomExtent && getSize(zoomExtent);
+    map.getView().fit(buffer(zoomExtent, Math.min(...size) * 0.2), {
       duration: 800,
     });
   };

@@ -9,7 +9,6 @@ import { useMobxStore } from 'utils/mobxStore';
 import { ICalendarActivity, ICalendarDomains } from 'utils/responseCalendarInterfaces';
 import { PostJsonData } from '../../../utils/api';
 import { dateFormat } from '../../../utils/formHelper';
-import EventSelectorWizardModal from '../../calendar/eventSelector/EventSelectorWizardModal';
 import CalendarEdit from '../../calendar/item/CalendarEdit';
 import MenuItem from '../MenuItem';
 
@@ -38,7 +37,6 @@ const CalendarSubMenus = observer(() => {
   const calendarModule = React.useMemo(() => clubModel.modules.find((module) => module.name === 'Calendar'), []);
   const resultsModule = React.useMemo(() => clubModel.modules.find((module) => module.name === 'Results'), []);
   const [addCalendarModalIsOpen, setAddCalendarModalIsOpen] = useState(false);
-  const [eventSelectorWizardModalIsOpen, setEventSelectorWizardModalIsOpen] = useState(false);
   const [domains, setDomains] = useState<ICalendarDomains>();
   const navigate = useNavigate();
 
@@ -70,12 +68,6 @@ const CalendarSubMenus = observer(() => {
           open={addCalendarModalIsOpen}
           domains={domains}
           onClose={() => setAddCalendarModalIsOpen(false)}
-        />
-      ) : null}
-      {eventSelectorWizardModalIsOpen ? (
-        <EventSelectorWizardModal
-          open={eventSelectorWizardModalIsOpen}
-          onClose={() => setEventSelectorWizardModalIsOpen(false)}
         />
       ) : null}
       <MenuItem
@@ -115,7 +107,7 @@ const CalendarSubMenus = observer(() => {
         isSubMenu
         onClick={() => {
           globalStateModel.setRightMenuVisible(false);
-          setTimeout(() => setEventSelectorWizardModalIsOpen(true), 0);
+          globalStateModel.setDashboard(navigate, '/calendar/eventselector');
         }}
       />
     </>

@@ -3,22 +3,18 @@ import { message } from 'antd';
 import { observer } from 'mobx-react';
 import { IRaceClubsProps, IRaceCompetitor } from 'models/resultModel';
 import moment from 'moment';
-import React, { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { PostJsonData } from 'utils/api';
 import { useMobxStore } from 'utils/mobxStore';
 import MenuItem from '../MenuItem';
-const ResultsWizardModal = lazy(() => import('../../results/ResultsWizardModal'));
-const InvoiceWizardModal = lazy(() => import('../../results/InvoiceWizardModal'));
 const RenounceModal = lazy(() => import('../../results/RenounceModal'));
 
 const ResultsSubMenus = observer(() => {
   const { t } = useTranslation();
   const { clubModel, globalStateModel, sessionModel } = useMobxStore();
   const resultsModule = React.useMemo(() => clubModel.modules.find((module) => module.name === 'Results'), []);
-  const [addResultsWizardModalIsOpen, setAddResultsWizardModalIsOpen] = useState(false);
-  const [invoiceWizardModalIsOpen, setInvoiceWizardModalIsOpen] = useState(false);
   const [addOldResultsWizardModalIsOpen, setAddOldResultsWizardModalIsOpen] = useState(false);
   const [renounceModalIsOpen, setRenounceModalIsOpen] = useState(false);
   const [competitor, setCompetitor] = useState<IRaceCompetitor>();
@@ -86,19 +82,6 @@ const ResultsSubMenus = observer(() => {
 
   return (
     <>
-      {addResultsWizardModalIsOpen ? (
-        <Suspense fallback={null}>
-          <ResultsWizardModal
-            open={addResultsWizardModalIsOpen}
-            onClose={() => setAddResultsWizardModalIsOpen(false)}
-          />
-        </Suspense>
-      ) : null}
-      {invoiceWizardModalIsOpen ? (
-        <Suspense fallback={null}>
-          <InvoiceWizardModal open={invoiceWizardModalIsOpen} onClose={() => setInvoiceWizardModalIsOpen(false)} />
-        </Suspense>
-      ) : null}
       {renounceModalIsOpen && competitor ? (
         <Suspense fallback={null}>
           <RenounceModal
@@ -151,7 +134,7 @@ const ResultsSubMenus = observer(() => {
         isSubMenu
         onClick={() => {
           globalStateModel.setRightMenuVisible(false);
-          setTimeout(() => setAddResultsWizardModalIsOpen(true), 0);
+          globalStateModel.setDashboard(navigate, '/results/import');
         }}
       />
       <MenuItem
@@ -162,7 +145,7 @@ const ResultsSubMenus = observer(() => {
         isSubMenu
         onClick={() => {
           globalStateModel.setRightMenuVisible(false);
-          setTimeout(() => setInvoiceWizardModalIsOpen(true), 0);
+          globalStateModel.setDashboard(navigate, '/results/verifyinvoice');
         }}
       />
       <MenuItem

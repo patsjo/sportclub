@@ -91,4 +91,7 @@ export const StyledTable = styled(Table)`
     background: #fafafa !important;
     font-weight: 600;
   }
+  &&& .ant-table-cell-ellipsis {
+    max-width: 250px;
+  }
 `;

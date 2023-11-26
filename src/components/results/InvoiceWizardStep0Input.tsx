@@ -6,11 +6,11 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMobxStore } from 'utils/mobxStore';
 import { useResultWizardStore } from 'utils/resultWizardStore';
-import { dateFormat, errorRequiredField, FormSelect } from '../../utils/formHelper';
+import { FormSelect, dateFormat, errorRequiredField } from '../../utils/formHelper';
 import FormItem from '../formItems/FormItem';
 
 interface IInvoiceWizardStep0InputProps {
-  onMount: (form: FormInstance) => void;
+  onMount?: (form: FormInstance) => void;
 }
 const InvoiceWizardStep0Input = observer(({ onMount }: IInvoiceWizardStep0InputProps) => {
   const { t } = useTranslation();
@@ -22,7 +22,7 @@ const InvoiceWizardStep0Input = observer(({ onMount }: IInvoiceWizardStep0InputP
   useEffect(() => {
     if (formRef.current) {
       formRef.current.validateFields();
-      onMount(formRef.current);
+      onMount && onMount(formRef.current);
     }
   }, [formRef.current]);
 

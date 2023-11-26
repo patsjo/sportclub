@@ -84,13 +84,14 @@ import EditResultRelay, { IExtendedRaceTeamResult } from './EditResultRelay';
 const { info } = Modal;
 
 interface IResultWizardStep2EditRaceProps {
+  height: number;
   visible: boolean;
   autoUpdateResultWithSameClass: boolean;
   onValidate: (valid: boolean) => void;
   onFailed: (e: any) => void;
 }
 const ResultWizardStep2EditRace = observer(
-  ({ visible, autoUpdateResultWithSameClass, onValidate, onFailed }: IResultWizardStep2EditRaceProps) => {
+  ({ height, visible, autoUpdateResultWithSameClass, onValidate, onFailed }: IResultWizardStep2EditRaceProps) => {
     const { t } = useTranslation();
     const { clubModel, sessionModel } = useMobxStore();
     const { raceWizardModel } = useResultWizardStore();
@@ -1862,6 +1863,9 @@ const ResultWizardStep2EditRace = observer(
         title: t('results.Edit'),
         dataIndex: 'edit',
         key: 'edit',
+        ellipsis: true,
+        width: 70,
+        fixed: 'left',
         render: (text, record) => (
           <NoWrap>
             <StyledIcon
@@ -1942,6 +1946,9 @@ const ResultWizardStep2EditRace = observer(
         title: t('results.Competitor'),
         dataIndex: 'competitorId',
         key: 'competitorId',
+        ellipsis: true,
+        width: 200,
+        fixed: 'left',
         render: (id) =>
           id == null ? <MissingTag t={t} /> : clubModel.raceClubs?.selectedClub?.competitorById(id)?.fullName,
       },
@@ -1949,12 +1956,17 @@ const ResultWizardStep2EditRace = observer(
         title: t('results.Class'),
         dataIndex: 'className',
         key: 'className',
+        ellipsis: true,
+        width: 70,
+        fixed: 'left',
         render: (value) => (value == null ? <MissingTag t={t} /> : value),
       },
       {
         title: t('results.ClassClassification'),
         dataIndex: 'classClassificationId',
         key: 'classClassificationId',
+        ellipsis: true,
+        width: 100,
         render: (id, record) => {
           if (id) {
             const classClassificationDescription = clubModel.raceClubs?.classClassification(
@@ -1972,24 +1984,32 @@ const ResultWizardStep2EditRace = observer(
         title: t('results.Difficulty'),
         dataIndex: 'difficulty',
         key: 'difficulty',
+        ellipsis: true,
+        width: 80,
         render: (value) => (value == null ? <MissingTag t={t} /> : value),
       },
       {
         title: t('results.LengthInMeter'),
         dataIndex: 'lengthInMeter',
         key: 'lengthInMeter',
+        ellipsis: true,
+        width: 90,
         render: (value, record) => (record.failedReason == null && value == null ? <MissingTag t={t} /> : value),
       },
       {
         title: t('results.FailedReason'),
         dataIndex: 'failedReason',
         key: 'failedReason',
+        ellipsis: true,
+        width: 120,
         render: (reason) => (reason ? reason.charAt(0).toUpperCase() + reason.substr(1).toLowerCase() : null),
       },
       {
         title: t('results.Time'),
         dataIndex: 'competitorTime',
         key: 'competitorTime',
+        ellipsis: true,
+        width: 70,
         render: (value, record) =>
           record.failedReason == null && value == null ? <MissingTag t={t} /> : FormatTime(value),
       },
@@ -1997,6 +2017,8 @@ const ResultWizardStep2EditRace = observer(
         title: t('results.WinnerTime'),
         dataIndex: 'winnerTime',
         key: 'winnerTime',
+        ellipsis: true,
+        width: 70,
         render: (value, record) =>
           record.failedReason == null && value == null ? <MissingTag t={t} /> : FormatTime(value),
       },
@@ -2004,6 +2026,8 @@ const ResultWizardStep2EditRace = observer(
         title: t('results.MissingTime'),
         dataIndex: 'missingTime',
         key: 'missingTime',
+        ellipsis: true,
+        width: 70,
         render: (value) =>
           value?.substr(-5) === ManuallyEditedMissingTimePostfix ? (
             <Tag icon={<ExclamationCircleOutlined />} color="warning">
@@ -2017,29 +2041,39 @@ const ResultWizardStep2EditRace = observer(
         title: t('results.Position'),
         dataIndex: 'position',
         key: 'position',
+        ellipsis: true,
+        width: 90,
         render: (value, record) => (record.failedReason == null && value == null ? <MissingTag t={t} /> : value),
       },
       {
         title: t('results.NofStartsInClass'),
         dataIndex: 'nofStartsInClass',
         key: 'nofStartsInClass',
+        ellipsis: true,
+        width: 90,
         render: (value, record) => (record.failedReason == null && value == null ? <MissingTag t={t} /> : value),
       },
       {
         title: t('results.Award'),
         dataIndex: 'award',
         key: 'award',
+        ellipsis: true,
+        width: 70,
       },
       {
         title: t('results.EventFee'),
         dataIndex: 'fee',
         key: 'fee',
+        ellipsis: true,
+        width: 120,
         render: (value) => (value == null ? <MissingTag t={t} /> : value),
       },
       {
         title: t('results.TotalFeeToClub'),
         dataIndex: 'totalFeeToClub',
         key: 'totalFeeToClub',
+        ellipsis: true,
+        width: 120,
         render: (_text, record) =>
           record.feeToClub == null ? <MissingTag t={t} /> : record.feeToClub + (record.serviceFeeToClub ?? 0),
       },
@@ -2047,6 +2081,8 @@ const ResultWizardStep2EditRace = observer(
         title: t('results.DeviantEventClassification'),
         dataIndex: 'deviantEventClassificationId',
         key: 'deviantEventClassificationId',
+        ellipsis: true,
+        width: 120,
       },
     ];
 
@@ -2055,6 +2091,9 @@ const ResultWizardStep2EditRace = observer(
         title: t('results.Edit'),
         dataIndex: 'edit',
         key: 'edit',
+        ellipsis: true,
+        width: 70,
+        fixed: 'left',
         render: (text, record) => (
           <NoWrap>
             <StyledIcon
@@ -2129,6 +2168,9 @@ const ResultWizardStep2EditRace = observer(
         title: t('results.Competitor'),
         dataIndex: 'competitorId',
         key: 'competitorId',
+        ellipsis: true,
+        width: 200,
+        fixed: 'left',
         render: (id) =>
           id == null ? <MissingTag t={t} /> : clubModel.raceClubs?.selectedClub?.competitorById(id)?.fullName,
       },
@@ -2136,12 +2178,17 @@ const ResultWizardStep2EditRace = observer(
         title: t('results.Class'),
         dataIndex: 'className',
         key: 'className',
+        ellipsis: true,
+        width: 70,
+        fixed: 'left',
         render: (value) => (value == null ? <MissingTag t={t} /> : value),
       },
       {
         title: t('results.ClassClassification'),
         dataIndex: 'classClassificationId',
         key: 'classClassificationId',
+        ellipsis: true,
+        width: 100,
         render: (id, record) => {
           if (id) {
             const classClassificationDescription = clubModel.raceClubs?.classClassification(
@@ -2159,24 +2206,32 @@ const ResultWizardStep2EditRace = observer(
         title: t('results.Difficulty'),
         dataIndex: 'difficulty',
         key: 'difficulty',
+        ellipsis: true,
+        width: 80,
         render: (value) => (value == null ? <MissingTag t={t} /> : value),
       },
       {
         title: t('results.LengthInMeter'),
         dataIndex: 'lengthInMeter',
         key: 'lengthInMeter',
+        ellipsis: true,
+        width: 90,
         render: (value, record) => (record.failedReason == null && value == null ? <MissingTag t={t} /> : value),
       },
       {
         title: t('results.FailedReason'),
         dataIndex: 'failedReason',
         key: 'failedReason',
+        ellipsis: true,
+        width: 120,
         render: (reason) => (reason ? reason.charAt(0).toUpperCase() + reason.substr(1).toLowerCase() : null),
       },
       {
         title: t('results.Time'),
         dataIndex: 'competitorTime',
         key: 'competitorTime',
+        ellipsis: true,
+        width: 70,
         render: (value, record) =>
           record.failedReason == null && value == null ? <MissingTag t={t} /> : FormatTime(value),
       },
@@ -2184,6 +2239,8 @@ const ResultWizardStep2EditRace = observer(
         title: t('results.WinnerTime'),
         dataIndex: 'winnerTime',
         key: 'winnerTime',
+        ellipsis: true,
+        width: 70,
         render: (value, record) =>
           record.failedReason == null && value == null ? <MissingTag t={t} /> : FormatTime(value),
       },
@@ -2191,6 +2248,8 @@ const ResultWizardStep2EditRace = observer(
         title: t('results.MissingTime'),
         dataIndex: 'missingTime',
         key: 'missingTime',
+        ellipsis: true,
+        width: 70,
         render: (value) =>
           value?.substr(-5) === ManuallyEditedMissingTimePostfix ? (
             <Tag icon={<ExclamationCircleOutlined />} color="warning">
@@ -2204,40 +2263,54 @@ const ResultWizardStep2EditRace = observer(
         title: t('results.Position'),
         dataIndex: 'position',
         key: 'position',
+        ellipsis: true,
+        width: 90,
         render: (value, record) => (record.failedReason == null && value == null ? <MissingTag t={t} /> : value),
       },
       {
         title: t('results.NofStartsInClass'),
         dataIndex: 'nofStartsInClass',
         key: 'nofStartsInClass',
+        ellipsis: true,
+        width: 90,
         render: (value, record) => (record.failedReason == null && value == null ? <MissingTag t={t} /> : value),
       },
       {
         title: t('results.Stage'),
         dataIndex: 'stageText',
         key: 'stageText',
+        ellipsis: true,
+        width: 70,
         render: (value, record) => (record.stage == null || record.totalStages == null ? <MissingTag t={t} /> : value),
       },
       {
         title: t('results.DeltaPositions'),
         dataIndex: 'deltaPositions',
         key: 'deltaPositions',
+        ellipsis: true,
+        width: 100,
       },
       {
         title: t('results.DeltaTimeBehind'),
         dataIndex: 'deltaTimeBehind',
         key: 'deltaTimeBehind',
+        ellipsis: true,
+        width: 120,
         render: (value) => FormatTime(value),
       },
       {
         title: t('results.DeviantRaceLightCondition'),
         dataIndex: 'deviantRaceLightCondition',
         key: 'deviantRaceLightCondition',
+        ellipsis: true,
+        width: 120,
       },
       {
         title: t('results.DeviantEventClassification'),
         dataIndex: 'deviantEventClassificationId',
         key: 'deviantEventClassificationId',
+        ellipsis: true,
+        width: 120,
       },
     ];
 
@@ -2500,8 +2573,10 @@ const ResultWizardStep2EditRace = observer(
               isValid: result.valid,
               stageText: `${result.stage} ${t('common.Of')} ${result.totalStages}`,
             }))}
-            pagination={{ pageSize: 5 }}
+            pagination={{ pageSize: Math.trunc((height - 244) / 32), hideOnSinglePage: true, showSizeChanger: false }}
+            scroll={{ x: true }}
             size="middle"
+            tableLayout="fixed"
             rowClassName={(record: any) => (!record.isValid ? 'table-row-red' : '')}
           />
         ) : (
@@ -2516,8 +2591,10 @@ const ResultWizardStep2EditRace = observer(
                 result.originalFee != null && result.lateFee != null ? result.originalFee + result.lateFee : null
               }`,
             }))}
-            pagination={{ pageSize: 5 }}
+            pagination={{ pageSize: Math.trunc((height - 244) / 32), hideOnSinglePage: true, showSizeChanger: false }}
+            scroll={{ x: true }}
             size="middle"
+            tableLayout="fixed"
             rowClassName={(record: any) => (!record.isValid ? 'table-row-red' : '')}
           />
         )}

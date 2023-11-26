@@ -15,12 +15,13 @@ interface IInvoiceEvent extends IEventViewResultResponse {
 }
 
 interface IInvoiceWizardStep1ChooseRaceProps {
+  height: number;
   visible: boolean;
   onValidate: (valid: boolean) => void;
   onFailed?: () => void;
 }
 const InvoiceWizardStep1ChooseRace = observer(
-  ({ visible, onValidate, onFailed }: IInvoiceWizardStep1ChooseRaceProps) => {
+  ({ height, visible, onValidate, onFailed }: IInvoiceWizardStep1ChooseRaceProps) => {
     const { t } = useTranslation();
     const { clubModel, sessionModel } = useMobxStore();
     const { raceWizardModel } = useResultWizardStore();
@@ -105,6 +106,7 @@ const InvoiceWizardStep1ChooseRace = observer(
 
     const rowSelection: TableRowSelection<IInvoiceEvent> = {
       selectedRowKeys,
+      fixed: true,
       onChange: onSelectChange,
       type: 'radio',
     };
@@ -113,37 +115,54 @@ const InvoiceWizardStep1ChooseRace = observer(
         title: t('results.Date'),
         dataIndex: 'date',
         key: 'date',
+        ellipsis: true,
+        width: 100,
+        fixed: 'left',
       },
       {
         title: t('results.Time'),
         dataIndex: 'time',
         key: 'time',
+        ellipsis: true,
+        width: 80,
+        fixed: 'left',
       },
       {
         title: t('results.Name'),
         dataIndex: 'name',
         key: 'name',
+        ellipsis: true,
+        width: 200,
+        fixed: 'left',
       },
       {
         title: t('results.InvoiceAlreadyVerified'),
         dataIndex: 'invoiceVerified',
         key: 'invoiceVerified',
         render: (invoiceVerified: boolean) => (invoiceVerified ? t('common.Yes') : t('common.No')),
+        ellipsis: true,
+        width: 120,
       },
       {
         title: t('results.EventFee'),
         dataIndex: 'fee',
         key: 'fee',
+        ellipsis: true,
+        width: 120,
       },
       {
         title: t('results.FeeToClub'),
         dataIndex: 'feeToClub',
         key: 'feeToClub',
+        ellipsis: true,
+        width: 120,
       },
       {
         title: t('results.ServiceFeeToClub'),
         dataIndex: 'serviceFeeToClub',
         key: 'serviceFeeToClub',
+        ellipsis: true,
+        width: 120,
       },
     ];
 
@@ -157,7 +176,9 @@ const InvoiceWizardStep1ChooseRace = observer(
         }}
         columns={columns as ColumnType<any>[]}
         dataSource={events}
-        pagination={{ pageSize: 8 }}
+        pagination={{ pageSize: Math.trunc((height - 128) / 32), hideOnSinglePage: true, showSizeChanger: false }}
+        scroll={{ x: true }}
+        tableLayout="fixed"
         summary={() => (
           <StyledTable.Summary fixed>
             <StyledTable.Summary.Row>

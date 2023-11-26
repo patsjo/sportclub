@@ -4,13 +4,13 @@ import { observer } from 'mobx-react';
 import moment from 'moment';
 import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { dateFormat, errorRequiredField, FormSelect } from 'utils/formHelper';
+import { FormSelect, dateFormat, errorRequiredField } from 'utils/formHelper';
 import { useMobxStore } from 'utils/mobxStore';
 import { useResultWizardStore } from 'utils/resultWizardStore';
 import FormItem from '../formItems/FormItem';
 
 interface IResultWizardStep0InputProps {
-  onMount: (form: FormInstance) => void;
+  onMount?: (form: FormInstance) => void;
 }
 const ResultWizardStep0Input = observer(({ onMount }: IResultWizardStep0InputProps) => {
   const { t } = useTranslation();
@@ -22,7 +22,7 @@ const ResultWizardStep0Input = observer(({ onMount }: IResultWizardStep0InputPro
   useEffect(() => {
     if (formRef.current) {
       formRef.current.validateFields();
-      onMount(formRef.current);
+      onMount && onMount(formRef.current);
     }
   }, [formRef.current]);
 

@@ -1,64 +1,43 @@
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
-import { Button, message, Modal, Spin, Steps } from 'antd';
-import { FormInstance } from 'antd/lib/form';
+import { Button, Spin, Steps, message } from 'antd';
+import FullScreenWizard from 'components/styled/FullscreenWizard';
 import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
 import { IRaceClubsProps } from 'models/resultModel';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useMobxStore } from 'utils/mobxStore';
-import { EventSelectorWizard, getLocalStorage } from '../../../models/eventSelectorWizardModel';
+import { useSize } from 'utils/useSize';
+import {
+  EventSelectorWizard as EventSelectorWizardModel,
+  getLocalStorage,
+} from '../../../models/eventSelectorWizardModel';
 import { PostJsonData } from '../../../utils/api';
 import { SpinnerDiv } from '../../styled/styled';
 import EventSelectorWizardStep0Input from './EventSelectorWizardStep0Input';
 import EventSelectorWizardStep1ChooseRace from './EventSelectorWizardStep1ChooseRace';
 
-const StyledModalContent = styled.div``;
-const StyledSteps = styled(Steps)`
-  &&& {
-    margin-bottom: 16px;
-  }
-`;
 const { Step } = Steps;
+const StyledFullWidth = styled.div`
+  width: 100%;
+  padding-bottom: 8px;
+`;
+const StyledModalContent = styled.div``;
 
-interface IEventSelectorWizardModalProps {
-  open: boolean;
-  onClose: () => void;
-}
-const EventSelectorWizardModal = observer(({ open, onClose }: IEventSelectorWizardModalProps) => {
+const EventSelectorWizard = observer(() => {
   const { t } = useTranslation();
-  const { clubModel, sessionModel } = useMobxStore();
+  const { clubModel, globalStateModel, sessionModel } = useMobxStore();
   const [wizardStep, setWizardStep] = useState(-1);
   const [nextStepValid, setNextStepValid] = useState(true);
-  const [inputForm, setInputForm] = useState<FormInstance>();
+  const [contentOffsetHeight, setContentOffsetHeight] = useState(0);
+  const stepsRef = useRef<HTMLDivElement>(null);
+  const { height: stepsHeight } = useSize(stepsRef, ['height'], 'offset');
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
-  const eventSelectorWizardModel = useMemo(() => new EventSelectorWizard(getLocalStorage()), []);
-
-  useEffect(() => {
-    if (loaded) return;
-    const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
-    if (!url) return;
-
-    PostJsonData(
-      url,
-      {
-        iType: 'CLUBS',
-      },
-      true,
-      sessionModel.authorizationHeader
-    )
-      .then((clubsJson: IRaceClubsProps) => {
-        clubModel.setRaceClubs(clubsJson);
-        setWizardStep(0);
-        setLoaded(true);
-      })
-      .catch((e) => {
-        message.error(e.message);
-        onClose && onClose();
-      });
-  }, [clubModel, sessionModel, onClose, loaded]);
+  const eventSelectorWizardModel = useMemo(() => new EventSelectorWizardModel(getLocalStorage()), []);
+  const navigate = useNavigate();
 
   const next = () => {
     setWizardStep((prevStep) => prevStep + 1);
@@ -73,6 +52,10 @@ const EventSelectorWizardModal = observer(({ open, onClose }: IEventSelectorWiza
   const onValidate = (valid: boolean) => {
     setNextStepValid(valid);
   };
+
+  const onClose = useCallback(() => {
+    globalStateModel.setDashboard(navigate, '/');
+  }, []);
 
   const save = useCallback(() => {
     const calendarModule = clubModel.modules.find((module) => module.name === 'Calendar');
@@ -108,15 +91,33 @@ const EventSelectorWizardModal = observer(({ open, onClose }: IEventSelectorWiza
       });
   }, [sessionModel, clubModel]);
 
+  useEffect(() => {
+    if (loaded) return;
+    const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
+    if (!url) return;
+
+    PostJsonData(
+      url,
+      {
+        iType: 'CLUBS',
+      },
+      true,
+      sessionModel.authorizationHeader
+    )
+      .then((clubsJson: IRaceClubsProps) => {
+        clubModel.setRaceClubs(clubsJson);
+        setWizardStep(0);
+        setLoaded(true);
+      })
+      .catch((e) => {
+        message.error(e.message);
+        onClose && onClose();
+      });
+  }, [clubModel, sessionModel, onClose, loaded]);
+
   return (
-    <Modal
-      closable={false}
-      maskClosable={false}
+    <FullScreenWizard
       title={t('calendar.EventSelector')}
-      open={open}
-      onCancel={onClose}
-      width="calc(100% - 80px)"
-      style={{ top: 40, minWidth: 560 }}
       footer={[
         <Button disabled={wizardStep < 1} onClick={() => prev()}>
           <LeftOutlined />
@@ -133,21 +134,25 @@ const EventSelectorWizardModal = observer(({ open, onClose }: IEventSelectorWiza
         <Button onClick={onClose} loading={false}>
           {t('common.Cancel')}
         </Button>,
-      ]}
+      ].filter((component) => !!component)}
+      onContentOffsetHeight={setContentOffsetHeight}
     >
       <StyledModalContent>
-        <StyledSteps current={wizardStep}>
-          <Step key="EventSelectorWizardModalStep0" title={t('results.Step0Input')} />
-          <Step key="EventSelectorWizardModalStep1" title={t('results.Step1ChooseRace')} />
-        </StyledSteps>
+        <StyledFullWidth ref={stepsRef}>
+          <Steps current={wizardStep}>
+            <Step key="EventSelectorWizardModalStep0" title={t('results.Step0Input')} />
+            <Step key="EventSelectorWizardModalStep1" title={t('results.Step1ChooseRace')} />
+          </Steps>
+        </StyledFullWidth>
         {wizardStep === 0 ? (
           <EventSelectorWizardStep0Input
+            height={Math.max(228, contentOffsetHeight - (stepsHeight ?? 32))}
             eventSelectorWizardModel={eventSelectorWizardModel}
-            onMount={(form) => setInputForm(form)}
           />
         ) : null}
         {wizardStep >= 1 ? (
           <EventSelectorWizardStep1ChooseRace
+            height={Math.max(128, contentOffsetHeight - (stepsHeight ?? 32))}
             eventSelectorWizardModel={eventSelectorWizardModel}
             onValidate={onValidate}
             visible={wizardStep === 1}
@@ -160,8 +165,8 @@ const EventSelectorWizardModal = observer(({ open, onClose }: IEventSelectorWiza
           </SpinnerDiv>
         ) : null}
       </StyledModalContent>
-    </Modal>
+    </FullScreenWizard>
   );
 });
 
-export default EventSelectorWizardModal;
+export default EventSelectorWizard;
