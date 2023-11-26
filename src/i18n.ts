@@ -126,6 +126,7 @@ i18next
           },
           modules: {
             Home: 'Home',
+            Maps: 'Maps',
             News: 'News',
             Calendar: 'Calendar',
             ScoringBoard: 'Club leagues',
@@ -478,6 +479,7 @@ i18next
           },
           modules: {
             Home: 'Startsida',
+            Maps: 'Kartor',
             News: 'Nyheter',
             Calendar: 'Kalender',
             ScoringBoard: 'Klubbligor',

@@ -185,7 +185,7 @@ class Eventor implements IEventorProps {
   }
 }
 
-interface IExtentProps {
+export interface IExtentProps {
   xmin: number;
   ymin: number;
   xmax: number;
@@ -307,6 +307,7 @@ interface IMapProps {
 
 interface IMap extends Omit<IMapProps, 'layers' | 'defaultZoomLevel' | 'minZoomLevel' | 'maxZoomLevel'> {
   layers: IAnyLayer[];
+  fullExtent: IExtentProps;
   defaultZoomLevel: number;
   minZoomLevel: number;
   maxZoomLevel: number;
@@ -338,11 +339,28 @@ class Map implements IMap {
       minZoomLevel: observable,
       maxZoomLevel: observable,
       layers: observable,
+      fullExtent: computed,
     });
   }
 
   getLayerFullExtent(id: string): IExtentProps | undefined {
     return this.layers.find((l) => l.id === id)?.fullExtent;
+  }
+
+  get fullExtent(): IExtentProps {
+    const extent: IExtentProps = {
+      xmin: 99999999999999,
+      ymin: 99999999999999,
+      xmax: -99999999999999,
+      ymax: -99999999999999,
+    };
+    this.layers.forEach((layer) => {
+      if (extent.xmin > layer.fullExtent.xmin) extent.xmin = layer.fullExtent.xmin;
+      if (extent.ymin > layer.fullExtent.ymin) extent.ymin = layer.fullExtent.ymin;
+      if (extent.xmax < layer.fullExtent.xmax) extent.xmax = layer.fullExtent.xmax;
+      if (extent.ymax < layer.fullExtent.ymax) extent.ymax = layer.fullExtent.ymax;
+    });
+    return extent;
   }
 }
 

@@ -1,5 +1,6 @@
 import { observer } from 'mobx-react';
 import { IGraphic } from 'models/graphic';
+import { IExtentProps } from 'models/mobxClubModel';
 import Feature from 'ol/Feature';
 import { Control, FullScreen, ZoomToExtent } from 'ol/control';
 import { Options } from 'ol/control/ZoomToExtent';
@@ -158,6 +159,7 @@ interface IOSMOrienteeringMapProps {
   containerId: string;
   height: string;
   width: string;
+  defaultExtent?: IExtentProps;
   defaultGraphics?: IGraphic[];
   useAllWidgets?: boolean;
   useDefaultGraphicsAsHome?: boolean;
@@ -171,6 +173,7 @@ const OSMOrienteeringMap = observer(
     containerId,
     height,
     width,
+    defaultExtent = undefined,
     defaultGraphics = undefined,
     useAllWidgets = false,
     useDefaultGraphicsAsHome = false,
@@ -290,28 +293,45 @@ const OSMOrienteeringMap = observer(
       if (map && mapRef.current && mapInfoRef.current && !loaded) {
         setLoaded(true);
         map.setTarget(mapRef.current);
-        mapCenter && map.getView().setCenter(fromLonLat(mapCenter, mapProjection));
 
-        let defaultExtent = map.getView().calculateExtent();
-        if (clubModel.map?.center) {
+        let extent = map.getView().calculateExtent();
+        if (defaultExtent) {
+          const xyMin = fromLonLat([defaultExtent.xmin, defaultExtent.ymin], mapProjection);
+          const xyMax = fromLonLat([defaultExtent.xmax, defaultExtent.ymax], mapProjection);
+          extent = [...xyMin, ...xyMax];
+          const size = extent && getSize(extent);
+          extent &&
+            size &&
+            map.getView().fit(buffer(extent, Math.min(...size) * 0.2), {
+              maxZoom: 16,
+              duration: 800,
+            });
+        } else if (clubModel.map?.center) {
           map.getView().setCenter(fromLonLat(clubModel.map.center, mapProjection));
           map.getView().setZoom(clubModel.map.defaultZoomLevel);
-          defaultExtent = map.getView().calculateExtent();
+          extent = map.getView().calculateExtent();
         } else if (mapCenter) {
           const center = fromLonLat(mapCenter, mapProjection);
           const extentHalfWidth = getMapLength(center, 500);
-          defaultExtent = [
+          extent = [
             center[0] - extentHalfWidth,
             center[1] - extentHalfWidth,
             center[0] + extentHalfWidth,
             center[1] + extentHalfWidth,
           ];
+          const size = extent && getSize(extent);
+          extent &&
+            size &&
+            map.getView().fit(buffer(extent, Math.min(...size) * 0.2), {
+              maxZoom: 16,
+              duration: 800,
+            });
         }
         const homeIconContainer = document.createElement('span');
         homeIconContainer.innerHTML =
           '<svg viewBox="64 64 896 896" focusable="false" data-icon="home" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M946.5 505L560.1 118.8l-25.9-25.9a31.5 31.5 0 00-44.4 0L77.5 505a63.9 63.9 0 00-18.8 46c.4 35.2 29.7 63.3 64.9 63.3h42.5V940h691.8V614.3h43.4c17.1 0 33.2-6.7 45.3-18.8a63.6 63.6 0 0018.7-45.3c0-17-6.7-33.1-18.8-45.2zM568 868H456V664h112v204zm217.9-325.7V868H632V640c0-22.1-17.9-40-40-40H432c-22.1 0-40 17.9-40 40v228H238.1V542.3h-96l370-369.7 23.1 23.1L882 542.3h-96.1z"></path></svg>';
         homeExtent.current = new HomeExtent({
-          extent: defaultExtent,
+          extent: extent,
           label: homeIconContainer,
         });
         map.addControl(homeExtent.current);
@@ -510,18 +530,16 @@ const OSMOrienteeringMap = observer(
                 })
             );
           }
-          if (
-            clubModel.map?.center &&
-            !graphics.some(
-              (graphic) =>
-                graphic.geometry.type !== 'point' ||
-                graphic.geometry.longitude !== clubModel.map!.center[0] ||
-                graphic.geometry.latitude !== clubModel.map!.center[1]
-            )
-          ) {
+          const graphicsExists = graphics.some(
+            (graphic) =>
+              graphic.geometry.type !== 'point' ||
+              graphic.geometry.longitude !== clubModel.map!.center[0] ||
+              graphic.geometry.latitude !== clubModel.map!.center[1]
+          );
+          if (clubModel.map?.center && !mapCenter && !defaultExtent && !graphicsExists) {
             map.getView().setCenter(fromLonLat(clubModel.map.center, mapProjection));
             map.getView().setZoom(clubModel.map.defaultZoomLevel);
-          } else {
+          } else if (graphicsExists) {
             const geometriesExtent = graphicsLayer.getSource()?.getExtent();
             const size = geometriesExtent && getSize(geometriesExtent);
             geometriesExtent &&

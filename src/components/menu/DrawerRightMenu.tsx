@@ -88,6 +88,16 @@ const DrawerRightMenu = observer(() => {
               <ModuleSubMenu module={module} />
             )
           )}
+        {clubModel.map?.layers.length ? (
+          <MenuItem
+            key={'menuItem#maps'}
+            icon={'map'}
+            name={t('modules.Maps')}
+            onClick={() => {
+              globalStateModel.setDashboard(navigate, `/${t('modules.Maps').toLowerCase()}`);
+            }}
+          />
+        ) : null}
         <Menu.Divider />
         {clubModel.modules.some((module) => module.name === 'HTMLEditor') ? (
           <>

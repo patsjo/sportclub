@@ -3,6 +3,7 @@ import { lazy } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import styled from 'styled-components';
 const Dashboard = lazy(() => import('./components/dashboard/Dashboard'));
+const Maps = lazy(() => import('./components/map/Maps'));
 const News = lazy(() => import('./components/news/News'));
 const Users = lazy(() => import('./components/users/Users'));
 const League = lazy(() => import('./components/results/League'));
@@ -40,6 +41,8 @@ const AppContent = observer(() => {
     <ContentArea>
       <Routes>
         <Route path="/" element={<Dashboard key="dashboard" />} />
+        <Route path="/maps" element={<Maps />} />
+        <Route path="/kartor" element={<Maps />} />
         <Route path="/news" element={<News key="news" />} />
         <Route path="/users" element={<Users key="users" />} />
         <Route path="/calendar/eventselector" element={<EventSelector key="eventSelector" />} />

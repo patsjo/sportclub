@@ -8,6 +8,7 @@ import {
   EditOutlined,
   EuroOutlined,
   FrownOutlined,
+  GlobalOutlined,
   HomeOutlined,
   LoadingOutlined,
   LoginOutlined,
@@ -43,6 +44,7 @@ export type MaterialIconsType =
   | 'euro'
   | 'frown'
   | 'loading'
+  | 'map'
   | 'menu-fold'
   | 'menu-unfold'
   | 'plus'
@@ -87,6 +89,8 @@ const MaterialIcon = ({ icon, fontSize, marginRight }: IMaterialIconProps) => {
       return <EuroOutlined style={{ verticalAlign: 'middle', fontSize: fontSize }} />;
     case 'frown':
       return <FrownOutlined style={{ verticalAlign: 'middle', fontSize: fontSize }} />;
+    case 'map':
+      return <GlobalOutlined style={{ verticalAlign: 'middle', fontSize: fontSize }} />;
     case 'menu-fold':
       return <MenuFoldOutlined style={{ verticalAlign: 'middle', fontSize: fontSize }} />;
     case 'menu-unfold':
