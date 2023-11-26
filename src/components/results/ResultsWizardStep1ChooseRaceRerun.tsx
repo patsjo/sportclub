@@ -281,10 +281,10 @@ const ResultWizardStep1ChooseRaceRerun = observer(
                       : [teamResult.Organisation!];
 
                     const hasClubMembers = teamOrganisations.some(
-                      (org) => org.OrganisationId === clubModel.eventor?.organisationId.toString()
+                      (org) => org?.OrganisationId === clubModel.eventor?.organisationId.toString()
                     );
                     const hasDistrictMembers = teamOrganisations.some(
-                      (org) => org.OrganisationId === clubModel.eventor?.districtOrganisationId.toString()
+                      (org) => org?.OrganisationId === clubModel.eventor?.districtOrganisationId.toString()
                     );
 
                     teamMemberResults.forEach((teamMemberResult) => {

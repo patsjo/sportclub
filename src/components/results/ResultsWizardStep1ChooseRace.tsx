@@ -160,9 +160,7 @@ const ResultWizardStep1ChooseRace = observer(
               {
                 csurl: encodeURIComponent(
                   clubModel.eventor.eventsUrl +
-                    '?organisationIds=' +
-                    clubModel.eventor.oRingenOrganisationId +
-                    '&eventIds=' +
+                    '?eventIds=' +
                     raceWizardModel.selectedEventorId +
                     '&includeAttributes=true'
                 ),
@@ -175,7 +173,7 @@ const ResultWizardStep1ChooseRace = observer(
           }
           setProcessed((prev) => prev + 1);
 
-          if (raceWizardModel.queryForEventWithNoEntry) {
+          if (raceWizardModel.queryForEventWithNoEntry && raceWizardModel.selectedEventorId == null) {
             setCurrentEvent(t('results.loadCompetitors'));
             const competitorListJson: IEventorCompetitors = await PostJsonData(
               clubModel.eventorCorsProxy,
@@ -261,10 +259,12 @@ const ResultWizardStep1ChooseRace = observer(
                         const teamResults: IEventorTeamResult[] = preTeamResults.map((pre) =>
                           pre.RaceResult?.TeamMemberResult != null ? pre.RaceResult : (pre as IEventorTeamResult)
                         );
-                        const teamOrganisations = teamResults.reduce(
-                          (a: IEventorOrganisation[], b) => a.concat(b.Organisation),
-                          [] as IEventorOrganisation[]
-                        );
+                        const teamOrganisations = teamResults
+                          .reduce(
+                            (a: IEventorOrganisation[], b) => a.concat(b.Organisation),
+                            [] as IEventorOrganisation[]
+                          )
+                          .filter((org) => !!org);
                         isCurrentClub = teamOrganisations.some(
                           (org) =>
                             org.OrganisationId === clubModel.eventor?.organisationId.toString() ||

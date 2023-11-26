@@ -305,7 +305,7 @@ const ResultWizardStep2EditRace = observer(
                     (personResult) =>
                       (raceWizardModel.queryForCompetitorWithNoClub && !personResult.Organisation?.OrganisationId) ||
                       personResult.Organisation?.OrganisationId === clubModel.eventor?.organisationId.toString() ||
-                      (personResult.Organisation.OrganisationId ===
+                      (personResult.Organisation?.OrganisationId ===
                         clubModel.eventor?.districtOrganisationId.toString() &&
                         clubModel.raceClubs?.selectedClub?.competitorByEventorId(
                           parseInt(personResult.Person.PersonId)
@@ -589,8 +589,8 @@ const ResultWizardStep2EditRace = observer(
                     ? teamResult.TeamMemberResult!
                     : [teamResult.TeamMemberResult!];
                   const teamOrganisations: IEventorOrganisation[] = Array.isArray(teamResult.Organisation!)
-                    ? teamResult.Organisation!
-                    : [teamResult.Organisation!];
+                    ? teamResult.Organisation!.filter((org) => !!org)
+                    : [teamResult.Organisation!].filter((org) => !!org);
 
                   const hasClubMembers = teamOrganisations.some(
                     (org) => org.OrganisationId === clubModel.eventor?.organisationId.toString()
