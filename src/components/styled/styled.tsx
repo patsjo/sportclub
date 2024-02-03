@@ -67,7 +67,9 @@ export const StyledIcon = ({ type, ...props }: IStyledIconProps) => {
 
 export const StyledTable = styled(Table)`
   .table-row-red,
-  .table-row-red:hover {
+  .table-row-red:hover,
+  .table-row-red:hover > td,
+  .table-row-red:hover > td.ant-table-cell-row-hover {
     background-color: #ffccc7;
   }
   &&& {

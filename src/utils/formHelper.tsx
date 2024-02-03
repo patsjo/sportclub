@@ -36,6 +36,17 @@ export const FormSelect = ({ options, ...props }: IFormSelectProps) => {
   );
 };
 
+export const parseIntegerFromString = (input: string): number | null => {
+  const parsedInt = parseInt(input, 10);
+
+  // Check if the result is a valid number
+  if (isNaN(parsedInt)) {
+    return null;
+  }
+
+  return parsedInt;
+};
+
 interface ExtendedFileReader extends FileReader {
   content?: string;
 }

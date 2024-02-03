@@ -66,12 +66,12 @@ export class GlobalStateModel implements IGlobalStateModel {
       news: observable,
       graphics: observable,
       htmlEditorMenu: observable,
-      setRightMenuVisible: action,
-      setDashboard: action,
-      setHtmlEditor: action,
-      setGraphics: action,
-      setHtmlEditorMenu: action,
-      fetchHtmlEditorMenu: action,
+      setRightMenuVisible: action.bound,
+      setDashboard: action.bound,
+      setHtmlEditor: action.bound,
+      setGraphics: action.bound,
+      setHtmlEditorMenu: action.bound,
+      fetchHtmlEditorMenu: action.bound,
     });
   }
 

@@ -449,7 +449,7 @@ export class MobxClubModel implements IMobxClubModel {
       oldUrl: observable,
       sponsors: observable,
       facebookUrl: observable,
-      setRaceClubs: action,
+      setRaceClubs: action.bound,
     });
   }
 

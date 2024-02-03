@@ -459,6 +459,7 @@ elseif ($input->iType == "CLUBS")
       $x->name                  = $row['CLUB_NAME'];
       $x->eventorOrganisationId = intval($row['EVENTOR_ORGANISATION_ID']);
       $x->competitors           = array();
+      $x->families              = array();
 
       $sql2 = "SELECT * FROM RACE_COMPETITORS INNER JOIN RACE_COMPETITORS_CLUB ON (RACE_COMPETITORS.COMPETITOR_ID = RACE_COMPETITORS_CLUB.COMPETITOR_ID) WHERE CLUB_ID = " . $x->clubId;
       $result2 = \db\mysql_query($sql2);
@@ -475,6 +476,7 @@ elseif ($input->iType == "CLUBS")
           $y->competitorId         = intval($row2['COMPETITOR_ID']);
           $y->firstName            = $row2['FIRST_NAME'];
           $y->lastName             = $row2['LAST_NAME'];
+          $y->familyId             = is_null($row2['FAMILY_ID']) ? NULL : intval($row2['FAMILY_ID']);
           $y->birthDay             = $row2['BIRTHDAY'];
           $y->gender               = $row2['GENDER'];
           $y->excludeResults       = strcasecmp($row2['EXCLUDE_RESULTS'], 'YES') == 0;
@@ -503,6 +505,25 @@ elseif ($input->iType == "CLUBS")
       }
       \db\mysql_free_result($result2);
   
+      $sql2 = "SELECT * FROM RACE_FAMILIES WHERE FAMILY_ID IN (SELECT FAMILY_ID FROM RACE_COMPETITORS INNER JOIN RACE_COMPETITORS_CLUB ON (RACE_COMPETITORS.COMPETITOR_ID = RACE_COMPETITORS_CLUB.COMPETITOR_ID) WHERE CLUB_ID = " . $x->clubId . ")";
+      $result2 = \db\mysql_query($sql2);
+      if (!$result2)
+      {
+        trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
+      }
+    
+      if (\db\mysql_num_rows($result2) > 0)
+      {
+        while($row2 = \db\mysql_fetch_assoc($result2))
+        {
+          $y = new stdClass();
+          $y->familyId             = intval($row2['FAMILY_ID']);
+          $y->familyName           = $row2['FAMILY_NAME'];
+          array_push($x->families, $y);
+        }
+      }
+      \db\mysql_free_result($result2);
+
       array_push($clubs, $x);
     }
 

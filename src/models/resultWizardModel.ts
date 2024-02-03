@@ -103,9 +103,9 @@ class WinnerResult implements IWinnerResult {
       winnerTime: observable,
       secondsPerKilometer: observable,
       timePerKilometer: observable,
-      setLengthInMeter: action,
-      setDifficulty: action,
-      setWinnerTime: action,
+      setLengthInMeter: action.bound,
+      setDifficulty: action.bound,
+      setWinnerTime: action.bound,
     });
   }
 
@@ -218,14 +218,14 @@ export class RaceWizard implements IRaceWizard {
       raceEvent: observable,
       raceWinnerResults: observable,
       importedIds: observable,
-      setStringValue: action,
-      setBooleanValue: action,
-      setNumberValue: action,
-      setNumberValueOrNull: action,
-      setRaceEvent: action,
-      setRaceWinnerResults: action,
-      addRaceWinnerResult: action,
-      addImportedId: action,
+      setStringValue: action.bound,
+      setBooleanValue: action.bound,
+      setNumberValue: action.bound,
+      setNumberValueOrNull: action.bound,
+      setRaceEvent: action.bound,
+      setRaceWinnerResults: action.bound,
+      addRaceWinnerResult: action.bound,
+      addImportedId: action.bound,
       raceWinnerResultOptions: computed,
     });
   }

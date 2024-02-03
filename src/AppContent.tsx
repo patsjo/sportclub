@@ -5,7 +5,7 @@ import styled from 'styled-components';
 const Dashboard = lazy(() => import('./components/dashboard/Dashboard'));
 const Maps = lazy(() => import('./components/map/Maps'));
 const News = lazy(() => import('./components/news/News'));
-const Users = lazy(() => import('./components/users/Users'));
+const UsersAndCompetitors = lazy(() => import('./components/users/UsersAndCompetitors'));
 const League = lazy(() => import('./components/results/League'));
 const ResultsWizard = lazy(() => import('./components/results/ResultsWizard'));
 const InvoiceWizard = lazy(() => import('./components/results/InvoiceWizard'));
@@ -44,7 +44,7 @@ const AppContent = observer(() => {
         <Route path="/maps" element={<Maps />} />
         <Route path="/kartor" element={<Maps />} />
         <Route path="/news" element={<News key="news" />} />
-        <Route path="/users" element={<Users key="users" />} />
+        <Route path="/users" element={<UsersAndCompetitors key="users" />} />
         <Route path="/calendar/eventselector" element={<EventSelector key="eventSelector" />} />
         <Route
           path="/calendar"

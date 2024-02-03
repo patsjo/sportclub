@@ -109,10 +109,10 @@ export class SessionModel implements ISessionModel {
       isAdmin: observable,
       eventorPersonId: observable,
       canReadLocalStorage: observable,
-      setLogin: action,
-      setSuccessfullyLogin: action,
-      setFailedLogin: action,
-      setLogout: action,
+      setLogin: action.bound,
+      setSuccessfullyLogin: action.bound,
+      setFailedLogin: action.bound,
+      setLogout: action.bound,
       authorizationHeader: computed,
     });
   }

@@ -5,7 +5,6 @@ import React from 'react';
 import styled from 'styled-components';
 import { useMobxStore } from 'utils/mobxStore';
 import { PostJsonData } from '../../utils/api';
-import { colorShade } from '../../utils/colorHelper';
 import { getImage } from '../../utils/imageHelper';
 import FadeOutItem from '../fadeOutItem/FadeOutItem';
 import MaterialIcon from '../materialIcon/MaterialIcon';
@@ -15,7 +14,7 @@ interface IBannerHolderProps {
   hasImage: boolean;
 }
 const BannerHolder = styled.div<IBannerHolderProps>`
-  background-color: ${(props) => (props.hasImage ? 'inherit' : colorShade(props.theme.palette.primary.main, 0))};
+  background-color: ${(props) => (props.hasImage ? 'inherit' : props.theme.palette.primary.main)};
   border-radius: 8px;
   color: ${(props) => (props.hasImage ? 'inherit' : props.theme.palette.primary.contrastText)};
   padding: ${(props) => (props.hasImage ? '0' : '6px')};
@@ -93,11 +92,7 @@ const BannerItem = observer(({ ref, newsObject }: IBannerItemProps) => {
 
   const FileDownload =
     newsObject && (!newsObject.imageWidth || !newsObject.imageHeight) && newsObject.fileId ? (
-      <FloatRightAnchor
-        href={clubModel.attachmentUrl + newsObject.fileId}
-        // eslint-disable-next-line react/jsx-no-target-blank
-        target="_blank"
-      >
+      <FloatRightAnchor href={clubModel.attachmentUrl + newsObject.fileId} target="_blank">
         <MaterialIcon icon="download" fontSize={24} />
       </FloatRightAnchor>
     ) : null;

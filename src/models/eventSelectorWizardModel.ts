@@ -95,12 +95,12 @@ export class EventSelectorWizard implements IEventSelectorWizard {
       maxDistanceDistrict: observable,
       maxDistanceNearbyAndClub: observable,
       selectedEvents: observable,
-      setQueryStartDate: action,
-      setQueryEndDate: action,
-      setMaxDistanceNational: action,
-      setMaxDistanceDistrict: action,
-      setMaxDistanceNearbyAndClub: action,
-      setSelectedEvents: action,
+      setQueryStartDate: action.bound,
+      setQueryEndDate: action.bound,
+      setMaxDistanceNational: action.bound,
+      setMaxDistanceDistrict: action.bound,
+      setMaxDistanceNearbyAndClub: action.bound,
+      setSelectedEvents: action.bound,
     });
   }
 

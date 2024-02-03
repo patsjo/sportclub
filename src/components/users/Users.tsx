@@ -1,4 +1,4 @@
-import { message, Modal, ModalFuncProps, Popconfirm, Spin } from 'antd';
+import { Empty, message, Modal, ModalFuncProps, Popconfirm, Spin } from 'antd';
 import { ColumnType } from 'antd/lib/table';
 import { observer } from 'mobx-react';
 import { ICouncilModel, IGroupModel, IUserModel } from 'models/userModel';
@@ -232,7 +232,9 @@ const Users = observer(() => {
     <SpinnerDiv>
       <Spin size="large" />
     </SpinnerDiv>
-  ) : null;
+  ) : (
+    <Empty description={t('common.Login')} />
+  );
 });
 
 export default Users;

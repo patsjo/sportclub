@@ -57,7 +57,7 @@ export class NewsItem implements INewsItem {
       imageWidth: observable,
       modificationDate: observable,
       modifiedBy: observable,
-      setValues: action,
+      setValues: action.bound,
     });
   }
 
@@ -96,10 +96,10 @@ export class NewsModel implements INewsModel {
       newsItems: observable,
       limit: observable,
       offset: observable,
-      reset: action,
-      addNewsItemToTop: action,
-      addNewsItemsToBottom: action,
-      removeNewsItem: action,
+      reset: action.bound,
+      addNewsItemToTop: action.bound,
+      addNewsItemsToBottom: action.bound,
+      removeNewsItem: action.bound,
     });
   }
 

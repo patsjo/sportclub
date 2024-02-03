@@ -43,7 +43,7 @@ if ($input->iType != "COMPETITOR_INFO" && $input->iType != "COMPETITOR_RENOUNCE"
 OpenDatabase();
 $now = date("Y-m-d G:i:s"); // MySQL DATETIME
   
-if ($input->iType == "COMPETITOR")
+if ($input->iType == "COMPETITOR" && (!isset($input->iCompetitorId) || $input->iCompetitorId == -1))
 {
   $input->iFirstName = stripslashes($input->iFirstName);
   $input->iLastName = stripslashes($input->iLastName);
@@ -135,6 +135,7 @@ if ($input->iType == "COMPETITOR")
       $x->lastName             = $row2['LAST_NAME'];
       $x->birthDay             = $row2['BIRTHDAY'];
       $x->gender               = $row2['GENDER'];
+      $x->familyId             = is_null($row2['FAMILY_ID']) ? NULL : intval($row2['FAMILY_ID']);
       $x->excludeResults       = is_null($row2['EXCLUDE_RESULTS']) ? false : strcasecmp($row2['EXCLUDE_RESULTS'], 'YES') == 0;
       $x->excludeTime          = is_null($row2['EXCLUDE_TIME']) ? NULL : date2String(strtotime($row2['EXCLUDE_TIME']));
       $x->startDate            = is_null($row2['START_DATE']) ? NULL : date2String(strtotime($row2['START_DATE']));
@@ -142,6 +143,137 @@ if ($input->iType == "COMPETITOR")
       $x->eventorCompetitorIds = array();
 
       $sql3 = "SELECT * FROM RACE_COMPETITORS_EVENTOR WHERE COMPETITOR_ID = " . $competitorId;
+      $result3 = \db\mysql_query($sql3);
+      if (!$result3)
+      {
+        trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
+      }
+        
+      if (\db\mysql_num_rows($result3) > 0)
+      {
+        while($row3 = \db\mysql_fetch_assoc($result3))
+        {
+          array_push($x->eventorCompetitorIds, intval($row3['EVENTOR_COMPETITOR_ID']));
+        }    
+      }
+      \db\mysql_free_result($result3);
+    }
+  }
+  \db\mysql_free_result($result2);
+}
+elseif ($input->iType == "COMPETITOR")
+{
+  $input->iFirstName = stripslashes($input->iFirstName);
+  $input->iLastName = stripslashes($input->iLastName);
+  $input->iGender = stripslashes($input->iGender);
+  $input->iBirthDay = string2Date($input->iBirthDay);
+
+  if (isset($input->iFamilyId) && isset($input->iFamilyName) && !is_null($input->iFamilyName) && (is_null($input->iFamilyId) || $input->iFamilyId == "null" || $input->iFamilyId == -1)) {
+    $query = sprintf("INSERT INTO RACE_FAMILIES " .
+                   "(" .
+                   "  FAMILY_NAME" .
+                   ")" .
+                   " VALUES " .
+                   "(" .
+                   "  '%s'" .
+                   ")",
+                   \db\mysql_real_escape_string($input->iFamilyName));
+
+    \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
+    $input->iFamilyId = \db\mysql_insert_id();
+        
+    if ($input->iFamilyId == 0)
+    {
+      trigger_error("Can't get the 'family_id' auto_increment value", E_USER_ERROR);
+    }
+  }
+
+  $query = sprintf("UPDATE RACE_COMPETITORS " .
+                   "SET FAMILY_ID = %d, FIRST_NAME = '%s', LAST_NAME = '%s', BIRTHDAY = " . str_replace("''", "Null", "'" . date2String($input->iBirthDay) . "'") . ", GENDER = '%s' " .
+                   "WHERE COMPETITOR_ID = %d",
+                   $input->iFamilyId,
+                   \db\mysql_real_escape_string($input->iFirstName),
+                   \db\mysql_real_escape_string($input->iLastName),
+                   \db\mysql_real_escape_string($input->iGender),
+                   $input->iCompetitorId);
+
+  \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
+
+  if(!isset($input->iStartDate) || $input->iStartDate == "" || $input->iStartDate == "null")
+  {
+    $input->iStartDate = null;
+  }
+  else
+  {
+    $input->iStartDate = string2Date($input->iStartDate);
+  }
+  if(!isset($input->iEndDate) || $input->iEndDate == "" || $input->iEndDate == "null")
+  {
+    $input->iEndDate = null;
+  }
+  else
+  {
+    $input->iEndDate = string2Date($input->iEndDate);
+  }
+
+  $query = sprintf("UPDATE RACE_COMPETITORS_CLUB " .
+                   "SET START_DATE = " . str_replace("''", "Null", "'" . date2String($input->iStartDate) . "'") . ", " .
+                   "    END_DATE = " . str_replace("''", "Null", "'" . date2String($input->iEndDate) . "'") . " " .
+                   "WHERE COMPETITOR_ID = %d AND CLUB_ID = %d",
+                   $input->iCompetitorId,
+                   $input->iClubId);
+               
+  \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
+
+  if (isset($input->iEventorCompetitorIds) && is_array($input->iEventorCompetitorIds)) {
+    $sql = "DELETE FROM RACE_COMPETITORS_EVENTOR WHERE COMPETITOR_ID = " . $input->iCompetitorId;
+
+    if (!\db\mysql_query($sql))
+    {
+      trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
+    }
+
+    foreach ($input->iEventorCompetitorIds as $eventorCompetitorId) {
+      $query = sprintf("INSERT INTO RACE_COMPETITORS_EVENTOR " .
+               "(" .
+               "  EVENTOR_COMPETITOR_ID, COMPETITOR_ID" .
+               ")" .
+               " VALUES " .
+               "(" .
+               "  %d, %d" .
+               ")",
+               $eventorCompetitorId,
+               $input->iCompetitorId);
+
+      \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
+    }
+  }
+
+  $sql2 = "SELECT * FROM RACE_COMPETITORS INNER JOIN RACE_COMPETITORS_CLUB ON (RACE_COMPETITORS.COMPETITOR_ID = RACE_COMPETITORS_CLUB.COMPETITOR_ID) WHERE RACE_COMPETITORS.COMPETITOR_ID = " . $input->iCompetitorId;
+  $result2 = \db\mysql_query($sql2);
+  if (!$result2)
+  {
+    trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
+  }
+    
+  if (\db\mysql_num_rows($result2) > 0)
+  {
+    while($row2 = \db\mysql_fetch_assoc($result2))
+    {
+      $x = new stdClass();
+      $x->competitorId         = intval($row2['COMPETITOR_ID']);
+      $x->firstName            = $row2['FIRST_NAME'];
+      $x->lastName             = $row2['LAST_NAME'];
+      $x->birthDay             = $row2['BIRTHDAY'];
+      $x->gender               = $row2['GENDER'];
+      $x->familyId             = is_null($row2['FAMILY_ID']) ? NULL : intval($row2['FAMILY_ID']);
+      $x->excludeResults       = is_null($row2['EXCLUDE_RESULTS']) ? false : strcasecmp($row2['EXCLUDE_RESULTS'], 'YES') == 0;
+      $x->excludeTime          = is_null($row2['EXCLUDE_TIME']) ? NULL : date2String(strtotime($row2['EXCLUDE_TIME']));
+      $x->startDate            = is_null($row2['START_DATE']) ? NULL : date2String(strtotime($row2['START_DATE']));
+      $x->endDate              = is_null($row2['END_DATE']) ? NULL : date2String(strtotime($row2['END_DATE']));
+      $x->eventorCompetitorIds = array();
+
+      $sql3 = "SELECT * FROM RACE_COMPETITORS_EVENTOR WHERE COMPETITOR_ID = " . $input->iCompetitorId;
       $result3 = \db\mysql_query($sql3);
       if (!$result3)
       {
