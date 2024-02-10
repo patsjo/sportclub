@@ -11,7 +11,8 @@ type ModuleNameTypes =
   | 'Results'
   | 'Users'
   | 'Photo'
-  | 'HTMLEditor';
+  | 'HTMLEditor'
+  | 'Files';
 
 interface ILeagueProps {
   rankingLeagueAgeLimit: number;
@@ -84,7 +85,7 @@ interface ILinkProps {
 }
 
 interface IModuleProps {
-  name: string;
+  name: ModuleNameTypes;
   addUrl?: string;
   deleteUrl?: string;
   updateUrl?: string;
@@ -98,14 +99,15 @@ export interface IModule extends Omit<IModuleProps, 'league'> {
 }
 
 class Module implements IModule {
-  name = '';
+  name: ModuleNameTypes;
   addUrl?: string;
   deleteUrl?: string;
   updateUrl?: string;
   queryUrl?: string;
   league: League;
 
-  constructor(options: PickRequired<IModuleProps, 'name'>) {
+  constructor({ name, ...options }: PickRequired<IModuleProps, 'name'>) {
+    this.name = name;
     if (options) {
       const { league, ...rest } = options;
       Object.assign(this, rest);
@@ -131,6 +133,7 @@ class Module implements IModule {
       this.name !== 'ScoringBoard' &&
       this.name !== 'Stars' &&
       this.name !== 'HTMLEditor' &&
+      this.name !== 'Files' &&
       this.name !== 'Users'
     );
   }

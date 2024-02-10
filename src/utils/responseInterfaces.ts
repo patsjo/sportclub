@@ -25,7 +25,25 @@ export interface IMenuResponse {
   menuPath: string;
   pageId?: number;
   linkId?: number;
+  fileId?: number;
   url?: string;
+  createdByUserId?: number;
+}
+
+export interface IFileResponse {
+  fileId: number;
+  folderId: number;
+  fileName?: string | null;
+  story?: string | null;
+  needPassword: boolean;
+  allowedGroupId: number;
+  orderField: number;
+}
+
+export interface IFolderResponse {
+  folderId: number;
+  menuPath: string;
+  createdByUserId?: number;
 }
 
 export interface IPrintSettingsColumn {

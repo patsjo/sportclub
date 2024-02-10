@@ -11,6 +11,7 @@ import LoginMenuItem from '../login/LoginMenuItem';
 import MaterialIcon, { MaterialIconsType } from '../materialIcon/MaterialIcon';
 import MenuItem from './MenuItem';
 import ModuleSubMenu from './moduleSubMenus/ModuleSubMenu';
+import { FileEditorModal } from 'components/htmlEditor/FileEditorModal';
 
 const StyledDrawer = styled(Drawer)`
   &&& {
@@ -41,6 +42,7 @@ const DrawerRightMenu = observer(() => {
   const { t } = useTranslation();
   const { clubModel, globalStateModel, sessionModel } = useMobxStore();
   const [htmEditorLinkform] = Form.useForm();
+  const [fileEditorForm] = Form.useForm();
   const navigate = useNavigate();
 
   return (
@@ -99,22 +101,23 @@ const DrawerRightMenu = observer(() => {
           />
         ) : null}
         <Menu.Divider />
+        {globalStateModel.htmlEditorMenu ? (
+          getHtmlEditorMenus(
+            globalStateModel.htmlEditorMenu,
+            (path: string) => globalStateModel.setHtmlEditor(navigate, path),
+            '',
+            htmEditorLinkform,
+            fileEditorForm,
+            t,
+            globalStateModel,
+            sessionModel,
+            clubModel
+          )
+        ) : (
+          <Spin size="small" />
+        )}
         {clubModel.modules.some((module) => module.name === 'HTMLEditor') ? (
           <>
-            {globalStateModel.htmlEditorMenu ? (
-              getHtmlEditorMenus(
-                globalStateModel.htmlEditorMenu,
-                (path: string) => globalStateModel.setHtmlEditor(navigate, path),
-                '',
-                htmEditorLinkform,
-                t,
-                globalStateModel,
-                sessionModel,
-                clubModel
-              )
-            ) : (
-              <Spin size="small" />
-            )}{' '}
             <MenuItem
               key={'menuItem#htmlEditor'}
               icon={'edit'}
@@ -148,6 +151,24 @@ const DrawerRightMenu = observer(() => {
                   sessionModel,
                   clubModel
                 )
+                  .then()
+                  .catch((error) => {
+                    console.error(error);
+                  });
+              }}
+            />
+          </>
+        ) : null}
+        {clubModel.modules.some((module) => module.name === 'Files') ? (
+          <>
+            <MenuItem
+              key={'menuItem#uploadFile'}
+              icon={'cloud-upload'}
+              name={t('files.UploadFile')}
+              disabled={!sessionModel.loggedIn || !sessionModel.isAdmin}
+              onClick={() => {
+                globalStateModel.setRightMenuVisible(false);
+                FileEditorModal(t, -1, fileEditorForm, globalStateModel, sessionModel, clubModel)
                   .then()
                   .catch((error) => {
                     console.error(error);

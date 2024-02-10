@@ -55,6 +55,7 @@ export async function GetJsonData(url = '', throwError = true, requestHeaders = 
     retries
   );
 }
+
 export async function PostJsonData(url = '', data = {}, throwError = true, requestHeaders = {}, retries = RETRIES) {
   // Default options are marked with *
   return fetch_retry(
@@ -76,4 +77,43 @@ export async function PostJsonData(url = '', data = {}, throwError = true, reque
     throwError,
     retries
   );
+}
+
+export async function DownloadData(fileName, url, data = {}, requestHeaders = {}) {
+  // Default options are marked with *
+  const response = await fetch(url, {
+    method: 'POST', // *GET, POST, PUT, DELETE, etc.
+    // mode: "cors", // no-cors, cors, *same-origin
+    cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+    credentials: 'include', // include, *same-origin, omit
+    headers: {
+      ...requestHeaders,
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    // redirect: "follow", // manual, *follow, error
+    // referrer: "no-referrer", // no-referrer, *client
+    body: JSON.stringify(data), // body data type must match "Content-Type" header
+  });
+
+  if (!response) {
+    throw new Error(`Failed to fetch the file: ${fileName}`);
+  }
+
+  const blob = await response.blob();
+  const link = document.createElement('a');
+  link.href = window.URL.createObjectURL(blob);
+  link.download = fileName;
+
+  // Ensure the link is not added to the DOM
+  link.style.display = 'none';
+
+  // Add the link to the document body
+  document.body.appendChild(link);
+
+  // Trigger a click event to start the download
+  link.click();
+
+  // Remove the link from the DOM after the download is initiated
+  document.body.removeChild(link);
 }

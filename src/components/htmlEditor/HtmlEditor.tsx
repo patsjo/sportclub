@@ -53,6 +53,7 @@ const HtmlEditor = observer(() => {
   const [loading, setLoading] = useState(true);
   const formId = 'htmlEditorForm' + Math.floor(Math.random() * 1000000000000000);
   const htmlEditorModule = clubModel.modules.find((module) => module.name === 'HTMLEditor');
+  const filesModule = clubModel.modules.find((module) => module.name === 'Files');
   const navigate = useNavigate();
   const [currentEditor, setCurrentEditor] = useState<ClassicEditor>();
 
@@ -161,7 +162,7 @@ const HtmlEditor = observer(() => {
           setPageId(pageResponse.iPageID);
           setData(htmlData);
           setSaving(false);
-          htmlEditorModule && globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, sessionModel, message);
+          globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, filesModule, sessionModel, message);
           if (values.iMenuPath !== location.pathname) navigate(values.iMenuPath, { replace: true });
         })
         .catch((e) => {
@@ -169,7 +170,17 @@ const HtmlEditor = observer(() => {
           setSaving(false);
         });
     });
-  }, [location.pathname, globalStateModel, sessionModel, htmlEditorModule, currentEditor, form, pageId, valid]);
+  }, [
+    location.pathname,
+    globalStateModel,
+    sessionModel,
+    htmlEditorModule,
+    filesModule,
+    currentEditor,
+    form,
+    pageId,
+    valid,
+  ]);
 
   return loading || saving ? (
     <SpinnerDiv>
@@ -273,7 +284,7 @@ const HtmlEditor = observer(() => {
                 sessionModel.authorizationHeader
               )
                 .then(() => {
-                  htmlEditorModule && globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, sessionModel, message);
+                  globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, filesModule, sessionModel, message);
                   navigate('/', { replace: true });
                 })
                 .catch((e) => {

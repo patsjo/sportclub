@@ -6,31 +6,34 @@ interface ISplittedMenu {
   menuPaths: string[];
   pageId?: number;
   linkId?: number;
+  fileId?: number;
   url?: string;
+  createdByUserId?: number;
 }
-const getMenuLevels = (splittedMenus: ISplittedMenu[], level = 1, prevMenus = ''): IMenu => ({
+const getMenuLevels = (splittedMenus: ISplittedMenu[], level = 1): IMenu => ({
   menuItems: splittedMenus
-    .filter((m) => m.menuPaths.length === level && m.menuPaths.slice(0, level - 1).join('/') === prevMenus)
+    .filter((m) => m.menuPaths.length === level)
     .map((m) => ({
       pageId: m.pageId,
       linkId: m.linkId,
+      fileId: m.fileId,
       menuPath: m.menuPath,
       description: m.menuPaths.slice(level - 1).join(''),
       url: m.url,
       level: level,
+      createdByUserId: m.createdByUserId,
     })),
   subMenus: splittedMenus
     .filter(
       (m, index, self) =>
         m.menuPaths.length > level &&
-        m.menuPaths.slice(0, level - 1).join('/') === prevMenus &&
-        index ===
-          self.findIndex(
-            (m2) => m.menuPaths.slice(level - 1, level).join('') === m2.menuPaths.slice(level - 1, level).join('')
-          )
+        index === self.findIndex((m2) => m.menuPaths[level - 1] === m2.menuPaths[level - 1])
     )
     .map((m) => ({
-      subMenus: getMenuLevels(splittedMenus, level + 1, m.menuPaths.slice(0, level).join('/')),
+      subMenus: getMenuLevels(
+        splittedMenus.filter((m2) => m2.menuPaths.length > level && m.menuPaths[level - 1] === m2.menuPaths[level - 1]),
+        level + 1
+      ),
       description: m.menuPaths.slice(level - 1, level).join(''),
       level: level,
     })),
@@ -50,7 +53,9 @@ export const getMenus = (menus: IMenuResponse[]): IMenu => {
       menuPaths: menu.menuPath.replace(/^[\s/]+|[\s/]+$/g, '').split('/'),
       pageId: menu.pageId,
       linkId: menu.linkId,
+      fileId: menu.fileId,
       url: menu.url,
+      createdByUserId: menu.createdByUserId,
     }));
   const menuLevels = getMenuLevels(splittedMenus);
 

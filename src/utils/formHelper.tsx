@@ -13,7 +13,7 @@ export const timeFormat = 'HH:mm:ss';
 export const timeFormatWithoutHour = 'mm:ss';
 export const shortTimeFormat = 'HH:mm';
 export const datetimeFormat = `${dateFormat} ${timeFormat}`;
-export const maxByteSize = 10485760;
+export const maxByteSize = 32000000;
 
 export interface INumberOption {
   code: number;

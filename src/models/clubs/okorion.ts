@@ -371,6 +371,13 @@ const okorion: IMobxClubModelProps = {
       updateUrl: 'https://okorion.com/htmlEditor/save.php',
       queryUrl: 'https://okorion.com/htmlEditor/jsonHtmlEditorQuery.php',
     },
+    {
+      name: 'Files',
+      addUrl: 'https://okorion.com/files/save.php',
+      deleteUrl: 'https://okorion.com/files/delete.php',
+      updateUrl: 'https://okorion.com/files/save.php',
+      queryUrl: 'https://okorion.com/files/jsonFilesQuery.php',
+    },
   ],
   links: [{ name: 'SOFT', url: 'https://www.svenskorientering.se' }],
   sports: ['Orientering'],

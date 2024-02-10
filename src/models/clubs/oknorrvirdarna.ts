@@ -90,6 +90,13 @@ const varendgn: IMobxClubModelProps = {
       updateUrl: 'https://oknorrvirdarna.se/htmlEditor/save.php',
       queryUrl: 'https://oknorrvirdarna.se/htmlEditor/jsonHtmlEditorQuery.php',
     },
+    {
+      name: 'Files',
+      addUrl: 'https://oknorrvirdarna.se/files/save.php',
+      deleteUrl: 'https://oknorrvirdarna.se/files/delete.php',
+      updateUrl: 'https://oknorrvirdarna.se/files/save.php',
+      queryUrl: 'https://oknorrvirdarna.se/files/jsonFilesQuery.php',
+    },
   ],
   links: [{ name: 'SOFT', url: 'https://www.svenskorientering.se' }],
   sports: ['Orientering'],

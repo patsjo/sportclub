@@ -83,6 +83,13 @@ const varendgn: IMobxClubModelProps = {
       updateUrl: 'https://varendgn.se/htmlEditor/save.php',
       queryUrl: 'https://varendgn.se/htmlEditor/jsonHtmlEditorQuery.php',
     },
+    {
+      name: 'Files',
+      addUrl: 'https://varendgn.se/files/save.php',
+      deleteUrl: 'https://varendgn.se/files/delete.php',
+      updateUrl: 'https://varendgn.se/files/save.php',
+      queryUrl: 'https://varendgn.se/files/jsonFilesQuery.php',
+    },
   ],
   links: [{ name: 'SOFT', url: 'https://www.svenskorientering.se' }],
   sports: ['Orientering'],

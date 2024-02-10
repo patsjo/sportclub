@@ -328,7 +328,7 @@ const Competitors = observer(() => {
     },
   ];
 
-  const clubBgColor = lightenColor(clubModel.theme.palette.primary.main, 85);
+  const clubBgColor = lightenColor('#1075E0', 85);
   const clubTextColor = getTextColorBasedOnBackground(clubBgColor);
   return loaded && sessionModel.isAdmin ? (
     <CompetitorTable

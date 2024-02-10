@@ -67,6 +67,7 @@ interface IUploadDraggerProps {
   multiple: boolean;
   asThumbnail?: boolean;
   allowedFileTypes?: string[];
+  onChange?: (fileList: UploadFile[]) => Promise<void>;
 }
 
 const UploadDragger = ({
@@ -76,6 +77,7 @@ const UploadDragger = ({
   multiple,
   asThumbnail,
   allowedFileTypes,
+  onChange,
 }: IUploadDraggerProps) => {
   const { t } = useTranslation();
   const [files, setFiles] = React.useState<IFile[]>((form.getFieldValue(fieldName) as IFile[]) || []);
@@ -123,16 +125,17 @@ const UploadDragger = ({
     return fileIsValid && sizeIsValid;
   };
 
-  const onDelete = (file: UploadFile<any>) => {
+  const onDelete = async (file: UploadFile<any>) => {
     const { setFieldsValue, getFieldValue } = form;
     let files: IFile[] = getFieldValue(fieldName) || [];
     files = files.filter((f) => f.uid !== file.uid);
 
     setFieldsValue({ [fieldName]: files });
     setFiles(files);
+    onChange && (await onChange(files));
   };
 
-  const onChange = ({ file, fileList }: UploadChangeParam<UploadFile<any>>) => {
+  const onUploadChange = async ({ file, fileList }: UploadChangeParam<UploadFile<any>>) => {
     const { setFieldsValue } = form;
     const fileIsValid = validFile(file);
     const sizeIsValid = file.size && file.size <= maxByteSize;
@@ -154,6 +157,7 @@ const UploadDragger = ({
     if (!fileList.some((f) => f.status === 'uploading')) {
       setFieldsValue({ [fieldName]: fileList });
       setFiles(fileList);
+      onChange && (await onChange(fileList));
     }
   };
 
@@ -187,7 +191,7 @@ const UploadDragger = ({
           <FileIcon fileType={getFileType(files[0])} fontSize={48} />
         </StyledP>
         <p className="ant-upload-text">{files[0].name}</p>
-        <CloseX onClick={() => onDelete(files[0])}>
+        <CloseX onClick={async () => await onDelete(files[0])}>
           <MaterialIcon icon="delete" fontSize={12} />
         </CloseX>
       </DeleteFile>
@@ -211,7 +215,7 @@ const UploadDragger = ({
             }
             beforeUpload={beforeUpload}
             showUploadList={multiple ? { showPreviewIcon: false } : false}
-            onChange={onChange}
+            onChange={onUploadChange}
             onRemove={onDelete}
             data-testid="attachmentsInput"
           >
@@ -236,7 +240,7 @@ const UploadDragger = ({
           }
           beforeUpload={beforeUpload}
           showUploadList={multiple ? { showPreviewIcon: false } : false}
-          onChange={onChange}
+          onChange={onUploadChange}
           onRemove={onDelete}
           data-testid="attachmentsInput"
         >

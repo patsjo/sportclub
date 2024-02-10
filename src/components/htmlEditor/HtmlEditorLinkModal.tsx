@@ -110,6 +110,7 @@ export const HtmlEditorLinkModal = (
       onOk() {
         hasErrors(form).then((notValid) => {
           const htmlEditorModule = clubModel.modules.find((module) => module.name === 'HTMLEditor');
+          const filesModule = clubModel.modules.find((module) => module.name === 'Files');
           const deleteUrl = htmlEditorModule?.deleteUrl;
           const saveUrl = linkId < 0 ? htmlEditorModule?.addUrl : htmlEditorModule?.updateUrl;
 
@@ -131,7 +132,7 @@ export const HtmlEditorLinkModal = (
               sessionModel.authorizationHeader
             )
               .then((linkResponse) => {
-                htmlEditorModule && globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, sessionModel, message);
+                globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, filesModule, sessionModel, message);
                 resolve(linkResponse);
               })
               .catch((e) => {
@@ -156,7 +157,7 @@ export const HtmlEditorLinkModal = (
                 sessionModel.authorizationHeader
               )
                 .then((linkResponse) => {
-                  htmlEditorModule && globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, sessionModel, message);
+                  globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, filesModule, sessionModel, message);
                   resolve(linkResponse);
                 })
                 .catch((e) => {

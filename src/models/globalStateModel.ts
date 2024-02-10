@@ -1,6 +1,7 @@
 import { MessageApi } from 'antd/lib/message';
 import { action, makeObservable, observable } from 'mobx';
 import { NavigateFunction } from 'react-router-dom';
+import { IMenuResponse } from 'utils/responseInterfaces';
 import { PostJsonData } from '../utils/api';
 import { getMenus } from '../utils/htmlEditorMenuHelper';
 import { GraphicAttributeTypesType, IGraphic } from './graphic';
@@ -34,7 +35,12 @@ export interface IGlobalStateModel extends Omit<IGlobalStateModelProps, 'news'> 
   setHtmlEditor: (navigate: NavigateFunction, path: string) => void;
   setGraphics: (types: GraphicAttributeTypesType[], graphics: IGraphic[]) => Promise<void>;
   setHtmlEditorMenu: (menu: IMenu) => void;
-  fetchHtmlEditorMenu: (htmlEditorModule: IModule, sessionModel: ISessionModel, message: MessageApi) => Promise<void>;
+  fetchHtmlEditorMenu: (
+    htmlEditorModule: IModule | undefined,
+    filesModule: IModule | undefined,
+    sessionModel: ISessionModel,
+    message: MessageApi
+  ) => Promise<void>;
 }
 
 export class GlobalStateModel implements IGlobalStateModel {
@@ -109,19 +115,38 @@ export class GlobalStateModel implements IGlobalStateModel {
     this.htmlEditorMenu = menu;
   }
 
-  async fetchHtmlEditorMenu(htmlEditorModule: IModule, sessionModel: ISessionModel, message: MessageApi) {
+  async fetchHtmlEditorMenu(
+    htmlEditorModule: IModule | undefined,
+    filesModule: IModule | undefined,
+    sessionModel: ISessionModel,
+    message: MessageApi
+  ) {
     try {
-      const menusResponse = await PostJsonData(
-        htmlEditorModule.queryUrl,
-        {
-          iType: 'MENUS',
-          username: sessionModel.username,
-          password: sessionModel.password,
-        },
-        true,
-        sessionModel.authorizationHeader
-      );
-      this.setHtmlEditorMenu(getMenus(menusResponse));
+      const menusResponse = htmlEditorModule
+        ? (await PostJsonData(
+            htmlEditorModule.queryUrl,
+            {
+              iType: 'MENUS',
+              username: sessionModel.username,
+              password: sessionModel.password,
+            },
+            true,
+            sessionModel.authorizationHeader
+          )) ?? ([] as IMenuResponse[])
+        : [];
+      const filesResponse = filesModule
+        ? (await PostJsonData(
+            filesModule.queryUrl,
+            {
+              iType: 'FILES',
+              username: sessionModel.username,
+              password: sessionModel.password,
+            },
+            true,
+            sessionModel.authorizationHeader
+          )) ?? ([] as IMenuResponse[])
+        : [];
+      this.setHtmlEditorMenu(getMenus([...menusResponse, ...filesResponse]));
     } catch (e: any) {
       message.error(e?.message);
     }

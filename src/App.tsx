@@ -1,6 +1,6 @@
 import { Layout, message, Spin } from 'antd';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
-import { BrowserRouter as Router, Link } from 'react-router-dom';
+import { Link, BrowserRouter as Router } from 'react-router-dom';
 import styled, { ThemeProvider } from 'styled-components';
 import AppContent from './AppContent';
 import Toolbar from './components/toolbar/Toolbar';
@@ -162,9 +162,10 @@ const App = () => {
 
   useEffect(() => {
     const htmlEditorModule = clubModel.current.modules.find((module) => module.name === 'HTMLEditor');
+    const filesModule = clubModel.current.modules.find((module) => module.name === 'Files');
 
     document.title = clubModel.current.title;
-    htmlEditorModule && globalStateModel.current.fetchHtmlEditorMenu(htmlEditorModule, sessionModel.current, message);
+    globalStateModel.current.fetchHtmlEditorMenu(htmlEditorModule, filesModule, sessionModel.current, message);
     window.addEventListener('scroll', onScroll);
 
     if (sessionModel.current.username && sessionModel.current.username.length > 0) {
