@@ -12,6 +12,7 @@ import MaterialIcon from '../materialIcon/MaterialIcon';
 import MenuItem from '../menu/MenuItem';
 import { HtmlEditorLinkModal } from './HtmlEditorLinkModal';
 import { FileEditorModal } from './FileEditorModal';
+import { FolderEditorModal } from './FolderEditorModal';
 
 interface IStyledSubMenu {
   level: number;
@@ -151,6 +152,22 @@ export const getHtmlEditorMenus = (
               icon={<CaretRightOutlined style={{ verticalAlign: 'middle', fontSize: 18 }} />}
               fontSize={18}
             />
+            {subMenu.folderId &&
+            sessionModel.loggedIn &&
+            (sessionModel.isAdmin || sessionModel.id == subMenu.createdByUserId) ? (
+              <SettingOutlined
+                style={{ verticalAlign: 'middle', fontSize: 18 }}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  globalStateModel.setRightMenuVisible(false);
+                  FolderEditorModal(t, subMenu.folderId!, fileEditorForm, globalStateModel, sessionModel, clubModel)
+                    .then()
+                    .catch((error) => {
+                      console.error(error);
+                    });
+                }}
+              />
+            ) : null}
             <span>{subMenu.description}</span>
           </span>
         }

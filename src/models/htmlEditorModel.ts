@@ -13,6 +13,8 @@ interface ISubMenu {
   subMenus: IMenu;
   description: string;
   level: number;
+  folderId?: number;
+  createdByUserId?: number;
 }
 
 export interface IMenu {

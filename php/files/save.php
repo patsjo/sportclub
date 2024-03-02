@@ -197,7 +197,7 @@ elseif ($input->iType == "FOLDER")
     trigger_error('Missing parameter "parentFolderId"', E_USER_ERROR);
   }
   $input->preStory = stripslashes($input->preStory);
-  $input->postStory = stripslashes($_REQUEST['iPostStory']);
+  $input->postStory = stripslashes($input->postStory);
   if (!isset($input->allowedGroupId))
   {
     trigger_error('Missing parameter "allowedGroupId"', E_USER_ERROR);
@@ -241,7 +241,7 @@ elseif ($input->iType == "FOLDER")
     $query = "UPDATE folders " .
            "SET folder_name = '" . str_replace("'", "", $input->folderName) . "', parent_folder_id = " . $input->parentFolderId . ", " .
            "    pre_story = '" . str_replace("'", "", $input->preStory) . "', post_story = '" . str_replace("''", "", $input->postStory) . "', " .
-           "    need_password = '" . str_replace("'", "", $input->needPassword) . "', allowed_group_id = " . $iAllowedGroupID . ", " .
+           "    need_password = '" . str_replace("'", "", $input->needPassword) . "', allowed_group_id = " . $input->allowedGroupId . ", " .
            "    cre_by_user_id = " . $user_id . ", cre_date = '" . datetime2String(time()) . "'" .
            "WHERE folder_id = " . $input->folderId;
     $query = sprintf("UPDATE folders " .

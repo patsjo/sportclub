@@ -42,6 +42,12 @@ export interface IFileResponse {
 
 export interface IFolderResponse {
   folderId: number;
+  folderName: string;
+  parentFolderId: number;
+  preStory?: string | null;
+  postStory?: string | null;
+  needPassword: boolean;
+  allowedGroupId: number;
   menuPath: string;
   createdByUserId?: number;
 }

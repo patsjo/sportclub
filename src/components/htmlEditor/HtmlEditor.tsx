@@ -27,6 +27,18 @@ const StyledButton = styled(Button)`
   }
 `;
 
+const StyledContainer = styled.div`
+  margin: 0 auto;
+  max-width: 80%;
+
+  @media screen and (min-width: 1500px) {
+    max-width: 1200px;
+  }
+  @media screen and (max-width: 1000px) {
+    max-width: 800px;
+  }
+`;
+
 const HtmlEditor = observer(() => {
   const location = useLocation();
   const { clubModel, globalStateModel, sessionModel } = useMobxStore();
@@ -189,7 +201,7 @@ const HtmlEditor = observer(() => {
   ) : error ? (
     <Alert message="Error" description={error} type="error" showIcon />
   ) : (
-    <>
+    <StyledContainer>
       {!isReadOnly ? (
         <Form
           form={form}
@@ -302,7 +314,7 @@ const HtmlEditor = observer(() => {
           </StyledButton>
         </>
       ) : null}
-    </>
+    </StyledContainer>
   );
 });
 

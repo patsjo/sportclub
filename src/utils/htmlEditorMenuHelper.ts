@@ -1,5 +1,5 @@
 import { IMenu } from 'models/htmlEditorModel';
-import { IMenuResponse } from './responseInterfaces';
+import { IFolderResponse, IMenuResponse } from './responseInterfaces';
 
 interface ISplittedMenu {
   menuPath: string;
@@ -10,7 +10,12 @@ interface ISplittedMenu {
   url?: string;
   createdByUserId?: number;
 }
-const getMenuLevels = (splittedMenus: ISplittedMenu[], level = 1): IMenu => ({
+const getMenuLevels = (
+  splittedMenus: ISplittedMenu[],
+  foldersResponse: IFolderResponse[],
+  level = 1,
+  parentFolderId = 0
+): IMenu => ({
   menuItems: splittedMenus
     .filter((m) => m.menuPaths.length === level)
     .map((m) => ({
@@ -29,17 +34,41 @@ const getMenuLevels = (splittedMenus: ISplittedMenu[], level = 1): IMenu => ({
         m.menuPaths.length > level &&
         index === self.findIndex((m2) => m.menuPaths[level - 1] === m2.menuPaths[level - 1])
     )
-    .map((m) => ({
-      subMenus: getMenuLevels(
-        splittedMenus.filter((m2) => m2.menuPaths.length > level && m.menuPaths[level - 1] === m2.menuPaths[level - 1]),
-        level + 1
-      ),
-      description: m.menuPaths.slice(level - 1, level).join(''),
-      level: level,
-    })),
+    .map((m, index, self) => {
+      const menuPath = `/${m.menuPaths.slice(0, level).join('/')}`;
+      const menuFolder = foldersResponse.find((folder) => folder.menuPath === menuPath);
+      return {
+        subMenus: getMenuLevels(
+          splittedMenus.filter(
+            (m2) => m2.menuPaths.length > level && m.menuPaths[level - 1] === m2.menuPaths[level - 1]
+          ),
+          foldersResponse,
+          level + 1,
+          menuFolder?.folderId
+        ),
+        description: m.menuPaths.slice(level - 1, level).join(''),
+        level: level,
+        folderId: menuFolder?.folderId,
+        createdByUserId: menuFolder?.createdByUserId,
+        bothMenus: true,
+      };
+    })
+    .concat(
+      foldersResponse
+        .filter((folder) => folder.parentFolderId === parentFolderId)
+        .map((folder) => ({
+          subMenus: getMenuLevels([], foldersResponse, level + 1, folder.folderId),
+          description: folder.folderName,
+          level: level,
+          folderId: folder.folderId,
+          createdByUserId: folder.createdByUserId,
+          bothMenus: false,
+        }))
+    )
+    .filter((m, _, self) => !m.folderId || self.filter((sm) => sm.folderId === m.folderId).length === 1 || m.bothMenus),
 });
 
-export const getMenus = (menus: IMenuResponse[]): IMenu => {
+export const getMenus = (menus: IMenuResponse[], foldersResponse: IFolderResponse[]): IMenu => {
   const splittedMenus: ISplittedMenu[] = menus
     .sort((a, b) =>
       a.menuPath.toLowerCase() > b.menuPath.toLowerCase()
@@ -57,7 +86,7 @@ export const getMenus = (menus: IMenuResponse[]): IMenu => {
       url: menu.url,
       createdByUserId: menu.createdByUserId,
     }));
-  const menuLevels = getMenuLevels(splittedMenus);
+  const menuLevels = getMenuLevels(splittedMenus, foldersResponse);
 
   return menuLevels;
 };

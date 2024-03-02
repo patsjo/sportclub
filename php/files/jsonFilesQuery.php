@@ -34,7 +34,7 @@ function compareByMenuPath($a, $b) {
 function getFolders($isAdmin, $iParentFolderID = 0, $iPath = "/")
 {
   $rows = array();
-  $query = sprintf("SELECT folder_id, folder_name, cre_by_user_id FROM folders WHERE folder_id != 1 AND parent_folder_id = %d AND (UPPER(need_password) != 'YES' OR ",
+  $query = sprintf("SELECT folder_id, folder_name, pre_story, post_story, need_password, allowed_group_id, cre_by_user_id FROM folders WHERE folder_id != 1 AND parent_folder_id = %d AND (UPPER(need_password) != 'YES' OR ",
                    $iParentFolderID);
   if (!$isAdmin && $user_id > 0)
   {
@@ -54,6 +54,12 @@ function getFolders($isAdmin, $iParentFolderID = 0, $iPath = "/")
   {
     $data = new stdClass();
     $data->folderId = intval($row['folder_id']);
+    $data->folderName = $row['folder_name'];
+    $data->parentFolderId = $iParentFolderID;
+    $data->preStory = $row['pre_story'];
+    $data->postStory = $row['post_story'];
+    $data->needPassword = $row['need_password'] == 'YES' ? true : false;
+    $data->allowedGroupId = intval($row['allowed_group_id']);
     $data->menuPath = $iPath . $row['folder_name'];
     $data->createdByUserId = intval($row['cre_by_user_id']);
     array_push($rows, $data);

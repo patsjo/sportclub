@@ -56,7 +56,7 @@ if ($input->iType == "FILE")
   $result = \db\mysql_query($query);
   if (!$result)
   {
-    die('SQL Error: ' . \db\mysql_error());
+    trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
   }
 
   while ($row = \db\mysql_fetch_assoc($result))
@@ -77,7 +77,7 @@ if ($input->iType == "FILE")
   $result = \db\mysql_query($query);
   if (!$result)
   {
-    die('SQL Error: ' . \db\mysql_error());
+    trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
   }
 
   while ($row = \db\mysql_fetch_assoc($result))
@@ -89,7 +89,7 @@ if ($input->iType == "FILE")
 
   if ($number_of > 0)
   {
-    die('SQL Error: File is connected to a news');
+    trigger_error('SQL Error: File is connected to a news', E_USER_ERROR);
   }
 
   $query = "DELETE FROM files " .
@@ -114,7 +114,7 @@ elseif ($input->iType == "FOLDER")
   $result = \db\mysql_query($query);
   if (!$result)
   {
-    die('SQL Error: ' . \db\mysql_error());
+    trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
   }
 
   while ($row = \db\mysql_fetch_assoc($result))
@@ -135,7 +135,7 @@ elseif ($input->iType == "FOLDER")
   $result = \db\mysql_query($query);
   if (!$result)
   {
-    die('SQL Error: ' . \db\mysql_error());
+    trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
   }
 
   while ($row = \db\mysql_fetch_assoc($result))
@@ -147,7 +147,7 @@ elseif ($input->iType == "FOLDER")
 
   if ($number_of > 0)
   {
-    die('SQL Error: Files exists in folder');
+    trigger_error('SQL Error: Files exists in folder', E_USER_ERROR);
   }
 
   $query = "SELECT COUNT(*) AS number_of FROM folders WHERE parent_folder_id = " . $input->folderId;
@@ -155,7 +155,7 @@ elseif ($input->iType == "FOLDER")
   $result = \db\mysql_query($query);
   if (!$result)
   {
-    die('SQL Error: ' . \db\mysql_error());
+    trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
   }
 
   while ($row = \db\mysql_fetch_assoc($result))
@@ -167,7 +167,7 @@ elseif ($input->iType == "FOLDER")
 
   if ($number_of > 0)
   {
-    die('SQL Error: Subfolders exists in folder');
+    trigger_error('SQL Error: Subfolders exists in folder', E_USER_ERROR);
   }
 
   $query = "DELETE FROM folders " .

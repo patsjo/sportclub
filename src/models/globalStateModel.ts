@@ -1,7 +1,7 @@
 import { MessageApi } from 'antd/lib/message';
 import { action, makeObservable, observable } from 'mobx';
 import { NavigateFunction } from 'react-router-dom';
-import { IMenuResponse } from 'utils/responseInterfaces';
+import { IFolderResponse, IMenuResponse } from 'utils/responseInterfaces';
 import { PostJsonData } from '../utils/api';
 import { getMenus } from '../utils/htmlEditorMenuHelper';
 import { GraphicAttributeTypesType, IGraphic } from './graphic';
@@ -123,7 +123,7 @@ export class GlobalStateModel implements IGlobalStateModel {
   ) {
     try {
       const menusResponse = htmlEditorModule
-        ? (await PostJsonData(
+        ? ((await PostJsonData(
             htmlEditorModule.queryUrl,
             {
               iType: 'MENUS',
@@ -132,10 +132,10 @@ export class GlobalStateModel implements IGlobalStateModel {
             },
             true,
             sessionModel.authorizationHeader
-          )) ?? ([] as IMenuResponse[])
+          )) as IMenuResponse[] | undefined) ?? []
         : [];
       const filesResponse = filesModule
-        ? (await PostJsonData(
+        ? ((await PostJsonData(
             filesModule.queryUrl,
             {
               iType: 'FILES',
@@ -144,9 +144,21 @@ export class GlobalStateModel implements IGlobalStateModel {
             },
             true,
             sessionModel.authorizationHeader
-          )) ?? ([] as IMenuResponse[])
+          )) as IMenuResponse[] | undefined) ?? []
         : [];
-      this.setHtmlEditorMenu(getMenus([...menusResponse, ...filesResponse]));
+      const foldersResponse = filesModule
+        ? ((await PostJsonData(
+            filesModule.queryUrl,
+            {
+              iType: 'FOLDERS',
+              username: sessionModel.username,
+              password: sessionModel.password,
+            },
+            true,
+            sessionModel.authorizationHeader
+          )) as IFolderResponse[] | undefined) ?? []
+        : [];
+      this.setHtmlEditorMenu(getMenus([...menusResponse, ...filesResponse], foldersResponse));
     } catch (e: any) {
       message.error(e?.message);
     }

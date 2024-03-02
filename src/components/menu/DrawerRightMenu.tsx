@@ -12,6 +12,7 @@ import MaterialIcon, { MaterialIconsType } from '../materialIcon/MaterialIcon';
 import MenuItem from './MenuItem';
 import ModuleSubMenu from './moduleSubMenus/ModuleSubMenu';
 import { FileEditorModal } from 'components/htmlEditor/FileEditorModal';
+import { FolderEditorModal } from 'components/htmlEditor/FolderEditorModal';
 
 const StyledDrawer = styled(Drawer)`
   &&& {
@@ -43,6 +44,7 @@ const DrawerRightMenu = observer(() => {
   const { clubModel, globalStateModel, sessionModel } = useMobxStore();
   const [htmEditorLinkform] = Form.useForm();
   const [fileEditorForm] = Form.useForm();
+  const [folderEditorForm] = Form.useForm();
   const navigate = useNavigate();
 
   return (
@@ -169,6 +171,20 @@ const DrawerRightMenu = observer(() => {
               onClick={() => {
                 globalStateModel.setRightMenuVisible(false);
                 FileEditorModal(t, -1, fileEditorForm, globalStateModel, sessionModel, clubModel)
+                  .then()
+                  .catch((error) => {
+                    console.error(error);
+                  });
+              }}
+            />
+            <MenuItem
+              key={'menuItem#newFolder'}
+              icon={'cloud-upload'}
+              name={t('files.AddFolder')}
+              disabled={!sessionModel.loggedIn || !sessionModel.isAdmin}
+              onClick={() => {
+                globalStateModel.setRightMenuVisible(false);
+                FolderEditorModal(t, -1, folderEditorForm, globalStateModel, sessionModel, clubModel)
                   .then()
                   .catch((error) => {
                     console.error(error);
