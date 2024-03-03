@@ -101,6 +101,7 @@ export class SessionModel implements ISessionModel {
   constructor(options?: Partial<ISessionModelProps>) {
     options && Object.assign(this, options);
     makeObservable(this, {
+      loggedIn: observable,
       username: observable,
       password: observable,
       rememberLogin: observable,

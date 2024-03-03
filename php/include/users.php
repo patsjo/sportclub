@@ -58,7 +58,7 @@ function NotAuthorized($UseForbidden = false)
       header("HTTP/1.0 403 Forbidden");
     } else {
       header("HTTP/1.0 401 Unauthorized");
-      header("WWW-Authenticate: Basic realm=\"Värend GN\"");
+      header("WWW-Authenticate: Basic realm=\"Sportclub\"");
     }
     die(0);
 }

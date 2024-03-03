@@ -113,6 +113,7 @@ i18next
             FileSizeTooLarge: 'File is larger than {0} MB',
             RequiredField: 'Please input your',
             WarningIncludeAll: 'No filter on',
+            MissingMapPosition: 'Missing map position',
           },
           map: {
             Map: 'map',
@@ -155,7 +156,7 @@ i18next
           users: {
             Users: 'Login/Authority',
             Competitors: 'Family/Competitors',
-            BirthDay: 'Birthday',
+            BirthDay: 'Birth year',
             FirstName: 'First name',
             LastName: 'Last name',
             Family: 'Family',
@@ -230,7 +231,7 @@ i18next
             Competitor: 'Competitor',
             FirstName: 'First name',
             LastName: 'Last name',
-            BirthDay: 'BirthDay',
+            BirthDay: 'Birth year',
             StartDate: 'Active member since',
             EndDate: 'Finished',
             Class: 'Class',
@@ -489,6 +490,7 @@ i18next
             FileSizeTooLarge: 'Filen är större än {0} MB',
             RequiredField: 'Vänligen ange',
             WarningIncludeAll: 'Ingen filtrering på',
+            MissingMapPosition: 'Saknar geografisk position',
           },
           map: {
             Map: 'karta',
@@ -531,7 +533,7 @@ i18next
           users: {
             Users: 'Login/Behörighet',
             Competitors: 'Familj/Löpare',
-            BirthDay: 'Födelsedag',
+            BirthDay: 'Födelseår',
             FirstName: 'Förnamn',
             LastName: 'Efternamn',
             Family: 'Familjen',
@@ -607,7 +609,7 @@ i18next
             Competitor: 'Löpare',
             FirstName: 'Förnamn',
             LastName: 'Efternamn',
-            BirthDay: 'Födelsedag',
+            BirthDay: 'Födelseår',
             StartDate: 'Aktiv medlem sedan',
             EndDate: 'Avslutat',
             Class: 'Klass',

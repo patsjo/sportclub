@@ -1,5 +1,20 @@
 import { ExclamationCircleOutlined } from '@ant-design/icons';
-import { Col, DatePicker, Form, Input, message, Modal, Popconfirm, Row, Spin, Switch, Tag } from 'antd';
+import {
+  Button,
+  Col,
+  DatePicker,
+  Form,
+  Input,
+  message,
+  Modal,
+  Popconfirm,
+  Row,
+  Spin,
+  Switch,
+  Tag,
+  Tooltip,
+  Typography,
+} from 'antd';
 import { FormInstance } from 'antd/lib/form';
 import { ModalFuncProps } from 'antd/lib/modal';
 import { ColumnType } from 'antd/lib/table';
@@ -80,6 +95,9 @@ import { MissingTag, NoWrap, SpinnerDiv, StyledIcon, StyledTable } from '../styl
 import { AddMapCompetitorConfirmModal } from './AddMapCompetitorConfirmModal';
 import EditResultIndividual, { IExtendedRaceResult } from './EditResultIndividual';
 import EditResultRelay, { IExtendedRaceTeamResult } from './EditResultRelay';
+import { GlobalOutlined } from '@ant-design/icons';
+import { GetPositionModal } from 'components/map/GetPositionModal';
+import styled from 'styled-components';
 
 const { info } = Modal;
 
@@ -93,12 +111,35 @@ interface IResultWizardStep2EditRaceProps {
 const ResultWizardStep2EditRace = observer(
   ({ height, visible, autoUpdateResultWithSameClass, onValidate, onFailed }: IResultWizardStep2EditRaceProps) => {
     const { t } = useTranslation();
-    const { clubModel, sessionModel } = useMobxStore();
+    const { globalStateModel, clubModel, sessionModel } = useMobxStore();
     const { raceWizardModel } = useResultWizardStore();
-    const formRef = useRef<FormInstance>(null);
+    const [form] = Form.useForm();
     const formId = useMemo(() => 'resultsWizardFormStep2EditRace' + Math.floor(Math.random() * 1000000000000000), []);
     const [loaded, setLoaded] = useState(false);
     const [isRelay, setIsRelay] = useState(raceWizardModel.selectedIsRelay);
+
+    const onChooseMapPosition = useCallback(() => {
+      const longitude = raceWizardModel.raceEvent?.longitude;
+      const latitude = raceWizardModel.raceEvent?.latitude;
+      const clubLongitude = clubModel.map?.center ? clubModel.map?.center[0] : undefined;
+      const clubLatitude = clubModel.map?.center ? clubModel.map?.center[1] : undefined;
+      const exists = !!longitude && !!latitude;
+      if (exists || (clubLongitude && clubLatitude))
+        GetPositionModal(
+          t,
+          exists ? longitude : clubLongitude!,
+          exists ? latitude : clubLatitude!,
+          exists,
+          globalStateModel,
+          sessionModel,
+          clubModel
+        ).then((selectedPosition) => {
+          if (selectedPosition) {
+            raceWizardModel.raceEvent?.setNumberValueOrNull('longitude', selectedPosition.longitude);
+            raceWizardModel.raceEvent?.setNumberValueOrNull('latitude', selectedPosition.latitude);
+          }
+        });
+    }, [clubModel, globalStateModel, sessionModel]);
 
     const handleEventorResults = useCallback(
       async (
@@ -1823,7 +1864,7 @@ const ResultWizardStep2EditRace = observer(
             }
           }
 
-          formRef.current?.validateFields().then();
+          form?.validateFields().then();
           onValidate(!!raceWizardModel.raceEvent?.valid);
           setIsRelay(!!eventIsRelay);
           setLoaded(true);
@@ -1851,7 +1892,7 @@ const ResultWizardStep2EditRace = observer(
         onValidate(!!raceWizardModel.raceEvent?.valid);
         setIsRelay(false);
         setLoaded(true);
-        formRef.current?.validateFields().then();
+        form?.validateFields().then();
         return;
       } else {
         fetchData();
@@ -2317,7 +2358,7 @@ const ResultWizardStep2EditRace = observer(
     return raceWizardModel.raceEvent && clubModel.raceClubs && loaded && visible ? (
       <Form
         id={formId}
-        ref={formRef}
+        form={form}
         layout="vertical"
         initialValues={{
           iName: raceWizardModel.raceEvent.name,
@@ -2428,7 +2469,33 @@ const ResultWizardStep2EditRace = observer(
           ) : null}
         </Row>
         <Row gutter={8}>
-          <Col span={6}>
+          <Col span={2}>
+            <FormItem name="iLongitude" label={t('map.ChooseMapPosition')}>
+              <Tooltip
+                title={
+                  !raceWizardModel.raceEvent?.longitude || !raceWizardModel.raceEvent?.latitude ? (
+                    t('error.MissingMapPosition')
+                  ) : (
+                    <div>
+                      <p style={{ lineHeight: '12px' }}>{`${t('map.Longitude')}: ${
+                        raceWizardModel.raceEvent?.longitude
+                      }`}</p>
+                      <p style={{ lineHeight: '12px' }}>{`${t('map.Latitude')}: ${
+                        raceWizardModel.raceEvent?.latitude
+                      }`}</p>
+                    </div>
+                  )
+                }
+              >
+                <Button
+                  danger={!raceWizardModel.raceEvent?.longitude || !raceWizardModel.raceEvent?.latitude}
+                  icon={<GlobalOutlined />}
+                  onClick={onChooseMapPosition}
+                />
+              </Tooltip>
+            </FormItem>
+          </Col>
+          <Col span={5}>
             <FormItem
               name="iEventClassificationId"
               label={t('results.EventClassification')}
@@ -2456,7 +2523,7 @@ const ResultWizardStep2EditRace = observer(
               />
             </FormItem>
           </Col>
-          <Col span={6}>
+          <Col span={5}>
             <FormItem
               name="iPaymentModel"
               label={t('results.PaymentModel')}
