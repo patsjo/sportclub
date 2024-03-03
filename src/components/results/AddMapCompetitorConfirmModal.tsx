@@ -31,7 +31,7 @@ export const AddMapCompetitorConfirmModal = (
     if (option) {
       confirmObject.competitorId = option.code;
     }
-    let selectedTabKey = confirmObject.competitorId !== -1 ? '1' : '2';
+    let selectedTabKey = '1';
     let confirmModal: {
       destroy: () => void;
       update: (configUpdate: ModalFuncProps | ((prevConfig: ModalFuncProps) => ModalFuncProps)) => void;
