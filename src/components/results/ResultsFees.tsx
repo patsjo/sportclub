@@ -1,19 +1,28 @@
-import { Form, message, Spin } from 'antd';
+import { DatePicker, Form, message, Spin } from 'antd';
 import { TFunction } from 'i18next';
 import { observer } from 'mobx-react';
 import { IMobxClubModel } from 'models/mobxClubModel';
 import moment from 'moment';
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { useMobxStore } from 'utils/mobxStore';
-import { IFeeResponse, IPrintSettings, IPrintSettingsColumn } from 'utils/responseInterfaces';
+import {
+  IFeeResponse,
+  IIndividualViewResultResponse,
+  IPrintSettings,
+  IPrintSettingsColumn,
+} from 'utils/responseInterfaces';
 import { PostJsonData } from '../../utils/api';
-import { FormSelect, IOption } from '../../utils/formHelper';
-import { getPdf, IPrintInput, IPrintObject, IPrintTable, IPrintTableColumn } from '../../utils/pdf';
+import { dateFormat, errorRequiredField, FormSelect, INumberOption, IOption } from '../../utils/formHelper';
+import { getPdf, getZip, IPrintInput, IPrintObject, IPrintTable, IPrintTableColumn } from '../../utils/pdf';
 import FormItem from '../formItems/FormItem';
 import { SpinnerDiv, StyledTable } from '../styled/styled';
 import TablePrintSettingButtons from '../tableSettings/TablePrintSettingButtons';
+import { PickRequired } from 'models/typescriptPartial';
+import { CompetitorTable } from 'components/users/Competitors';
+import { getTextColorBasedOnBackground, lightenColor } from 'utils/colorHelper';
+import { getInvoicePdf, getInvoiceZip, IFeesRecord, IInvoicePrintObject } from 'utils/pdfInvoice';
 
 let abortLoading = false;
 
@@ -28,18 +37,26 @@ const Col = styled.div`
   vertical-align: bottom;
 `;
 
-const columns = (t: TFunction, clubModel: IMobxClubModel): IPrintTableColumn<IFeeResponse>[] => [
+interface IFeesTable extends PickRequired<IFeeResponse, 'originalFee' | 'lateFee' | 'feeToClub' | 'serviceFeeToClub'> {
+  key: React.Key;
+  familyId?: number | null;
+  edit?: undefined;
+  children?: IFeesTable[];
+  isFamily?: boolean;
+  firstName: string;
+  lastName: string;
+}
+
+const feesSort = (a: IFeesTable, b: IFeesTable) =>
+  `${a.lastName} ${a.firstName}`.toLowerCase().localeCompare(`${b.lastName} ${b.firstName}`.toLowerCase());
+
+const columns = (t: TFunction, clubModel: IMobxClubModel): IPrintTableColumn<IFeesTable>[] => [
   {
-    title: t('results.Competitor'),
+    title: `${t('results.Competitor')}/${t('users.FamilySelect')}`,
     selected: true,
-    dataIndex: 'competitorId',
-    key: 'competitorId',
-    fixed: 'left',
-    width: 180,
-    render: (id: string): string => {
-      const value = id == null ? null : clubModel.raceClubs?.selectedClub?.competitorById(parseInt(id))?.fullName;
-      return value ? value : '';
-    },
+    dataIndex: 'lastName',
+    key: 'lastName',
+    render: (_: string, record: IFeesTable): string => `${record.firstName} ${record.lastName}`,
   },
   {
     title: t('results.OriginalFee'),
@@ -70,21 +87,31 @@ const columns = (t: TFunction, clubModel: IMobxClubModel): IPrintTableColumn<IFe
     selected: true,
     dataIndex: 'totalFeeToClub',
     key: 'totalFeeToClub',
-    render: (_text: string, record?: IFeeResponse) =>
-      record ? (record.feeToClub + record.serviceFeeToClub).toString() : '',
+    render: (_text: string, record: IFeesTable) => (record.feeToClub + record.serviceFeeToClub).toString(),
   },
 ];
 
 const ResultsFees = observer(() => {
   const { t } = useTranslation();
   const { clubModel, sessionModel } = useMobxStore();
-  const [fees, setFees] = useState<IFeeResponse[]>([]);
-  const [year, setYear] = useState(new Date().getFullYear());
+  const [fees, setFees] = useState<IFeesTable[]>([]);
+  const [fee, setFee] = useState<IFeesTable>();
+  const [toDate, setToDate] = useState<moment.Moment | null>(
+    moment(`${moment().add(-6, 'months').format('YYYY')}${clubModel.invoice.breakMonthDay}`, 'YYYYMMDD')
+  );
+  const [fromDate, setFromDate] = useState<moment.Moment | null>(
+    moment(toDate?.format('YYYY-MM-DD'))?.add(-1, 'years').add(1, 'days') ?? null
+  );
   const [loading, setLoading] = useState(true);
   const [formId] = useState('resultsFeesForm' + Math.floor(Math.random() * 10000000000000000));
   const [columnsSetting, setColumnsSetting] = useState<IPrintSettingsColumn[]>([]);
+  const [processed, setProcessed] = useState(0);
+  const [total, setTotal] = useState(0);
+  const [spinnerTitle, setSpinnerTitle] = useState<string | null>(null);
+  const [spinnerText, setSpinnerText] = useState<string | null>(null);
+  const familyTableKeys = useMemo(() => fees.filter((f) => f.isFamily).map((f) => f.key), [fees]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
     if (!url) return;
 
@@ -98,7 +125,7 @@ const ResultsFees = observer(() => {
     )
       .then((clubsJson) => {
         clubModel.setRaceClubs(clubsJson);
-        updateEventYear(year);
+        loadFeeData(fromDate, toDate);
       })
       .catch((e) => {
         message.error(e.message);
@@ -109,11 +136,8 @@ const ResultsFees = observer(() => {
     abortLoading = true;
   };
 
-  const updateEventYear = React.useCallback(
-    (year: number) => {
-      const fromDate = moment(year, 'YYYY').format('YYYY-MM-DD');
-      const toDate = moment(fromDate, 'YYYY-MM-DD').add(1, 'years').subtract(1, 'days').format('YYYY-MM-DD');
-
+  const loadFeeData = useCallback(
+    (fromDate: moment.Moment | null, toDate: moment.Moment | null) => {
       setLoading(true);
 
       const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
@@ -123,16 +147,53 @@ const ResultsFees = observer(() => {
         url,
         {
           iType: 'FEES',
-          iFromDate: fromDate,
-          iToDate: toDate,
+          iFromDate: fromDate?.format('YYYY-MM-DD'),
+          iToDate: toDate?.format('YYYY-MM-DD'),
         },
         true,
         sessionModel.authorizationHeader
       )
         .then((feesJson: IFeeResponse[]) => {
-          setFees(feesJson);
+          const competitors =
+            feesJson?.map((c): IFeesTable => {
+              const competitor = clubModel.raceClubs?.selectedClub?.competitorById(c.competitorId);
+              return {
+                ...c,
+                key: `competitor${c.competitorId}`,
+                isFamily: false,
+                firstName: competitor?.firstName ?? '',
+                lastName: competitor?.lastName ?? '',
+                familyId: competitor?.familyId,
+              };
+            }) ?? [];
+
+          const families =
+            clubModel.raceClubs?.selectedClub?.families.map(
+              (f): IFeesTable => ({
+                key: `family${f.familyId}`,
+                familyId: f.familyId,
+                isFamily: true,
+                firstName: t('users.Family'),
+                lastName: f.familyName,
+                originalFee: competitors
+                  ?.filter((c) => c.familyId === f.familyId)
+                  ?.reduce((prev, curr) => prev + curr.originalFee, 0),
+                lateFee: competitors
+                  ?.filter((c) => c.familyId === f.familyId)
+                  ?.reduce((prev, curr) => prev + curr.lateFee, 0),
+                feeToClub: competitors
+                  ?.filter((c) => c.familyId === f.familyId)
+                  ?.reduce((prev, curr) => prev + curr.feeToClub, 0),
+                serviceFeeToClub: competitors
+                  ?.filter((c) => c.familyId === f.familyId)
+                  ?.reduce((prev, curr) => prev + curr.serviceFeeToClub, 0),
+                children: competitors?.filter((c) => c.familyId === f.familyId),
+              })
+            ) ?? [];
+
+          const familesAndCompetitors = [...families, ...competitors.filter((c) => !c.familyId)]?.sort(feesSort);
+          setFees(familesAndCompetitors);
           setLoading(false);
-          setYear(year);
         })
         .catch((e) => {
           if (e && e.message) {
@@ -145,44 +206,198 @@ const ResultsFees = observer(() => {
     [clubModel, sessionModel]
   );
 
-  const getPrintObject = React.useCallback(
-    (settings: IPrintSettings): IPrintObject<IFeeResponse> => {
-      const header = `${t('results.FeeToClub')} ${year}`;
-      const inputs: IPrintInput[] = [];
-      const tables: IPrintTable<IFeeResponse>[] = [];
+  const getPrintObject = useCallback(
+    async (fee: IFeesTable): Promise<IInvoicePrintObject> => {
+      const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
+      if (!url || !clubModel.raceClubs || !clubModel.corsProxy || !fromDate || !toDate) throw new Error();
 
-      if (fees && fees.length) {
-        tables.push({
-          columns: columns(t, clubModel).filter((col) =>
-            settings.pdf.columns.some((s) => col.key === s.key && s.selected)
+      const invoiceMessage = t('invoice.invoiceMessage')
+        ?.replaceAll('{0}', toDate?.format('YYYY') ?? '')
+        ?.replaceAll('{1}', `${fee.firstName} ${fee.lastName}`);
+      const competitorsDetails: IFeesRecord[] = [];
+      const servicesDetails: IFeesRecord[] = [];
+      const competitors = fee.isFamily && fee.children ? fee.children : [fee];
+
+      for (let index = 0; index < competitors?.length; index++) {
+        const competitor = competitors[index];
+
+        const result = (await PostJsonData(
+          url,
+          {
+            iType: 'COMPETITOR',
+            iFromDate: fromDate.format('YYYY-MM-DD'),
+            iToDate: toDate.format('YYYY-MM-DD'),
+            iCompetitorId: competitor.competitorId,
+          },
+          true,
+          sessionModel.authorizationHeader
+        )) as IIndividualViewResultResponse;
+        await new Promise((resolve) => setTimeout(resolve, Math.floor(Math.random() * 200)));
+
+        const resultFees = [
+          ...result.results.map((r) => ({
+            name: r.name,
+            raceDate: r.raceDate,
+            feeToClub: r.feeToClub ?? 0,
+            totalFee: (r.originalFee ?? 0) + (r.lateFee ?? 0),
+            serviceFeeToClub: r.serviceFeeToClub,
+            serviceFeeDescription: r.serviceFeeDescription,
+          })),
+          ...result.teamResults.map((r) => ({
+            name: r.name,
+            raceDate: r.raceDate,
+            feeToClub: 0,
+            totalFee: 0,
+            serviceFeeToClub: r.serviceFeeToClub,
+            serviceFeeDescription: r.serviceFeeDescription,
+          })),
+        ];
+
+        competitorsDetails.push({
+          competitorId: competitor.competitorId!,
+          description: t('invoice.invoiceCompetitorMessage')?.replaceAll(
+            '{0}',
+            `${competitor.firstName} ${competitor.lastName}`
           ),
-          dataSource: fees,
+          numberOf: resultFees.filter((f) => f.totalFee !== 0 || f.feeToClub !== 0).reduce((prev) => prev + 1, 0),
+          feeToClub: resultFees
+            .filter((f) => f.totalFee !== 0 || f.feeToClub !== 0)
+            .reduce((prev, next) => prev + next.feeToClub, 0),
+          totalFee: resultFees
+            .filter((f) => f.totalFee !== 0 || f.feeToClub !== 0)
+            .reduce((prev, next) => prev + next.totalFee, 0),
         });
+
+        resultFees
+          .filter((f) => f.serviceFeeToClub !== 0)
+          .forEach((f) =>
+            servicesDetails.push({
+              competitorId: competitor.competitorId!,
+              description: `${f.raceDate}, ${f.name}, ${f.serviceFeeDescription}`,
+              numberOf: 1,
+              feeToClub: f.serviceFeeToClub,
+              totalFee: f.serviceFeeToClub,
+            })
+          );
       }
 
       if (abortLoading) throw new Error();
 
-      return { header, inputs, tables };
+      return { invoiceMessage, details: [...competitorsDetails, ...servicesDetails] };
     },
-    [t, clubModel, year, fees]
+    [t, clubModel, fromDate, toDate]
   );
 
-  const onPrint = React.useCallback(
-    async (settings): Promise<void> => {
+  const onPrint = useCallback(
+    async (settings: IPrintSettings): Promise<void> => {
       abortLoading = false;
+      setSpinnerTitle(t('results.loadSavedResults'));
+      setSpinnerText(null);
+      setTotal(1);
+      setProcessed(0);
       try {
-        const printObject = getPrintObject(settings);
-        if (!clubModel.corsProxy) {
-          return;
-        }
-        await getPdf(clubModel.corsProxy, clubModel.logo.url, printObject.header, [printObject], settings.pdf);
+        if (!clubModel.corsProxy || !fromDate || !toDate || !fee) return;
+        const printObject = await getPrintObject(fee);
+
+        setSpinnerTitle(t('results.calculateResults'));
+
+        await getInvoicePdf(
+          clubModel.corsProxy,
+          clubModel.logo.url,
+          clubModel.clubInfo,
+          {
+            ...clubModel.invoice,
+            title: t('invoice.eventFeesSubtitle')
+              ?.replaceAll('{0}', fromDate?.format(dateFormat) ?? '')
+              ?.replaceAll('{1}', toDate?.format(dateFormat) ?? ''),
+            startDate: fromDate,
+            endDate: toDate,
+          },
+          [printObject],
+          settings.pdf
+        );
       } catch (e: any) {
         if (e && e.message) {
           message.error(e.message);
         }
       }
+      setTotal(0);
+      setSpinnerTitle(null);
+      setSpinnerText(null);
     },
-    [clubModel, getPrintObject]
+    [clubModel, getPrintObject, fee, fromDate, toDate]
+  );
+
+  const onPrintAll = useCallback(
+    async (settings: IPrintSettings, allInOnePdf: boolean): Promise<void> => {
+      const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
+
+      if (!url || !clubModel.raceClubs || !clubModel.corsProxy || !fromDate || !toDate) return;
+
+      setSpinnerTitle(t('results.loadSavedResults'));
+      setSpinnerText(null);
+      setProcessed(0);
+      abortLoading = false;
+
+      try {
+        const printObjects: IInvoicePrintObject[] = [];
+        setTotal(fees?.length ?? 1);
+
+        for (const f of fees) {
+          setSpinnerText(`${f.firstName} ${f.lastName}`);
+          const printObject = await getPrintObject(f);
+          printObjects.push(printObject);
+          if (abortLoading) throw new Error();
+          setProcessed((oldValue) => oldValue + 1);
+        }
+
+        setSpinnerTitle(t('results.calculateResults'));
+        setSpinnerText(null);
+        setProcessed(0);
+
+        if (allInOnePdf) {
+          await getInvoicePdf(
+            clubModel.corsProxy,
+            clubModel.logo.url,
+            clubModel.clubInfo,
+            {
+              ...clubModel.invoice,
+              title: t('invoice.eventFeesSubtitle')
+                ?.replaceAll('{0}', fromDate?.format(dateFormat) ?? '')
+                ?.replaceAll('{1}', toDate?.format(dateFormat) ?? ''),
+              startDate: fromDate,
+              endDate: toDate,
+            },
+            printObjects,
+            settings.pdf
+          );
+        } else {
+          await getInvoiceZip(
+            clubModel.corsProxy,
+            clubModel.logo.url,
+            clubModel.clubInfo,
+            {
+              ...clubModel.invoice,
+              title: t('invoice.eventFeesSubtitle')
+                ?.replaceAll('{0}', fromDate?.format(dateFormat) ?? '')
+                ?.replaceAll('{1}', toDate?.format(dateFormat) ?? ''),
+              startDate: fromDate,
+              endDate: toDate,
+            },
+            printObjects,
+            settings.pdf
+          );
+        }
+      } catch (e: any) {
+        if (e && e.message) {
+          message.error(e.message);
+        }
+      }
+      setTotal(0);
+      setSpinnerTitle(null);
+      setSpinnerText(null);
+    },
+    [t, clubModel, sessionModel, fromDate, toDate, getPrintObject]
   );
 
   const Spinner = (
@@ -190,29 +405,81 @@ const ResultsFees = observer(() => {
       <Spin size="large" />
     </SpinnerDiv>
   );
-  const fromYear = 1994;
-  const currentYear = new Date().getFullYear();
-  const yearOptions: IOption[] = [...Array(1 + currentYear - fromYear)].map((_, i) => ({
-    code: (currentYear - i).toString(),
-    description: (currentYear - i).toString(),
-  }));
 
+  const clubBgColor = '#F0F0F0';
+  const clubTextColor = getTextColorBasedOnBackground(clubBgColor);
   return (
     <Form
       id={formId}
       layout="vertical"
       initialValues={{
-        Year: year,
+        FromDate: fromDate,
+        ToDate: toDate,
       }}
     >
       <StyledRow>
         <Col>
-          <FormItem name="Year" label={t('calendar.SelectYear')}>
+          <FormItem
+            name="FromDate"
+            label={t('results.QueryStartDate')}
+            rules={[
+              {
+                required: true,
+                type: 'object',
+                message: errorRequiredField(t, 'results.QueryStartDate'),
+              },
+            ]}
+          >
+            <DatePicker
+              format={dateFormat}
+              allowClear={false}
+              onChange={(value) => {
+                setFromDate(value);
+                loadFeeData(value, toDate);
+              }}
+            />
+          </FormItem>
+        </Col>
+        <Col>
+          <FormItem
+            name="ToDate"
+            label={t('results.QueryEndDate')}
+            rules={[
+              {
+                required: true,
+                type: 'object',
+                message: errorRequiredField(t, 'results.QueryEndDate'),
+              },
+            ]}
+          >
+            <DatePicker
+              format={dateFormat}
+              allowClear={false}
+              onChange={(value) => {
+                setToDate(value);
+                loadFeeData(fromDate, value);
+              }}
+            />
+          </FormItem>
+        </Col>
+        <Col style={{ width: 'calc(100% - 480px)' }}>
+          <FormItem name="Competitor" label={`${t('results.Competitor')}/${t('users.FamilySelect')}`}>
             <FormSelect
               disabled={loading}
-              style={{ minWidth: 70, maxWidth: 300, width: '100%' }}
-              options={yearOptions}
-              onChange={(value) => updateEventYear(value)}
+              style={{ maxWidth: 600, width: '100%' }}
+              dropdownMatchSelectWidth={false}
+              options={
+                loading || !fees
+                  ? []
+                  : fees.map((fee) => ({
+                      code: JSON.stringify(fee),
+                      description: `${fee.firstName} ${fee.lastName}`,
+                    })) ?? []
+              }
+              showSearch
+              optionFilterProp="children"
+              filterOption={(input, option) => option?.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+              onChange={(key) => setFee(JSON.parse(key))}
             />
           </FormItem>
         </Col>
@@ -220,20 +487,23 @@ const ResultsFees = observer(() => {
           <TablePrintSettingButtons
             localStorageName="resultFees"
             columns={columns(t, clubModel)}
-            disablePrint={loading || !fees || fees.length === 0}
-            disablePrintAll={true}
-            processed={0}
-            total={1}
-            spinnerTitle={t('results.calculateResults')}
-            spinnerText={null}
+            disablePrint={loading || !fee}
+            disablePrintAll={loading}
+            processed={processed}
+            total={total}
+            spinnerTitle={spinnerTitle}
+            spinnerText={spinnerText}
             onAbortLoading={onAbortLoading}
             onPrint={onPrint}
+            onPrintAll={onPrintAll}
             onTableColumns={setColumnsSetting}
           />
         </Col>
       </StyledRow>
       {!loading ? (
-        <StyledTable
+        <CompetitorTable
+          familyBackgroundColor={clubBgColor}
+          familyTextColor={clubTextColor}
           columns={
             columns(t, clubModel).filter((col) =>
               columnsSetting.some((s) => col.key === s.key && s.selected)
@@ -243,6 +513,14 @@ const ResultsFees = observer(() => {
           size="middle"
           pagination={false}
           scroll={{ x: true }}
+          expandable={{
+            defaultExpandAllRows: true,
+            expandedRowKeys: familyTableKeys,
+            expandedRowClassName: () => 'table-row-familymember',
+            rowExpandable: () => false,
+            showExpandColumn: false,
+          }}
+          rowClassName={(record: any) => (record.isFamily ? 'table-row-club' : '')}
         />
       ) : (
         Spinner

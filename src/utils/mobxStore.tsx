@@ -13,6 +13,13 @@ interface IMobxStore {
 const MobxStoreContext = React.createContext<IMobxStore>({
   clubModel: new MobxClubModel({
     title: 'No store provider',
+    clubInfo: {
+      name: 'No store provider',
+      organisationNumber: '',
+      address1: '',
+      zip: '',
+      city: '',
+    },
     defaultLanguage: 'en',
     logo: { url: 'https://', width: 0, height: 0 },
     theme: {

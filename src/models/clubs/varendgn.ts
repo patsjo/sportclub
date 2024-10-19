@@ -2,6 +2,14 @@ import { IMobxClubModelProps } from 'models/mobxClubModel';
 
 const varendgn: IMobxClubModelProps = {
   title: 'Värend GN',
+  clubInfo: {
+    name: 'Värend GN',
+    organisationNumber: '829502-8958',
+    address1: 'c/o Lars-Åke Sjökvist',
+    address2: 'Sjövallavägen 55',
+    zip: '352 59',
+    city: 'Växjö',
+  },
   defaultLanguage: 'sv',
   map: {
     center: [14.85774, 56.91077],
@@ -11,6 +19,13 @@ const varendgn: IMobxClubModelProps = {
   loginUrl: 'https://varendgn.se/log_in.php',
   logoutUrl: 'https://varendgn.se/log_out.php',
   attachmentUrl: 'https://varendgn.se/showfile.php?iFileID=',
+  invoice: {
+    breakMonthDay: '0101',
+    daysToDueDate: 31,
+    account: '421 20 09-7',
+    accountType: 'Postgiro',
+    message: 'Tävlingsavgift, {name}',
+  },
   titleLogo: {
     url: 'https://varendgn.se/images/club_frontpage_03.png',
     width: 420,

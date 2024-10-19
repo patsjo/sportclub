@@ -12,7 +12,7 @@ const ButtonsContainer = styled.div`
 `;
 
 interface ITablePrintSettingButtonsProps {
-  localStorageName: string;
+  localStorageName: 'resultFees' | 'results';
   columns: IPrintSettingsColumn[];
   disablePrint: boolean;
   disablePrintAll: boolean;

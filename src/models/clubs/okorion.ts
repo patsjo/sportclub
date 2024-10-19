@@ -2,6 +2,13 @@ import { IMobxClubModelProps } from 'models/mobxClubModel';
 
 const okorion: IMobxClubModelProps = {
   title: 'OK Orion',
+  clubInfo: {
+    name: 'OK Orion',
+    organisationNumber: '835000-4209',
+    address1: 'Furudalsvägen',
+    zip: '373 00',
+    city: 'Jämjö',
+  },
   defaultLanguage: 'sv',
   map: {
     center: [15.82939, 56.20045],
@@ -292,6 +299,14 @@ const okorion: IMobxClubModelProps = {
   loginUrl: 'https://okorion.com/log_in.php',
   logoutUrl: 'https://okorion.com/log_out.php',
   attachmentUrl: 'https://okorion.com/showfile.php?iFileID=',
+  invoice: {
+    breakMonthDay: '1031',
+    daysToDueDate: 30,
+    account: '916-0219',
+    accountType: 'Bankgiro',
+    swishNumber: '123-198 58 37',
+    message: 'Tävlingsavgift, {name}',
+  },
   titleLogo: {
     url: 'https://okorion.com/images/okorion_text.png',
     width: 375,
@@ -539,13 +554,13 @@ const okorion: IMobxClubModelProps = {
       active: false,
     },
     {
-      name: 'S-GROUP Solutions',
+      name: 'Sokigo',
       logo: {
-        url: 'https://okorion.com/images/sponsors/sgroup-solutions.svg',
-        width: 425,
-        height: 40,
+        url: 'https://okorion.com/images/sponsors/sokigo-logo-rgb-blue-pos.svg',
+        width: 1778,
+        height: 762,
       },
-      url: 'https://www.sgroup-solutions.se/',
+      url: 'https://sokigo.com/',
       active: true,
     },
     {

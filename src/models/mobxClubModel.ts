@@ -58,6 +58,25 @@ interface IColorProps {
   contrastText?: string;
 }
 
+export interface IClubInfoProps {
+  name: string;
+  organisationNumber: string;
+  address1: string;
+  address2?: string;
+  zip: string;
+  city: string;
+}
+
+export interface IInvoiceProps {
+  breakMonthDay: string;
+  daysToDueDate: number;
+  account?: string;
+  accountType?: 'Bankgiro' | 'Postgiro' | 'IBAN';
+  swishNumber?: string;
+  message?: string;
+  taxPercentage?: number;
+}
+
 interface IPaletteProps {
   primary: IColorProps;
   secondary: IColorProps;
@@ -387,6 +406,8 @@ export interface IMobxClubModelProps {
   oldUrl?: string;
   sponsors: ISponsorProps[];
   facebookUrl?: string;
+  invoice: IInvoiceProps;
+  clubInfo: IClubInfoProps;
 }
 
 export interface IMobxClubModel extends Omit<IMobxClubModelProps, 'map' | 'modules' | 'raceClubs' | 'eventor'> {
@@ -418,17 +439,25 @@ export class MobxClubModel implements IMobxClubModel {
   oldUrl?: string;
   sponsors: ISponsorProps[] = [];
   facebookUrl?: string;
+  invoice: IInvoiceProps;
+  clubInfo: IClubInfoProps;
 
-  constructor(options: PickRequired<IMobxClubModelProps, 'title' | 'logo' | 'theme'>) {
-    const { title, logo, theme, map, modules, raceClubs, eventor, ...rest } = options;
+  constructor(options: PickRequired<IMobxClubModelProps, 'title' | 'logo' | 'theme' | 'clubInfo'>) {
+    const { title, logo, theme, map, modules, raceClubs, eventor, invoice, clubInfo, ...rest } = options;
     Object.assign(this, rest);
     this.title = title;
     this.logo = logo;
     this.theme = theme;
+    this.clubInfo = clubInfo;
     if (map) this.map = new Map(map);
     if (modules) this.modules = modules.map((m) => new Module(m));
     if (raceClubs) this.raceClubs = new RaceClubs(raceClubs);
     if (eventor) this.eventor = new Eventor(eventor);
+    this.invoice = {
+      breakMonthDay: '0101',
+      daysToDueDate: 31,
+      ...invoice,
+    };
 
     if (options?.theme?.typography.useNextVariants === undefined) this.theme.typography.useNextVariants = true;
 
@@ -452,6 +481,8 @@ export class MobxClubModel implements IMobxClubModel {
       oldUrl: observable,
       sponsors: observable,
       facebookUrl: observable,
+      invoice: observable,
+      clubInfo: observable,
       setRaceClubs: action.bound,
     });
   }

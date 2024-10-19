@@ -189,9 +189,9 @@ elseif ($input->iType == "COMPETITOR")
   }
 
   $query = sprintf("UPDATE RACE_COMPETITORS " .
-                   "SET FAMILY_ID = %d, FIRST_NAME = '%s', LAST_NAME = '%s', BIRTHDAY = " . str_replace("''", "Null", "'" . date2String($input->iBirthDay) . "'") . ", GENDER = '%s' " .
+                   "SET FAMILY_ID = %s, FIRST_NAME = '%s', LAST_NAME = '%s', BIRTHDAY = " . str_replace("''", "Null", "'" . date2String($input->iBirthDay) . "'") . ", GENDER = '%s' " .
                    "WHERE COMPETITOR_ID = %d",
-                   $input->iFamilyId,
+                   isset($input->iFamilyId) && !is_null($input->iFamilyId) ? $input->iFamilyId : "Null",
                    \db\mysql_real_escape_string($input->iFirstName),
                    \db\mysql_real_escape_string($input->iLastName),
                    \db\mysql_real_escape_string($input->iGender),

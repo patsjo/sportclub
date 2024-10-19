@@ -22,11 +22,14 @@ const StyledInputNumber = styled(InputNumber)`
   }
 `;
 
-const setLocalStorage = (localStorageName: string, settings: IPrintSettings) => {
+const setLocalStorage = (localStorageName: 'resultFees' | 'results', settings: IPrintSettings) => {
   localStorage.setItem(`${localStorageName}TableData`, JSON.stringify(settings));
 };
 
-export const getLocalStorage = (localStorageName: string, columns: IPrintSettingsColumn[]): IPrintSettings => {
+export const getLocalStorage = (
+  localStorageName: 'resultFees' | 'results',
+  columns: IPrintSettingsColumn[]
+): IPrintSettings => {
   let tableData: IPrintSettings | undefined = undefined;
   try {
     const tableDataString = localStorage.getItem(`${localStorageName}TableData`);
@@ -53,9 +56,12 @@ export const getLocalStorage = (localStorageName: string, columns: IPrintSetting
       pdf: {
         pageOrientation: 'portrait',
         // [left, top, right, bottom] or [horizontal, vertical] or just a number for equal margins
-        pageMargins: [15, 10, 10, 10],
+        pageMargins: localStorageName === 'resultFees' ? [25, 20, 20, 20] : [15, 10, 10, 10],
         pageSize: 'A4',
-        columns: columns.map((col) => ({ key: col.key, title: col.title, selected: col.selected })),
+        columns:
+          localStorageName === 'resultFees'
+            ? []
+            : columns.map((col) => ({ key: col.key, title: col.title, selected: col.selected })),
       },
     };
   }
@@ -81,7 +87,7 @@ const selectColumns: ColumnsType<IPrintSettingsColumn> = [
 
 export const TableSettingModal = (
   t: TFunction,
-  localStorageName: string,
+  localStorageName: 'resultFees' | 'results',
   columns: IPrintSettingsColumn[]
 ): Promise<IPrintSettings> =>
   new Promise((resolve, reject) => {
@@ -130,13 +136,15 @@ export const TableSettingModal = (
               />
             ))}
             <Label />
-            <Table
-              showHeader={false}
-              pagination={false}
-              scroll={{ y: 'calc(100vh - 393px)' }}
-              columns={selectColumns}
-              dataSource={settings.pdf.columns}
-            />
+            {localStorageName !== 'resultFees' ? (
+              <Table
+                showHeader={false}
+                pagination={false}
+                scroll={{ y: 'calc(100vh - 393px)' }}
+                columns={selectColumns}
+                dataSource={settings.pdf.columns}
+              />
+            ) : null}
           </TabPane>
         </Tabs>
       ),

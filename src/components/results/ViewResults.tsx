@@ -783,7 +783,7 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
             onAbortLoading={onAbortLoading}
             onPrint={onPrint}
             onPrintAll={onPrintAll}
-            onTableColumns={(newColumnsSetting) => setColumnsSetting(newColumnsSetting)}
+            onTableColumns={setColumnsSetting}
           />
         </Col>
       </StyledRow>

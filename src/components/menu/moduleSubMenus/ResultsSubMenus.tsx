@@ -151,7 +151,7 @@ const ResultsSubMenus = observer(() => {
       <MenuItem
         key={'menuItem#resultsFees'}
         icon="euro"
-        name={t('results.FeeToClub')}
+        name={t('results.Invoices')}
         disabled={!sessionModel.loggedIn}
         isSubMenu
         onClick={() => {

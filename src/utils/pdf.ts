@@ -19,15 +19,6 @@ export interface IPdfSettings {
   pageMargins: Margins;
 }
 
-interface ResultsFeesRecord {
-  competitorId: number;
-  originalFee: number;
-  lateFee: number;
-  feeToClub: number;
-  serviceFeeToClub: number;
-  totalFeeToClub: number;
-}
-
 export interface IPrintTableColumn<RecordType> extends ColumnType<RecordType> {
   key: string;
   selected: boolean;
@@ -49,7 +40,7 @@ export interface IPrintObject<RecordType> {
   inputs: IPrintInput[];
   tables: IPrintTable<RecordType>[];
 }
-const getLogo = (corsProxy: string, logoUrl: string): Promise<string | null> =>
+export const getLogo = (corsProxy: string, logoUrl: string): Promise<string | null> =>
   new Promise((resolve, reject) => {
     fetch(corsProxy ? `${corsProxy}${encodeURIComponent(logoUrl)}&noJsonConvert=true` : logoUrl)
       .then((response) => response.blob())
@@ -154,7 +145,8 @@ const getPdfDocDefinition = (
             },
           ],
     };
-    Array.isArray(docDefinition.content) && docDefinition.content.push(content);
+    if (!Array.isArray(docDefinition.content)) throw new Error('Implemetation error');
+    docDefinition.content.push(content);
     printObject.tables.forEach((table) => {
       Array.isArray(docDefinition.content) && docDefinition.content.push(getTableContent(table));
     });
@@ -184,25 +176,20 @@ const getPdfDocDefinition = (
   return docDefinition;
 };
 
-export const getPdf = (
+export const getPdf = async (
   proxyurl: string,
   logoUrl: string,
   title: string,
   printObjects: IPrintObject<any>[],
   pdfSettings: IPdfSettings
-): Promise<void> =>
-  new Promise((resolve, reject) => {
-    getLogo(proxyurl, logoUrl)
-      .then((logo) => {
-        const docDefinition = getPdfDocDefinition(logo, title, printObjects, pdfSettings);
+): Promise<void> => {
+  const logo = await getLogo(proxyurl, logoUrl);
+  const docDefinition = getPdfDocDefinition(logo, title, printObjects, pdfSettings);
 
-        pdfMake.createPdf(docDefinition).download(`${title}.pdf`);
-        resolve();
-      })
-      .catch((error) => reject(error));
-  });
+  pdfMake.createPdf(docDefinition).download(`${title}.pdf`);
+};
 
-const getBase64 = (pdfDocument: pdfMake.TCreatedPdf): Promise<string> => {
+export const getBase64 = (pdfDocument: pdfMake.TCreatedPdf): Promise<string> => {
   return new Promise((resolve) => {
     pdfDocument.getBase64((data) => {
       resolve(data);
@@ -210,31 +197,25 @@ const getBase64 = (pdfDocument: pdfMake.TCreatedPdf): Promise<string> => {
   });
 };
 
-export const getZip = (
+export const getZip = async (
   proxyurl: string,
   logoUrl: string,
   title: string,
   printObjects: IPrintObject<any>[],
   pdfSettings: IPdfSettings
-): Promise<void> =>
-  new Promise((resolve, reject) => {
-    getLogo(proxyurl, logoUrl)
-      .then(async (logo) => {
-        const zip = new JSZip();
+): Promise<void> => {
+  const logo = await getLogo(proxyurl, logoUrl);
+  const zip = new JSZip();
 
-        for (const printObject of printObjects) {
-          const docDefinition = getPdfDocDefinition(logo, title, [printObject], pdfSettings);
-          const data = await getBase64(pdfMake.createPdf(docDefinition));
-          zip.file(`${printObject.header}.pdf`, data, { base64: true });
-        }
+  for (const printObject of printObjects) {
+    const docDefinition = getPdfDocDefinition(logo, title, [printObject], pdfSettings);
+    const data = await getBase64(pdfMake.createPdf(docDefinition));
+    zip.file(`${printObject.header}.pdf`, data, { base64: true });
+  }
 
-        zip.generateAsync({ type: 'blob', compression: 'DEFLATE', mimeType: 'application/zip' }).then((blob) => {
-          const link = document.createElement('a');
-          link.download = `${title}.zip`;
-          link.href = URL.createObjectURL(blob);
-          link.click();
-          resolve();
-        });
-      })
-      .catch((error) => reject(error));
-  });
+  const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', mimeType: 'application/zip' });
+  const link = document.createElement('a');
+  link.download = `${title}.zip`;
+  link.href = URL.createObjectURL(blob);
+  link.click();
+};

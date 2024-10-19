@@ -2,6 +2,14 @@ import { IMobxClubModelProps } from 'models/mobxClubModel';
 
 const varendgn: IMobxClubModelProps = {
   title: 'OK Norrvirdarna',
+  clubInfo: {
+    name: 'OK Norrvirdarna',
+    organisationNumber: '829501-4339',
+    address1: 'c/o Lars-Åke Sjökvist',
+    address2: 'Sjövallavägen 55',
+    zip: '352 59',
+    city: 'Växjö',
+  },
   defaultLanguage: 'sv',
   map: {
     center: [14.5900805, 57.1636313],
@@ -11,6 +19,13 @@ const varendgn: IMobxClubModelProps = {
   loginUrl: 'https://oknorrvirdarna.se/log_in.php',
   logoutUrl: 'https://oknorrvirdarna.se/log_out.php',
   attachmentUrl: 'https://oknorrvirdarna.se/showfile.php?iFileID=',
+  invoice: {
+    breakMonthDay: '0101',
+    daysToDueDate: 31,
+    account: '10 68 79-0',
+    accountType: 'Postgiro',
+    message: 'Tävlingsavgift, {name}',
+  },
   titleLogo: {
     url: 'https://oknorrvirdarna.se/images/norrvirdarna_text.png',
     width: 1088,
