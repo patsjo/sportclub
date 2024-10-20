@@ -6,6 +6,7 @@ import { Column, Content, ContentColumns, TDocumentDefinitions } from 'pdfmake/i
 import i18next from 'i18next';
 import moment, { Moment } from 'moment';
 import { dateFormat } from './formHelper';
+import { generatePdfStatus } from 'components/results/ResultsFees';
 
 export interface IInvoiceMetadata extends IInvoiceProps {
   title: string;
@@ -82,7 +83,9 @@ const getPdfDocDefinition = async (
   clubInfo: IClubInfoProps,
   invoiceMetaData: IInvoiceMetadata,
   printObjects: IInvoicePrintObject[],
-  pdfSettings: IPdfSettings
+  pdfSettings: IPdfSettings,
+  setProcessed: (value: React.SetStateAction<number>) => void,
+  setSpinnerText: (value: string | null) => void
 ): Promise<TDocumentDefinitions> => {
   const docDefinition: TDocumentDefinitions = {
     info: {
@@ -131,6 +134,7 @@ const getPdfDocDefinition = async (
   };
   for (let index = 0; index < printObjects.length; index++) {
     const printObject = printObjects[index];
+    setSpinnerText(`${printObject.invoiceMessage}.pdf`);
     const totalFeeToClub = printObject.details.map((detail) => detail.feeToClub).reduce((prev, curr) => prev + curr, 0);
     const taxFee = (totalFeeToClub * (invoiceMetaData.taxPercentage ?? 0)) / 100;
     const excludingTax = totalFeeToClub - taxFee;
@@ -366,6 +370,8 @@ const getPdfDocDefinition = async (
         ],
       },
     });
+    if (generatePdfStatus.abortLoading) throw new Error();
+    setProcessed((oldValue) => oldValue + 1);
   }
   pdfMake.tableLayouts = {
     borderLayout: {
@@ -396,10 +402,23 @@ export const getInvoicePdf = async (
   clubInfo: IClubInfoProps,
   invoiceMetaData: IInvoiceMetadata,
   printObjects: IInvoicePrintObject[],
-  pdfSettings: IPdfSettings
+  pdfSettings: IPdfSettings,
+  setProcessed: (value: React.SetStateAction<number>) => void,
+  setSpinnerText: (value: string | null) => void
 ): Promise<void> => {
   const logo = await getLogo(proxyurl, logoUrl);
-  const docDefinition = await getPdfDocDefinition(proxyurl, logo, clubInfo, invoiceMetaData, printObjects, pdfSettings);
+  const docDefinition = await getPdfDocDefinition(
+    proxyurl,
+    logo,
+    clubInfo,
+    invoiceMetaData,
+    printObjects,
+    pdfSettings,
+    setProcessed,
+    setSpinnerText
+  );
+
+  if (generatePdfStatus.abortLoading) throw new Error();
 
   pdfMake
     .createPdf(docDefinition)
@@ -420,7 +439,9 @@ export const getInvoiceZip = async (
   clubInfo: IClubInfoProps,
   invoiceMetaData: IInvoiceMetadata,
   printObjects: IInvoicePrintObject[],
-  pdfSettings: IPdfSettings
+  pdfSettings: IPdfSettings,
+  setProcessed: (value: React.SetStateAction<number>) => void,
+  setSpinnerText: (value: string | null) => void
 ): Promise<void> => {
   const logo = await getLogo(proxyurl, logoUrl);
   const zip = new JSZip();
@@ -432,10 +453,13 @@ export const getInvoiceZip = async (
       clubInfo,
       invoiceMetaData,
       [printObject],
-      pdfSettings
+      pdfSettings,
+      setProcessed,
+      setSpinnerText
     );
     const data = await getBase64(pdfMake.createPdf(docDefinition));
     zip.file(`${printObject.invoiceMessage}.pdf`, data, { base64: true });
+    if (generatePdfStatus.abortLoading) throw new Error();
   }
 
   const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', mimeType: 'application/zip' });

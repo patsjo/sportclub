@@ -136,6 +136,7 @@ i18next
             taxFee: 'Tax kr',
             total: 'TOTAL',
             message: 'Message',
+            generatePdf: 'Generate PDF',
           },
           map: {
             Map: 'map',
@@ -536,6 +537,7 @@ i18next
             taxFee: 'Moms kr',
             total: 'TOTALT',
             message: 'Meddelande',
+            generatePdf: 'Skapar PDF',
           },
           map: {
             Map: 'karta',

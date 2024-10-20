@@ -124,7 +124,7 @@ const TablePrintSettingButtons = ({
         okButtonProps={{ hidden: true }}
         maskClosable={false}
       >
-        {total > 1 ? (
+        {total > 0 ? (
           <SpinnerDiv>
             <Progress type="circle" percent={(100 * processed) / total} format={() => `${processed}/${total}`} />
             <div>{spinnerText}...</div>

@@ -24,7 +24,7 @@ import { CompetitorTable } from 'components/users/Competitors';
 import { getTextColorBasedOnBackground, lightenColor } from 'utils/colorHelper';
 import { getInvoicePdf, getInvoiceZip, IFeesRecord, IInvoicePrintObject } from 'utils/pdfInvoice';
 
-let abortLoading = false;
+export const generatePdfStatus = { abortLoading: false };
 
 const StyledRow = styled.div`
   display: block;
@@ -133,7 +133,7 @@ const ResultsFees = observer(() => {
   }, []);
 
   const onAbortLoading = () => {
-    abortLoading = true;
+    generatePdfStatus.abortLoading = true;
   };
 
   const loadFeeData = useCallback(
@@ -220,6 +220,7 @@ const ResultsFees = observer(() => {
 
       for (let index = 0; index < competitors?.length; index++) {
         const competitor = competitors[index];
+        setSpinnerText(`${competitor.firstName} ${competitor.lastName}`);
 
         const result = (await PostJsonData(
           url,
@@ -279,9 +280,9 @@ const ResultsFees = observer(() => {
               totalFee: f.serviceFeeToClub,
             })
           );
+        setProcessed((oldValue) => oldValue + 1);
+        if (generatePdfStatus.abortLoading) throw new Error();
       }
-
-      if (abortLoading) throw new Error();
 
       return { invoiceMessage, details: [...competitorsDetails, ...servicesDetails] };
     },
@@ -290,16 +291,16 @@ const ResultsFees = observer(() => {
 
   const onPrint = useCallback(
     async (settings: IPrintSettings): Promise<void> => {
-      abortLoading = false;
+      generatePdfStatus.abortLoading = false;
+      if (!clubModel.corsProxy || !fromDate || !toDate || !fee) return;
       setSpinnerTitle(t('results.loadSavedResults'));
       setSpinnerText(null);
-      setTotal(1);
+      setTotal(fee.isFamily ? fee.children?.length ?? 1 : 1);
       setProcessed(0);
       try {
-        if (!clubModel.corsProxy || !fromDate || !toDate || !fee) return;
         const printObject = await getPrintObject(fee);
 
-        setSpinnerTitle(t('results.calculateResults'));
+        setSpinnerTitle(t('invoice.generatePdf'));
 
         await getInvoicePdf(
           clubModel.corsProxy,
@@ -314,7 +315,9 @@ const ResultsFees = observer(() => {
             endDate: toDate,
           },
           [printObject],
-          settings.pdf
+          settings.pdf,
+          setProcessed,
+          setSpinnerText
         );
       } catch (e: any) {
         if (e && e.message) {
@@ -337,22 +340,23 @@ const ResultsFees = observer(() => {
       setSpinnerTitle(t('results.loadSavedResults'));
       setSpinnerText(null);
       setProcessed(0);
-      abortLoading = false;
+      generatePdfStatus.abortLoading = false;
 
       try {
         const printObjects: IInvoicePrintObject[] = [];
-        setTotal(fees?.length ?? 1);
+        setTotal(
+          fees?.map((f) => (f.isFamily ? f.children?.length ?? 1 : 1)).reduce((prev, next) => prev + next, 0) ?? 1
+        );
 
         for (const f of fees) {
-          setSpinnerText(`${f.firstName} ${f.lastName}`);
           const printObject = await getPrintObject(f);
           printObjects.push(printObject);
-          if (abortLoading) throw new Error();
-          setProcessed((oldValue) => oldValue + 1);
+          if (generatePdfStatus.abortLoading) throw new Error();
         }
 
-        setSpinnerTitle(t('results.calculateResults'));
+        setSpinnerTitle(t('invoice.generatePdf'));
         setSpinnerText(null);
+        setTotal(printObjects.length);
         setProcessed(0);
 
         if (allInOnePdf) {
@@ -369,7 +373,9 @@ const ResultsFees = observer(() => {
               endDate: toDate,
             },
             printObjects,
-            settings.pdf
+            settings.pdf,
+            setProcessed,
+            setSpinnerText
           );
         } else {
           await getInvoiceZip(
@@ -385,7 +391,9 @@ const ResultsFees = observer(() => {
               endDate: toDate,
             },
             printObjects,
-            settings.pdf
+            settings.pdf,
+            setProcessed,
+            setSpinnerText
           );
         }
       } catch (e: any) {
@@ -397,7 +405,7 @@ const ResultsFees = observer(() => {
       setSpinnerTitle(null);
       setSpinnerText(null);
     },
-    [t, clubModel, sessionModel, fromDate, toDate, getPrintObject]
+    [t, clubModel, sessionModel, fees, fromDate, toDate, getPrintObject]
   );
 
   const Spinner = (
