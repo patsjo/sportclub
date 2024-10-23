@@ -12,6 +12,7 @@ export interface IInvoiceMetadata extends IInvoiceProps {
   title: string;
   startDate: Moment;
   endDate: Moment;
+  dueDate: Moment;
 }
 
 export interface IFeesRecord {
@@ -177,13 +178,13 @@ const getPdfDocDefinition = async (
               stack: [
                 { text: moment().format(dateFormat), style: 'bold' },
                 {
-                  text: `${invoiceMetaData.endDate.format('YYYY')}-${
+                  text: `${invoiceMetaData.endDate.format('YYYY')}-TÄVL-AVG-${
                     printObject.details.find(() => true)?.competitorId ?? 99999
                   }`,
                   style: 'bold',
                 },
                 {
-                  text: invoiceMetaData.endDate.add(invoiceMetaData.daysToDueDate, 'days').format(dateFormat),
+                  text: invoiceMetaData.dueDate.format(dateFormat),
                   style: 'bold',
                 },
                 [invoiceMetaData.accountType, invoiceMetaData.swishNumber ? 'Swish' : undefined]
@@ -261,37 +262,37 @@ const getPdfDocDefinition = async (
       table: {
         widths: ['100%'],
         body: [
-          [
+          ...printObject.details.map((detail) => [
             {
               columns: [
                 {
                   width: '52%',
                   alignment: 'left',
-                  stack: printObject.details.map((detail) => detail.description ?? ''),
+                  text: detail.description ?? '',
                 },
                 {
                   width: '12%',
                   alignment: 'right',
-                  stack: printObject.details.map((detail) => detail.numberOf.toString()),
+                  text: detail.numberOf.toString(),
                 },
                 {
                   width: '12%',
                   alignment: 'right',
-                  stack: printObject.details.map((detail) => feeFormat(detail.totalFee)),
+                  text: feeFormat(detail.totalFee),
                 },
                 {
                   width: '12%',
                   alignment: 'right',
-                  stack: printObject.details.map((detail) => feeFormat(detail.totalFee - detail.feeToClub)),
+                  text: feeFormat(detail.totalFee - detail.feeToClub),
                 },
                 {
                   width: '12%',
                   alignment: 'right',
-                  stack: printObject.details.map((detail) => feeFormat(detail.feeToClub)),
+                  text: feeFormat(detail.feeToClub),
                 },
               ],
             },
-          ],
+          ]),
           [
             {
               columns: [

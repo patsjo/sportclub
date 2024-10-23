@@ -1,4 +1,4 @@
-import { DatePicker, Form, message, Spin } from 'antd';
+import { DatePicker, Form, message, Space, Spin } from 'antd';
 import { TFunction } from 'i18next';
 import { observer } from 'mobx-react';
 import { IMobxClubModel } from 'models/mobxClubModel';
@@ -48,7 +48,11 @@ interface IFeesTable extends PickRequired<IFeeResponse, 'originalFee' | 'lateFee
 }
 
 const feesSort = (a: IFeesTable, b: IFeesTable) =>
-  `${a.lastName} ${a.firstName}`.toLowerCase().localeCompare(`${b.lastName} ${b.firstName}`.toLowerCase());
+  `${a.isFamily ? a.lastName.substring(a.lastName.indexOf(' ') + 1) : a.lastName} ${a.firstName}`
+    .toLowerCase()
+    .localeCompare(
+      `${b.isFamily ? b.lastName.substring(b.lastName.indexOf(' ') + 1) : b.lastName} ${b.firstName}`.toLowerCase()
+    );
 
 const columns = (t: TFunction, clubModel: IMobxClubModel): IPrintTableColumn<IFeesTable>[] => [
   {
@@ -101,6 +105,9 @@ const ResultsFees = observer(() => {
   );
   const [fromDate, setFromDate] = useState<moment.Moment | null>(
     moment(toDate?.format('YYYY-MM-DD'))?.add(-1, 'years').add(1, 'days') ?? null
+  );
+  const [dueDate, setDueDate] = useState<moment.Moment | null>(
+    moment(toDate?.format('YYYY-MM-DD'))?.add(clubModel.invoice.daysToDueDate, 'days') ?? null
   );
   const [loading, setLoading] = useState(true);
   const [formId] = useState('resultsFeesForm' + Math.floor(Math.random() * 10000000000000000));
@@ -187,7 +194,7 @@ const ResultsFees = observer(() => {
                 serviceFeeToClub: competitors
                   ?.filter((c) => c.familyId === f.familyId)
                   ?.reduce((prev, curr) => prev + curr.serviceFeeToClub, 0),
-                children: competitors?.filter((c) => c.familyId === f.familyId),
+                children: competitors?.filter((c) => c.familyId === f.familyId).sort(feesSort),
               })
             ) ?? [];
 
@@ -274,7 +281,7 @@ const ResultsFees = observer(() => {
           .forEach((f) =>
             servicesDetails.push({
               competitorId: competitor.competitorId!,
-              description: `${f.raceDate}, ${f.name}, ${f.serviceFeeDescription}`,
+              description: `${f.raceDate}, ${f.name}, ${f.serviceFeeDescription} (${competitor.firstName} ${competitor.lastName})`,
               numberOf: 1,
               feeToClub: f.serviceFeeToClub,
               totalFee: f.serviceFeeToClub,
@@ -289,10 +296,39 @@ const ResultsFees = observer(() => {
     [t, clubModel, fromDate, toDate]
   );
 
+  const onExcel = useCallback(
+    async (settings: IPrintSettings): Promise<void> => {
+      if (!fromDate || !toDate || !fees) return;
+      const header = `${t('invoice.invoiceNumber')};${t('invoice.message')};${t('results.FirstName')};${t(
+        'results.LastName'
+      )};${t('results.OriginalFee')};${t('results.LateFee')};${t('results.FeeToClub')};${t(
+        'results.ServiceFeeToClub'
+      )};${t('results.TotalFeeToClub')}`;
+      const rows = fees.map(
+        (f) =>
+          `${toDate.format('YYYY')}-TÄVL-AVG-${
+            f.competitorId ?? f.children?.find(() => true)?.competitorId ?? 99999
+          };${t('invoice.invoiceMessage')
+            ?.replaceAll('{0}', toDate?.format('YYYY') ?? '')
+            ?.replaceAll('{1}', `${f.firstName} ${f.lastName}`)}${f.firstName};${f.lastName};${f.originalFee};${
+            f.lateFee
+          };${f.feeToClub};${f.serviceFeeToClub};${f.feeToClub + f.serviceFeeToClub}`
+      );
+      const csvBlob = new Blob([`${header}\r\n${rows.join('\r\n')}`], { type: 'text/plain' });
+      const link = document.createElement('a');
+      link.download = `${t('invoice.eventFeesSubtitle')
+        ?.replaceAll('{0}', fromDate?.format(dateFormat) ?? '')
+        ?.replaceAll('{1}', toDate?.format(dateFormat) ?? '')}.xlsx`;
+      link.href = URL.createObjectURL(csvBlob);
+      link.click();
+    },
+    [t, fromDate, toDate, fees]
+  );
+
   const onPrint = useCallback(
     async (settings: IPrintSettings): Promise<void> => {
       generatePdfStatus.abortLoading = false;
-      if (!clubModel.corsProxy || !fromDate || !toDate || !fee) return;
+      if (!clubModel.corsProxy || !fromDate || !toDate || !dueDate || !fee) return;
       setSpinnerTitle(t('results.loadSavedResults'));
       setSpinnerText(null);
       setTotal(fee.isFamily ? fee.children?.length ?? 1 : 1);
@@ -313,6 +349,7 @@ const ResultsFees = observer(() => {
               ?.replaceAll('{1}', toDate?.format(dateFormat) ?? ''),
             startDate: fromDate,
             endDate: toDate,
+            dueDate: dueDate,
           },
           [printObject],
           settings.pdf,
@@ -335,7 +372,7 @@ const ResultsFees = observer(() => {
     async (settings: IPrintSettings, allInOnePdf: boolean): Promise<void> => {
       const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
 
-      if (!url || !clubModel.raceClubs || !clubModel.corsProxy || !fromDate || !toDate) return;
+      if (!url || !clubModel.raceClubs || !clubModel.corsProxy || !fromDate || !toDate || !dueDate || !fees) return;
 
       setSpinnerTitle(t('results.loadSavedResults'));
       setSpinnerText(null);
@@ -345,7 +382,7 @@ const ResultsFees = observer(() => {
       try {
         const printObjects: IInvoicePrintObject[] = [];
         setTotal(
-          fees?.map((f) => (f.isFamily ? f.children?.length ?? 1 : 1)).reduce((prev, next) => prev + next, 0) ?? 1
+          fees.map((f) => (f.isFamily ? f.children?.length ?? 1 : 1)).reduce((prev, next) => prev + next, 0) ?? 1
         );
 
         for (const f of fees) {
@@ -371,6 +408,7 @@ const ResultsFees = observer(() => {
                 ?.replaceAll('{1}', toDate?.format(dateFormat) ?? ''),
               startDate: fromDate,
               endDate: toDate,
+              dueDate: dueDate,
             },
             printObjects,
             settings.pdf,
@@ -389,6 +427,7 @@ const ResultsFees = observer(() => {
                 ?.replaceAll('{1}', toDate?.format(dateFormat) ?? ''),
               startDate: fromDate,
               endDate: toDate,
+              dueDate: dueDate,
             },
             printObjects,
             settings.pdf,
@@ -423,91 +462,99 @@ const ResultsFees = observer(() => {
       initialValues={{
         FromDate: fromDate,
         ToDate: toDate,
+        DueDate: dueDate,
       }}
     >
-      <StyledRow>
-        <Col>
-          <FormItem
-            name="FromDate"
-            label={t('results.QueryStartDate')}
-            rules={[
-              {
-                required: true,
-                type: 'object',
-                message: errorRequiredField(t, 'results.QueryStartDate'),
-              },
-            ]}
-          >
-            <DatePicker
-              format={dateFormat}
-              allowClear={false}
-              onChange={(value) => {
-                setFromDate(value);
-                loadFeeData(value, toDate);
-              }}
-            />
-          </FormItem>
-        </Col>
-        <Col>
-          <FormItem
-            name="ToDate"
-            label={t('results.QueryEndDate')}
-            rules={[
-              {
-                required: true,
-                type: 'object',
-                message: errorRequiredField(t, 'results.QueryEndDate'),
-              },
-            ]}
-          >
-            <DatePicker
-              format={dateFormat}
-              allowClear={false}
-              onChange={(value) => {
-                setToDate(value);
-                loadFeeData(fromDate, value);
-              }}
-            />
-          </FormItem>
-        </Col>
-        <Col style={{ width: 'calc(100% - 480px)' }}>
-          <FormItem name="Competitor" label={`${t('results.Competitor')}/${t('users.FamilySelect')}`}>
-            <FormSelect
-              disabled={loading}
-              style={{ maxWidth: 600, width: '100%' }}
-              dropdownMatchSelectWidth={false}
-              options={
-                loading || !fees
-                  ? []
-                  : fees.map((fee) => ({
-                      code: JSON.stringify(fee),
-                      description: `${fee.firstName} ${fee.lastName}`,
-                    })) ?? []
-              }
-              showSearch
-              optionFilterProp="children"
-              filterOption={(input, option) => option?.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-              onChange={(key) => setFee(JSON.parse(key))}
-            />
-          </FormItem>
-        </Col>
-        <Col>
-          <TablePrintSettingButtons
-            localStorageName="resultFees"
-            columns={columns(t, clubModel)}
-            disablePrint={loading || !fee}
-            disablePrintAll={loading}
-            processed={processed}
-            total={total}
-            spinnerTitle={spinnerTitle}
-            spinnerText={spinnerText}
-            onAbortLoading={onAbortLoading}
-            onPrint={onPrint}
-            onPrintAll={onPrintAll}
-            onTableColumns={setColumnsSetting}
+      <Space wrap>
+        <FormItem
+          name="FromDate"
+          label={t('results.QueryStartDate')}
+          rules={[
+            {
+              required: true,
+              type: 'object',
+              message: errorRequiredField(t, 'results.QueryStartDate'),
+            },
+          ]}
+        >
+          <DatePicker
+            format={dateFormat}
+            allowClear={false}
+            onChange={(value) => {
+              setFromDate(value);
+              loadFeeData(value, toDate);
+            }}
           />
-        </Col>
-      </StyledRow>
+        </FormItem>
+        <FormItem
+          name="ToDate"
+          label={t('results.QueryEndDate')}
+          rules={[
+            {
+              required: true,
+              type: 'object',
+              message: errorRequiredField(t, 'results.QueryEndDate'),
+            },
+          ]}
+        >
+          <DatePicker
+            format={dateFormat}
+            allowClear={false}
+            onChange={(value) => {
+              setToDate(value);
+              loadFeeData(fromDate, value);
+            }}
+          />
+        </FormItem>
+        <FormItem
+          name="DueDate"
+          label={t('invoice.dueDate')}
+          rules={[
+            {
+              required: true,
+              type: 'object',
+              message: errorRequiredField(t, 'invoice.dueDate'),
+            },
+          ]}
+        >
+          <DatePicker format={dateFormat} allowClear={false} onChange={setDueDate} />
+        </FormItem>
+        <FormItem name="Competitor" label={`${t('results.Competitor')}/${t('users.FamilySelect')}`}>
+          <FormSelect
+            allowClear
+            disabled={loading}
+            style={{ maxWidth: 600, minWidth: 200 }}
+            dropdownMatchSelectWidth={false}
+            options={
+              loading || !fees
+                ? []
+                : fees.map((fee) => ({
+                    code: JSON.stringify(fee),
+                    description: `${fee.firstName} ${fee.lastName}`,
+                  })) ?? []
+            }
+            showSearch
+            optionFilterProp="children"
+            filterOption={(input, option) => option?.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+            onChange={(key) => setFee(JSON.parse(key))}
+          />
+        </FormItem>
+        <TablePrintSettingButtons
+          localStorageName="resultFees"
+          columns={columns(t, clubModel)}
+          disablePrint={loading || !fee}
+          disablePrintAll={loading}
+          processed={processed}
+          total={total}
+          spinnerTitle={spinnerTitle}
+          spinnerText={spinnerText}
+          onAbortLoading={onAbortLoading}
+          onExcel={onExcel}
+          onPrint={onPrint}
+          onPrintAll={onPrintAll}
+          onTableColumns={setColumnsSetting}
+        />
+      </Space>
       {!loading ? (
         <CompetitorTable
           familyBackgroundColor={clubBgColor}

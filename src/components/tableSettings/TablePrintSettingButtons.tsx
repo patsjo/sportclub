@@ -1,4 +1,4 @@
-import { DownOutlined, FileZipOutlined, PrinterOutlined, SettingOutlined } from '@ant-design/icons';
+import { DownOutlined, FileTextOutlined, FileZipOutlined, PrinterOutlined, SettingOutlined } from '@ant-design/icons';
 import { Button, Dropdown, Menu, Modal, Progress, Spin } from 'antd';
 import { SpinnerDiv } from 'components/styled/styled';
 import React, { useEffect, useState } from 'react';
@@ -9,6 +9,7 @@ import { TableSettingModal, getLocalStorage } from './TableSettingModal';
 
 const ButtonsContainer = styled.div`
   min-width: 150px;
+  margin-top: 24px;
 `;
 
 interface ITablePrintSettingButtonsProps {
@@ -21,6 +22,7 @@ interface ITablePrintSettingButtonsProps {
   spinnerTitle: string | null;
   spinnerText: string | null;
   onAbortLoading: () => void;
+  onExcel: (settings: IPrintSettings) => Promise<void>;
   onPrint: (settings: IPrintSettings) => Promise<void>;
   onPrintAll?: (settings: IPrintSettings, allInOnePdf: boolean) => Promise<void>;
   onTableColumns: React.Dispatch<React.SetStateAction<IPrintSettingsColumn[]>>;
@@ -36,6 +38,7 @@ const TablePrintSettingButtons = ({
   spinnerTitle,
   spinnerText,
   onAbortLoading,
+  onExcel,
   onPrint,
   onPrintAll,
   onTableColumns,
@@ -96,6 +99,18 @@ const TablePrintSettingButtons = ({
           onPrint(settings)
             .then(() => setLoading(false))
             .catch(() => setLoading(false));
+        }}
+      />
+      <Button
+        icon={<FileTextOutlined />}
+        style={{ marginRight: 5 }}
+        loading={loading}
+        onClick={() => {
+          setLoading(true);
+          onExcel &&
+            onExcel(settings)
+              .then(() => setLoading(false))
+              .catch(() => setLoading(false));
         }}
       />
       {onPrintAll && !disablePrintAll && !loading ? (

@@ -44,7 +44,11 @@ interface ICompetitorTable extends PickRequired<IRaceCompetitor, 'firstName' | '
 }
 
 const competitorSort = (a: ICompetitorTable, b: ICompetitorTable) =>
-  `${a.lastName} ${a.firstName}`.toLowerCase().localeCompare(`${b.lastName} ${b.firstName}`.toLowerCase());
+  `${a.isFamily ? a.lastName.substring(a.lastName.indexOf(' ') + 1) : a.lastName} ${a.firstName}`
+    .toLowerCase()
+    .localeCompare(
+      `${b.isFamily ? b.lastName.substring(b.lastName.indexOf(' ') + 1) : b.lastName} ${b.firstName}`.toLowerCase()
+    );
 
 const Competitors = observer(() => {
   const { t } = useTranslation();
@@ -54,12 +58,19 @@ const Competitors = observer(() => {
 
   const familyOptions = useMemo(
     () =>
-      clubModel.raceClubs?.selectedClub?.families.map(
-        (f): IOption => ({
-          code: f.familyId,
-          description: f.familyName,
-        })
-      ) ?? [],
+      clubModel.raceClubs?.selectedClub?.families
+        .map(
+          (f): IOption => ({
+            code: f.familyId,
+            description: f.familyName,
+          })
+        )
+        .sort((a, b) =>
+          a.description
+            .substring(a.description.indexOf(' ') + 1)
+            .toLowerCase()
+            .localeCompare(b.description.substring(b.description.indexOf(' ') + 1).toLowerCase())
+        ) ?? [],
     [clubModel.raceClubs?.selectedClub?.families]
   );
 

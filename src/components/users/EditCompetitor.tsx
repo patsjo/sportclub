@@ -132,6 +132,7 @@ const EditCompetitor = ({ competitor, familyOptions, onValidate }: IEditUserProp
         <Col span={12}>
           <FormItem name="familyId" label={t('users.FamilySelect')}>
             <FormSelect
+              allowClear
               dropdownRender={(menu) => (
                 <>
                   {menu}

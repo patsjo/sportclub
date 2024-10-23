@@ -5,8 +5,8 @@ const okorion: IMobxClubModelProps = {
   clubInfo: {
     name: 'OK Orion',
     organisationNumber: '835000-4209',
-    address1: 'Furudalsvägen',
-    zip: '373 00',
+    address1: 'Furudalsvägen 42',
+    zip: '373 74',
     city: 'Jämjö',
   },
   defaultLanguage: 'sv',

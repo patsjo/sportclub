@@ -576,6 +576,80 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
     [t, clubModel, isIndividual, year]
   );
 
+  const onExcel = useCallback(
+    async (settings: IPrintSettings): Promise<void> => {
+      if (!year || !result || (isIndividual && competitorId == null)) return;
+      const fromDate = moment(year, 'YYYY').format('YYYY-MM-DD');
+      const header = `${t('results.Date')};${t('results.Name')};${t('results.Club')};${t('results.Sport')};${t(
+        'results.EventClassification'
+      )};${t('results.Class')};${t('results.Difficulty')};${t('results.LengthInMeter')};${t('results.Time')};${t(
+        'results.WinnerTime'
+      )};${t('results.SecondTime')};${t('results.Position')};${t('results.NofStartsInClass')};${t(
+        'results.MissingTime'
+      )};${t('results.Ranking')};${t('results.RankingSpeedLeague')};${t('results.RankingTechnicalLeague')};${t(
+        'results.Points1000League'
+      )};${t('results.PointsLeague')};${t('results.Award')};${t('results.RaceLightCondition')};${t(
+        'results.OriginalFee'
+      )};${t('results.LateFee')};${t('results.FeeToClub')};${t('results.ServiceFeeToClub')};${t(
+        'results.ServiceFeeDescription'
+      )};${t('results.TotalFeeToClub')};${t('results.Stage')};${t('results.DeltaPositions')};${t(
+        'results.DeltaTimeBehind'
+      )}`;
+      const rows = [
+        ...result.results.map(
+          (r) =>
+            `${r.raceDate};${r.name.replaceAll(';', '/')};${r.organiserName.replaceAll(';', '/')};${r.sportCode};${
+              clubModel.raceClubs?.eventClassifications.find(
+                (ec) =>
+                  ec.eventClassificationId ===
+                  (r.deviantEventClassificationId ? r.deviantEventClassificationId : r.eventClassificationId)
+              )?.description
+            };${r.className};${r.difficulty};${r.lengthInMeter};${r.competitorTime ?? ''};${r.winnerTime ?? ''};${
+              r.secondTime ?? ''
+            };${r.position ?? ''};${r.nofStartsInClass ?? ''};${r.missingTime ?? ''};${r.ranking ?? ''};${
+              r.speedRanking ?? ''
+            };${r.technicalRanking ?? ''};${r.points1000 ?? ''};${r.points ?? ''};${r.award ?? ''};${
+              raceLightConditionOptions(t).find((opt) => opt.code === r.raceLightCondition)?.description ?? ''
+            };${r.originalFee};${r.lateFee};${r.feeToClub};${r.serviceFeeToClub};${r.serviceFeeDescription ?? ''};${
+              r.feeToClub + r.serviceFeeToClub
+            };;;`
+        ),
+        ...result.teamResults.map(
+          (r) =>
+            `${r.raceDate};${r.name.replaceAll(';', '/')};${r.organiserName.replaceAll(';', '/')};${r.sportCode};${
+              clubModel.raceClubs?.eventClassifications.find(
+                (ec) =>
+                  ec.eventClassificationId ===
+                  (r.deviantEventClassificationId ? r.deviantEventClassificationId : r.eventClassificationId)
+              )?.description
+            };${r.className};${r.difficulty};${r.lengthInMeter};${r.competitorTime ?? ''};${r.winnerTime ?? ''};${
+              r.secondTime ?? ''
+            };${r.position ?? ''};${r.nofStartsInClass ?? ''};${r.missingTime ?? ''};${r.ranking ?? ''};${
+              r.speedRanking ?? ''
+            };${r.technicalRanking ?? ''};${r.points1000 ?? ''};;;${
+              raceLightConditionOptions(t).find(
+                (opt) => opt.code === (r.deviantRaceLightCondition ?? r.raceLightCondition)
+              )?.description ?? ''
+            };;;${r.feeToClub ?? ''};${r.serviceFeeToClub};${r.serviceFeeDescription ?? ''};${
+              (r.feeToClub ?? '') + r.serviceFeeToClub
+            };${r.stage ?? ''};${r.deltaPositions ?? ''};${r.deltaTimeBehind ?? ''}`
+        ),
+      ];
+      const csvBlob = new Blob([`${header}\r\n${rows.join('\r\n')}`], { type: 'text/plain' });
+      const link = document.createElement('a');
+      link.download = isIndividual
+        ? `${t('modules.Results')} - ${
+            clubModel.raceClubs?.selectedClub?.competitorById(competitorId)?.fullName
+          } ${year}.xlsx`
+        : `${t('modules.Results')} - ${(result as IClubViewResultResponse).raceDate} ${
+            (result as IClubViewResultResponse).name
+          }`;
+      link.href = URL.createObjectURL(csvBlob);
+      link.click();
+    },
+    [year, isIndividual, result, clubModel, competitorId, result]
+  );
+
   const onPrint = useCallback(
     async (settings: IPrintSettings): Promise<void> => {
       if (!result || !clubModel.corsProxy) {
@@ -735,7 +809,7 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
             />
           </FormItem>
         </Col>
-        <Col style={{ width: 'calc(100% - 252px)' }}>
+        <Col style={{ width: 'calc(100% - 276px)' }}>
           {isIndividual ? (
             <FormItem name="Competitor" label={t('results.Competitor')}>
               <FormSelect
@@ -781,6 +855,7 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
             spinnerTitle={spinnerTitle}
             spinnerText={spinnerText}
             onAbortLoading={onAbortLoading}
+            onExcel={onExcel}
             onPrint={onPrint}
             onPrintAll={onPrintAll}
             onTableColumns={setColumnsSetting}
