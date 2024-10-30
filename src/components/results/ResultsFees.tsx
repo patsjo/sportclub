@@ -299,26 +299,35 @@ const ResultsFees = observer(() => {
   const onExcel = useCallback(
     async (settings: IPrintSettings): Promise<void> => {
       if (!fromDate || !toDate || !fees) return;
-      const header = `${t('invoice.invoiceNumber')};${t('invoice.message')};${t('results.FirstName')};${t(
-        'results.LastName'
-      )};${t('results.OriginalFee')};${t('results.LateFee')};${t('results.FeeToClub')};${t(
-        'results.ServiceFeeToClub'
-      )};${t('results.TotalFeeToClub')}`;
-      const rows = fees.map(
-        (f) =>
+      const header = `${t('invoice.invoiceNumber')};${t('invoice.message')};${t('results.FullName')};${t(
+        'results.OriginalFee'
+      )};${t('results.LateFee')};${t('results.FeeToClub')};${t('results.ServiceFeeToClub')};${t(
+        'results.TotalFeeToClub'
+      )}`;
+      const rows: string[] = [];
+      fees.forEach((f) => {
+        rows.push(
           `${toDate.format('YYYY')}-TÄVL-AVG-${
             f.competitorId ?? f.children?.find(() => true)?.competitorId ?? 99999
           };${t('invoice.invoiceMessage')
             ?.replaceAll('{0}', toDate?.format('YYYY') ?? '')
-            ?.replaceAll('{1}', `${f.firstName} ${f.lastName}`)}${f.firstName};${f.lastName};${f.originalFee};${
-            f.lateFee
-          };${f.feeToClub};${f.serviceFeeToClub};${f.feeToClub + f.serviceFeeToClub}`
-      );
+            ?.replaceAll('{1}', `${f.firstName} ${f.lastName}`)};${
+            f.isFamily ? f.lastName : f.firstName + ' ' + f.lastName
+          };${f.originalFee};${f.lateFee};${f.feeToClub};${f.serviceFeeToClub};${f.feeToClub + f.serviceFeeToClub}`
+        );
+        f.children?.forEach((child) => {
+          rows.push(
+            `;;- ${child.firstName + ' ' + child.lastName};${child.originalFee};${child.lateFee};${child.feeToClub};${
+              child.serviceFeeToClub
+            };${child.feeToClub + child.serviceFeeToClub}`
+          );
+        });
+      });
       const csvBlob = new Blob([`${header}\r\n${rows.join('\r\n')}`], { type: 'text/plain' });
       const link = document.createElement('a');
       link.download = `${t('invoice.eventFeesSubtitle')
         ?.replaceAll('{0}', fromDate?.format(dateFormat) ?? '')
-        ?.replaceAll('{1}', toDate?.format(dateFormat) ?? '')}.xlsx`;
+        ?.replaceAll('{1}', toDate?.format(dateFormat) ?? '')}.txt`;
       link.href = URL.createObjectURL(csvBlob);
       link.click();
     },

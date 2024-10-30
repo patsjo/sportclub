@@ -640,10 +640,10 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
       link.download = isIndividual
         ? `${t('modules.Results')} - ${
             clubModel.raceClubs?.selectedClub?.competitorById(competitorId)?.fullName
-          } ${year}.xlsx`
+          } ${year}.txt`
         : `${t('modules.Results')} - ${(result as IClubViewResultResponse).raceDate} ${
             (result as IClubViewResultResponse).name
-          }`;
+          }.txt`;
       link.href = URL.createObjectURL(csvBlob);
       link.click();
     },
