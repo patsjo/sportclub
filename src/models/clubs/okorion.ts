@@ -1,4 +1,4 @@
-import { IMobxClubModelProps } from 'models/mobxClubModel';
+import { IMobxClubModelProps } from '../../models/mobxClubModel';
 
 const okorion: IMobxClubModelProps = {
   title: 'OK Orion',
@@ -561,7 +561,7 @@ const okorion: IMobxClubModelProps = {
         height: 762,
       },
       url: 'https://sokigo.com/',
-      active: true,
+      active: false,
     },
     {
       name: 'Stensborgs VVS',

@@ -5,9 +5,9 @@ import MaterialIcon, { MaterialIconsType } from '../materialIcon/MaterialIcon';
 interface IToolbarItemHolderProps {
   disabled?: boolean;
 }
-const ToolbarItemHolder = styled.div`
+const ToolbarItemHolder = styled.div<IToolbarItemHolderProps>`
   & {
-    display: ${({ disabled }: IToolbarItemHolderProps) => (disabled ? 'none' : 'inline-block')};
+    display: ${({ disabled }) => (disabled ? 'none' : 'inline-block')};
     cursor: pointer;
     min-width: 46px;
     height: 46px;

@@ -1,28 +1,28 @@
 import { DatePicker, Form, message, Space, Spin } from 'antd';
 import { TFunction } from 'i18next';
 import { observer } from 'mobx-react';
-import { IMobxClubModel } from 'models/mobxClubModel';
-import moment from 'moment';
+import { IMobxClubModel } from '../../models/mobxClubModel';
+import dayjs from 'dayjs';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
-import { useMobxStore } from 'utils/mobxStore';
+import { useMobxStore } from '../../utils/mobxStore';
 import {
   IFeeResponse,
   IIndividualViewResultResponse,
   IPrintSettings,
   IPrintSettingsColumn,
-} from 'utils/responseInterfaces';
+} from '../../utils/responseInterfaces';
 import { PostJsonData } from '../../utils/api';
 import { dateFormat, errorRequiredField, FormSelect, INumberOption, IOption } from '../../utils/formHelper';
 import { getPdf, getZip, IPrintInput, IPrintObject, IPrintTable, IPrintTableColumn } from '../../utils/pdf';
 import FormItem from '../formItems/FormItem';
 import { SpinnerDiv, StyledTable } from '../styled/styled';
 import TablePrintSettingButtons from '../tableSettings/TablePrintSettingButtons';
-import { PickRequired } from 'models/typescriptPartial';
-import { CompetitorTable } from 'components/users/Competitors';
-import { getTextColorBasedOnBackground, lightenColor } from 'utils/colorHelper';
-import { getInvoicePdf, getInvoiceZip, IFeesRecord, IInvoicePrintObject } from 'utils/pdfInvoice';
+import { PickRequired } from '../../models/typescriptPartial';
+import { CompetitorTable } from '../users/Competitors';
+import { getTextColorBasedOnBackground, lightenColor } from '../../utils/colorHelper';
+import { getInvoicePdf, getInvoiceZip, IFeesRecord, IInvoicePrintObject } from '../../utils/pdfInvoice';
 
 export const generatePdfStatus = { abortLoading: false };
 
@@ -51,7 +51,7 @@ const feesSort = (a: IFeesTable, b: IFeesTable) =>
   `${a.isFamily ? a.lastName.substring(a.lastName.indexOf(' ') + 1) : a.lastName} ${a.firstName}`
     .toLowerCase()
     .localeCompare(
-      `${b.isFamily ? b.lastName.substring(b.lastName.indexOf(' ') + 1) : b.lastName} ${b.firstName}`.toLowerCase()
+      `${b.isFamily ? b.lastName.substring(b.lastName.indexOf(' ') + 1) : b.lastName} ${b.firstName}`.toLowerCase(),
     );
 
 const columns = (t: TFunction, clubModel: IMobxClubModel): IPrintTableColumn<IFeesTable>[] => [
@@ -100,14 +100,14 @@ const ResultsFees = observer(() => {
   const { clubModel, sessionModel } = useMobxStore();
   const [fees, setFees] = useState<IFeesTable[]>([]);
   const [fee, setFee] = useState<IFeesTable>();
-  const [toDate, setToDate] = useState<moment.Moment | null>(
-    moment(`${moment().add(-6, 'months').format('YYYY')}${clubModel.invoice.breakMonthDay}`, 'YYYYMMDD')
+  const [toDate, setToDate] = useState<dayjs.Dayjs | null>(
+    dayjs(`${dayjs().add(-6, 'months').format('YYYY')}${clubModel.invoice.breakMonthDay}`, 'YYYYMMDD'),
   );
-  const [fromDate, setFromDate] = useState<moment.Moment | null>(
-    moment(toDate?.format('YYYY-MM-DD'))?.add(-1, 'years').add(1, 'days') ?? null
+  const [fromDate, setFromDate] = useState<dayjs.Dayjs | null>(
+    dayjs(toDate?.format('YYYY-MM-DD'))?.add(-1, 'years').add(1, 'days') ?? null,
   );
-  const [dueDate, setDueDate] = useState<moment.Moment | null>(
-    moment(toDate?.format('YYYY-MM-DD'))?.add(clubModel.invoice.daysToDueDate, 'days') ?? null
+  const [dueDate, setDueDate] = useState<dayjs.Dayjs | null>(
+    dayjs(toDate?.format('YYYY-MM-DD'))?.add(clubModel.invoice.daysToDueDate, 'days') ?? null,
   );
   const [loading, setLoading] = useState(true);
   const [formId] = useState('resultsFeesForm' + Math.floor(Math.random() * 10000000000000000));
@@ -128,7 +128,7 @@ const ResultsFees = observer(() => {
         iType: 'CLUBS',
       },
       true,
-      sessionModel.authorizationHeader
+      sessionModel.authorizationHeader,
     )
       .then((clubsJson) => {
         clubModel.setRaceClubs(clubsJson);
@@ -144,7 +144,7 @@ const ResultsFees = observer(() => {
   };
 
   const loadFeeData = useCallback(
-    (fromDate: moment.Moment | null, toDate: moment.Moment | null) => {
+    (fromDate: dayjs.Dayjs | null, toDate: dayjs.Dayjs | null) => {
       setLoading(true);
 
       const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
@@ -158,7 +158,7 @@ const ResultsFees = observer(() => {
           iToDate: toDate?.format('YYYY-MM-DD'),
         },
         true,
-        sessionModel.authorizationHeader
+        sessionModel.authorizationHeader,
       )
         .then((feesJson: IFeeResponse[]) => {
           const competitors =
@@ -195,7 +195,7 @@ const ResultsFees = observer(() => {
                   ?.filter((c) => c.familyId === f.familyId)
                   ?.reduce((prev, curr) => prev + curr.serviceFeeToClub, 0),
                 children: competitors?.filter((c) => c.familyId === f.familyId).sort(feesSort),
-              })
+              }),
             ) ?? [];
 
           const familesAndCompetitors = [...families, ...competitors.filter((c) => !c.familyId)]?.sort(feesSort);
@@ -210,7 +210,7 @@ const ResultsFees = observer(() => {
           setLoading(false);
         });
     },
-    [clubModel, sessionModel]
+    [clubModel, sessionModel],
   );
 
   const getPrintObject = useCallback(
@@ -238,7 +238,7 @@ const ResultsFees = observer(() => {
             iCompetitorId: competitor.competitorId,
           },
           true,
-          sessionModel.authorizationHeader
+          sessionModel.authorizationHeader,
         )) as IIndividualViewResultResponse;
         await new Promise((resolve) => setTimeout(resolve, Math.floor(Math.random() * 200)));
 
@@ -265,7 +265,7 @@ const ResultsFees = observer(() => {
           competitorId: competitor.competitorId!,
           description: t('invoice.invoiceCompetitorMessage')?.replaceAll(
             '{0}',
-            `${competitor.firstName} ${competitor.lastName}`
+            `${competitor.firstName} ${competitor.lastName}`,
           ),
           numberOf: resultFees.filter((f) => f.totalFee !== 0 || f.feeToClub !== 0).reduce((prev) => prev + 1, 0),
           feeToClub: resultFees
@@ -285,7 +285,7 @@ const ResultsFees = observer(() => {
               numberOf: 1,
               feeToClub: f.serviceFeeToClub,
               totalFee: f.serviceFeeToClub,
-            })
+            }),
           );
         setProcessed((oldValue) => oldValue + 1);
         if (generatePdfStatus.abortLoading) throw new Error();
@@ -293,16 +293,16 @@ const ResultsFees = observer(() => {
 
       return { invoiceMessage, details: [...competitorsDetails, ...servicesDetails] };
     },
-    [t, clubModel, fromDate, toDate]
+    [t, clubModel, fromDate, toDate],
   );
 
   const onExcel = useCallback(
     async (settings: IPrintSettings): Promise<void> => {
       if (!fromDate || !toDate || !fees) return;
       const header = `${t('invoice.invoiceNumber')};${t('invoice.message')};${t('results.FullName')};${t(
-        'results.OriginalFee'
+        'results.OriginalFee',
       )};${t('results.LateFee')};${t('results.FeeToClub')};${t('results.ServiceFeeToClub')};${t(
-        'results.TotalFeeToClub'
+        'results.TotalFeeToClub',
       )}`;
       const rows: string[] = [];
       fees.forEach((f) => {
@@ -313,13 +313,13 @@ const ResultsFees = observer(() => {
             ?.replaceAll('{0}', toDate?.format('YYYY') ?? '')
             ?.replaceAll('{1}', `${f.firstName} ${f.lastName}`)};${
             f.isFamily ? f.lastName : f.firstName + ' ' + f.lastName
-          };${f.originalFee};${f.lateFee};${f.feeToClub};${f.serviceFeeToClub};${f.feeToClub + f.serviceFeeToClub}`
+          };${f.originalFee};${f.lateFee};${f.feeToClub};${f.serviceFeeToClub};${f.feeToClub + f.serviceFeeToClub}`,
         );
         f.children?.forEach((child) => {
           rows.push(
             `;;- ${child.firstName + ' ' + child.lastName};${child.originalFee};${child.lateFee};${child.feeToClub};${
               child.serviceFeeToClub
-            };${child.feeToClub + child.serviceFeeToClub}`
+            };${child.feeToClub + child.serviceFeeToClub}`,
           );
         });
       });
@@ -331,7 +331,7 @@ const ResultsFees = observer(() => {
       link.href = URL.createObjectURL(csvBlob);
       link.click();
     },
-    [t, fromDate, toDate, fees]
+    [t, fromDate, toDate, fees],
   );
 
   const onPrint = useCallback(
@@ -340,7 +340,7 @@ const ResultsFees = observer(() => {
       if (!clubModel.corsProxy || !fromDate || !toDate || !dueDate || !fee) return;
       setSpinnerTitle(t('results.loadSavedResults'));
       setSpinnerText(null);
-      setTotal(fee.isFamily ? fee.children?.length ?? 1 : 1);
+      setTotal(fee.isFamily ? (fee.children?.length ?? 1) : 1);
       setProcessed(0);
       try {
         const printObject = await getPrintObject(fee);
@@ -363,7 +363,7 @@ const ResultsFees = observer(() => {
           [printObject],
           settings.pdf,
           setProcessed,
-          setSpinnerText
+          setSpinnerText,
         );
       } catch (e: any) {
         if (e && e.message) {
@@ -374,7 +374,7 @@ const ResultsFees = observer(() => {
       setSpinnerTitle(null);
       setSpinnerText(null);
     },
-    [clubModel, getPrintObject, fee, fromDate, toDate]
+    [clubModel, getPrintObject, fee, fromDate, toDate],
   );
 
   const onPrintAll = useCallback(
@@ -391,7 +391,7 @@ const ResultsFees = observer(() => {
       try {
         const printObjects: IInvoicePrintObject[] = [];
         setTotal(
-          fees.map((f) => (f.isFamily ? f.children?.length ?? 1 : 1)).reduce((prev, next) => prev + next, 0) ?? 1
+          fees.map((f) => (f.isFamily ? (f.children?.length ?? 1) : 1)).reduce((prev, next) => prev + next, 0) ?? 1,
         );
 
         for (const f of fees) {
@@ -422,7 +422,7 @@ const ResultsFees = observer(() => {
             printObjects,
             settings.pdf,
             setProcessed,
-            setSpinnerText
+            setSpinnerText,
           );
         } else {
           await getInvoiceZip(
@@ -441,7 +441,7 @@ const ResultsFees = observer(() => {
             printObjects,
             settings.pdf,
             setProcessed,
-            setSpinnerText
+            setSpinnerText,
           );
         }
       } catch (e: any) {
@@ -453,7 +453,7 @@ const ResultsFees = observer(() => {
       setSpinnerTitle(null);
       setSpinnerText(null);
     },
-    [t, clubModel, sessionModel, fees, fromDate, toDate, getPrintObject]
+    [t, clubModel, sessionModel, fees, fromDate, toDate, getPrintObject],
   );
 
   const Spinner = (
@@ -537,10 +537,10 @@ const ResultsFees = observer(() => {
             options={
               loading || !fees
                 ? []
-                : fees.map((fee) => ({
+                : (fees.map((fee) => ({
                     code: JSON.stringify(fee),
                     description: `${fee.firstName} ${fee.lastName}`,
-                  })) ?? []
+                  })) ?? [])
             }
             showSearch
             optionFilterProp="children"
@@ -570,7 +570,7 @@ const ResultsFees = observer(() => {
           familyTextColor={clubTextColor}
           columns={
             columns(t, clubModel).filter((col) =>
-              columnsSetting.some((s) => col.key === s.key && s.selected)
+              columnsSetting.some((s) => col.key === s.key && s.selected),
             ) as IPrintTableColumn<any>[]
           }
           dataSource={fees}

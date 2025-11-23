@@ -1,9 +1,9 @@
-import { MaterialIconsType } from 'components/materialIcon/MaterialIcon';
+import { MaterialIconsType } from '../materialIcon/MaterialIcon';
 import { observer } from 'mobx-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { useMobxStore } from 'utils/mobxStore';
+import { useMobxStore } from '../../utils/mobxStore';
 import DrawerRightMenu from '../menu/DrawerRightMenu';
 import ToolbarItem from './ToolbarItem';
 

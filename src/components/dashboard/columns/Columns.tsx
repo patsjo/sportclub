@@ -15,19 +15,18 @@ const flatten = (list: (IChildColumnElement[] | IChildColumnElement | null)[]): 
     .filter((a) => a)
     .reduce(
       (a: IChildColumnElement[], b) => a.concat(Array.isArray(b) ? flatten(b) : (b as IChildColumnElement)),
-      [] as IChildColumnElement[]
+      [] as IChildColumnElement[],
     );
 
 const flattenChildColumn = (list: (IChildColumn[] | IChildColumn)[]): IChildColumn[] =>
   list.reduce(
     (a: IChildColumn[], b) => a.concat(Array.isArray(b) ? flattenChildColumn(b) : (b as IChildColumn)),
-    [] as IChildColumn[]
+    [] as IChildColumn[],
   );
 
 const getWidth = () => window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
 
 const getColumns = (width: number): number => {
-  if (width >= 1900) return 5;
   if (width >= 1400) return 4;
   if (width >= 1000) return 3;
   if (width >= 700) return 2;
@@ -35,6 +34,9 @@ const getColumns = (width: number): number => {
 };
 
 const StyledColumns = styled.div`
+  &&& {
+    max-width: 2000px;
+  }
   &&& + div {
     margin-left: 0;
     margin-right: 0;
@@ -51,13 +53,13 @@ const Columns = ({ children }: IColumnsProps) => {
   const allReactChildren = flatten(children).filter((child) => child);
   const oldColumns = useRef(getColumns(getWidth()));
   const [columns, setColumns] = useState(oldColumns.current);
-  const [childHeights, setChildHeights] = useState<Record<React.Key, number>>({});
+  const [childHeights, setChildHeights] = useState<Record<string | number, number>>({});
   const [childDistribution, setChildDistribution] = useState<IChildColumn[][]>([...Array(maxColumns)].map(() => []));
 
-  const onHeightChange = useCallback((key: React.Key, height: number) => {
+  const onHeightChange = useCallback((key: string | number, height: number) => {
     setChildHeights((oldHeights) => {
       const newHeights = { ...oldHeights };
-      if (height > 0) newHeights[key] = height;
+      newHeights[key] = height;
       return newHeights;
     });
   }, []);

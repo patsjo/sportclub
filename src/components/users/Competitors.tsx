@@ -1,26 +1,59 @@
-import { Empty, message, Modal, ModalFuncProps, Popconfirm, Spin } from 'antd';
+import { Empty, message, Modal, ModalFuncProps, Popconfirm, Spin, Table } from 'antd';
 import { ColumnType } from 'antd/lib/table';
 import { observer } from 'mobx-react';
-import { IRaceClubsProps, IRaceCompetitor } from 'models/resultModel';
-import { PickRequired } from 'models/typescriptPartial';
+import { IRaceClubsProps, IRaceCompetitor } from '../../models/resultModel';
+import { PickRequired } from '../../models/typescriptPartial';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
-import { PostJsonData } from 'utils/api';
-import { getTextColorBasedOnBackground, lightenColor } from 'utils/colorHelper';
-import { IOption } from 'utils/formHelper';
-import { useMobxStore } from 'utils/mobxStore';
-import { genderOptions } from 'utils/resultConstants';
-import { NoWrap, SpinnerDiv, StyledIcon, StyledTable } from '../styled/styled';
+import { PostJsonData } from '../../utils/api';
+import { getTextColorBasedOnBackground, lightenColor } from '../../utils/colorHelper';
+import { IOption } from '../../utils/formHelper';
+import { useMobxStore } from '../../utils/mobxStore';
+import { genderOptions } from '../../utils/resultConstants';
+import { IStyledTableProps, NoWrap, SpinnerDiv, StyledIcon, StyledTable } from '../styled/styled';
 import EditCompetitor from './EditCompetitor';
 
 const { confirm } = Modal;
 
-interface ICompetitorTableProps {
+interface ICompetitorTableProps<RecordType> extends IStyledTableProps<RecordType> {
   familyBackgroundColor: string;
   familyTextColor: string;
 }
-export const CompetitorTable = styled(StyledTable)<ICompetitorTableProps>`
+const StyledCompetitorTableComponent = <RecordType extends object>(props: ICompetitorTableProps<RecordType>) => {
+  return <Table {...props} />;
+};
+export const CompetitorTable = styled(StyledCompetitorTableComponent)`
+  .table-row-red,
+  .table-row-red:hover,
+  .table-row-red:hover > td,
+  .table-row-red:hover > td.ant-table-cell-row-hover {
+    background-color: #ffccc7;
+  }
+  &&& {
+    margin-top: 8px;
+    min-width: ${({ minWidth }) => (minWidth ? `${minWidth}px` : 'unset')};
+  }
+  &&& .ant-table-scroll > .ant-table-body {
+    overflow-x: auto !important;
+  }
+  &&& .ant-table-pagination.ant-pagination {
+    margin-top: 8px;
+    margin-bottom: 0;
+  }
+  &&& .ant-table-thead > tr > th,
+  .ant-table-tbody > tr > td,
+  .ant-table-summary > tr > td {
+    padding: 4px 8px !important;
+  }
+  &&& .ant-table-thead > tr > th,
+  .ant-table-summary > tr > td {
+    background: #fafafa !important;
+    font-weight: 600;
+  }
+  &&& .ant-table-cell-ellipsis {
+    max-width: 250px;
+  }
   .table-row-club,
   .table-row-club:hover,
   .table-row-club:hover > td {
@@ -47,7 +80,7 @@ const competitorSort = (a: ICompetitorTable, b: ICompetitorTable) =>
   `${a.isFamily ? a.lastName.substring(a.lastName.indexOf(' ') + 1) : a.lastName} ${a.firstName}`
     .toLowerCase()
     .localeCompare(
-      `${b.isFamily ? b.lastName.substring(b.lastName.indexOf(' ') + 1) : b.lastName} ${b.firstName}`.toLowerCase()
+      `${b.isFamily ? b.lastName.substring(b.lastName.indexOf(' ') + 1) : b.lastName} ${b.firstName}`.toLowerCase(),
     );
 
 const Competitors = observer(() => {
@@ -63,15 +96,15 @@ const Competitors = observer(() => {
           (f): IOption => ({
             code: f.familyId,
             description: f.familyName,
-          })
+          }),
         )
         .sort((a, b) =>
           a.description
             .substring(a.description.indexOf(' ') + 1)
             .toLowerCase()
-            .localeCompare(b.description.substring(b.description.indexOf(' ') + 1).toLowerCase())
+            .localeCompare(b.description.substring(b.description.indexOf(' ') + 1).toLowerCase()),
         ) ?? [],
-    [clubModel.raceClubs?.selectedClub?.families]
+    [clubModel.raceClubs?.selectedClub?.families],
   );
 
   const familesAndCompetitors = useMemo(() => {
@@ -85,7 +118,7 @@ const Competitors = observer(() => {
           children: clubModel.raceClubs?.selectedClub?.competitors
             ?.filter((c) => c.familyId === f.familyId)
             ?.map((c): ICompetitorTable => ({ key: `competitor${c.competitorId}`, ...c })),
-        })
+        }),
       ) ?? [];
     const competitors =
       clubModel.raceClubs?.selectedClub?.competitors
@@ -96,7 +129,7 @@ const Competitors = observer(() => {
 
   const familyTableKeys = useMemo(
     () => familesAndCompetitors.filter((f) => f.isFamily).map((f) => f.key),
-    [familesAndCompetitors]
+    [familesAndCompetitors],
   );
 
   const onDeleteCompetitor = useCallback(
@@ -112,7 +145,7 @@ const Competitors = observer(() => {
         url,
         { iType: 'COMPETITOR', competitorId, clubId: clubModel.raceClubs?.selectedClub?.clubId },
         true,
-        sessionModel.authorizationHeader
+        sessionModel.authorizationHeader,
       )
         .then(() => {
           setSaving(false);
@@ -125,7 +158,7 @@ const Competitors = observer(() => {
           setSaving(false);
         });
     },
-    [clubModel.modules]
+    [clubModel.modules],
   );
 
   const onDeleteFamily = useCallback(
@@ -149,7 +182,7 @@ const Competitors = observer(() => {
           setSaving(false);
         });
     },
-    [clubModel.modules]
+    [clubModel.modules],
   );
 
   const onSaveCompetitor = useCallback(
@@ -178,11 +211,11 @@ const Competitors = observer(() => {
           iEventorCompetitorIds: competitor.eventorCompetitorIds ?? [],
         },
         true,
-        sessionModel.authorizationHeader
+        sessionModel.authorizationHeader,
       )
         .then((updatedCompetitor: IRaceCompetitor) => {
           const c = clubModel.raceClubs?.selectedClub?.competitors?.find(
-            (c) => c.competitorId === updatedCompetitor.competitorId
+            (c) => c.competitorId === updatedCompetitor.competitorId,
           );
           if (competitor.familyId === -1 && updatedCompetitor.familyId) {
             clubModel.raceClubs?.selectedClub?.addFamily(updatedCompetitor.familyId, competitor.familyName!);
@@ -200,7 +233,7 @@ const Competitors = observer(() => {
           setSaving(false);
         });
     },
-    [clubModel.modules]
+    [clubModel.modules],
   );
 
   useEffect(() => {
@@ -213,7 +246,7 @@ const Competitors = observer(() => {
         iType: 'CLUBS',
       },
       true,
-      sessionModel.authorizationHeader
+      sessionModel.authorizationHeader,
     )
       .then((clubsJson: IRaceClubsProps) => {
         clubModel.setRaceClubs(clubsJson);

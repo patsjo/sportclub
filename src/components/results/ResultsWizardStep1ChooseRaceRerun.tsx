@@ -1,10 +1,10 @@
 import { Progress, Spin } from 'antd';
 import { observer } from 'mobx-react';
-import { IRaceCompetitor, IRaceEventProps } from 'models/resultModel';
-import moment from 'moment';
+import { IRaceCompetitor, IRaceEventProps } from '../../models/resultModel';
+import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useMobxStore } from 'utils/mobxStore';
+import { useMobxStore } from '../../utils/mobxStore';
 import {
   IEventorEventRace,
   IEventorOrganisation,
@@ -12,9 +12,9 @@ import {
   IEventorResults,
   IEventorTeamMemberResult,
   IEventorTeamResult,
-} from 'utils/responseEventorInterfaces';
-import { IEventViewResultResponse } from 'utils/responseInterfaces';
-import { useResultWizardStore } from 'utils/resultWizardStore';
+} from '../../utils/responseEventorInterfaces';
+import { IEventViewResultResponse } from '../../utils/responseInterfaces';
+import { useResultWizardStore } from '../../utils/resultWizardStore';
 import { PostJsonData } from '../../utils/api';
 import { dateFormat } from '../../utils/formHelper';
 import { ManuallyEditedMissingTimePostfix, genders } from '../../utils/resultConstants';
@@ -47,15 +47,15 @@ const ResultWizardStep1ChooseRaceRerun = observer(
         const queryData = {
           iType: 'EVENTS',
           iClubId: clubModel.raceClubs.selectedClub?.clubId,
-          iFromDate: moment(raceWizardModel.queryStartDate, dateFormat).add(-7, 'days').format(dateFormat),
-          iToDate: moment(raceWizardModel.queryEndDate, dateFormat).add(7, 'days').format(dateFormat),
+          iFromDate: dayjs(raceWizardModel.queryStartDate, dateFormat).add(-7, 'days').format(dateFormat),
+          iToDate: dayjs(raceWizardModel.queryEndDate, dateFormat).add(7, 'days').format(dateFormat),
         };
 
         const allSaved: IEventViewResultResponse[] = await PostJsonData(
           url,
           queryData,
           true,
-          sessionModel.authorizationHeader
+          sessionModel.authorizationHeader,
         );
         setTotal(allSaved.length);
 
@@ -73,7 +73,7 @@ const ResultWizardStep1ChooseRaceRerun = observer(
             url,
             { iType: 'EVENT', iEventId: saved.eventId },
             true,
-            sessionModel.authorizationHeader
+            sessionModel.authorizationHeader,
           );
 
           const resultPromise =
@@ -89,10 +89,10 @@ const ResultWizardStep1ChooseRaceRerun = observer(
                         clubModel.eventor.organisationId +
                         ',' +
                         clubModel.eventor.districtOrganisationId +
-                        `&top=${saved.isRelay ? 30 : 15}&includeSplitTimes=true`
+                        `&top=${saved.isRelay ? 30 : 15}&includeSplitTimes=true`,
                     ),
                   },
-                  false
+                  false,
                 )
               : new Promise((resolve) => resolve(undefined));
           const [editResultJson, resultJson]: [IRaceEventProps, IEventorResults | undefined] = await Promise.all([
@@ -107,7 +107,7 @@ const ResultWizardStep1ChooseRaceRerun = observer(
           if (resultJson != null && Object.keys(resultJson).length > 0) {
             if (Array.isArray(resultJson.Event?.EventRace)) {
               eventRace = resultJson.Event.EventRace.find(
-                (eventRace) => eventRace.EventRaceId === raceWizardModel.selectedEventorRaceId?.toString()
+                (eventRace) => eventRace.EventRaceId === raceWizardModel.selectedEventorRaceId?.toString(),
               );
               resultJson.Event.Name = resultJson.Event.Name + ', ' + eventRace?.Name;
             } else {
@@ -129,13 +129,13 @@ const ResultWizardStep1ChooseRaceRerun = observer(
                     ? classResult.PersonResult.filter(
                         (personResult) =>
                           personResult.RaceResult == null ||
-                          personResult.RaceResult.EventRaceId === raceWizardModel.selectedEventorRaceId?.toString()
+                          personResult.RaceResult.EventRaceId === raceWizardModel.selectedEventorRaceId?.toString(),
                       )
                     : classResult.PersonResult.RaceResult == null ||
-                      classResult.PersonResult.RaceResult.EventRaceId ===
-                        raceWizardModel.selectedEventorRaceId?.toString()
-                    ? [classResult.PersonResult]
-                    : [];
+                        classResult.PersonResult.RaceResult.EventRaceId ===
+                          raceWizardModel.selectedEventorRaceId?.toString()
+                      ? [classResult.PersonResult]
+                      : [];
 
                   personResults.forEach((personResult) => {
                     if (personResult.Result == null && personResult.RaceResult?.Result != null) {
@@ -154,8 +154,8 @@ const ResultWizardStep1ChooseRaceRerun = observer(
                               (personResult.Organisation.OrganisationId ===
                                 clubModel.eventor?.districtOrganisationId.toString() &&
                                 clubModel.raceClubs?.selectedClub?.competitorByEventorId(
-                                  parseInt(personResult.Person.PersonId)
-                                ) != null))
+                                  parseInt(personResult.Person.PersonId),
+                                ) != null)),
                         )
                       : [];
 
@@ -165,7 +165,7 @@ const ResultWizardStep1ChooseRaceRerun = observer(
                     if (typeof personResult.Person.PersonId === 'string' && personResult.Person.PersonId.length > 0) {
                       if (!competitor) {
                         competitor = clubModel.raceClubs.selectedClub?.competitorByEventorId(
-                          parseInt(personResult.Person.PersonId)
+                          parseInt(personResult.Person.PersonId),
                         );
                       }
 
@@ -174,13 +174,13 @@ const ResultWizardStep1ChooseRaceRerun = observer(
                           (c) =>
                             c.firstName === personResult.Person.PersonName.Given &&
                             c.lastName === personResult.Person.PersonName.Family &&
-                            c.birthDay === personResult.Person.BirthDate?.Date
+                            c.birthDay === personResult.Person.BirthDate?.Date,
                         );
                         if (competitor) {
                           await competitor.addEventorId(
                             clubModel.modules.find((module) => module.name === 'Results')!.addUrl!,
                             personResult.Person.PersonId,
-                            sessionModel.authorizationHeader
+                            sessionModel.authorizationHeader,
                           );
                         }
                       }
@@ -199,8 +199,8 @@ const ResultWizardStep1ChooseRaceRerun = observer(
                             personResult.Person['@attributes'] == null
                               ? null
                               : personResult.Person['@attributes'].sex === 'F'
-                              ? genders.FeMale
-                              : genders.Male,
+                                ? genders.FeMale
+                                : genders.Male,
                           iClubId: clubModel.raceClubs.selectedClub.clubId,
                           iStartDate: '1930-01-01',
                           iEndDate: null,
@@ -212,7 +212,7 @@ const ResultWizardStep1ChooseRaceRerun = observer(
                         },
                         classResult.EventClass.ClassShortName,
                         clubModel,
-                        sessionModel
+                        sessionModel,
                       );
                     }
 
@@ -225,12 +225,12 @@ const ResultWizardStep1ChooseRaceRerun = observer(
                       personResult.Person?.PersonId,
                       splitTimes,
                       bestSplitTimes,
-                      secondBestSplitTimes
+                      secondBestSplitTimes,
                     );
                     const result = raceWizardModel.raceEvent?.results.find(
                       (r) =>
                         r.competitorId === competitor?.competitorId &&
-                        r.competitorTime === (valid ? GetTimeWithHour(personResult.Result?.Time) : null)
+                        r.competitorTime === (valid ? GetTimeWithHour(personResult.Result?.Time) : null),
                     );
                     if (
                       result &&
@@ -251,16 +251,16 @@ const ResultWizardStep1ChooseRaceRerun = observer(
                     ? classResult.TeamResult.filter(
                         (teamResult) =>
                           teamResult.RaceResult == null ||
-                          teamResult.RaceResult.EventRaceId === raceWizardModel.selectedEventorRaceId?.toString()
+                          teamResult.RaceResult.EventRaceId === raceWizardModel.selectedEventorRaceId?.toString(),
                       )
                     : classResult.TeamResult.RaceResult == null ||
-                      classResult.TeamResult.RaceResult.EventRaceId ===
-                        raceWizardModel.selectedEventorRaceId?.toString()
-                    ? [classResult.TeamResult]
-                    : [];
+                        classResult.TeamResult.RaceResult.EventRaceId ===
+                          raceWizardModel.selectedEventorRaceId?.toString()
+                      ? [classResult.TeamResult]
+                      : [];
 
                   const teamResults: IEventorTeamResult[] = preTeamResults.map((pre) =>
-                    pre.RaceResult?.TeamMemberResult != null ? pre.RaceResult : (pre as IEventorTeamResult)
+                    pre.RaceResult?.TeamMemberResult != null ? pre.RaceResult : (pre as IEventorTeamResult),
                   );
                   const allLegsSplitTimes = GetRelaySplitTimes(teamResults);
 
@@ -281,10 +281,10 @@ const ResultWizardStep1ChooseRaceRerun = observer(
                       : [teamResult.Organisation!];
 
                     const hasClubMembers = teamOrganisations.some(
-                      (org) => org?.OrganisationId === clubModel.eventor?.organisationId.toString()
+                      (org) => org?.OrganisationId === clubModel.eventor?.organisationId.toString(),
                     );
                     const hasDistrictMembers = teamOrganisations.some(
-                      (org) => org?.OrganisationId === clubModel.eventor?.districtOrganisationId.toString()
+                      (org) => org?.OrganisationId === clubModel.eventor?.districtOrganisationId.toString(),
                     );
 
                     teamMemberResults.forEach((teamMemberResult) => {
@@ -293,7 +293,7 @@ const ResultWizardStep1ChooseRaceRerun = observer(
                         typeof teamMemberResult.Person.PersonId === 'string' &&
                         teamMemberResult.Person.PersonId.length > 0
                           ? clubModel.raceClubs?.selectedClub?.competitorByEventorId(
-                              parseInt(teamMemberResult.Person.PersonId)
+                              parseInt(teamMemberResult.Person.PersonId),
                             )
                           : null;
 
@@ -331,13 +331,13 @@ const ResultWizardStep1ChooseRaceRerun = observer(
                           (c) =>
                             c.firstName === teamMemberResult.Person.PersonName.Given &&
                             c.lastName === teamMemberResult.Person.PersonName.Family &&
-                            c.birthDay === teamMemberResult.Person.BirthDate?.Date
+                            c.birthDay === teamMemberResult.Person.BirthDate?.Date,
                         );
                         if (competitor) {
                           await competitor.addEventorId(
                             clubModel.modules.find((module) => module.name === 'Results')!.addUrl!,
                             teamMemberResult.Person.PersonId,
-                            sessionModel.authorizationHeader
+                            sessionModel.authorizationHeader,
                           );
                         }
                       }
@@ -357,8 +357,8 @@ const ResultWizardStep1ChooseRaceRerun = observer(
                             teamMemberResult.Person['@attributes'] == null
                               ? null
                               : teamMemberResult.Person['@attributes'].sex === 'F'
-                              ? genders.FeMale
-                              : genders.Male,
+                                ? genders.FeMale
+                                : genders.Male,
                           iClubId: clubModel.raceClubs.selectedClub.clubId,
                           iStartDate: '1930-01-01',
                           iEndDate: null,
@@ -370,7 +370,7 @@ const ResultWizardStep1ChooseRaceRerun = observer(
                         },
                         classResult.EventClass.ClassShortName,
                         clubModel,
-                        sessionModel
+                        sessionModel,
                       );
                     }
 
@@ -385,12 +385,12 @@ const ResultWizardStep1ChooseRaceRerun = observer(
                         teamMemberResult.Person.PersonId,
                         legSplitTimes.splitTimes,
                         legSplitTimes.bestSplitTimes,
-                        legSplitTimes.secondBestSplitTimes
+                        legSplitTimes.secondBestSplitTimes,
                       );
                     const result = raceWizardModel.raceEvent?.teamResults.find(
                       (r) =>
                         r.competitorId === competitor?.competitorId &&
-                        r.competitorTime === (valid ? GetTimeWithHour(teamMemberResult.Time) : null)
+                        r.competitorTime === (valid ? GetTimeWithHour(teamMemberResult.Time) : null),
                     );
                     if (
                       result &&
@@ -427,7 +427,7 @@ const ResultWizardStep1ChooseRaceRerun = observer(
         <Spin size="large" />
       </SpinnerDiv>
     );
-  }
+  },
 );
 
 export default ResultWizardStep1ChooseRaceRerun;

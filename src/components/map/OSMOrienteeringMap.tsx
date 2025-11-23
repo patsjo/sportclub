@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react';
-import { IGraphic } from 'models/graphic';
-import { IExtentProps } from 'models/mobxClubModel';
+import { IGraphic } from '../../models/graphic';
+import { IExtentProps } from '../../models/mobxClubModel';
 import Feature from 'ol/Feature';
 import { Control, FullScreen, ZoomToExtent } from 'ol/control';
 import { Options } from 'ol/control/ZoomToExtent';
@@ -18,7 +18,7 @@ import CircleStyle from 'ol/style/Circle';
 import React, { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
-import { useMobxStore } from 'utils/mobxStore';
+import { useMobxStore } from '../../utils/mobxStore';
 import LayerList from './LayerList';
 import { LayerListControl } from './LayerListControl';
 import Loader from './Loader';
@@ -39,9 +39,9 @@ interface IMapDivProps {
   height: string;
   width: string;
 }
-const MapDiv = styled.div`
-  height: ${(props: IMapDivProps) => props.height};
-  width: ${(props: IMapDivProps) => props.width};
+const MapDiv = styled.div<IMapDivProps>`
+  height: ${(props) => props.height};
+  width: ${(props) => props.width};
   position: relative;
 `;
 const MapContainerDiv = styled.div`
@@ -138,9 +138,9 @@ const getExtent = (graphics: IGraphic[] | undefined) => {
         const radius = graphic.geometry.type === 'circle' ? graphic.geometry.radius : 500;
         const polygon = fromCircle(new Circle(coordinate, getMapLength(coordinate, radius)));
         return polygon;
-      })
+      }),
     ).getExtent(),
-    1.2
+    1.2,
   );
   const size = getSize(extent);
   return buffer(extent, Math.min(...size) * 0.2);
@@ -151,7 +151,7 @@ const getMapLength = (point: number[], units: number) =>
     ? (units * units) /
       wgs84Sphere.getDistance(
         proj.transform(point, mapProjection, 'EPSG:4326'),
-        proj.transform([point[0] + units, point[1]], mapProjection, 'EPSG:4326')
+        proj.transform([point[0] + units, point[1]], mapProjection, 'EPSG:4326'),
       )
     : 0;
 
@@ -164,7 +164,7 @@ interface IOSMOrienteeringMapProps {
   useAllWidgets?: boolean;
   useDefaultGraphicsAsHome?: boolean;
   mapCenter?: number[];
-  onClick?: (graphicsLayer: VectorLayer<VectorSource<Geometry>>, graphic: Feature<Point>) => void;
+  onClick?: (graphicsLayer: VectorLayer, graphic: Feature<Point>) => void;
   onHighlightClick?: (graphic: Feature<Point>) => void;
 }
 
@@ -183,7 +183,7 @@ const OSMOrienteeringMap = observer(
   }: IOSMOrienteeringMapProps) => {
     const { globalStateModel, clubModel } = useMobxStore();
     const { t } = useTranslation();
-    const [graphicsLayer, setGraphicsLayer] = React.useState<VectorLayer<VectorSource<Geometry>> | undefined>();
+    const [graphicsLayer, setGraphicsLayer] = React.useState<VectorLayer | undefined>();
     const map = useOpenLayersMap();
     const mapRef = useRef<HTMLDivElement>(null);
     const mapInfoRef = useRef<HTMLDivElement>(null);
@@ -197,7 +197,7 @@ const OSMOrienteeringMap = observer(
     const [highlightText, setHighlightText] = useState<string>();
 
     const onMapClick = useCallback(
-      (event: any, newGraphicsLayer: VectorLayer<VectorSource<Geometry>>) => {
+      (event: any, newGraphicsLayer: VectorLayer) => {
         const highlighted: Feature<Point>[] = [];
         map!.forEachFeatureAtPixel(
           event.pixel,
@@ -207,7 +207,7 @@ const OSMOrienteeringMap = observer(
           },
           {
             layerFilter: (layer) => layer === newGraphicsLayer,
-          }
+          },
         );
 
         onClick &&
@@ -216,22 +216,18 @@ const OSMOrienteeringMap = observer(
             new Feature<Point>({
               geometry: new Point(event.coordinate),
               symbol: OrienteeringSymbol,
-            })
+            }),
           );
         const highLightedDirections = highlighted.filter((g: any) => g.getProperties().attributes?.direction);
         if (highLightedDirections.length > 0 && onHighlightClick !== undefined) {
           onHighlightClick(highLightedDirections[0]);
         }
       },
-      [map, onClick, onHighlightClick]
+      [map, onClick, onHighlightClick],
     );
 
     const onMapPointerMove = useCallback(
-      (
-        event: any,
-        newGraphicsLayer: VectorLayer<VectorSource<Geometry>>,
-        highlightLayer: VectorLayer<VectorSource<Point>>
-      ) => {
+      (event: any, newGraphicsLayer: VectorLayer, highlightLayer: VectorLayer) => {
         const highlighted: (RenderFeature | Feature<Geometry>)[] = [];
         map!.forEachFeatureAtPixel(
           event.pixel,
@@ -241,7 +237,7 @@ const OSMOrienteeringMap = observer(
           },
           {
             layerFilter: (layer) => layer === newGraphicsLayer,
-          }
+          },
         );
 
         let text: string | undefined = undefined;
@@ -286,7 +282,7 @@ const OSMOrienteeringMap = observer(
 
         setHighlightText(text);
       },
-      [map, t]
+      [map, t],
     );
 
     React.useEffect(() => {
@@ -348,7 +344,7 @@ const OSMOrienteeringMap = observer(
           }),
         });
         const highlightLayer = new VectorLayer({
-          source: new VectorSource<Point>(),
+          source: new VectorSource(),
           style: highlightStyle,
         });
 
@@ -375,7 +371,7 @@ const OSMOrienteeringMap = observer(
         (graphic) =>
           graphic.geometry.type !== 'point' ||
           graphic.geometry.longitude !== clubModel.map!.center[0] ||
-          graphic.geometry.latitude !== clubModel.map!.center[1]
+          graphic.geometry.latitude !== clubModel.map!.center[1],
       );
       if (useDefaultGraphicsAsHome && homeExtent.current && graphicsLayer && zoomGraphics?.length) {
         homeExtent.current.setExtent(getExtent(zoomGraphics) ?? null);
@@ -385,7 +381,7 @@ const OSMOrienteeringMap = observer(
     React.useEffect(() => {
       if (mapInfoRef.current) {
         const text =
-          trackingText && highlightText ? `${highlightText}<br/>${trackingText}` : trackingText ?? highlightText;
+          trackingText && highlightText ? `${highlightText}<br/>${trackingText}` : (trackingText ?? highlightText);
         if (text && text.length) {
           const mapInfoTextDiv = document.getElementById(`${containerId}#orienteeringMapInfoText`);
 
@@ -409,13 +405,13 @@ const OSMOrienteeringMap = observer(
                   ? new Feature<Circle>({
                       geometry: new Circle(
                         fromLonLat(graphic.geometry.center!, mapProjection),
-                        getMapLength(fromLonLat(graphic.geometry.center!, mapProjection), graphic.geometry.radius)
+                        getMapLength(fromLonLat(graphic.geometry.center!, mapProjection), graphic.geometry.radius),
                       ),
                       attributes: graphic.attributes,
                     })
                   : new Feature<Point>({
                       geometry: new Point(
-                        fromLonLat([graphic.geometry.longitude, graphic.geometry.latitude], mapProjection)
+                        fromLonLat([graphic.geometry.longitude, graphic.geometry.latitude], mapProjection),
                       ),
                       attributes: graphic.attributes,
                     });
@@ -435,71 +431,71 @@ const OSMOrienteeringMap = observer(
                       }),
                     })
                   : graphic.geometry.type === 'circle' && graphic.symbol && graphic.symbol.type === 'gradient-fill'
-                  ? new Style({
-                      renderer(coordinates, state) {
-                        if (
-                          graphic.geometry.type !== 'circle' ||
-                          !graphic.symbol ||
-                          graphic.symbol.type !== 'gradient-fill'
-                        )
-                          return;
-                        const [[x, y], [x1, y1]] = coordinates as number[][];
-                        const ctx = state.context;
-                        const dx = x1 - x;
-                        const dy = y1 - y;
-                        const radius = Math.sqrt(dx * dx + dy * dy);
+                    ? new Style({
+                        renderer(coordinates, state) {
+                          if (
+                            graphic.geometry.type !== 'circle' ||
+                            !graphic.symbol ||
+                            graphic.symbol.type !== 'gradient-fill'
+                          )
+                            return;
+                          const [[x, y], [x1, y1]] = coordinates as number[][];
+                          const ctx = state.context;
+                          const dx = x1 - x;
+                          const dy = y1 - y;
+                          const radius = Math.sqrt(dx * dx + dy * dy);
 
-                        const innerRadius = 0;
-                        const outerRadius = radius * 1.2;
+                          const innerRadius = 0;
+                          const outerRadius = radius * 1.2;
 
-                        const gradient = ctx.createRadialGradient(x, y, innerRadius, x, y, outerRadius);
-                        gradient.addColorStop(
-                          0,
-                          `rgba(${graphic.symbol.color![0]},${graphic.symbol.color![1]},${graphic.symbol.color![2]},0)`
-                        );
-                        gradient.addColorStop(
-                          0.6,
-                          `rgba(${graphic.symbol.color![0]},${graphic.symbol.color![1]},${graphic.symbol.color![2]},0)`
-                        );
-                        gradient.addColorStop(
-                          1,
-                          `rgba(${graphic.symbol.color![0]},${graphic.symbol.color![1]},${graphic.symbol.color![2]},${
-                            graphic.symbol.color![3]
-                          })`
-                        );
-                        ctx.beginPath();
-                        ctx.arc(x, y, radius, 0, 2 * Math.PI, true);
-                        ctx.fillStyle = gradient;
-                        ctx.fill();
+                          const gradient = ctx.createRadialGradient(x, y, innerRadius, x, y, outerRadius);
+                          gradient.addColorStop(
+                            0,
+                            `rgba(${graphic.symbol.color![0]},${graphic.symbol.color![1]},${graphic.symbol.color![2]},0)`,
+                          );
+                          gradient.addColorStop(
+                            0.6,
+                            `rgba(${graphic.symbol.color![0]},${graphic.symbol.color![1]},${graphic.symbol.color![2]},0)`,
+                          );
+                          gradient.addColorStop(
+                            1,
+                            `rgba(${graphic.symbol.color![0]},${graphic.symbol.color![1]},${graphic.symbol.color![2]},${
+                              graphic.symbol.color![3]
+                            })`,
+                          );
+                          ctx.beginPath();
+                          ctx.arc(x, y, radius, 0, 2 * Math.PI, true);
+                          ctx.fillStyle = gradient;
+                          ctx.fill();
 
-                        ctx.lineWidth = graphic.symbol.outline.width;
-                        ctx.arc(x, y, radius, 0, 2 * Math.PI, true);
-                        ctx.strokeStyle = `rgba(${graphic.symbol.outline.color![0]},${
-                          graphic.symbol.outline.color![1]
-                        },${graphic.symbol.outline.color![2]},${graphic.symbol.outline.color![3]})`;
-                        ctx.stroke();
-                      },
-                    })
-                  : graphic.geometry.type === 'point'
-                  ? new Style({
-                      image:
-                        graphic.symbol && graphic.symbol.type === 'picture-marker'
-                          ? new Icon({
-                              src: graphic.symbol.url,
-                              scale: 25 / graphic.symbol.width,
-                              imgSize: [graphic.symbol.width, graphic.symbol.height],
-                            })
-                          : new Icon({
-                              src: OrienteeringSymbol.url,
-                              scale: 15 / OrienteeringSymbol.width,
-                              imgSize: [OrienteeringSymbol.width, OrienteeringSymbol.height],
-                            }),
-                    })
-                  : undefined
+                          ctx.lineWidth = graphic.symbol.outline.width;
+                          ctx.arc(x, y, radius, 0, 2 * Math.PI, true);
+                          ctx.strokeStyle = `rgba(${graphic.symbol.outline.color![0]},${
+                            graphic.symbol.outline.color![1]
+                          },${graphic.symbol.outline.color![2]},${graphic.symbol.outline.color![3]})`;
+                          ctx.stroke();
+                        },
+                      })
+                    : graphic.geometry.type === 'point'
+                      ? new Style({
+                          image:
+                            graphic.symbol && graphic.symbol.type === 'picture-marker'
+                              ? new Icon({
+                                  src: graphic.symbol.url,
+                                  scale: 25 / graphic.symbol.width,
+                                  size: [graphic.symbol.width, graphic.symbol.height],
+                                })
+                              : new Icon({
+                                  src: OrienteeringSymbol.url,
+                                  scale: 15 / OrienteeringSymbol.width,
+                                  size: [OrienteeringSymbol.width, OrienteeringSymbol.height],
+                                }),
+                        })
+                      : undefined,
               );
 
               return feature;
-            })
+            }),
           );
           if (onHighlightClick !== undefined) {
             graphicsLayer.getSource()?.addFeatures(
@@ -510,7 +506,7 @@ const OSMOrienteeringMap = observer(
                     geometry: new Point(
                       graphic.geometry.type === 'point'
                         ? fromLonLat([graphic.geometry.longitude, graphic.geometry.latitude], mapProjection)
-                        : [0, 0]
+                        : [0, 0],
                     ),
                     attributes: { direction: true },
                   });
@@ -522,19 +518,19 @@ const OSMOrienteeringMap = observer(
                         anchorYUnits: 'pixels',
                         src: DirectionSymbol.url,
                         scale: 15 / DirectionSymbol.width,
-                        imgSize: [DirectionSymbol.width, DirectionSymbol.height],
+                        size: [DirectionSymbol.width, DirectionSymbol.height],
                       }),
-                    })
+                    }),
                   );
                   return feature;
-                })
+                }),
             );
           }
           const graphicsExists = graphics.some(
             (graphic) =>
               graphic.geometry.type !== 'point' ||
               graphic.geometry.longitude !== clubModel.map!.center[0] ||
-              graphic.geometry.latitude !== clubModel.map!.center[1]
+              graphic.geometry.latitude !== clubModel.map!.center[1],
           );
           if (clubModel.map?.center && !mapCenter && !defaultExtent && !graphicsExists) {
             map.getView().setCenter(fromLonLat(clubModel.map.center, mapProjection));
@@ -575,7 +571,7 @@ const OSMOrienteeringMap = observer(
         <LayerList map={map} visible={layerListVisible} />
       </MapDiv>
     );
-  }
+  },
 );
 
 export default OSMOrienteeringMap;

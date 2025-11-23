@@ -1,11 +1,11 @@
 import { DatePicker, Form, Input, message, Modal, Select, Switch } from 'antd';
 import { observer } from 'mobx-react';
-import { INewsItem, INewsItemProps } from 'models/newsModel';
-import moment from 'moment';
+import { INewsItem, INewsItemProps } from '../../models/newsModel';
+import dayjs from 'dayjs';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
-import { useMobxStore } from 'utils/mobxStore';
+import { useMobxStore } from '../../utils/mobxStore';
 import { PostJsonData } from '../../utils/api';
 import { fileAsBase64, getFileType } from '../../utils/fileHelper';
 import { dateFormat, errorRequiredField, hasErrors, maxByteSize } from '../../utils/formHelper';
@@ -83,7 +83,7 @@ const NewsEdit = observer(({ newsObject, open, onClose, onChange }: INewsEditPro
           password: sessionModel.password,
         },
         true,
-        sessionModel.authorizationHeader
+        sessionModel.authorizationHeader,
       );
       onChange && onChange(newsObjectResponse);
       setSaving(false);
@@ -125,7 +125,7 @@ const NewsEdit = observer(({ newsObject, open, onClose, onChange }: INewsEditPro
             iLank: newsObject.link,
             iInledning: newsObject.introduction,
             iTexten: newsObject.text,
-            iExpireDate: moment(newsObject.expireDate, dateFormat),
+            iExpireDate: dayjs(newsObject.expireDate, dateFormat),
             iUpdateModificationDate: true,
             iFileID: newsObject.fileId,
             iFileData: null,

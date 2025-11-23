@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useSize } from 'utils/useSize';
+import { useSize } from '../../../utils/useSize';
 import { IChildColumnElement } from './mapNodesToColumns';
 
 interface IColumnItemProps {

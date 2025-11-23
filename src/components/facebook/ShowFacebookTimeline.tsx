@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { useMobxStore } from 'utils/mobxStore';
+import { useMobxStore } from '../../utils/mobxStore';
 
 const IframeContainer = styled.div`
   width: 100%;

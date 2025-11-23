@@ -1,17 +1,17 @@
 import { LeftOutlined, PlusOutlined, RightOutlined } from '@ant-design/icons';
 import { Button, Modal, Popconfirm, Space, Spin, Steps, Switch, Typography, message } from 'antd';
 import { ModalFuncProps } from 'antd/lib/modal';
-import FullScreenWizard from 'components/styled/FullscreenWizard';
+import FullScreenWizard from '../styled/FullscreenWizard';
 import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
-import { IRaceClubsProps } from 'models/resultModel';
-import { IRaceWizard, RaceWizard, getLocalStorage } from 'models/resultWizardModel';
+import { IRaceClubsProps } from '../../models/resultModel';
+import { IRaceWizard, RaceWizard, getLocalStorage } from '../../models/resultWizardModel';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { PostJsonData } from 'utils/api';
-import { useMobxStore } from 'utils/mobxStore';
+import { PostJsonData } from '../../utils/api';
+import { useMobxStore } from '../../utils/mobxStore';
 import {
   EventClassificationIdTypes,
   LightConditionTypes,
@@ -20,7 +20,7 @@ import {
   difficulties,
   distances,
   lightConditions,
-} from 'utils/resultConstants';
+} from '../../utils/resultConstants';
 import {
   ConvertSecondsToTime,
   ConvertTimeToSeconds,
@@ -28,9 +28,9 @@ import {
   GetRaceOldPoint,
   GetRacePoint,
   GetRanking,
-} from 'utils/resultHelper';
-import { ResultWizardStoreProvider } from 'utils/resultWizardStore';
-import { useSize } from 'utils/useSize';
+} from '../../utils/resultHelper';
+import { ResultWizardStoreProvider } from '../../utils/resultWizardStore';
+import { useSize } from '../../utils/useSize';
 import { SpinnerDiv, StyledIcon } from '../styled/styled';
 import { ConfirmOverwriteOrEdit } from './ConfirmOverwriteOrEditPromise';
 import EditResultIndividual, { IExtendedRaceResult } from './EditResultIndividual';

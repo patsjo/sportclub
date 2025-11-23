@@ -31,7 +31,6 @@ I use the following extensions
 
 - ESLint
 - Prettier - Code formatter
-- React Food Truck
 - Javascript (ES6) code snippets
 - Simple React Snippets
 - npm Intellisence

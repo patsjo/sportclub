@@ -1,10 +1,10 @@
 import { DownOutlined, FileTextOutlined, FileZipOutlined, PrinterOutlined, SettingOutlined } from '@ant-design/icons';
 import { Button, Dropdown, Menu, Modal, Progress, Spin } from 'antd';
-import { SpinnerDiv } from 'components/styled/styled';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
-import { IPrintSettings, IPrintSettingsColumn } from 'utils/responseInterfaces';
+import { IPrintSettings, IPrintSettingsColumn } from '../../utils/responseInterfaces';
+import { SpinnerDiv } from '../styled/styled';
 import { TableSettingModal, getLocalStorage } from './TableSettingModal';
 
 const ButtonsContainer = styled.div`
@@ -136,8 +136,12 @@ const TablePrintSettingButtons = ({
         title={spinnerTitle}
         open={loading && total > 0}
         onCancel={onCancel}
-        okButtonProps={{ hidden: true }}
         maskClosable={false}
+        footer={[
+          <Button key="cancel" onClick={onCancel}>
+            {t('common.Cancel')}
+          </Button>,
+        ]}
       >
         {total > 0 ? (
           <SpinnerDiv>

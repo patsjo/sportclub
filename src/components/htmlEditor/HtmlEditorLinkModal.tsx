@@ -1,15 +1,16 @@
 import { LinkOutlined } from '@ant-design/icons';
-import { Form, Input, message, Modal } from 'antd';
+import { Form, Input, Modal } from 'antd';
 import { FormInstance } from 'antd/lib/form';
 import { ModalFuncProps } from 'antd/lib/modal';
 import { TFunction } from 'i18next';
-import { IGlobalStateModel } from 'models/globalStateModel';
-import { IMobxClubModel } from 'models/mobxClubModel';
-import { ISessionModel } from 'models/sessionModel';
+import { IGlobalStateModel } from '../../models/globalStateModel';
+import { IMobxClubModel } from '../../models/mobxClubModel';
+import { ISessionModel } from '../../models/sessionModel';
 import styled from 'styled-components';
 import { PostJsonData } from '../../utils/api';
 import { errorRequiredField, hasErrors } from '../../utils/formHelper';
 import FormItem from '../formItems/FormItem';
+import { MessageInstance } from 'antd/lib/message/interface';
 const { confirm } = Modal;
 declare type ConfigUpdate = ModalFuncProps | ((prevConfig: ModalFuncProps) => ModalFuncProps);
 
@@ -26,7 +27,8 @@ export const HtmlEditorLinkModal = (
   form: FormInstance,
   globalStateModel: IGlobalStateModel,
   sessionModel: ISessionModel,
-  clubModel: IMobxClubModel
+  clubModel: IMobxClubModel,
+  messageApi: MessageInstance,
 ) =>
   new Promise((resolve, reject) => {
     const formId = 'htmlEditorForm' + Math.floor(Math.random() * 1000000000000000);
@@ -56,7 +58,7 @@ export const HtmlEditorLinkModal = (
                   disabled: linkId > 0 ? false : notValid,
                 },
                 okText: notValid && linkId > 0 ? t('common.Delete') : t('common.Save'),
-              })
+              }),
             )
           }
         >
@@ -129,14 +131,14 @@ export const HtmlEditorLinkModal = (
                 password: sessionModel.password,
               },
               true,
-              sessionModel.authorizationHeader
+              sessionModel.authorizationHeader,
             )
               .then((linkResponse) => {
-                globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, filesModule, sessionModel, message);
+                globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, filesModule, sessionModel, messageApi);
                 resolve(linkResponse);
               })
               .catch((e) => {
-                message.error(e.message);
+                messageApi.error(e.message);
                 confirmModal.update({
                   okButtonProps: {
                     loading: false,
@@ -154,14 +156,14 @@ export const HtmlEditorLinkModal = (
                   password: sessionModel.password,
                 },
                 true,
-                sessionModel.authorizationHeader
+                sessionModel.authorizationHeader,
               )
                 .then((linkResponse) => {
-                  globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, filesModule, sessionModel, message);
+                  globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, filesModule, sessionModel, messageApi);
                   resolve(linkResponse);
                 })
                 .catch((e) => {
-                  message.error(e.message);
+                  messageApi.error(e.message);
                   confirmModal.update({
                     okButtonProps: {
                       loading: false,

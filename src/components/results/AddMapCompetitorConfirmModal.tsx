@@ -1,9 +1,9 @@
 import { Modal } from 'antd';
 import { ModalFuncProps } from 'antd/lib/modal';
 import { TFunction } from 'i18next';
-import { IMobxClubModel } from 'models/mobxClubModel';
-import { IRaceCompetitor } from 'models/resultModel';
-import { ISessionModel } from 'models/sessionModel';
+import { IMobxClubModel } from '../../models/mobxClubModel';
+import { IRaceCompetitor } from '../../models/resultModel';
+import { ISessionModel } from '../../models/sessionModel';
 import AddMapCompetitor, { IAddLinkCompetitor, INewCompetitorForm } from './AddMapCompetitor';
 
 const { confirm } = Modal;

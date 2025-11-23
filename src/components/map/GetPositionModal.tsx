@@ -1,12 +1,12 @@
 import { Modal } from 'antd';
 import { ModalFuncProps } from 'antd/lib/modal';
 import { TFunction } from 'i18next';
-import { IGlobalStateModel } from 'models/globalStateModel';
-import { IMobxClubModel } from 'models/mobxClubModel';
-import { ISessionModel } from 'models/sessionModel';
+import { IGlobalStateModel } from '../../models/globalStateModel';
+import { IMobxClubModel } from '../../models/mobxClubModel';
+import { ISessionModel } from '../../models/sessionModel';
 import { toLonLat } from 'ol/proj';
 import { Icon, Style } from 'ol/style';
-import { MobxStoreProvider } from 'utils/mobxStore';
+import { MobxStoreProvider } from '../../utils/mobxStore';
 import OSMOrienteeringMap, { OrienteeringSymbol } from './OSMOrienteeringMap';
 import { mapProjection } from './useOpenLayersMap';
 
@@ -19,7 +19,7 @@ export const GetPositionModal = (
   exists: boolean,
   globalStateModel: IGlobalStateModel,
   sessionModel: ISessionModel,
-  clubModel: IMobxClubModel
+  clubModel: IMobxClubModel,
 ): Promise<{ longitude: number; latitude: number } | null> =>
   new Promise((resolve, reject) => {
     const mapCenter = [longitude, latitude];
@@ -58,9 +58,9 @@ export const GetPositionModal = (
                     image: new Icon({
                       src: OrienteeringSymbol.url,
                       scale: 15 / OrienteeringSymbol.width,
-                      imgSize: [OrienteeringSymbol.width, OrienteeringSymbol.height],
+                      size: [OrienteeringSymbol.width, OrienteeringSymbol.height],
                     }),
-                  })
+                  }),
                 );
                 selectedPosition = { longitude: coordinates[0], latitude: coordinates[1] };
                 graphicLayer.getSource()?.clear();

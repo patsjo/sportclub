@@ -1,8 +1,8 @@
 import { action, computed, makeObservable, observable } from 'mobx';
-import moment from 'moment';
-import { IOption } from 'utils/formHelper';
-import { DifficultyTypes, PaymentModelTypes, difficulties, payments } from 'utils/resultConstants';
-import { ConvertSecondsWithFractionsToTime, GetSecondsWithFractionsPerKiloMeter } from 'utils/resultHelper';
+import dayjs from 'dayjs';
+import { IOption } from '../utils/formHelper';
+import { DifficultyTypes, PaymentModelTypes, difficulties, payments } from '../utils/resultConstants';
+import { ConvertSecondsWithFractionsToTime, GetSecondsWithFractionsPerKiloMeter } from '../utils/resultHelper';
 import { IRaceEvent, IRaceEventProps, RaceEvent } from './resultModel';
 
 export interface ILocalStorageRaceWizard {
@@ -18,8 +18,8 @@ const setLocalStorage = (raceWizard: IRaceWizardProps) => {
 };
 
 export const getLocalStorage = (): IRaceWizardProps => {
-  const endDate = moment().format('YYYY-MM-DD');
-  const startDate = moment().add(-30, 'days').format('YYYY-MM-DD');
+  const endDate = dayjs().format('YYYY-MM-DD');
+  const startDate = dayjs().add(-30, 'days').format('YYYY-MM-DD');
   try {
     const raceWizardData = localStorage.getItem('raceWizard');
 
@@ -113,7 +113,7 @@ class WinnerResult implements IWinnerResult {
     this.lengthInMeter = value;
     this.secondsPerKilometer =
       this.winnerTime && this.lengthInMeter
-        ? GetSecondsWithFractionsPerKiloMeter(this.winnerTime, this.lengthInMeter) ?? undefined
+        ? (GetSecondsWithFractionsPerKiloMeter(this.winnerTime, this.lengthInMeter) ?? undefined)
         : undefined;
     this.timePerKilometer = this.secondsPerKilometer
       ? ConvertSecondsWithFractionsToTime(this.secondsPerKilometer)
@@ -128,7 +128,7 @@ class WinnerResult implements IWinnerResult {
     this.winnerTime = value;
     this.secondsPerKilometer =
       this.winnerTime && this.lengthInMeter
-        ? GetSecondsWithFractionsPerKiloMeter(this.winnerTime, this.lengthInMeter) ?? undefined
+        ? (GetSecondsWithFractionsPerKiloMeter(this.winnerTime, this.lengthInMeter) ?? undefined)
         : undefined;
     this.timePerKilometer = this.secondsPerKilometer
       ? ConvertSecondsWithFractionsToTime(this.secondsPerKilometer)
@@ -168,12 +168,12 @@ export interface IRaceWizard extends Omit<IRaceWizardProps, 'raceEvent' | 'raceW
       | 'queryForEventWithNoEntry'
       | 'queryForCompetitorWithNoClub'
       | 'selectedIsRelay',
-    value: boolean
+    value: boolean,
   ) => void;
   setNumberValue: (key: 'paymentModel', value: PaymentModelTypes) => void;
   setNumberValueOrNull: (
     key: 'selectedEventId' | 'selectedEventorId' | 'selectedEventorRaceId',
-    value?: number | null
+    value?: number | null,
   ) => void;
   setRaceEvent: (value: IRaceEventProps | null) => void;
   setRaceWinnerResults: (values: IWinnerResultProps[]) => void;
@@ -244,7 +244,7 @@ export class RaceWizard implements IRaceWizard {
       | 'queryForEventWithNoEntry'
       | 'queryForCompetitorWithNoClub'
       | 'selectedIsRelay',
-    value: boolean
+    value: boolean,
   ) {
     this[key] = value;
     setLocalStorage(this);
@@ -283,7 +283,7 @@ export class RaceWizard implements IRaceWizard {
   get raceWinnerResultOptions() {
     return this.raceWinnerResults
       .filter(
-        (wr) => wr.difficulty && [difficulties.purple, difficulties.blue, difficulties.black].includes(wr.difficulty)
+        (wr) => wr.difficulty && [difficulties.purple, difficulties.blue, difficulties.black].includes(wr.difficulty),
       )
       .sort((a, b) => {
         if (a.difficulty === difficulties.black && b.difficulty !== difficulties.black) {

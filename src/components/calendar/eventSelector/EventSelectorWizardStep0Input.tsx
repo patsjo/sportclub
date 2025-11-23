@@ -1,13 +1,13 @@
 import { DatePicker, Form, InputNumber } from 'antd';
 import { FormInstance } from 'antd/lib/form';
 import { observer } from 'mobx-react';
-import { IEventSelectorWizard } from 'models/eventSelectorWizardModel';
-import { IGraphic } from 'models/graphic';
-import moment from 'moment';
+import { IEventSelectorWizard } from '../../../models/eventSelectorWizardModel';
+import { IGraphic } from '../../../models/graphic';
+import dayjs from 'dayjs';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
-import { useMobxStore } from 'utils/mobxStore';
+import { useMobxStore } from '../../../utils/mobxStore';
 import { dateFormat, errorRequiredField, warningIncludeAll } from '../../../utils/formHelper';
 import FormItem from '../../formItems/FormItem';
 import OSMOrienteeringMap from '../../map/OSMOrienteeringMap';
@@ -133,8 +133,8 @@ const EventSelectorWizardStep0Input = observer(
           layout="vertical"
           initialValues={{
             QueryDateRange: [
-              moment(eventSelectorWizardModel.queryStartDate, dateFormat),
-              moment(eventSelectorWizardModel.queryEndDate, dateFormat),
+              dayjs(eventSelectorWizardModel.queryStartDate, dateFormat),
+              dayjs(eventSelectorWizardModel.queryEndDate, dateFormat),
             ],
             MaxDistanceNational: eventSelectorWizardModel.maxDistanceNational,
             MaxDistanceDistrict: eventSelectorWizardModel.maxDistanceDistrict,
@@ -223,7 +223,7 @@ const EventSelectorWizardStep0Input = observer(
         </Form>
       </StyledFullWidth>
     );
-  }
+  },
 );
 
 export default EventSelectorWizardStep0Input;

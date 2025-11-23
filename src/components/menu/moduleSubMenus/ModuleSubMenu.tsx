@@ -1,8 +1,8 @@
 import { observer } from 'mobx-react';
-import { IModule } from 'models/mobxClubModel';
+import { IModule } from '../../../models/mobxClubModel';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { useMobxStore } from 'utils/mobxStore';
+import { useMobxStore } from '../../../utils/mobxStore';
 import MenuItem from '../MenuItem';
 import CalendarSubMenus from './CalendarSubMenus';
 import NewsSubMenus from './NewsSubMenus';

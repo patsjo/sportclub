@@ -5,7 +5,7 @@
 
 //TODO: fix missing attributes from PHP
 
-import moment from 'moment';
+import dayjs from 'dayjs';
 
 /** The bank account of an organisation or an event. */
 type IAccount = string;
@@ -397,7 +397,7 @@ interface IFee {
   /** The fee amount, optionally including currency code. This element must not be present if a Percentage element exists. */
   Amount?: IAmount;
   /** The start of the birth date interval that the fee should be applied to. Omit if no lower birth date restriction. */
-  FromDateOfBirth?: moment.Moment;
+  FromDateOfBirth?: dayjs.Dayjs;
   Id?: IId;
   /** A describing name of the fee, e.g. 'Late entry fee'. */
   Name: ILanguageString[];
@@ -408,11 +408,11 @@ interface IFee {
   /** The percentage to increase or decrease already existing taxable fees in a fee list with. This element must not be present if an Amount element exists, or if a Percentage element does not exist. */
   TaxablePercentage?: number;
   /** The end of the birth date interval that the fee should be applied to. Omit if no upper birth date restriction. */
-  ToDateOfBirth?: moment.Moment;
+  ToDateOfBirth?: dayjs.Dayjs;
   /** The time when the fee takes effect. */
-  ValidFromTime?: moment.Moment;
+  ValidFromTime?: dayjs.Dayjs;
   /** The time when the fee expires. */
-  ValidToTime?: moment.Moment;
+  ValidToTime?: dayjs.Dayjs;
 }
 
 type FeeTypeType = 'Normal' | 'Late';
@@ -564,7 +564,7 @@ export interface IPerson {
 
   Address?: IAddress[];
   /** The date when the person was born, expressed in ISO 8601 format. */
-  BirthDate?: moment.Moment;
+  BirthDate?: dayjs.Dayjs;
   Contact?: IContact[];
   /** The identifier of the person. Multiple identifiers can be included, e.g. when there is both a World Ranking Event identifier and a national database identifier for the person. */
   Id?: IId[];
@@ -601,7 +601,7 @@ interface IPersonEntry {
   /** Information about the control cards (punching cards) that the person uses at the event. Multiple control cards can be specified, e.g. one for punch checking and another for timing. */
   ControlCard?: IControlCard[];
   /** The time when the entry was first submitted. */
-  EntryTime?: moment.Moment;
+  EntryTime?: dayjs.Dayjs;
   Id?: IId;
   /** The organisation that the person represents at the event. */
   Organisation?: IOrganisation;
@@ -640,7 +640,7 @@ export interface IPersonRaceResult {
   /** Defines the course assigned to the person. */
   Course?: ISimpleCourse;
   /** The time when the person that the result belongs to finished, expressed in ISO 8601 format. */
-  FinishTime?: moment.Moment;
+  FinishTime?: dayjs.Dayjs;
   /** Holds the overall result for the person after the current race for a multi-race event. */
   OverallResult?: IOverallResult;
   /** The position in the result list for the person that the result belongs to. This element should only be present when the Status element is set to OK. */
@@ -654,7 +654,7 @@ export interface IPersonRaceResult {
   /** Contains the times at each control of the course. Each control of the competitor's course (if known) has to be defined in a SplitTime element, even if the control has not been punched or if the competitor has not started. Start and finish times must not be present as SplitTime elements. */
   SplitTime?: ISplitTime[];
   /** The time when the person that the result belongs to started, expressed in ISO 8601 format. */
-  StartTime?: moment.Moment;
+  StartTime?: dayjs.Dayjs;
   /** The status of the result. */
   Status: ResultStatus;
   /** The time, in seconds, that is shown in the result list. Fractions of seconds (e.g. 258.7) may be used if the time resolution is higher than one second. */
@@ -681,7 +681,7 @@ interface IPersonRaceStart {
   /** Defines the services requested by the person. */
   ServiceRequest?: IServiceRequest[];
   /** The time when the person starts. */
-  StartTime?: moment.Moment;
+  StartTime?: dayjs.Dayjs;
 }
 
 /** Result information for an individual competitor, including e.g. result status, place, finish time, and split times. */
@@ -780,7 +780,7 @@ interface IRaceClass {
   Course?: ISimpleCourse[];
   /** The entry fees for an individual competitor taking part in the race class. Use the TeamFee element to specify a fee for the team as a whole. Use the Fee subelement of the Class element to specify a fee on event level. */
   Fee?: IFee[];
-  FirstStart?: moment.Moment;
+  FirstStart?: dayjs.Dayjs;
   /** The controls that are online controls for this class. */
   OnlineControl?: IControl[];
   /** The punching system used for the class at the race. Multiple punching systems can be specified, e.g. one for punch checking and another for timing. */
@@ -955,13 +955,13 @@ interface ISchedule {
   /** Any extra information about the sub-event. */
   Details?: string;
   /** The end time of the sub-event. */
-  EndTime?: moment.Moment;
+  EndTime?: dayjs.Dayjs;
   /** The name or title of the sub-event. */
   Name: string;
   /** The geographical position of the sub-event. */
   Position?: IGeoPosition;
   /** The start time of the sub-event. */
-  StartTime: moment.Moment;
+  StartTime: dayjs.Dayjs;
   /** The name of the place where the sub-event occurs. */
   Venue?: string;
 }
@@ -1103,7 +1103,7 @@ interface ITeamEntry {
   /** Contact information (name and e.g. mobile phone number) to a team leader or coach, expressed as plain text. */
   ContactInformation?: string;
   /** The time when the entry was first submitted. */
-  EntryTime?: moment.Moment;
+  EntryTime?: dayjs.Dayjs;
   Id?: IId;
   /** The name of the team. If a relay, this is probably the name of the club optionally followed by a sequence number to distinguish teams from the same club in a class. */
   Name: string;
@@ -1131,7 +1131,7 @@ interface ITeamEntryPerson {
   LegOrder?: number;
   /** The organisation that the person represent. Omit if this is the same as the organsiation given in the TeamEntry element. */
   Organisation?: IOrganisation;
-  /** The person. Omit if the person is not known at the moment, but for example the control card is known. */
+  /** The person. Omit if the person is not known at the dayjs, but for example the control card is known. */
   Person?: IPerson;
   /** Any score that is submitted together with the entry, e.g. World Ranking points. */
   Score?: IScore[];
@@ -1172,7 +1172,7 @@ export interface ITeamMemberRaceResult {
   /** Defines the course assigned to the person. */
   Course?: ISimpleCourse;
   /** The time when the team member that the result belongs to finished, expressed in ISO 8601 format. */
-  FinishTime?: moment.Moment;
+  FinishTime?: dayjs.Dayjs;
   /** In case of a relay, this is the number of the leg that the team member takes part in. */
   Leg?: number;
   /** In case of a relay with parallel legs, this defines the team member's starting order of the leg within the team. */
@@ -1190,7 +1190,7 @@ export interface ITeamMemberRaceResult {
   /** Contains the times at each control of the course. Each control of the team member's course has to be defined in a SplitTime element, even if the control has not been punched. Start and finish times must not be present as SplitTime elements. */
   SplitTime?: ISplitTime[];
   /** The time when the team member that the result belongs to started, expressed in ISO 8601 format. */
-  StartTime?: moment.Moment;
+  StartTime?: dayjs.Dayjs;
   /** The status of the result. */
   Status: ResultStatus;
   /** The time, in seconds, that is shown in the result list. Fractions of seconds (e.g. 258.7) may be used if the time resolution is higher than one second. */
@@ -1226,7 +1226,7 @@ interface ITeamMemberRaceStart {
   /** Defines the services requested by the team member. */
   ServiceRequest?: IServiceRequest[];
   /** The time when the team member starts. */
-  StartTime?: moment.Moment;
+  StartTime?: dayjs.Dayjs;
 }
 
 /** Result information for a team member, including e.g. result status, place, finish time, and split times. */

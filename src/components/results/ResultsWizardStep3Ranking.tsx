@@ -1,11 +1,11 @@
 import { Alert, Col, Form, InputNumber, Row } from 'antd';
 import { FormInstance } from 'antd/lib/form';
-import InputTime from 'components/formItems/InputTime';
+import InputTime from '../formItems/InputTime';
 import { observer } from 'mobx-react';
 import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useMobxStore } from 'utils/mobxStore';
-import { useResultWizardStore } from 'utils/resultWizardStore';
+import { useMobxStore } from '../../utils/mobxStore';
+import { useResultWizardStore } from '../../utils/resultWizardStore';
 import { FormSelect, errorRequiredField } from '../../utils/formHelper';
 import { lightConditions } from '../../utils/resultConstants';
 import FormItem from '../formItems/FormItem';

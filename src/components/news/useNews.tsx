@@ -1,10 +1,10 @@
 import { Spin } from 'antd';
-import { IChildContainerProps } from 'components/dashboard/columns/mapNodesToColumns';
-import { INewsItemProps } from 'models/newsModel';
-import React, { useCallback, useState } from 'react';
+import { IChildContainerProps } from '../dashboard/columns/mapNodesToColumns';
+import { INewsItemProps } from '../../models/newsModel';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import styled from 'styled-components';
-import { useMobxStore } from 'utils/mobxStore';
+import { useMobxStore } from '../../utils/mobxStore';
 import { PostJsonData } from '../../utils/api';
 import NewsItem from './NewsItem';
 
@@ -16,21 +16,22 @@ const SpinnerDiv = styled.div<IChildContainerProps>`
 const useNews = (withinDashboard: boolean) => {
   const { globalStateModel, clubModel } = useMobxStore();
   const [firstLoading, setFirstLoading] = React.useState(true);
-  const [loading, setLoading] = useState(false);
+  const loadingRef = useRef(false);
   const location = useLocation();
+  const now = useMemo(() => new Date(), []);
+  const today = useMemo(() => new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())), [now]);
+  const todayIsoString = useMemo(() => today.toISOString().substring(0, 10), [today]);
 
   const loadNews = useCallback(async () => {
-    if (loading) {
+    if (loadingRef.current) {
       return true;
     }
     const url = clubModel.modules.find((module) => module.name === 'News')?.queryUrl;
     if (!url) return false;
 
-    setLoading(true);
+    loadingRef.current = true;
     const limit = globalStateModel.news?.limit;
     const offset = globalStateModel.news?.offset;
-    const now = new Date();
-    const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
     const startDate = new Date(today.valueOf());
     startDate.setDate(startDate.getDate() - 180);
     const iStartDate = startDate.toISOString().substring(0, 10);
@@ -50,16 +51,33 @@ const useNews = (withinDashboard: boolean) => {
       });
       globalStateModel.news?.addNewsItemsToBottom(newArray);
       setFirstLoading(false);
-      setLoading(false);
+      loadingRef.current = false;
       return newArray.length === limit;
     } catch (e) {
       setFirstLoading(false);
-      setLoading(false);
+      loadingRef.current = false;
       return false;
     }
-  }, [loading, location.pathname, globalStateModel.type]);
+  }, [
+    today,
+    location.pathname,
+    globalStateModel.type,
+    globalStateModel.startDate,
+    globalStateModel.endDate,
+    clubModel.modules,
+    globalStateModel.news?.limit,
+    globalStateModel.news?.offset,
+  ]);
 
-  const newsItems = globalStateModel.news?.newsItems;
+  const newsItems = useMemo(
+    () =>
+      withinDashboard
+        ? globalStateModel.news?.newsItems?.filter(
+            (newsItem) => !newsItem.expireDate || newsItem.expireDate >= todayIsoString,
+          )
+        : globalStateModel.news?.newsItems,
+    [todayIsoString, globalStateModel.news?.newsItems, withinDashboard],
+  );
 
   return {
     loadMoreCallback: loadNews,
@@ -68,7 +86,7 @@ const useNews = (withinDashboard: boolean) => {
         ? newsItems.map((newsObject) => (
             <NewsItem
               key={'newsObject#' + newsObject.id}
-              column={location.pathname === '/' ? 50 : undefined}
+              preferredColumn={location.pathname === '/' ? '50%leftPreferred' : undefined}
               newsObject={newsObject}
               preferredHeight={200}
             />
@@ -76,7 +94,7 @@ const useNews = (withinDashboard: boolean) => {
         : [
             <SpinnerDiv
               key="newsObject#spinner"
-              column={location.pathname === '/' ? 50 : undefined}
+              preferredColumn={location.pathname === '/' ? '50%leftPreferred' : undefined}
               preferredHeight={100}
             >
               <Spin size="large" />

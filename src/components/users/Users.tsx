@@ -1,11 +1,11 @@
 import { Empty, message, Modal, ModalFuncProps, Popconfirm, Spin } from 'antd';
 import { ColumnType } from 'antd/lib/table';
 import { observer } from 'mobx-react';
-import { ICouncilModel, IGroupModel, IUserModel } from 'models/userModel';
+import { ICouncilModel, IGroupModel, IUserModel } from '../../models/userModel';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { PostJsonData } from 'utils/api';
-import { useMobxStore } from 'utils/mobxStore';
+import { PostJsonData } from '../../utils/api';
+import { useMobxStore } from '../../utils/mobxStore';
 import { MissingTag, NoWrap, SpinnerDiv, StyledIcon, StyledTable } from '../styled/styled';
 import EditUser from './EditUser';
 

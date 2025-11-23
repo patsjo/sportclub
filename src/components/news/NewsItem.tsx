@@ -1,9 +1,9 @@
-import { IChildContainerProps } from 'components/dashboard/columns/mapNodesToColumns';
+import { IChildContainerProps } from '../dashboard/columns/mapNodesToColumns';
 import { observer } from 'mobx-react';
-import { INewsItem } from 'models/newsModel';
+import { INewsItem } from '../../models/newsModel';
 import React from 'react';
 import styled from 'styled-components';
-import { useMobxStore } from 'utils/mobxStore';
+import { useMobxStore } from '../../utils/mobxStore';
 import { PostJsonData } from '../../utils/api';
 import { getImage } from '../../utils/imageHelper';
 import FadeOutItem from '../fadeOutItem/FadeOutItem';

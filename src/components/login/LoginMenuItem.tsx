@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useMobxStore } from 'utils/mobxStore';
+import { useMobxStore } from '../../utils/mobxStore';
 import { GetJsonData } from '../../utils/api';
 import MenuItem from '../menu/MenuItem';
 import LoginForm from './LoginForm';

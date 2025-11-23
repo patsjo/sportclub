@@ -2,40 +2,42 @@
  * @license Copyright (c) 2014-2020, CKSource - Frederico Knabben. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
-import Alignment from '@ckeditor/ckeditor5-alignment/src/alignment.js';
-import Autoformat from '@ckeditor/ckeditor5-autoformat/src/autoformat.js';
-import Bold from '@ckeditor/ckeditor5-basic-styles/src/bold.js';
-import Italic from '@ckeditor/ckeditor5-basic-styles/src/italic.js';
-import BlockQuote from '@ckeditor/ckeditor5-block-quote/src/blockquote.js';
-import ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor.js';
-import Essentials from '@ckeditor/ckeditor5-essentials/src/essentials.js';
-import Heading from '@ckeditor/ckeditor5-heading/src/heading.js';
-import Image from '@ckeditor/ckeditor5-image/src/image.js';
-import ImageCaption from '@ckeditor/ckeditor5-image/src/imagecaption.js';
-import ImageInsert from '@ckeditor/ckeditor5-image/src/imageinsert.js';
-import ImageResize from '@ckeditor/ckeditor5-image/src/imageresize.js';
-import ImageStyle from '@ckeditor/ckeditor5-image/src/imagestyle.js';
-import ImageToolbar from '@ckeditor/ckeditor5-image/src/imagetoolbar.js';
-import ImageUpload from '@ckeditor/ckeditor5-image/src/imageupload.js';
-import Indent from '@ckeditor/ckeditor5-indent/src/indent.js';
-import Link from '@ckeditor/ckeditor5-link/src/link.js';
-import LinkImage from '@ckeditor/ckeditor5-link/src/linkimage.js';
-import List from '@ckeditor/ckeditor5-list/src/list.js';
-import MediaEmbed from '@ckeditor/ckeditor5-media-embed/src/mediaembed.js';
-import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph.js';
-import PasteFromOffice from '@ckeditor/ckeditor5-paste-from-office/src/pastefromoffice';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
-import Table from '@ckeditor/ckeditor5-table/src/table.js';
-import TableCellProperties from '@ckeditor/ckeditor5-table/src/tablecellproperties';
-import TableProperties from '@ckeditor/ckeditor5-table/src/tableproperties';
-import TableToolbar from '@ckeditor/ckeditor5-table/src/tabletoolbar.js';
-import TextTransformation from '@ckeditor/ckeditor5-typing/src/texttransformation.js';
-import { StickyPanelView } from '@ckeditor/ckeditor5-ui';
-import Base64UploadAdapter from '@ckeditor/ckeditor5-upload/src/adapters/base64uploadadapter.js';
 import { observer } from 'mobx-react';
 import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import './ckeditor5.css';
+import 'ckeditor5/ckeditor5.css';
+import {
+  Alignment,
+  Autoformat,
+  Base64UploadAdapter,
+  BlockQuote,
+  Bold,
+  ClassicEditor,
+  Essentials,
+  Heading,
+  Image,
+  ImageCaption,
+  ImageInsert,
+  ImageResize,
+  ImageStyle,
+  ImageToolbar,
+  ImageUpload,
+  Indent,
+  Italic,
+  Link,
+  LinkImage,
+  List,
+  MediaEmbed,
+  Paragraph,
+  PasteFromOffice,
+  StickyPanelView,
+  Table,
+  TableCellProperties,
+  TableProperties,
+  TableToolbar,
+  TextTransformation,
+} from 'ckeditor5';
 
 interface IConatinerProps {
   isReadOnly: boolean;
@@ -81,6 +83,7 @@ const CustomCKEditor = observer(({ data, isReadOnly, onReady }: ICustomCKEditor)
       <CKEditor
         editor={ClassicEditor}
         config={{
+          licenseKey: 'GPL',
           plugins: [
             Alignment,
             Autoformat,

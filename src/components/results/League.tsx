@@ -1,14 +1,14 @@
 import { message, Select, Spin, Tabs } from 'antd';
 import { ColumnType } from 'antd/lib/table';
+import dayjs from 'dayjs';
 import { TFunction } from 'i18next';
 import { observer } from 'mobx-react';
-import moment from 'moment';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
-import { useMobxStore } from 'utils/mobxStore';
-import { ILeagueCompetitor } from 'utils/responseInterfaces';
 import { PostJsonData } from '../../utils/api';
+import { useMobxStore } from '../../utils/mobxStore';
+import { ILeagueCompetitor } from '../../utils/responseInterfaces';
 import { genders, GenderType } from '../../utils/resultConstants';
 import { SpinnerDiv, StyledTable } from '../styled/styled';
 
@@ -81,15 +81,15 @@ const getColumns = (t: TFunction, nofPoints: number, isTotal = false): ColumnTyp
               i === 0
                 ? 'RankingLeague'
                 : i === 1
-                ? 'RankingRelayLeague'
-                : i === 2
-                ? 'RankingSpeedLeague'
-                : i === 3
-                ? 'RankingTechnicalLeague'
-                : i === 4
-                ? 'Points1000League'
-                : 'PointsLeague'
-            }`
+                  ? 'RankingRelayLeague'
+                  : i === 2
+                    ? 'RankingSpeedLeague'
+                    : i === 3
+                      ? 'RankingTechnicalLeague'
+                      : i === 4
+                        ? 'Points1000League'
+                        : 'PointsLeague'
+            }`,
           )
         : (i + 1).toString(),
       dataIndex: `p${i}`,
@@ -145,14 +145,14 @@ const League = observer(() => {
   const [loading, setLoading] = useState(true);
 
   const onUpdate = (year: number, gender?: GenderType) => {
-    const searchYear = year === -1 ? parseInt(moment().format('YYYY')) : year;
-    const fromDate = moment(searchYear, 'YYYY').format('YYYY-MM-DD');
+    const searchYear = year === -1 ? parseInt(dayjs().format('YYYY')) : year;
+    const fromDate = dayjs(`${searchYear}`, 'YYYY').format('YYYY-MM-DD');
     const toDate =
       year === -1
-        ? moment().format('YYYY-MM-DD')
-        : moment(fromDate, 'YYYY-MM-DD').add(1, 'years').subtract(1, 'days').format('YYYY-MM-DD');
+        ? dayjs().format('YYYY-MM-DD')
+        : dayjs(fromDate, 'YYYY-MM-DD').add(1, 'years').subtract(1, 'days').format('YYYY-MM-DD');
     const rankingFromDate =
-      year === -1 ? moment(toDate, 'YYYY-MM-DD').add(1, 'days').subtract(1, 'years').format('YYYY-MM-DD') : fromDate;
+      year === -1 ? dayjs(toDate, 'YYYY-MM-DD').add(1, 'days').subtract(1, 'years').format('YYYY-MM-DD') : fromDate;
 
     setLoading(true);
 
@@ -169,7 +169,7 @@ const League = observer(() => {
               iFromDate: rankingFromDate,
               iToDate: toDate,
             },
-            true
+            true,
           )
         : new Promise((resolve) => resolve(undefined));
     const pointsPromise = PostJsonData(
@@ -179,7 +179,7 @@ const League = observer(() => {
         iFromDate: fromDate,
         iToDate: toDate,
       },
-      true
+      true,
     );
 
     Promise.all([rankingPromise, pointsPromise])
@@ -195,7 +195,7 @@ const League = observer(() => {
             (c) =>
               c.ranking.length > 0 &&
               (!gender || gender === c.gender) &&
-              (league.rankingLeagueAgeLimit === 0 || searchYear - c.birthYear >= league.rankingLeagueAgeLimit)
+              (league.rankingLeagueAgeLimit === 0 || searchYear - c.birthYear >= league.rankingLeagueAgeLimit),
           )
           .map((c) => {
             const ranking = c.ranking.slice(0, 6);
@@ -213,8 +213,8 @@ const League = observer(() => {
                 ? 1
                 : -1
               : a.total > b.total
-              ? 1
-              : -1
+                ? 1
+                : -1,
           )
           .map((c, i) => {
             const minLength = Math.min(prevRanking.length, c.ranking.length);
@@ -232,7 +232,8 @@ const League = observer(() => {
             (c) =>
               c.rankingRelay.length > 0 &&
               (!gender || gender === c.gender) &&
-              (league.rankingRelayLeagueAgeLimit === 0 || searchYear - c.birthYear >= league.rankingRelayLeagueAgeLimit)
+              (league.rankingRelayLeagueAgeLimit === 0 ||
+                searchYear - c.birthYear >= league.rankingRelayLeagueAgeLimit),
           )
           .map((c) => {
             const ranking = c.rankingRelay.slice(0, 3);
@@ -250,8 +251,8 @@ const League = observer(() => {
                 ? 1
                 : -1
               : a.total > b.total
-              ? 1
-              : -1
+                ? 1
+                : -1,
           )
           .map((c, i) => {
             const minLength = Math.min(prevRanking.length, c.ranking.length);
@@ -269,7 +270,7 @@ const League = observer(() => {
             (c) =>
               c.speedRanking.length > 0 &&
               (!gender || gender === c.gender) &&
-              (league.rankingLeagueAgeLimit === 0 || searchYear - c.birthYear >= league.rankingLeagueAgeLimit)
+              (league.rankingLeagueAgeLimit === 0 || searchYear - c.birthYear >= league.rankingLeagueAgeLimit),
           )
           .map((c) => {
             const ranking = c.speedRanking.slice(0, 6);
@@ -287,8 +288,8 @@ const League = observer(() => {
                 ? 1
                 : -1
               : a.total > b.total
-              ? 1
-              : -1
+                ? 1
+                : -1,
           )
           .map((c, i) => {
             const minLength = Math.min(prevRanking.length, c.ranking.length);
@@ -306,7 +307,7 @@ const League = observer(() => {
             (c) =>
               c.technicalRanking.length > 0 &&
               (!gender || gender === c.gender) &&
-              (league.rankingLeagueAgeLimit === 0 || searchYear - c.birthYear >= league.rankingLeagueAgeLimit)
+              (league.rankingLeagueAgeLimit === 0 || searchYear - c.birthYear >= league.rankingLeagueAgeLimit),
           )
           .map((c) => {
             const ranking = c.technicalRanking.slice(0, 6);
@@ -324,8 +325,8 @@ const League = observer(() => {
                 ? 1
                 : -1
               : a.total > b.total
-              ? 1
-              : -1
+                ? 1
+                : -1,
           )
           .map((c, i) => {
             const minLength = Math.min(prevRanking.length, c.ranking.length);
@@ -344,7 +345,7 @@ const League = observer(() => {
             (c) =>
               c.points1000.length > 0 &&
               (!gender || gender === c.gender) &&
-              (league.points1000LeagueAgeLimit === 0 || searchYear - c.birthYear >= league.points1000LeagueAgeLimit)
+              (league.points1000LeagueAgeLimit === 0 || searchYear - c.birthYear >= league.points1000LeagueAgeLimit),
           )
           .map((c) => {
             const numberOf100 = c.points1000.filter((p) => p === 100).length;
@@ -364,12 +365,12 @@ const League = observer(() => {
                 ? -1
                 : 1
               : a.total === b.total
-              ? a.numberOf100 > b.numberOf100
-                ? -1
-                : 1
-              : a.total > b.total
-              ? -1
-              : 1
+                ? a.numberOf100 > b.numberOf100
+                  ? -1
+                  : 1
+                : a.total > b.total
+                  ? -1
+                  : 1,
           )
           .map((c, i) => {
             if (prevNumberOf100 !== c.numberOf100 || JSON.stringify(prevPoints) !== JSON.stringify(c.points1000)) {
@@ -387,7 +388,7 @@ const League = observer(() => {
             (c) =>
               c.points.length > 0 &&
               (!gender || gender === c.gender) &&
-              (league.pointsLeagueAgeLimit === 0 || searchYear - c.birthYear >= league.pointsLeagueAgeLimit)
+              (league.pointsLeagueAgeLimit === 0 || searchYear - c.birthYear >= league.pointsLeagueAgeLimit),
           )
           .map((c) => {
             const points = c.points.slice(0, 10);
@@ -405,8 +406,8 @@ const League = observer(() => {
                 ? -1
                 : 1
               : a.total > b.total
-              ? -1
-              : 1
+                ? -1
+                : 1,
           )
           .map((c, i) => {
             if (JSON.stringify(prevPoints) !== JSON.stringify(c.points)) {
@@ -423,7 +424,7 @@ const League = observer(() => {
             (c) =>
               c.pointsOld.length > 0 &&
               (!gender || gender === c.gender) &&
-              (league.pointsLeagueAgeLimit === 0 || searchYear - c.birthYear >= league.pointsLeagueAgeLimit)
+              (league.pointsLeagueAgeLimit === 0 || searchYear - c.birthYear >= league.pointsLeagueAgeLimit),
           )
           .map((c) => {
             const pointsOld = c.pointsOld.slice(0, 10);
@@ -441,8 +442,8 @@ const League = observer(() => {
                 ? -1
                 : 1
               : a.total > b.total
-              ? -1
-              : 1
+                ? -1
+                : 1,
           )
           .map((c, i) => {
             if (JSON.stringify(prevPoints) !== JSON.stringify(c.pointsOld)) {
@@ -463,7 +464,7 @@ const League = observer(() => {
               (league.rankingLeagueAgeLimit === 0 ||
                 searchYear - c.birthYear >= league.rankingLeagueAgeLimit ||
                 league.rankingRelayLeagueAgeLimit === 0 ||
-                searchYear - c.birthYear >= league.rankingRelayLeagueAgeLimit)
+                searchYear - c.birthYear >= league.rankingRelayLeagueAgeLimit),
           )
           .forEach((c) => {
             const c1 = pointsJson.find((cc) => cc.competitorId === c.competitorId);
@@ -478,7 +479,7 @@ const League = observer(() => {
           .filter(
             (c) =>
               (!gender || gender === c.gender) &&
-              (league.grandSlamAgeLimit === 0 || searchYear - c.birthYear >= league.grandSlamAgeLimit)
+              (league.grandSlamAgeLimit === 0 || searchYear - c.birthYear >= league.grandSlamAgeLimit),
           )
           .map((c) => {
             const c1 = rankingLeague.find((cc) => cc.competitorId === c.competitorId);
@@ -651,8 +652,8 @@ const League = observer(() => {
         )}
       </TabPane>
       <TabPane tab={t('results.Points1000League')} key="points1000League">
-        OK Orions spring till 1000. Placering i förhållande till antal startande. 100 poäng för seger i en nationell
-        tävling vid minst två startande. 30 är lägsta poäng vid fullföljt.
+        Placering i förhållande till antal startande. 100 poäng för seger i en nationell tävling vid minst två
+        startande. 30 är lägsta poäng vid fullföljt.
         {league.points1000LeagueAgeLimit > 0 ? ` Åldersgräns ${league.points1000LeagueAgeLimit} år.` : ''}
         {!loading ? (
           <StyledTable
@@ -671,8 +672,8 @@ const League = observer(() => {
         key="pointsLeague"
       >
         {year > 1900 && year < 2003
-          ? 'Gårdsby IK poängliga fram till 2002. Grundpoäng baserat på typ av tävling och klass + Placeringspoäng + Poäng för antal startande - Poäng för minuter efter täten per 100m.'
-          : 'Värend GN poängliga från 2003. Grundpoäng baserat på typ av tävling och klass + Logaritmen av antal startande i förhållande till placering. Allt sedan i förhållande till hur många procent efter täten man är.'}
+          ? 'Grundpoäng baserat på typ av tävling och klass + Placeringspoäng + Poäng för antal startande - Poäng för minuter efter täten per 100m.'
+          : 'Grundpoäng baserat på typ av tävling och klass + Logaritmen av antal startande i förhållande till placering. Allt sedan i förhållande till hur många procent efter täten man är.'}
         {league.pointsLeagueAgeLimit > 0 ? ` Åldersgräns ${league.pointsLeagueAgeLimit} år.` : ''}
         {!loading ? (
           <StyledTable

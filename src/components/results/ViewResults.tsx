@@ -1,12 +1,12 @@
 import { Form, message, Spin } from 'antd';
 import { TFunction } from 'i18next';
 import { observer } from 'mobx-react';
-import { IMobxClubModel } from 'models/mobxClubModel';
-import moment from 'moment';
+import { IMobxClubModel } from '../../models/mobxClubModel';
+import dayjs from 'dayjs';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
-import { useMobxStore } from 'utils/mobxStore';
+import { useMobxStore } from '../../utils/mobxStore';
 import {
   IClubViewResultResponse,
   IEventViewResultResponse,
@@ -15,7 +15,7 @@ import {
   IPrintSettingsColumn,
   IViewResult,
   IViewTeamResult,
-} from 'utils/responseInterfaces';
+} from '../../utils/responseInterfaces';
 import { PostJsonData } from '../../utils/api';
 import { FormSelect, INumberOption, IOption } from '../../utils/formHelper';
 import { getPdf, getZip, IPrintInput, IPrintObject, IPrintTable, IPrintTableColumn } from '../../utils/pdf';
@@ -56,7 +56,7 @@ const Col = styled.div`
 const columns = (
   t: TFunction,
   clubModel: IMobxClubModel,
-  isIndividual: boolean
+  isIndividual: boolean,
 ): IPrintTableColumn<IViewResult | IViewTeamResult>[] => {
   const cols: IPrintTableColumn<IViewResult | IViewTeamResult>[] = [];
   if (isIndividual) {
@@ -113,7 +113,7 @@ const columns = (
       clubModel.raceClubs?.eventClassifications.find(
         (ec) =>
           ec.eventClassificationId ===
-          (record.deviantEventClassificationId ? record.deviantEventClassificationId : value)
+          (record.deviantEventClassificationId ? record.deviantEventClassificationId : value),
       )?.description,
   });
   cols.push({
@@ -143,8 +143,8 @@ const columns = (
       record.failedReason != null
         ? record.failedReason.charAt(0).toUpperCase() + record.failedReason.substr(1).toLowerCase()
         : record.failedReason == null && value == null
-        ? null
-        : FormatTime(value),
+          ? null
+          : FormatTime(value),
   });
   cols.push({
     title: t('results.WinnerTime'),
@@ -304,7 +304,7 @@ const teamResultsColumns = (t: TFunction, clubModel: IMobxClubModel): IPrintTabl
     key: 'raceLightCondition',
     render: (value, record) =>
       raceLightConditionOptions(t).find(
-        (opt) => opt.code === (record.deviantRaceLightCondition ? record.deviantRaceLightCondition : value)
+        (opt) => opt.code === (record.deviantRaceLightCondition ? record.deviantRaceLightCondition : value),
       )?.description,
   },
   {
@@ -350,7 +350,7 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
         iType: 'CLUBS',
       },
       true,
-      sessionModel.authorizationHeader
+      sessionModel.authorizationHeader,
     )
       .then((clubsJson) => {
         clubModel.setRaceClubs(clubsJson);
@@ -371,8 +371,8 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
 
   const updateEventYear = useCallback(
     (newYear: number) => {
-      const fromDate = moment(newYear, 'YYYY').format('YYYY-MM-DD');
-      const toDate = moment(fromDate, 'YYYY-MM-DD').add(1, 'years').subtract(1, 'days').format('YYYY-MM-DD');
+      const fromDate = dayjs(`${newYear}`, 'YYYY').format('YYYY-MM-DD');
+      const toDate = dayjs(fromDate, 'YYYY-MM-DD').add(1, 'years').subtract(1, 'days').format('YYYY-MM-DD');
 
       setYear(newYear);
 
@@ -388,7 +388,7 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
           iFromDate: fromDate,
           iToDate: toDate,
         },
-        true
+        true,
       )
         .then((eventsJson: IEventViewResultResponse[]) => {
           setEvents(eventsJson.reverse());
@@ -404,7 +404,7 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
           setLoading(false);
         });
     },
-    [clubModel]
+    [clubModel],
   );
 
   const updateEvent = useCallback(
@@ -427,7 +427,7 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
           setLoading(false);
         });
     },
-    [clubModel]
+    [clubModel],
   );
 
   const updateCompetitor = useCallback(
@@ -436,8 +436,8 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
       setCompetitorId(newCompetitorId);
 
       if (newYear && newCompetitorId) {
-        const fromDate = moment(newYear, 'YYYY').format('YYYY-MM-DD');
-        const toDate = moment(fromDate, 'YYYY-MM-DD').add(1, 'years').subtract(1, 'days').format('YYYY-MM-DD');
+        const fromDate = dayjs(`${newYear}`, 'YYYY').format('YYYY-MM-DD');
+        const toDate = dayjs(fromDate, 'YYYY-MM-DD').add(1, 'years').subtract(1, 'days').format('YYYY-MM-DD');
         const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
         if (!url) return;
 
@@ -447,7 +447,7 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
           url,
           { iType: 'COMPETITOR', iFromDate: fromDate, iToDate: toDate, iCompetitorId: newCompetitorId },
           true,
-          sessionModel.authorizationHeader
+          sessionModel.authorizationHeader,
         )
           .then((competitorJson: IIndividualViewResultResponse) => {
             setResult(competitorJson);
@@ -462,14 +462,14 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
           });
       }
     },
-    [clubModel, sessionModel]
+    [clubModel, sessionModel],
   );
 
   const getPrintObject = useCallback(
     (
       settings: IPrintSettings,
       printResult: IIndividualViewResultResponse | IClubViewResultResponse,
-      printCompetitorId?: number
+      printCompetitorId?: number,
     ): IPrintObject<IViewResult | IViewTeamResult> => {
       if (!printResult || !clubModel.raceClubs)
         return {
@@ -505,7 +505,7 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
           (indResult.teamResults
             ? indResult.teamResults.reduce(
                 (sum, obj) => (sum += obj.failedReason !== failedReasons.NotStarted ? 1 : 0),
-                0
+                0,
               )
             : 0);
       } else if (!isIndividual) {
@@ -539,7 +539,7 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
           (clubResult.teamResults
             ? clubResult.teamResults.reduce(
                 (sum, obj) => (sum += obj.failedReason !== failedReasons.NotStarted ? 1 : 0),
-                0
+                0,
               )
             : 0);
       }
@@ -573,68 +573,116 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
 
       return { header, inputs, tables };
     },
-    [t, clubModel, isIndividual, year]
+    [t, clubModel, isIndividual, year],
   );
 
   const onExcel = useCallback(
     async (settings: IPrintSettings): Promise<void> => {
       if (!year || !result || (isIndividual && competitorId == null)) return;
-      const fromDate = moment(year, 'YYYY').format('YYYY-MM-DD');
       const header = `${t('results.Date')};${t('results.Name')};${t('results.Club')};${t('results.Sport')};${t(
-        'results.EventClassification'
+        'results.EventClassification',
       )};${t('results.Class')};${t('results.Difficulty')};${t('results.LengthInMeter')};${t('results.Time')};${t(
-        'results.WinnerTime'
+        'results.WinnerTime',
       )};${t('results.SecondTime')};${t('results.Position')};${t('results.NofStartsInClass')};${t(
-        'results.MissingTime'
+        'results.MissingTime',
       )};${t('results.Ranking')};${t('results.RankingSpeedLeague')};${t('results.RankingTechnicalLeague')};${t(
-        'results.Points1000League'
+        'results.Points1000League',
       )};${t('results.PointsLeague')};${t('results.Award')};${t('results.RaceLightCondition')};${t(
-        'results.OriginalFee'
+        'results.OriginalFee',
       )};${t('results.LateFee')};${t('results.FeeToClub')};${t('results.ServiceFeeToClub')};${t(
-        'results.ServiceFeeDescription'
+        'results.ServiceFeeDescription',
       )};${t('results.TotalFeeToClub')};${t('results.Stage')};${t('results.DeltaPositions')};${t(
-        'results.DeltaTimeBehind'
+        'results.DeltaTimeBehind',
       )}`;
-      const rows = [
-        ...result.results.map(
-          (r) =>
-            `${r.raceDate};${r.name.replaceAll(';', '/')};${r.organiserName.replaceAll(';', '/')};${r.sportCode};${
-              clubModel.raceClubs?.eventClassifications.find(
-                (ec) =>
-                  ec.eventClassificationId ===
-                  (r.deviantEventClassificationId ? r.deviantEventClassificationId : r.eventClassificationId)
-              )?.description
-            };${r.className};${r.difficulty};${r.lengthInMeter};${r.competitorTime ?? ''};${r.winnerTime ?? ''};${
-              r.secondTime ?? ''
-            };${r.position ?? ''};${r.nofStartsInClass ?? ''};${r.missingTime ?? ''};${r.ranking ?? ''};${
-              r.speedRanking ?? ''
-            };${r.technicalRanking ?? ''};${r.points1000 ?? ''};${r.points ?? ''};${r.award ?? ''};${
-              raceLightConditionOptions(t).find((opt) => opt.code === r.raceLightCondition)?.description ?? ''
-            };${r.originalFee};${r.lateFee};${r.feeToClub};${r.serviceFeeToClub};${r.serviceFeeDescription ?? ''};${
-              r.feeToClub + r.serviceFeeToClub
-            };;;`
-        ),
-        ...result.teamResults.map(
-          (r) =>
-            `${r.raceDate};${r.name.replaceAll(';', '/')};${r.organiserName.replaceAll(';', '/')};${r.sportCode};${
-              clubModel.raceClubs?.eventClassifications.find(
-                (ec) =>
-                  ec.eventClassificationId ===
-                  (r.deviantEventClassificationId ? r.deviantEventClassificationId : r.eventClassificationId)
-              )?.description
-            };${r.className};${r.difficulty};${r.lengthInMeter};${r.competitorTime ?? ''};${r.winnerTime ?? ''};${
-              r.secondTime ?? ''
-            };${r.position ?? ''};${r.nofStartsInClass ?? ''};${r.missingTime ?? ''};${r.ranking ?? ''};${
-              r.speedRanking ?? ''
-            };${r.technicalRanking ?? ''};${r.points1000 ?? ''};;;${
-              raceLightConditionOptions(t).find(
-                (opt) => opt.code === (r.deviantRaceLightCondition ?? r.raceLightCondition)
-              )?.description ?? ''
-            };;;${r.feeToClub ?? ''};${r.serviceFeeToClub};${r.serviceFeeDescription ?? ''};${
-              (r.feeToClub ?? '') + r.serviceFeeToClub
-            };${r.stage ?? ''};${r.deltaPositions ?? ''};${r.deltaTimeBehind ?? ''}`
-        ),
-      ];
+      const rows = isIndividual
+        ? [
+            ...(result as IIndividualViewResultResponse).results.map(
+              (r) =>
+                `${r.raceDate};${r.name.replaceAll(';', '/')};${r.organiserName.replaceAll(';', '/')};${r.sportCode};${
+                  clubModel.raceClubs?.eventClassifications.find(
+                    (ec) =>
+                      ec.eventClassificationId ===
+                      (r.deviantEventClassificationId ? r.deviantEventClassificationId : r.eventClassificationId),
+                  )?.description
+                };${r.className};${r.difficulty};${r.lengthInMeter};${r.competitorTime ?? ''};${r.winnerTime ?? ''};${
+                  r.secondTime ?? ''
+                };${r.position ?? ''};${r.nofStartsInClass ?? ''};${r.missingTime ?? ''};${r.ranking ?? ''};${
+                  r.speedRanking ?? ''
+                };${r.technicalRanking ?? ''};${r.points1000 ?? ''};${r.points ?? ''};${r.award ?? ''};${
+                  raceLightConditionOptions(t).find((opt) => opt.code === r.raceLightCondition)?.description ?? ''
+                };${r.originalFee};${r.lateFee};${r.feeToClub};${r.serviceFeeToClub};${r.serviceFeeDescription ?? ''};${
+                  r.feeToClub + r.serviceFeeToClub
+                };;;`,
+            ),
+            ...(result as IIndividualViewResultResponse).teamResults.map(
+              (r) =>
+                `${r.raceDate};${r.name.replaceAll(';', '/')};${r.organiserName.replaceAll(';', '/')};${r.sportCode};${
+                  clubModel.raceClubs?.eventClassifications.find(
+                    (ec) =>
+                      ec.eventClassificationId ===
+                      (r.deviantEventClassificationId ? r.deviantEventClassificationId : r.eventClassificationId),
+                  )?.description
+                };${r.className};${r.difficulty};${r.lengthInMeter};${r.competitorTime ?? ''};${r.winnerTime ?? ''};${
+                  r.secondTime ?? ''
+                };${r.position ?? ''};${r.nofStartsInClass ?? ''};${r.missingTime ?? ''};${r.ranking ?? ''};${
+                  r.speedRanking ?? ''
+                };${r.technicalRanking ?? ''};${r.points1000 ?? ''};;;${
+                  raceLightConditionOptions(t).find(
+                    (opt) => opt.code === (r.deviantRaceLightCondition ?? r.raceLightCondition),
+                  )?.description ?? ''
+                };;;${r.feeToClub ?? ''};${r.serviceFeeToClub};${r.serviceFeeDescription ?? ''};${
+                  (r.feeToClub ?? '') + r.serviceFeeToClub
+                };${r.stage ?? ''};${r.deltaPositions ?? ''};${r.deltaTimeBehind ?? ''}`,
+            ),
+          ]
+        : [
+            ...(result as IClubViewResultResponse).results.map(
+              (r) =>
+                `${(result as IClubViewResultResponse).raceDate};${(result as IClubViewResultResponse).name?.replaceAll(';', '/')};${(result as IClubViewResultResponse).organiserName?.replaceAll(';', '/')};${(result as IClubViewResultResponse).sportCode};${
+                  clubModel.raceClubs?.eventClassifications.find(
+                    (ec) =>
+                      ec.eventClassificationId ===
+                      (r.deviantEventClassificationId
+                        ? r.deviantEventClassificationId
+                        : (result as IClubViewResultResponse).eventClassificationId),
+                  )?.description
+                };${r.className};${r.difficulty};${r.lengthInMeter};${r.competitorTime ?? ''};${r.winnerTime ?? ''};${
+                  r.secondTime ?? ''
+                };${r.position ?? ''};${r.nofStartsInClass ?? ''};${r.missingTime ?? ''};${r.ranking ?? ''};${
+                  r.speedRanking ?? ''
+                };${r.technicalRanking ?? ''};${r.points1000 ?? ''};${r.points ?? ''};${r.award ?? ''};${
+                  raceLightConditionOptions(t).find(
+                    (opt) => opt.code === (result as IClubViewResultResponse).raceLightCondition,
+                  )?.description ?? ''
+                };${r.originalFee};${r.lateFee};${r.feeToClub};${r.serviceFeeToClub};${r.serviceFeeDescription ?? ''};${
+                  r.feeToClub + r.serviceFeeToClub
+                };;;`,
+            ),
+            ...(result as IClubViewResultResponse).teamResults.map(
+              (r) =>
+                `${(result as IClubViewResultResponse).raceDate};${(result as IClubViewResultResponse).name?.replaceAll(';', '/')};${(result as IClubViewResultResponse).organiserName?.replaceAll(';', '/')};${(result as IClubViewResultResponse).sportCode};${
+                  clubModel.raceClubs?.eventClassifications.find(
+                    (ec) =>
+                      ec.eventClassificationId ===
+                      (r.deviantEventClassificationId
+                        ? r.deviantEventClassificationId
+                        : (result as IClubViewResultResponse).eventClassificationId),
+                  )?.description
+                };${r.className};${r.difficulty};${r.lengthInMeter};${r.competitorTime ?? ''};${r.winnerTime ?? ''};${
+                  r.secondTime ?? ''
+                };${r.position ?? ''};${r.nofStartsInClass ?? ''};${r.missingTime ?? ''};${r.ranking ?? ''};${
+                  r.speedRanking ?? ''
+                };${r.technicalRanking ?? ''};${r.points1000 ?? ''};;;${
+                  raceLightConditionOptions(t).find(
+                    (opt) =>
+                      opt.code ===
+                      (r.deviantRaceLightCondition ?? (result as IClubViewResultResponse).raceLightCondition),
+                  )?.description ?? ''
+                };;;${r.feeToClub ?? ''};${r.serviceFeeToClub};${r.serviceFeeDescription ?? ''};${
+                  (r.feeToClub ?? '') + r.serviceFeeToClub
+                };${r.stage ?? ''};${r.deltaPositions ?? ''};${r.deltaTimeBehind ?? ''}`,
+            ),
+          ];
       const csvBlob = new Blob([`${header}\r\n${rows.join('\r\n')}`], { type: 'text/plain' });
       const link = document.createElement('a');
       link.download = isIndividual
@@ -647,7 +695,7 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
       link.href = URL.createObjectURL(csvBlob);
       link.click();
     },
-    [year, isIndividual, result, clubModel, competitorId, result]
+    [year, isIndividual, result, clubModel, competitorId, result],
   );
 
   const onPrint = useCallback(
@@ -673,7 +721,7 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
       setSpinnerTitle(null);
       setSpinnerText(null);
     },
-    [clubModel, getPrintObject, result, competitorId]
+    [clubModel, getPrintObject, result, competitorId],
   );
 
   const onPrintAll = useCallback(
@@ -691,8 +739,8 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
 
       try {
         if (isIndividual) {
-          const fromDate = moment(year, 'YYYY').format('YYYY-MM-DD');
-          const toDate = moment(fromDate, 'YYYY-MM-DD').add(1, 'years').subtract(1, 'days').format('YYYY-MM-DD');
+          const fromDate = dayjs(`${year}`, 'YYYY').format('YYYY-MM-DD');
+          const toDate = dayjs(fromDate, 'YYYY-MM-DD').add(1, 'years').subtract(1, 'days').format('YYYY-MM-DD');
           competitorsOptions = clubModel.raceClubs.selectedClub?.competitorsOptions ?? [];
           setTotal(competitorsOptions?.length ?? 1);
 
@@ -703,8 +751,8 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
                 url,
                 { iType: 'COMPETITOR', iFromDate: fromDate, iToDate: toDate, iCompetitorId: option.code },
                 true,
-                sessionModel.authorizationHeader
-              )) as IIndividualViewResultResponse
+                sessionModel.authorizationHeader,
+              )) as IIndividualViewResultResponse,
             );
             await new Promise((resolve) => setTimeout(resolve, Math.floor(Math.random() * 200)));
             if (abortLoading) throw new Error();
@@ -720,8 +768,8 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
                 url,
                 { iType: 'EVENT', iEventId: event.eventId },
                 true,
-                sessionModel.authorizationHeader
-              )) as IClubViewResultResponse
+                sessionModel.authorizationHeader,
+              )) as IClubViewResultResponse,
             );
             await new Promise((resolve) => setTimeout(resolve, Math.floor(Math.random() * 200)));
             if (abortLoading) throw new Error();
@@ -750,7 +798,7 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
             clubModel.logo.url,
             `${t(isIndividual ? 'results.Individual' : 'results.Latest')} ${year}`,
             printObjects,
-            settings.pdf
+            settings.pdf,
           );
         } else {
           await getZip(
@@ -758,7 +806,7 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
             clubModel.logo.url,
             `${t(isIndividual ? 'results.Individual' : 'results.Latest')} ${year}`,
             printObjects,
-            settings.pdf
+            settings.pdf,
           );
         }
       } catch (e: any) {
@@ -770,7 +818,7 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
       setSpinnerTitle(null);
       setSpinnerText(null);
     },
-    [t, clubModel, sessionModel, isIndividual, year, events, getPrintObject]
+    [t, clubModel, sessionModel, isIndividual, year, events, getPrintObject],
   );
 
   const Spinner = (
@@ -817,7 +865,7 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
                 style={{ maxWidth: 600, width: '100%' }}
                 dropdownMatchSelectWidth={false}
                 options={
-                  loading || !clubModel.raceClubs ? [] : clubModel.raceClubs.selectedClub?.competitorsOptions ?? []
+                  loading || !clubModel.raceClubs ? [] : (clubModel.raceClubs.selectedClub?.competitorsOptions ?? [])
                 }
                 showSearch
                 optionFilterProp="children"
@@ -882,13 +930,13 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
               {(result.results
                 ? (result.results as { feeToClub: number; serviceFeeToClub: number }[]).reduce(
                     (sum, obj) => (sum += obj.feeToClub + obj.serviceFeeToClub),
-                    0
+                    0,
                   )
                 : 0) +
                 (result.teamResults
                   ? (result.teamResults as { serviceFeeToClub: number }[]).reduce(
                       (sum, obj) => (sum += obj.serviceFeeToClub),
-                      0
+                      0,
                     )
                   : 0)}
             </td>
@@ -930,7 +978,7 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
             <td>
               {
                 clubModel.raceClubs?.eventClassificationOptions.find(
-                  (opt) => opt.code === clubResult.eventClassificationId
+                  (opt) => opt.code === clubResult.eventClassificationId,
                 )?.description
               }
             </td>
@@ -947,7 +995,7 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
         <StyledTable
           columns={
             [...columns(t, clubModel, isIndividual), ...resultsColumns(t, clubModel)].filter((col) =>
-              columnsSetting.some((s) => col.key === s.key && s.selected)
+              columnsSetting.some((s) => col.key === s.key && s.selected),
             ) as IPrintTableColumn<any>[]
           }
           dataSource={result.results}
@@ -962,7 +1010,7 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
         <StyledTable
           columns={
             [...columns(t, clubModel, isIndividual), ...teamResultsColumns(t, clubModel)].filter((col) =>
-              columnsSetting.some((s) => col.key === s.key && s.selected)
+              columnsSetting.some((s) => col.key === s.key && s.selected),
             ) as IPrintTableColumn<any>[]
           }
           dataSource={result.teamResults}

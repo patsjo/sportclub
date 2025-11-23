@@ -1,12 +1,12 @@
 import { Button, message, Spin, Tabs } from 'antd';
 import { observer } from 'mobx-react';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
-import { useMobxStore } from 'utils/mobxStore';
-import { ICompetitor } from 'utils/responseCompetitorInterfaces';
-import { GenderType } from 'utils/resultConstants';
+import { useMobxStore } from '../../utils/mobxStore';
+import { ICompetitor } from '../../utils/responseCompetitorInterfaces';
+import { GenderType } from '../../utils/resultConstants';
 import { PostJsonData } from '../../utils/api';
 import InfiniteScroll from '../../utils/infinityScroll';
 import { SpinnerDiv } from '../styled/styled';
@@ -49,9 +49,9 @@ const AllCompetitorsPresentation = observer(() => {
         return;
       }
 
-      const currentYear = parseInt(moment().format('YYYY'));
-      const fromDate = moment().add(1, 'days').subtract(1, 'years').format('YYYY-MM-DD');
-      const birthDate = moment(currentYear, 'YYYY').subtract(14, 'years').subtract(1, 'days').format('YYYY-MM-DD');
+      const currentYear = dayjs().format('YYYY');
+      const fromDate = dayjs().add(1, 'days').subtract(1, 'years').format('YYYY-MM-DD');
+      const birthDate = dayjs(currentYear, 'YYYY').subtract(14, 'years').subtract(1, 'days').format('YYYY-MM-DD');
       const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
       if (!url) {
         resolve(false);
@@ -66,7 +66,7 @@ const AllCompetitorsPresentation = observer(() => {
           iBirthDate: birthDate,
         },
         true,
-        sessionModel.authorizationHeader
+        sessionModel.authorizationHeader,
       )
         .then((competitors: ICompetitor[]) => {
           const mc = competitors.filter((c) => c.gender === 'MALE');

@@ -1,10 +1,10 @@
 import { Button, message, Modal, Popconfirm, Switch } from 'antd';
 import { observer } from 'mobx-react';
-import { IRaceCompetitor } from 'models/resultModel';
+import { IRaceCompetitor } from '../../models/resultModel';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
-import { useMobxStore } from 'utils/mobxStore';
+import { useMobxStore } from '../../utils/mobxStore';
 import { PostJsonData } from '../../utils/api';
 
 const StyledModalContent = styled.div``;

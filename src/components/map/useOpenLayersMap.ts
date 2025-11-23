@@ -1,4 +1,4 @@
-import { IAnyLayer, IMapGroupLayer } from 'models/mobxClubModel';
+import { IAnyLayer, IMapGroupLayer } from '../../models/mobxClubModel';
 import { defaults as defaultControls } from 'ol/control';
 import { Group as GroupLayer, Tile as TileLayer } from 'ol/layer';
 import BaseLayer from 'ol/layer/Base';
@@ -7,7 +7,7 @@ import { fromLonLat } from 'ol/proj';
 import { OSM, XYZ } from 'ol/source';
 import View from 'ol/View';
 import { useEffect, useState } from 'react';
-import { useMobxStore } from 'utils/mobxStore';
+import { useMobxStore } from '../../utils/mobxStore';
 const openStreetMapLayerId = 'OpenStreetMapLayer';
 
 export const mapProjection = 'EPSG:3857';

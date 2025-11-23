@@ -1,5 +1,5 @@
-import { IDateAndOptionalTime, IResultListType } from 'models/iof.xsd-3.0';
-import moment from 'moment';
+import { IDateAndOptionalTime, IResultListType } from '../models/iof.xsd-3.0';
+import dayjs from 'dayjs';
 
 const arrayAttributesNodes = [
   'Address',
@@ -167,17 +167,17 @@ const correctPhpResponseTypes = (value: any, node: string): any => {
     else if (value.length > 0 && !isNaN(value)) return parseInt(value);
     else return undefined;
   } else if (valuePrototype === '[object String]' && datetimeAttributesNodes.some((n) => node.endsWith(`/${n}`))) {
-    return value ? moment(value) : undefined;
+    return value ? dayjs(value) : undefined;
   } else if (
     valuePrototype === '[object Object]' &&
     datetimeObjectAttributesNodes.some((n) => node.endsWith(`/${n}`))
   ) {
     const datetimeObject = value as IDateAndOptionalTime;
     if (datetimeObject.Date && datetimeObject.Time) {
-      const momentObject = moment(`${datetimeObject.Date}T${datetimeObject.Time}`).local();
+      const dayjsObject = dayjs(`${datetimeObject.Date}T${datetimeObject.Time}`).local();
 
-      datetimeObject.Date = momentObject.format('YYYY-MM-DD');
-      datetimeObject.Time = momentObject.format('HH:mm');
+      datetimeObject.Date = dayjsObject.format('YYYY-MM-DD');
+      datetimeObject.Time = dayjsObject.format('HH:mm');
     }
   }
 

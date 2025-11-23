@@ -30,7 +30,9 @@ const CustomStackedBarChart = observer(
           <Legend />
           {valueKeys
             .map((valueKey, idx) => ({ valueKey, idx }))
-            .filter(({ valueKey }) => data.some((d) => d[valueKey] > 0))
+            .filter(({ valueKey }) =>
+              data.some((d) => typeof d[valueKey] === 'number' && !isNaN(d[valueKey]) && d[valueKey] > 0),
+            )
             .map(({ valueKey, idx }) => (
               <Bar
                 type="monotone"
@@ -45,6 +47,6 @@ const CustomStackedBarChart = observer(
         </BarChart>
       </Col>
     );
-  }
+  },
 );
 export default CustomStackedBarChart;

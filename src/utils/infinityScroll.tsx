@@ -1,7 +1,34 @@
 import { Spin } from 'antd';
-import { SpinnerDiv } from 'components/styled/styled';
+import { SpinnerDiv } from '../components/styled/styled';
 import { observer } from 'mobx-react';
 import React, { useCallback, useRef, useState } from 'react';
+
+const getParentElement = (el: HTMLElement | null): HTMLElement | null => {
+  return el && el.parentElement;
+};
+
+const mousewheelListener = (e: WheelEvent) => {
+  // Prevents Chrome hangups
+  // See: https://stackoverflow.com/questions/47524205/random-high-content-download-time-in-chrome/47684257#47684257
+  if (e.deltaY === 1) {
+    e.preventDefault();
+  }
+};
+
+const calculateTopPosition = (el: HTMLElement | null): number => {
+  if (!el) {
+    return 0;
+  }
+  return el.offsetTop + calculateTopPosition(el.offsetParent as HTMLElement);
+};
+
+const calculateOffset = (el: HTMLElement | null, scrollTop: number): number => {
+  if (!el) {
+    return -1;
+  }
+
+  return calculateTopPosition(el) + (el.offsetHeight - scrollTop - window.innerHeight);
+};
 
 interface IInfiniteScrollProps {
   children?: React.ReactNode;
@@ -11,120 +38,95 @@ interface IInfiniteScrollProps {
   useWindow?: boolean;
   ref?: React.RefObject<HTMLDivElement>;
 }
+
 const InfiniteScroll = observer(
   ({ children, loadMore, threshold = 250, useCapture, useWindow = true, ref }: IInfiniteScrollProps) => {
     const [hasMore, setHasMore] = useState(true);
-    const [loading, setLoading] = useState(false);
+    const loadingRef = useRef(false);
     const divScrollRef = useRef<HTMLDivElement>(null);
     const scrollComponent: React.RefObject<HTMLDivElement> = ref || divScrollRef;
 
-    const eventListenerOptions = (): EventListenerOptions => ({
-      capture: useCapture,
-    });
+    const eventListenerOptions = useCallback(
+      (): EventListenerOptions => ({
+        capture: useCapture,
+      }),
+      [useCapture],
+    );
 
-    const getParentElement = (el: HTMLElement | null): HTMLElement | null => {
-      return el && el.parentElement;
-    };
+    const scrollListener = useCallback(async () => {
+      try {
+        if (loadingRef.current) return true;
+        loadingRef.current = true;
+        const el = scrollComponent.current;
+        let parentElement = getParentElement(el);
+        let offset = 0;
+        let moreToLoad = false;
+        if (useWindow) {
+          const doc = document.documentElement || document.body.parentNode || document.body;
+          const scrollTop = window.pageYOffset !== undefined ? window.pageYOffset : doc.scrollTop;
+          offset = calculateOffset(el, scrollTop);
+        } else if (el && parentElement) {
+          offset = el.scrollHeight - parentElement.scrollTop - parentElement.clientHeight;
+        }
 
-    const detachScrollListener = useCallback(() => {
-      const options = eventListenerOptions();
-      const scrollEl: EventTarget | null = useWindow ? window : getParentElement(scrollComponent.current);
+        // Here we make sure the element is visible as well as checking the offset
+        // Call loadMore after detachScrollListener to allow for non-async loadMore functions
+        if (hasMore && offset < threshold && el && parentElement && el.offsetParent !== null) {
+          //detachScrollListener();
+          const beforeScrollHeight = parentElement.scrollHeight;
+          const beforeScrollTop = parentElement.scrollTop;
+          moreToLoad = await loadMore();
+          setHasMore(moreToLoad);
+          parentElement = getParentElement(scrollComponent.current);
+          if (parentElement)
+            parentElement.scrollTop = parentElement.scrollHeight - beforeScrollHeight + beforeScrollTop;
+        }
+        loadingRef.current = false;
+        return moreToLoad;
+      } catch (error) {
+        console.error(error);
+        setHasMore(false);
+        loadingRef.current = false;
+        return false;
+      }
+    }, [loadMore, hasMore]);
 
-      scrollEl?.removeEventListener('scroll', scrollListener, options);
-      scrollEl?.removeEventListener('resize', scrollListener, options);
-      scrollEl?.removeEventListener('wheel', (e: Event) => mousewheelListener(e as WheelEvent), options);
-    }, []);
-
-    const attachScrollListener = useCallback(() => {
+    React.useEffect(() => {
       const options = eventListenerOptions();
       const scrollEl: EventTarget | null = useWindow ? window : getParentElement(scrollComponent.current);
 
       scrollEl?.addEventListener('wheel', (e: Event) => mousewheelListener(e as WheelEvent), options);
       scrollEl?.addEventListener('scroll', scrollListener, options);
       scrollEl?.addEventListener('resize', scrollListener, options);
-    }, []);
 
-    const mousewheelListener = (e: WheelEvent) => {
-      // Prevents Chrome hangups
-      // See: https://stackoverflow.com/questions/47524205/random-high-content-download-time-in-chrome/47684257#47684257
-      if (e.deltaY === 1) {
-        e.preventDefault();
-      }
-    };
+      return () => {
+        const options = eventListenerOptions();
+        const scrollEl: EventTarget | null = useWindow ? window : getParentElement(scrollComponent.current);
 
-    const scrollListener = useCallback(() => {
-      if (loading) return;
-      const el = scrollComponent.current;
-      const parentElement = getParentElement(el);
-      let offset = 0;
-      if (useWindow) {
-        const doc = document.documentElement || document.body.parentNode || document.body;
-        const scrollTop = window.pageYOffset !== undefined ? window.pageYOffset : doc.scrollTop;
-        offset = calculateOffset(el, scrollTop);
-      } else if (el && parentElement) {
-        offset = el.scrollHeight - parentElement.scrollTop - parentElement.clientHeight;
-      }
-
-      // Here we make sure the element is visible as well as checking the offset
-      // Call loadMore after detachScrollListener to allow for non-async loadMore functions
-      if (hasMore && offset < threshold && el && parentElement && el.offsetParent !== null) {
-        setLoading(true);
-        detachScrollListener();
-        const beforeScrollHeight = parentElement.scrollHeight;
-        const beforeScrollTop = parentElement.scrollTop;
-        loadMore()
-          .then((more) => {
-            const parentElement = getParentElement(scrollComponent.current);
-            parentElement &&
-              (parentElement.scrollTop = parentElement.scrollHeight - beforeScrollHeight + beforeScrollTop);
-
-            more && attachScrollListener();
-            setHasMore(more);
-            setLoading(false);
-          })
-          .catch((error) => {
-            console.error(error);
-            setHasMore(false);
-            setLoading(false);
-          });
-      }
-    }, [hasMore, loading, loadMore, detachScrollListener, attachScrollListener]);
-
-    const calculateOffset = (el: HTMLElement | null, scrollTop: number): number => {
-      if (!el) {
-        return -1;
-      }
-
-      return calculateTopPosition(el) + (el.offsetHeight - scrollTop - window.innerHeight);
-    };
-
-    const calculateTopPosition = (el: HTMLElement | null): number => {
-      if (!el) {
-        return 0;
-      }
-      return el.offsetTop + calculateTopPosition(el.offsetParent as HTMLElement);
-    };
+        scrollEl?.removeEventListener('scroll', scrollListener, options);
+        scrollEl?.removeEventListener('resize', scrollListener, options);
+        scrollEl?.removeEventListener('wheel', (e: Event) => mousewheelListener(e as WheelEvent), options);
+      };
+    }, [scrollListener, eventListenerOptions]);
 
     React.useEffect(() => {
-      attachScrollListener();
-
-      return () => detachScrollListener();
-    }, []);
-
-    React.useEffect(() => {
-      const parentHeight: number | undefined = useWindow
-        ? window.innerHeight
-        : getParentElement(scrollComponent.current)?.clientHeight;
-      if (
-        hasMore &&
-        !loading &&
-        parentHeight != null &&
-        scrollComponent.current &&
-        parentHeight + threshold > scrollComponent.current.scrollHeight
-      ) {
-        scrollListener();
-      }
-    }, [hasMore, loading, scrollListener, scrollComponent.current, threshold]);
+      const initialLoad = async () => {
+        const parentHeight: number | undefined = useWindow
+          ? window.innerHeight
+          : getParentElement(scrollComponent.current)?.clientHeight;
+        let moreToLoad = true;
+        while (
+          moreToLoad &&
+          parentHeight != null &&
+          scrollComponent.current &&
+          parentHeight + threshold > scrollComponent.current.scrollHeight
+        ) {
+          if (!loadingRef.current) moreToLoad = await scrollListener();
+          else await new Promise((resolve) => setTimeout(() => resolve(true), 200));
+        }
+      };
+      initialLoad();
+    }, [scrollListener, scrollComponent.current, threshold]);
 
     return (
       <div ref={divScrollRef}>
@@ -134,6 +136,6 @@ const InfiniteScroll = observer(
         </SpinnerDiv>
       </div>
     );
-  }
+  },
 );
 export default InfiniteScroll;

@@ -1,10 +1,10 @@
 import { Col, DatePicker, Divider, Form, Input, Row, Select } from 'antd';
-import { IRaceCompetitor } from 'models/resultModel';
-import { PickRequired } from 'models/typescriptPartial';
-import moment from 'moment';
+import { IRaceCompetitor } from '../../models/resultModel';
+import { PickRequired } from '../../models/typescriptPartial';
+import dayjs from 'dayjs';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { GenderType, genderOptions } from 'utils/resultConstants';
+import { GenderType, genderOptions } from '../../utils/resultConstants';
 import {
   FormSelect,
   IOption,
@@ -43,9 +43,9 @@ const EditCompetitor = ({ competitor, familyOptions, onValidate }: IEditUserProp
       layout="vertical"
       initialValues={{
         ...competitor,
-        birthDay: competitor.birthDay ? moment(competitor.birthDay, dateFormat) : null,
-        startDate: competitor.startDate ? moment(competitor.startDate, dateFormat) : null,
-        endDate: competitor.endDate ? moment(competitor.endDate, dateFormat) : null,
+        birthDay: competitor.birthDay ? dayjs(competitor.birthDay, dateFormat) : null,
+        startDate: competitor.startDate ? dayjs(competitor.startDate, dateFormat) : null,
+        endDate: competitor.endDate ? dayjs(competitor.endDate, dateFormat) : null,
       }}
       onValuesChange={() => hasErrors(formRef.current).then((notValid) => onValidate(!notValid))}
     >
@@ -159,7 +159,7 @@ const EditCompetitor = ({ competitor, familyOptions, onValidate }: IEditUserProp
                 </>
               )}
               options={[{ code: -1, description: newFamily }, ...familyOptions].filter(
-                (opt) => opt.description && opt.description.length
+                (opt) => opt.description && opt.description.length,
               )}
               onChange={(value: number) => {
                 competitor.familyId = value;

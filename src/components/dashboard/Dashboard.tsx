@@ -1,10 +1,10 @@
-import { mapProjection } from 'components/map/useOpenLayersMap';
+import { mapProjection } from '../map/useOpenLayersMap';
 import { observer } from 'mobx-react';
 import Feature from 'ol/Feature';
 import { Point } from 'ol/geom';
 import { toLonLat } from 'ol/proj';
 import styled from 'styled-components';
-import { useMobxStore } from 'utils/mobxStore';
+import { useMobxStore } from '../../utils/mobxStore';
 import InfiniteScroll from '../../utils/infinityScroll';
 import WeeklyCalendar from '../calendar/weekly/WeeklyCalendar';
 import useEventorEntries from '../eventor/useEventorEntries';
@@ -33,11 +33,21 @@ const Dashboard = observer(() => {
       <Columns key="dashboard#columns#home">
         {newsItems.slice(0, 2)}
         {bannerItems}
-        <ChildContainer column={-2} key="dashboard#weeklyCalendarContainer" marginBottom={12} preferredHeight={360}>
+        <ChildContainer
+          preferredColumn="secondRightFixed"
+          key="dashboard#weeklyCalendarContainer"
+          paddingBottom={24}
+          preferredHeight={360}
+        >
           <WeeklyCalendar key="dashboard#weeklyCalendar" />
         </ChildContainer>
         {clubModel.map?.center ? (
-          <ChildContainer column={-1} key="dashboard#homeMapContainer" marginBottom={12} preferredHeight={400}>
+          <ChildContainer
+            preferredColumn="rightFixed"
+            key="dashboard#homeMapContainer"
+            paddingBottom={24}
+            preferredHeight={400}
+          >
             <OSMOrienteeringMap
               key="dashboard#homeMap"
               height="400px"
@@ -50,7 +60,7 @@ const Dashboard = observer(() => {
                 const latitude = coordinates[1];
                 const win = window.open(
                   `https://maps.google.com/maps?saddr=&daddr=N${latitude},E${longitude}`,
-                  '_blank'
+                  '_blank',
                 );
                 if (win) {
                   win.focus();
@@ -61,12 +71,17 @@ const Dashboard = observer(() => {
         ) : null}
         {newsItems.slice(2, 5)}
         {clubModel.facebookUrl ? (
-          <ChildContainer column={-2} key="dashboard#facebookTimelineContainer" marginBottom={12} preferredHeight={400}>
+          <ChildContainer
+            preferredColumn="secondRightFixed"
+            key="dashboard#facebookTimelineContainer"
+            paddingBottom={24}
+            preferredHeight={400}
+          >
             <ShowFacebookTimeline key="dashboard#facebookTimeline" />
           </ChildContainer>
         ) : null}
         {showSponsors ? (
-          <ChildContainer key="dashboard#sponsorsSlideshowContainer" column={-1} preferredHeight={130}>
+          <ChildContainer key="dashboard#sponsorsSlideshowContainer" preferredColumn="rightFixed" preferredHeight={130}>
             <SponsorsSlideshow key="dashboard#sponsorsSlideshow" />
           </ChildContainer>
         ) : null}

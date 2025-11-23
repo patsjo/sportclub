@@ -1,18 +1,18 @@
 import { Card, message } from 'antd';
 import { observer } from 'mobx-react';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
-import { useMobxStore } from 'utils/mobxStore';
-import { ICompetitor } from 'utils/responseCompetitorInterfaces';
-import { IViewResult, IViewTeamResult } from 'utils/responseInterfaces';
-import { GenderType } from 'utils/resultConstants';
+import { useMobxStore } from '../../utils/mobxStore';
+import { ICompetitor } from '../../utils/responseCompetitorInterfaces';
+import { IViewResult, IViewResultRaceInfo, IViewTeamResult } from '../../utils/responseInterfaces';
+import { GenderType } from '../../utils/resultConstants';
 import { PostJsonData } from '../../utils/api';
 import CompetitorTitle from './CompetitorTitle';
 import FiveStars, { ContainerDiv, InfoDiv, LabelDiv, Loader, StarsDiv } from './FiveStars';
 
-type IViewResultCombined = IViewResult | IViewTeamResult;
+type IViewResultCombined = (IViewResult & IViewResultRaceInfo) | (IViewTeamResult & IViewResultRaceInfo);
 type IAllViewResult = IViewResultCombined & {
   levelRanking: number;
   deviantRaceLightCondition?: string | null;
@@ -215,8 +215,8 @@ const getStarsNight = (allResults: IAllViewResult[]): TypeStars => {
   const topNightRanking = allResults
     .filter((r) =>
       ['Night', 'Dusk', 'Dawn'].includes(
-        r.deviantRaceLightCondition ? r.deviantRaceLightCondition : r.raceLightCondition
-      )
+        r.deviantRaceLightCondition ? r.deviantRaceLightCondition : r.raceLightCondition,
+      ),
     )
     .sort((a, b) => a.ranking! - b.ranking!)
     .slice(0, 2);
@@ -234,9 +234,9 @@ const getStarsNight = (allResults: IAllViewResult[]): TypeStars => {
 const getStarsShape = (allResults: IAllViewResult[]): TypeStars => {
   if (!Array.isArray(allResults) || allResults.length < 5) return -1;
 
-  const breakDate1 = moment().subtract(1, 'months').format('YYYY-MM-DD');
-  const breakDate2 = moment().subtract(2, 'months').format('YYYY-MM-DD');
-  const breakDate3 = moment().subtract(3, 'months').format('YYYY-MM-DD');
+  const breakDate1 = dayjs().subtract(1, 'months').format('YYYY-MM-DD');
+  const breakDate2 = dayjs().subtract(2, 'months').format('YYYY-MM-DD');
+  const breakDate3 = dayjs().subtract(3, 'months').format('YYYY-MM-DD');
   const recent1Ranking = allResults
     .filter((r) => r.raceDate >= breakDate1)
     .sort((a, b) => a.ranking! - b.ranking!)
@@ -325,7 +325,7 @@ const CompetitorPresentation = observer(({ competitor, ranking }: ICompetitorPre
   const [favoriteDistance, setFavoriteDistance] = useState<number | undefined>();
 
   useEffect(() => {
-    const fromDate = moment().add(1, 'days').subtract(2, 'years').format('YYYY-MM-DD');
+    const fromDate = dayjs().add(1, 'days').subtract(2, 'years').format('YYYY-MM-DD');
     const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
     if (!url) return;
 
@@ -337,32 +337,37 @@ const CompetitorPresentation = observer(({ competitor, ranking }: ICompetitorPre
         iCompetitorId: competitor.competitorId,
       },
       true,
-      sessionModel.authorizationHeader
+      sessionModel.authorizationHeader,
     )
-      .then((c: { results: IViewResult[]; teamResults: IViewTeamResult[] }) => {
-        const results = c.results;
-        const teamResults = c.teamResults;
-        const allResults = [...results, ...teamResults]
-          .map(
-            (r): IAllViewResult => ({
-              ...r,
-              levelRanking: ['A', 'B', 'C', 'D'].includes(r.eventClassificationId)
-                ? 0
-                : ['E', 'F'].includes(r.eventClassificationId)
-                ? 10
-                : 20,
-            })
-          )
-          .filter((r) => r.ranking != null);
-        setStarsImportant(getStarsImportant(allResults));
-        setStarsStability(getStarsStability(allResults));
-        setStarsSpeed(getStarsSpeed(allResults, competitor.gender));
-        setStarsTechnical(getStarsTechnical(allResults, competitor.gender));
-        setStarsRelay(getStarsRelay(results, teamResults));
-        setStarsNight(getStarsNight(allResults));
-        setStarsShape(getStarsShape(allResults));
-        setFavoriteDistance(getFavoriteDistance(allResults));
-      })
+      .then(
+        (c: {
+          results: (IViewResult & IViewResultRaceInfo)[];
+          teamResults: (IViewTeamResult & IViewResultRaceInfo)[];
+        }) => {
+          const results = c.results;
+          const teamResults = c.teamResults;
+          const allResults = [...results, ...teamResults]
+            .map(
+              (r): IAllViewResult => ({
+                ...r,
+                levelRanking: ['A', 'B', 'C', 'D'].includes(r.eventClassificationId)
+                  ? 0
+                  : ['E', 'F'].includes(r.eventClassificationId)
+                    ? 10
+                    : 20,
+              }),
+            )
+            .filter((r) => r.ranking != null);
+          setStarsImportant(getStarsImportant(allResults));
+          setStarsStability(getStarsStability(allResults));
+          setStarsSpeed(getStarsSpeed(allResults, competitor.gender));
+          setStarsTechnical(getStarsTechnical(allResults, competitor.gender));
+          setStarsRelay(getStarsRelay(results, teamResults));
+          setStarsNight(getStarsNight(allResults));
+          setStarsShape(getStarsShape(allResults));
+          setFavoriteDistance(getFavoriteDistance(allResults));
+        },
+      )
       .catch((e) => {
         if (e && e.message) {
           message.error(e.message);

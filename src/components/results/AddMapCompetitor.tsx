@@ -1,5 +1,5 @@
 import { DatePicker, Form, Input, Tabs } from 'antd';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import React, { useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { dateFormat, errorRequiredField, FormSelect, INumberOption } from '../../utils/formHelper';
@@ -54,11 +54,11 @@ const AddMapCompetitor = ({
             !!iGender &&
             !!iStartDate &&
             iFirstName.length > 0 &&
-            iLastName.length > 0
+            iLastName.length > 0,
         );
       }
     },
-    [addLinkCompetitor, onValidate]
+    [addLinkCompetitor, onValidate],
   );
 
   const onThisTabChange = useCallback(
@@ -66,7 +66,7 @@ const AddMapCompetitor = ({
       onTabChange(key);
       validate(key);
     },
-    [onTabChange, validate]
+    [onTabChange, validate],
   );
 
   useEffect(() => {
@@ -86,11 +86,11 @@ const AddMapCompetitor = ({
         iLastName: addLinkCompetitor.newCompetitor.iLastName,
         iBirthDay: !addLinkCompetitor.newCompetitor.iBirthDay
           ? null
-          : moment(addLinkCompetitor.newCompetitor.iBirthDay, dateFormat),
+          : dayjs(addLinkCompetitor.newCompetitor.iBirthDay, dateFormat),
         iGender: addLinkCompetitor.newCompetitor.iGender,
         iStartDate: !addLinkCompetitor.newCompetitor.iStartDate
           ? null
-          : moment(addLinkCompetitor.newCompetitor.iStartDate, dateFormat),
+          : dayjs(addLinkCompetitor.newCompetitor.iStartDate, dateFormat),
       }}
     >
       <Tabs defaultActiveKey={defaultActiveKey} onChange={onThisTabChange}>
@@ -140,7 +140,7 @@ const AddMapCompetitor = ({
                     !!addLinkCompetitor.newCompetitor.iGender &&
                     !!addLinkCompetitor.newCompetitor.iStartDate &&
                     addLinkCompetitor.newCompetitor.iFirstName.length > 0 &&
-                    addLinkCompetitor.newCompetitor.iLastName.length > 0
+                    addLinkCompetitor.newCompetitor.iLastName.length > 0,
                 );
               }}
             />
@@ -165,7 +165,7 @@ const AddMapCompetitor = ({
                     !!addLinkCompetitor.newCompetitor.iGender &&
                     !!addLinkCompetitor.newCompetitor.iStartDate &&
                     addLinkCompetitor.newCompetitor.iFirstName.length > 0 &&
-                    addLinkCompetitor.newCompetitor.iLastName.length > 0
+                    addLinkCompetitor.newCompetitor.iLastName.length > 0,
                 );
               }}
             />
@@ -192,7 +192,7 @@ const AddMapCompetitor = ({
                     !!addLinkCompetitor.newCompetitor.iGender &&
                     !!addLinkCompetitor.newCompetitor.iStartDate &&
                     addLinkCompetitor.newCompetitor.iFirstName.length > 0 &&
-                    addLinkCompetitor.newCompetitor.iLastName.length > 0
+                    addLinkCompetitor.newCompetitor.iLastName.length > 0,
                 );
               }}
             />
@@ -220,7 +220,7 @@ const AddMapCompetitor = ({
                     !!addLinkCompetitor.newCompetitor.iGender &&
                     !!addLinkCompetitor.newCompetitor.iStartDate &&
                     addLinkCompetitor.newCompetitor.iFirstName.length > 0 &&
-                    addLinkCompetitor.newCompetitor.iLastName.length > 0
+                    addLinkCompetitor.newCompetitor.iLastName.length > 0,
                 );
               }}
             />
@@ -248,7 +248,7 @@ const AddMapCompetitor = ({
                     !!addLinkCompetitor.newCompetitor.iGender &&
                     !!addLinkCompetitor.newCompetitor.iStartDate &&
                     addLinkCompetitor.newCompetitor.iFirstName.length > 0 &&
-                    addLinkCompetitor.newCompetitor.iLastName.length > 0
+                    addLinkCompetitor.newCompetitor.iLastName.length > 0,
                 );
               }}
             />

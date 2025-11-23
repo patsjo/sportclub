@@ -1,51 +1,37 @@
 import { Button, message, Modal, Popconfirm } from 'antd';
 import { observer } from 'mobx-react';
-import { IModule } from 'models/mobxClubModel';
-import React, { useState } from 'react';
+import { IModule } from '../../models/mobxClubModel';
+import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
-import { useMobxStore } from 'utils/mobxStore';
+import { useMobxStore } from '../../utils/mobxStore';
+import { useSize } from '../../utils/useSize';
 
 interface IItemProps {
   maxHeight?: number;
 }
-const ItemHolder = styled.div<IItemProps>`
-  max-height: ${(props) => (props.maxHeight ? props.maxHeight : 300)}px;
+const ItemHolder = styled.div<IItemProps & { paddingBottom: number }>`
+  max-height: ${({ maxHeight, paddingBottom }) => (maxHeight ? maxHeight : 300) + paddingBottom}px;
   overflow: hidden;
-  margin-bottom: 12px;
+  padding-bottom: ${({ paddingBottom }) => paddingBottom}px;
 `;
-const ItemFadeOut = styled.div<IItemProps>`
+const ItemFadeOut = styled.div<IItemProps & { height: number | undefined }>`
   -webkit-column-break-inside: avoid;
   page-break-inside: avoid;
   break-inside: avoid-column;
-  max-height: ${(props) => (props.maxHeight ? props.maxHeight : 300)}px;
+  max-height: ${({ maxHeight }) => (maxHeight ? maxHeight : 300)}px;
   overflow: hidden;
   padding-left: 0;
   padding-right: 0;
   position: relative;
   cursor: pointer;
-  :after {
-    content: '';
-    position: absolute;
-    top: ${(props) => (props.maxHeight ? props.maxHeight - 50 : 250)}px;
-    right: 0;
-    width: 100%;
-    height: 50px;
-    background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiP…dpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JhZCkiIC8+PC9zdmc+IA==);
-    background-size: 100%;
-    background-image: -webkit-gradient(
-      linear,
-      50% 0%,
-      50% 100%,
-      color-stop(0%, rgba(255, 255, 255, 0)),
-      color-stop(80%, #ffffff),
-      color-stop(100%, #ffffff)
-    );
-    background-image: -moz-linear-gradient(top, rgba(255, 255, 255, 0) 0%, #ffffff 80%, #ffffff 100%);
-    background-image: -webkit-linear-gradient(top, rgba(255, 255, 255, 0) 0%, #ffffff 80%, #ffffff 100%);
-    background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #ffffff 80%, #ffffff 100%);
-    pointer-events: none;
-  }
+  ${({ maxHeight, height }) =>
+    height != null &&
+    height > (maxHeight ? maxHeight : 300) &&
+    `
+  -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 70px), transparent);
+  mask-image: linear-gradient(to bottom, black calc(100% - 70px), transparent);
+  `}
 `;
 
 interface IContentProps {
@@ -70,6 +56,7 @@ interface IFadeOutItemProps {
   modalContent: React.ReactNode;
   modalColumns: number;
   editFormContent?: React.ReactElement;
+  paddingBottom?: number;
   deletePromise?: () => Promise<void>;
   onDelete?: () => void;
   deleteAllPromise?: () => Promise<void>;
@@ -84,6 +71,7 @@ const FadeOutItem = observer(
     modalContent,
     modalColumns,
     editFormContent,
+    paddingBottom = 24,
     deletePromise,
     onDelete,
     deleteAllPromise,
@@ -95,6 +83,8 @@ const FadeOutItem = observer(
     const [saving, setSaving] = useState(false);
     const [showModalItem, setShowModalItem] = useState(false);
     const [showEdit, setShowEdit] = useState(false);
+    const fadeOutRef = useRef<HTMLDivElement>(null);
+    const { height } = useSize(fadeOutRef, ['height'], 'client');
 
     const openModal = () => {
       setShowModalItem(true);
@@ -177,9 +167,13 @@ const FadeOutItem = observer(
         : null;
 
     return (
-      <ItemHolder ref={ref} maxHeight={maxHeight}>
-        <ItemFadeOut onClick={openModal} maxHeight={maxHeight}>
-          {content}
+      <ItemHolder ref={ref} maxHeight={maxHeight} paddingBottom={paddingBottom}>
+        <ItemFadeOut
+          onClick={openModal}
+          maxHeight={maxHeight}
+          height={height != null ? height - paddingBottom : undefined}
+        >
+          <div ref={fadeOutRef}>{content}</div>
         </ItemFadeOut>
         <Modal
           closable={false}
@@ -202,7 +196,7 @@ const FadeOutItem = observer(
         {EditFormContent}
       </ItemHolder>
     );
-  }
+  },
 );
 
 export default FadeOutItem;

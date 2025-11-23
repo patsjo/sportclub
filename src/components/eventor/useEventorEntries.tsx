@@ -1,6 +1,6 @@
 import { Spin } from 'antd';
-import { IChildContainerProps } from 'components/dashboard/columns/mapNodesToColumns';
-import { IMobxClubModel } from 'models/mobxClubModel';
+import { IChildContainerProps } from '../../components/dashboard/columns/mapNodesToColumns';
+import { IMobxClubModel } from '../../models/mobxClubModel';
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import styled from 'styled-components';
@@ -10,8 +10,8 @@ import {
   IEventorEvent,
   IEventorEventRace,
   IEventorEvents,
-} from 'utils/responseEventorInterfaces';
-import { IEventViewResultResponse } from 'utils/responseInterfaces';
+} from '../../utils/responseEventorInterfaces';
+import { IEventViewResultResponse } from '../../utils/responseInterfaces';
 import { PostJsonData } from '../../utils/api';
 import EventRace, { IEventDashboardObject } from './EventRace';
 
@@ -23,7 +23,7 @@ const SpinnerDiv = styled.div<IChildContainerProps>`
 const flatten = (list: (IEventorEventRace[] | IEventorEventRace)[]): IEventorEventRace[] =>
   list.reduce(
     (a: IEventorEventRace[], b) => a.concat(Array.isArray(b) ? flatten(b) : (b as IEventorEventRace)),
-    [] as IEventorEventRace[]
+    [] as IEventorEventRace[],
   );
 
 const useEventorEntries = (clubModel: IMobxClubModel) => {
@@ -69,11 +69,11 @@ const useEventorEntries = (clubModel: IMobxClubModel) => {
             fromDate +
             '&toEventDate=' +
             toDate +
-            '&includeEntryFees=true&includePersonElement=true&includeOrganisationElement=true&includeEventElement=true'
+            '&includeEntryFees=true&includePersonElement=true&includeOrganisationElement=true&includeEventElement=true',
         ),
         cache: true,
       },
-      false
+      false,
     );
     const oringenEventsPromise = PostJsonData(
       clubModel.eventorCorsProxy,
@@ -86,17 +86,17 @@ const useEventorEntries = (clubModel: IMobxClubModel) => {
             fromDate +
             '&toDate=' +
             toOringenDate +
-            '&includeAttributes=true'
+            '&includeAttributes=true',
         ),
         cache: true,
       },
-      false
+      false,
     );
     Promise.all([alreadySavedEventsPromise, entriesPromise, oringenEventsPromise]).then(
       ([alreadySavedEventsJson, entriesJson, oringenEventsJson]: [
         IEventViewResultResponse[],
         IEventorEntries,
-        IEventorEvents
+        IEventorEvents,
       ]) => {
         if (entriesJson == null || entriesJson.Entry == null) {
           entriesJson = { Entry: [] };
@@ -125,13 +125,13 @@ const useEventorEntries = (clubModel: IMobxClubModel) => {
             let event = (entriesJson.Entry as IEventorEntry[]).find((e) =>
               Array.isArray(e.EventRaceId)
                 ? e.EventRaceId.includes(eventRace.EventRaceId)
-                : e.EventRaceId === eventRace.EventRaceId
+                : e.EventRaceId === eventRace.EventRaceId,
             )?.Event;
             if (!event) {
               event = (oringenEventsJson.Event as IEventorEvent[]).find((e) =>
                 Array.isArray(e.EventRace)
                   ? e.EventRace.map((er) => er.EventRaceId).includes(eventRace.EventRaceId)
-                  : e.EventRace.EventRaceId === eventRace.EventRaceId
+                  : e.EventRace.EventRaceId === eventRace.EventRaceId,
               )!;
             }
 
@@ -153,7 +153,7 @@ const useEventorEntries = (clubModel: IMobxClubModel) => {
                     entry.Competitor.Person != null &&
                     (Array.isArray(entry.EventRaceId)
                       ? entry.EventRaceId.includes(eventRace.EventRaceId)
-                      : entry.EventRaceId === eventRace.EventRaceId)
+                      : entry.EventRaceId === eventRace.EventRaceId),
                 )
                 .map((entry) => {
                   return {
@@ -179,7 +179,7 @@ const useEventorEntries = (clubModel: IMobxClubModel) => {
           .filter((event) => ['5', '6', '7', '8', '9', '11'].includes(event.Event.EventStatusId))
           .map((event) => {
             const savedEvent = alreadySavedEventsJson.find(
-              (saved) => '' + saved.eventorRaceId === '' + event.EventRaceId
+              (saved) => '' + saved.eventorRaceId === '' + event.EventRaceId,
             );
             return savedEvent
               ? {
@@ -201,7 +201,7 @@ const useEventorEntries = (clubModel: IMobxClubModel) => {
                 };
           });
         let savedEvents = alreadySavedEventsJson.filter(
-          (savedEvent) => !events.some((event) => event.eventId === savedEvent.eventId)
+          (savedEvent) => !events.some((event) => event.eventId === savedEvent.eventId),
         );
         const eventsToShow: IEventDashboardObject[] = savedEvents
           .filter((savedEvent) => fromDate <= savedEvent.date && savedEvent.date <= toDate)
@@ -216,7 +216,7 @@ const useEventorEntries = (clubModel: IMobxClubModel) => {
           }));
         events = [...events, ...eventsToShow];
         savedEvents = savedEvents.filter(
-          (savedEvent) => !eventsToShow.some((event) => event.eventId === savedEvent.eventId)
+          (savedEvent) => !eventsToShow.some((event) => event.eventId === savedEvent.eventId),
         );
         if (events.length < 5) {
           const olderEvents: IEventDashboardObject[] = savedEvents
@@ -241,7 +241,7 @@ const useEventorEntries = (clubModel: IMobxClubModel) => {
           setLoaded(false);
           setEvents([]);
         };
-      }
+      },
     );
   }, [location.pathname]);
 
@@ -249,7 +249,7 @@ const useEventorEntries = (clubModel: IMobxClubModel) => {
     events.map((event) => (
       <EventRace
         key={`entryObject#${event.eventId || event.eventorRaceId}`}
-        column={-50}
+        preferredColumn="50%rightFixed"
         header={event.name}
         date={event.date}
         eventObject={event}
@@ -257,7 +257,7 @@ const useEventorEntries = (clubModel: IMobxClubModel) => {
       />
     ))
   ) : (
-    <SpinnerDiv key="entryObject#spinner" column={-50} preferredHeight={100}>
+    <SpinnerDiv key="entryObject#spinner" preferredColumn="50%rightFixed" preferredHeight={100}>
       <Spin size="large" />
     </SpinnerDiv>
   );

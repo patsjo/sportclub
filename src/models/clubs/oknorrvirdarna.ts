@@ -1,4 +1,4 @@
-import { IMobxClubModelProps } from 'models/mobxClubModel';
+import { IMobxClubModelProps } from '../../models/mobxClubModel';
 
 const varendgn: IMobxClubModelProps = {
   title: 'OK Norrvirdarna',
@@ -20,7 +20,7 @@ const varendgn: IMobxClubModelProps = {
   logoutUrl: 'https://oknorrvirdarna.se/log_out.php',
   attachmentUrl: 'https://oknorrvirdarna.se/showfile.php?iFileID=',
   invoice: {
-    breakMonthDay: '0101',
+    breakMonthDay: '1231',
     daysToDueDate: 31,
     account: '10 68 79-0',
     accountType: 'Postgiro',

@@ -1,9 +1,11 @@
-import { Drawer, Form, Menu, Spin } from 'antd';
+import { Button, Col, Drawer, Form, Menu, message, Row, Spin } from 'antd';
 import { observer } from 'mobx-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { useMobxStore } from 'utils/mobxStore';
+import { useMobxStore } from '../../utils/mobxStore';
+import { FileEditorModal } from '../htmlEditor/FileEditorModal';
+import { FolderEditorModal } from '../htmlEditor/FolderEditorModal';
 import { DefaultMenuPath } from '../htmlEditor/HtmlEditor';
 import { HtmlEditorLinkModal } from '../htmlEditor/HtmlEditorLinkModal';
 import { getHtmlEditorMenus } from '../htmlEditor/HtmlEditorMenus';
@@ -11,15 +13,6 @@ import LoginMenuItem from '../login/LoginMenuItem';
 import MaterialIcon, { MaterialIconsType } from '../materialIcon/MaterialIcon';
 import MenuItem from './MenuItem';
 import ModuleSubMenu from './moduleSubMenus/ModuleSubMenu';
-import { FileEditorModal } from 'components/htmlEditor/FileEditorModal';
-import { FolderEditorModal } from 'components/htmlEditor/FolderEditorModal';
-
-const StyledDrawer = styled(Drawer)`
-  &&& {
-    top: 64px;
-    height: calc(100% - 64px);
-  }
-`;
 
 const StyledMenu = styled(Menu)`
   &&&.ant-menu-inline {
@@ -46,16 +39,29 @@ const DrawerRightMenu = observer(() => {
   const [fileEditorForm] = Form.useForm();
   const [folderEditorForm] = Form.useForm();
   const navigate = useNavigate();
+  const [messageApi, contextHolder] = message.useMessage();
 
   return (
-    <StyledDrawer
-      title={t('common.Menu')}
+    <Drawer
+      title={
+        <Row>
+          <Col flex="auto">{t('common.Menu')}</Col>
+          <Col flex="40px">
+            <Button
+              type="text"
+              icon={<MaterialIcon icon="menu-unfold" fontSize={20} />}
+              onClick={() => globalStateModel.setRightMenuVisible(!globalStateModel.rightMenuVisible)}
+            />
+          </Col>
+        </Row>
+      }
       placement="right"
       closable={false}
       width={360}
       open={globalStateModel.rightMenuVisible}
       onClose={() => globalStateModel.setRightMenuVisible(false)}
     >
+      {contextHolder}
       <StyledMenu mode="inline" onClick={() => globalStateModel.setRightMenuVisible(false)}>
         <MenuItem
           key={'menuItem#home0'}
@@ -90,7 +96,7 @@ const DrawerRightMenu = observer(() => {
               </StyledSubMenu>
             ) : (
               <ModuleSubMenu module={module} />
-            )
+            ),
           )}
         {clubModel.map?.layers.length ? (
           <MenuItem
@@ -113,7 +119,8 @@ const DrawerRightMenu = observer(() => {
             t,
             globalStateModel,
             sessionModel,
-            clubModel
+            clubModel,
+            messageApi,
           )
         ) : (
           <Spin size="small" />
@@ -151,7 +158,8 @@ const DrawerRightMenu = observer(() => {
                   htmEditorLinkform,
                   globalStateModel,
                   sessionModel,
-                  clubModel
+                  clubModel,
+                  messageApi,
                 )
                   .then()
                   .catch((error) => {
@@ -170,7 +178,7 @@ const DrawerRightMenu = observer(() => {
               disabled={!sessionModel.loggedIn || !sessionModel.isAdmin}
               onClick={() => {
                 globalStateModel.setRightMenuVisible(false);
-                FileEditorModal(t, -1, fileEditorForm, globalStateModel, sessionModel, clubModel)
+                FileEditorModal(t, -1, fileEditorForm, globalStateModel, sessionModel, clubModel, messageApi)
                   .then()
                   .catch((error) => {
                     console.error(error);
@@ -184,7 +192,7 @@ const DrawerRightMenu = observer(() => {
               disabled={!sessionModel.loggedIn || !sessionModel.isAdmin}
               onClick={() => {
                 globalStateModel.setRightMenuVisible(false);
-                FolderEditorModal(t, -1, folderEditorForm, globalStateModel, sessionModel, clubModel)
+                FolderEditorModal(t, -1, folderEditorForm, globalStateModel, sessionModel, clubModel, messageApi)
                   .then()
                   .catch((error) => {
                     console.error(error);
@@ -216,7 +224,7 @@ const DrawerRightMenu = observer(() => {
           />
         ) : null}
       </StyledMenu>
-    </StyledDrawer>
+    </Drawer>
   );
 });
 

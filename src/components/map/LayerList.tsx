@@ -9,7 +9,11 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
 import LayerListItem from './LayerListItem';
 
-const StyledControl = styled.div`
+interface IStyledControlProps {
+  visible: boolean;
+}
+
+const StyledControl = styled.div<IStyledControlProps>`
   background-color: rgba(0, 60, 136, 0.75);
   border-color: rgba(255, 255, 255, 0.8);
   border-style: solid;
@@ -20,7 +24,7 @@ const StyledControl = styled.div`
   position: absolute;
   right: 2.5em;
   top: 4.5em;
-  display: ${(props: { visible: boolean }) => (props.visible ? 'block' : 'none')};
+  display: ${(props) => (props.visible ? 'block' : 'none')};
 
   &&& .ant-tree {
     background-color: rgba(255, 255, 255, 0);
@@ -89,7 +93,7 @@ const LayerList = observer(({ map, visible }: ILayerListProps) => {
           checked: React.Key[];
           halfChecked: React.Key[];
         }
-      | React.Key[]
+      | React.Key[],
   ) => {
     const keys = checkedKeys as React.Key[];
     const allMapLayers = map?.getAllLayers()?.filter((l) => l.getProperties().id) ?? [];
@@ -105,7 +109,7 @@ const LayerList = observer(({ map, visible }: ILayerListProps) => {
         map
           .getAllLayers()
           .filter((l) => l.getProperties().id && l.getVisible())
-          .map((l) => l.getProperties().id) ?? []
+          .map((l) => l.getProperties().id) ?? [],
       );
       const layerListTreeControl = new Control({
         element: layerListRef.current,

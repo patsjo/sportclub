@@ -1,15 +1,15 @@
-import { Col, DatePicker, Form, Input, InputNumber, message, Row, Spin } from 'antd';
+import { Col, DatePicker, Form, Input, InputNumber, message, Row, Spin, Table } from 'antd';
 import { FormInstance } from 'antd/lib/form';
 import { ColumnType } from 'antd/lib/table';
-import InputTime from 'components/formItems/InputTime';
+import InputTime from '../formItems/InputTime';
 import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
-import { IRaceEventProps, IRaceResult, IRaceTeamResult } from 'models/resultModel';
-import moment from 'moment';
+import { IRaceEventProps, IRaceResult, IRaceTeamResult } from '../../models/resultModel';
+import dayjs from 'dayjs';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useMobxStore } from 'utils/mobxStore';
-import { useResultWizardStore } from 'utils/resultWizardStore';
+import { useMobxStore } from '../../utils/mobxStore';
+import { useResultWizardStore } from '../../utils/resultWizardStore';
 import { PostJsonData } from '../../utils/api';
 import { dateFormat, shortTimeFormat } from '../../utils/formHelper';
 import { FormatTime } from '../../utils/resultHelper';
@@ -60,7 +60,7 @@ const InvoiceWizardStep2EditRace = observer(
           return raceWizardModel.raceEvent?.results.find((r) => r.resultId === resultObject.resultId);
         }
       },
-      [raceWizardModel, isRelay]
+      [raceWizardModel, isRelay],
     );
 
     useEffect(() => {
@@ -71,7 +71,7 @@ const InvoiceWizardStep2EditRace = observer(
         url,
         { iType: 'EVENT', iEventId: raceWizardModel.selectedEventId },
         true,
-        sessionModel.authorizationHeader
+        sessionModel.authorizationHeader,
       )
         .then(async (editResultJson: IRaceEventProps) => {
           editResultJson.invoiceVerified = true;
@@ -82,28 +82,28 @@ const InvoiceWizardStep2EditRace = observer(
             setTotalServiceFeeToClub(
               raceWizardModel.raceEvent?.teamResults.reduce((a, b) => {
                 return a + (b.serviceFeeToClub ?? 0);
-              }, 0)
+              }, 0),
             );
           } else {
             setTotalOriginalFee(
               raceWizardModel.raceEvent?.results.reduce((a, b) => {
                 return a + (b.originalFee ?? 0);
-              }, 0) ?? 0
+              }, 0) ?? 0,
             );
             setTotalLateFee(
               raceWizardModel.raceEvent?.results.reduce((a, b) => {
                 return a + (b.lateFee ?? 0);
-              }, 0) ?? 0
+              }, 0) ?? 0,
             );
             setTotalFeeToClub(
               raceWizardModel.raceEvent?.results.reduce((a, b) => {
                 return a + (b.feeToClub ?? 0);
-              }, 0) ?? 0
+              }, 0) ?? 0,
             );
             setTotalServiceFeeToClub(
               raceWizardModel.raceEvent?.results.reduce((a, b) => {
                 return a + (b.serviceFeeToClub ?? 0);
-              }, 0) ?? 0
+              }, 0) ?? 0,
             );
           }
           setLoaded(true);
@@ -175,13 +175,13 @@ const InvoiceWizardStep2EditRace = observer(
                 setTotalServiceFeeToClub(
                   raceWizardModel.raceEvent?.teamResults.reduce((a, b) => {
                     return a + (b.serviceFeeToClub ?? 0);
-                  }, 0)
+                  }, 0),
                 );
               } else {
                 setTotalServiceFeeToClub(
                   raceWizardModel.raceEvent?.results.reduce((a, b) => {
                     return a + (b.serviceFeeToClub ?? 0);
-                  }, 0) ?? 0
+                  }, 0) ?? 0,
                 );
               }
               onValidate(raceWizardModel.raceEvent?.valid ?? false);
@@ -238,7 +238,7 @@ const InvoiceWizardStep2EditRace = observer(
                 setTotalOriginalFee(
                   raceWizardModel.raceEvent?.results.reduce((a, b) => {
                     return a + (b.originalFee ?? 0);
-                  }, 0) ?? 0
+                  }, 0) ?? 0,
                 );
                 onValidate(raceWizardModel.raceEvent?.valid ?? false);
               }}
@@ -268,7 +268,7 @@ const InvoiceWizardStep2EditRace = observer(
                 setTotalLateFee(
                   raceWizardModel.raceEvent?.results.reduce((a, b) => {
                     return a + (b.lateFee ?? 0);
-                  }, 0) ?? 0
+                  }, 0) ?? 0,
                 );
                 onValidate(raceWizardModel.raceEvent?.valid ?? false);
               }}
@@ -298,7 +298,7 @@ const InvoiceWizardStep2EditRace = observer(
                 setTotalFeeToClub(
                   raceWizardModel.raceEvent?.results.reduce((a, b) => {
                     return a + (b.feeToClub ?? 0);
-                  }, 0) ?? 0
+                  }, 0) ?? 0,
                 );
                 onValidate(raceWizardModel.raceEvent?.valid ?? false);
               }}
@@ -329,9 +329,7 @@ const InvoiceWizardStep2EditRace = observer(
         initialValues={{
           iName: raceWizardModel.raceEvent.name,
           iOrganiserName: raceWizardModel.raceEvent.organiserName,
-          iRaceDate: !raceWizardModel.raceEvent.raceDate
-            ? null
-            : moment(raceWizardModel.raceEvent.raceDate, dateFormat),
+          iRaceDate: !raceWizardModel.raceEvent.raceDate ? null : dayjs(raceWizardModel.raceEvent.raceDate, dateFormat),
           iRaceTime: raceWizardModel.raceEvent.raceTime,
         }}
       >
@@ -369,16 +367,16 @@ const InvoiceWizardStep2EditRace = observer(
             size="middle"
             tableLayout="fixed"
             summary={() => (
-              <StyledTable.Summary fixed>
-                <StyledTable.Summary.Row>
-                  <StyledTable.Summary.Cell index={0}>Total</StyledTable.Summary.Cell>
-                  <StyledTable.Summary.Cell index={1} />
-                  <StyledTable.Summary.Cell index={2} />
-                  <StyledTable.Summary.Cell index={3} />
-                  <StyledTable.Summary.Cell index={4}>{totalServiceFeeToClub}</StyledTable.Summary.Cell>
-                  <StyledTable.Summary.Cell index={5} />
-                </StyledTable.Summary.Row>
-              </StyledTable.Summary>
+              <Table.Summary fixed>
+                <Table.Summary.Row>
+                  <Table.Summary.Cell index={0}>Total</Table.Summary.Cell>
+                  <Table.Summary.Cell index={1} />
+                  <Table.Summary.Cell index={2} />
+                  <Table.Summary.Cell index={3} />
+                  <Table.Summary.Cell index={4}>{totalServiceFeeToClub}</Table.Summary.Cell>
+                  <Table.Summary.Cell index={5} />
+                </Table.Summary.Row>
+              </Table.Summary>
             )}
           />
         ) : (
@@ -393,22 +391,20 @@ const InvoiceWizardStep2EditRace = observer(
             size="middle"
             tableLayout="fixed"
             summary={() => (
-              <StyledTable.Summary fixed>
-                <StyledTable.Summary.Row>
-                  <StyledTable.Summary.Cell index={0}>Total</StyledTable.Summary.Cell>
-                  <StyledTable.Summary.Cell index={1} />
-                  <StyledTable.Summary.Cell index={2} />
-                  <StyledTable.Summary.Cell index={3} />
-                  <StyledTable.Summary.Cell index={4}>{totalOriginalFee}</StyledTable.Summary.Cell>
-                  <StyledTable.Summary.Cell index={5}>{totalLateFee}</StyledTable.Summary.Cell>
-                  <StyledTable.Summary.Cell index={6}>{totalFeeToClub}</StyledTable.Summary.Cell>
-                  <StyledTable.Summary.Cell index={7}>{totalServiceFeeToClub}</StyledTable.Summary.Cell>
-                  <StyledTable.Summary.Cell index={8} />
-                  <StyledTable.Summary.Cell index={9}>
-                    {totalFeeToClub + totalServiceFeeToClub}
-                  </StyledTable.Summary.Cell>
-                </StyledTable.Summary.Row>
-              </StyledTable.Summary>
+              <Table.Summary fixed>
+                <Table.Summary.Row>
+                  <Table.Summary.Cell index={0}>Total</Table.Summary.Cell>
+                  <Table.Summary.Cell index={1} />
+                  <Table.Summary.Cell index={2} />
+                  <Table.Summary.Cell index={3} />
+                  <Table.Summary.Cell index={4}>{totalOriginalFee}</Table.Summary.Cell>
+                  <Table.Summary.Cell index={5}>{totalLateFee}</Table.Summary.Cell>
+                  <Table.Summary.Cell index={6}>{totalFeeToClub}</Table.Summary.Cell>
+                  <Table.Summary.Cell index={7}>{totalServiceFeeToClub}</Table.Summary.Cell>
+                  <Table.Summary.Cell index={8} />
+                  <Table.Summary.Cell index={9}>{totalFeeToClub + totalServiceFeeToClub}</Table.Summary.Cell>
+                </Table.Summary.Row>
+              </Table.Summary>
             )}
           />
         )}
@@ -418,7 +414,7 @@ const InvoiceWizardStep2EditRace = observer(
         <Spin size="large" />
       </SpinnerDiv>
     ) : null;
-  }
+  },
 );
 
 export default InvoiceWizardStep2EditRace;

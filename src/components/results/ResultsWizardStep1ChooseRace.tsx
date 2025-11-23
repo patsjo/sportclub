@@ -1,12 +1,12 @@
 import { message, Progress, Spin } from 'antd';
 import { ColumnType, TableRowSelection } from 'antd/lib/table/interface';
 import { observer } from 'mobx-react';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { PostJsonData } from 'utils/api';
-import { dateFormat } from 'utils/formHelper';
-import { useMobxStore } from 'utils/mobxStore';
+import { PostJsonData } from '../../utils/api';
+import { dateFormat } from '../../utils/formHelper';
+import { useMobxStore } from '../../utils/mobxStore';
 import {
   IEventorCompetitor,
   IEventorCompetitorResult,
@@ -18,9 +18,9 @@ import {
   IEventorEvents,
   IEventorOrganisation,
   IEventorTeamResult,
-} from 'utils/responseEventorInterfaces';
-import { IEventViewResultResponse } from 'utils/responseInterfaces';
-import { useResultWizardStore } from 'utils/resultWizardStore';
+} from '../../utils/responseEventorInterfaces';
+import { IEventViewResultResponse } from '../../utils/responseInterfaces';
+import { useResultWizardStore } from '../../utils/resultWizardStore';
 import { SpinnerDiv, StyledTable } from '../styled/styled';
 
 const stringFormat = (value: string, ...args) => {
@@ -32,7 +32,7 @@ const stringFormat = (value: string, ...args) => {
 const flatten = (list: (IEventorEventRace[] | IEventorEventRace)[]): IEventorEventRace[] =>
   list.reduce(
     (a: IEventorEventRace[], b) => a.concat(Array.isArray(b) ? flatten(b) : (b as IEventorEventRace)),
-    [] as IEventorEventRace[]
+    [] as IEventorEventRace[],
   );
 
 interface IResultEventKey {
@@ -76,15 +76,15 @@ const ResultWizardStep1ChooseRace = observer(
 
       raceWizardModel.setNumberValueOrNull(
         'selectedEventId',
-        selected.selectedEventId != -1 ? selected.selectedEventId : null
+        selected.selectedEventId != -1 ? selected.selectedEventId : null,
       );
       raceWizardModel.setNumberValueOrNull(
         'selectedEventorId',
-        selected.selectedEventorId != -1 ? selected.selectedEventorId : null
+        selected.selectedEventorId != -1 ? selected.selectedEventorId : null,
       );
       raceWizardModel.setNumberValueOrNull(
         'selectedEventorRaceId',
-        selected.selectedEventorRaceId != -1 ? selected.selectedEventorRaceId : null
+        selected.selectedEventorRaceId != -1 ? selected.selectedEventorRaceId : null,
       );
       raceWizardModel.setBooleanValue('selectedIsRelay', selected.isRelay ? true : false);
       raceWizardModel.setBooleanValue('eventExistInEventor', selected.existInEventor);
@@ -105,8 +105,8 @@ const ResultWizardStep1ChooseRace = observer(
             ? {
                 iType: 'EVENTS',
                 iClubId: clubModel.raceClubs.selectedClub?.clubId,
-                iFromDate: moment(raceWizardModel.queryStartDate, dateFormat).add(-7, 'days').format(dateFormat),
-                iToDate: moment(raceWizardModel.queryEndDate, dateFormat).add(7, 'days').format(dateFormat),
+                iFromDate: dayjs(raceWizardModel.queryStartDate, dateFormat).add(-7, 'days').format(dateFormat),
+                iToDate: dayjs(raceWizardModel.queryEndDate, dateFormat).add(7, 'days').format(dateFormat),
               }
             : {
                 iType: 'EVENTS',
@@ -119,7 +119,7 @@ const ResultWizardStep1ChooseRace = observer(
             url,
             queryData,
             true,
-            sessionModel.authorizationHeader
+            sessionModel.authorizationHeader,
           );
           setProcessed((prev) => prev + 1);
           setCurrentEvent(t('results.loadEntries'));
@@ -136,7 +136,7 @@ const ResultWizardStep1ChooseRace = observer(
                         raceWizardModel.queryStartDate +
                         '&toEventDate=' +
                         raceWizardModel.queryEndDate +
-                        '&includeEntryFees=true&includePersonElement=true&includeOrganisationElement=true&includeEventElement=true'
+                        '&includeEntryFees=true&includePersonElement=true&includeOrganisationElement=true&includeEventElement=true',
                     )
                   : encodeURIComponent(
                       clubModel.eventor.entriesUrl +
@@ -144,10 +144,10 @@ const ResultWizardStep1ChooseRace = observer(
                         clubModel.raceClubs.selectedClub?.eventorOrganisationId +
                         '&eventIds=' +
                         raceWizardModel.selectedEventorId +
-                        '&includeEntryFees=true&includePersonElement=true&includeOrganisationElement=true&includeEventElement=true'
+                        '&includeEntryFees=true&includePersonElement=true&includeOrganisationElement=true&includeEventElement=true',
                     ),
             },
-            true
+            true,
           );
           setProcessed((prev) => prev + 1);
           setCurrentEvent(t('results.loadEvent'));
@@ -162,10 +162,10 @@ const ResultWizardStep1ChooseRace = observer(
                   clubModel.eventor.eventsUrl +
                     '?eventIds=' +
                     raceWizardModel.selectedEventorId +
-                    '&includeAttributes=true'
+                    '&includeAttributes=true',
                 ),
               },
-              true
+              true,
             );
             if (Array.isArray(eventsJson.Event)) {
               eventsJson.Event.forEach((e) => noEntriesJson.Event.push(e));
@@ -181,10 +181,10 @@ const ResultWizardStep1ChooseRace = observer(
                 csurl: encodeURIComponent(
                   clubModel.eventor?.competitorsUrl +
                     '?organisationId=' +
-                    clubModel.raceClubs?.selectedClub?.eventorOrganisationId
+                    clubModel.raceClubs?.selectedClub?.eventorOrganisationId,
                 ),
               },
-              true
+              true,
             );
 
             if (competitorListJson && Array.isArray(competitorListJson.Competitor)) {
@@ -194,8 +194,8 @@ const ResultWizardStep1ChooseRace = observer(
                 setCurrentEvent(
                   stringFormat(
                     t('results.loadCompetitor'),
-                    `${c.Person?.PersonName?.Given} ${c.Person?.PersonName?.Family}`
-                  )
+                    `${c.Person?.PersonName?.Given} ${c.Person?.PersonName?.Family}`,
+                  ),
                 );
                 const competitorResults = (await PostJsonData(
                   clubModel.eventorCorsProxy,
@@ -207,10 +207,10 @@ const ResultWizardStep1ChooseRace = observer(
                         '&fromDate=' +
                         raceWizardModel.queryStartDate +
                         '&toDate=' +
-                        raceWizardModel.queryEndDate
+                        raceWizardModel.queryEndDate,
                     ),
                   },
-                  true
+                  true,
                 )) as IEventorCompetitorResult;
                 competitorsJsons.push(competitorResults);
                 await new Promise((resolve) => setTimeout(resolve, Math.floor(Math.random() * 200)));
@@ -239,7 +239,7 @@ const ResultWizardStep1ChooseRace = observer(
                           (cr.PersonResult.Organisation.OrganisationId ===
                             clubModel.eventor?.districtOrganisationId.toString() &&
                             clubModel.raceClubs?.selectedClub?.competitorByEventorId(
-                              parseInt(cr.PersonResult.Person.PersonId)
+                              parseInt(cr.PersonResult.Person.PersonId),
                             ) != null))
                       ) {
                         isCurrentClub = true;
@@ -249,26 +249,26 @@ const ResultWizardStep1ChooseRace = observer(
                           ? cr.TeamResult.filter(
                               (teamResult) =>
                                 teamResult.RaceResult == null ||
-                                teamResult.RaceResult.EventRaceId === raceWizardModel.selectedEventorRaceId?.toString()
+                                teamResult.RaceResult.EventRaceId === raceWizardModel.selectedEventorRaceId?.toString(),
                             )
                           : cr.TeamResult.RaceResult == null ||
-                            cr.TeamResult.RaceResult.EventRaceId === raceWizardModel.selectedEventorRaceId?.toString()
-                          ? [cr.TeamResult]
-                          : [];
+                              cr.TeamResult.RaceResult.EventRaceId === raceWizardModel.selectedEventorRaceId?.toString()
+                            ? [cr.TeamResult]
+                            : [];
 
                         const teamResults: IEventorTeamResult[] = preTeamResults.map((pre) =>
-                          pre.RaceResult?.TeamMemberResult != null ? pre.RaceResult : (pre as IEventorTeamResult)
+                          pre.RaceResult?.TeamMemberResult != null ? pre.RaceResult : (pre as IEventorTeamResult),
                         );
                         const teamOrganisations = teamResults
                           .reduce(
                             (a: IEventorOrganisation[], b) => a.concat(b.Organisation),
-                            [] as IEventorOrganisation[]
+                            [] as IEventorOrganisation[],
                           )
                           .filter((org) => !!org);
                         isCurrentClub = teamOrganisations.some(
                           (org) =>
                             org.OrganisationId === clubModel.eventor?.organisationId.toString() ||
-                            org.OrganisationId === clubModel.eventor?.districtOrganisationId.toString()
+                            org.OrganisationId === clubModel.eventor?.districtOrganisationId.toString(),
                         );
                       }
                     });
@@ -294,10 +294,10 @@ const ResultWizardStep1ChooseRace = observer(
                   raceWizardModel.queryStartDate +
                   '&toDate=' +
                   raceWizardModel.queryEndDate +
-                  '&includeAttributes=true'
+                  '&includeAttributes=true',
               ),
             },
-            true
+            true,
           );
           setProcessed((prev) => prev + 1);
           setCurrentEvent(t('results.calculateResults'));
@@ -328,14 +328,14 @@ const ResultWizardStep1ChooseRace = observer(
               let entryEvent = entries.find((e) =>
                 Array.isArray(e.Event.EventRace)
                   ? e.Event.EventRace.map((er) => er.EventRaceId).includes(eventRace.EventRaceId)
-                  : e.EventRaceId === eventRace.EventRaceId
+                  : e.EventRaceId === eventRace.EventRaceId,
               )?.Event;
               let entryEventName = '';
               if (entryEvent == null) {
                 entryEvent = oringenEvents.find((e) =>
                   Array.isArray(e.EventRace)
                     ? e.EventRace.map((er) => er.EventRaceId).includes(eventRace.EventRaceId)
-                    : e.EventRace.EventRaceId === eventRace.EventRaceId
+                    : e.EventRace.EventRaceId === eventRace.EventRaceId,
                 );
               }
               if (entryEvent) {
@@ -348,7 +348,7 @@ const ResultWizardStep1ChooseRace = observer(
               const alreadySaved = alreadySavedEventsJson.find(
                 (saved) =>
                   saved.eventorId.toString() === entryEvent?.EventId &&
-                  saved.eventorRaceId!.toString() === eventRace.EventRaceId
+                  saved.eventorRaceId!.toString() === eventRace.EventRaceId,
               );
 
               const isRelay =
@@ -396,13 +396,13 @@ const ResultWizardStep1ChooseRace = observer(
           const alreadySavedEventsNotInEventor: IResultEvent[] = alreadySavedEventsJson
             .filter(
               (saved) =>
-                (moment(raceWizardModel.queryStartDate).isSame(saved.date) ||
-                  moment(raceWizardModel.queryStartDate).isBefore(saved.date)) &&
-                (moment(raceWizardModel.queryEndDate).isSame(saved.date) ||
-                  moment(raceWizardModel.queryEndDate).isAfter(saved.date)) &&
+                (dayjs(raceWizardModel.queryStartDate).isSame(saved.date) ||
+                  dayjs(raceWizardModel.queryStartDate).isBefore(saved.date)) &&
+                (dayjs(raceWizardModel.queryEndDate).isSame(saved.date) ||
+                  dayjs(raceWizardModel.queryEndDate).isAfter(saved.date)) &&
                 !events.some(
-                  (event) => saved.eventorId === event.eventorId && saved.eventorRaceId === event.eventorRaceId
-                )
+                  (event) => saved.eventorId === event.eventorId && saved.eventorRaceId === event.eventorRaceId,
+                ),
             )
             .map(
               (e): IResultEvent => ({
@@ -419,7 +419,7 @@ const ResultWizardStep1ChooseRace = observer(
                 isRelay: e.isRelay,
                 alreadySaved: true,
                 alreadySavedEventsNotInEventor: true,
-              })
+              }),
             );
           if (!raceWizardModel.queryIncludeExisting) {
             events = events.filter((event) => !event.alreadySaved);
@@ -448,9 +448,9 @@ const ResultWizardStep1ChooseRace = observer(
                 ...e,
                 alreadySaved:
                   e.alreadySaved || (e.eventorRaceId != null && raceWizardModel.importedIds.includes(e.eventorRaceId)),
-              })
+              }),
             )
-          : oldEvents.filter((e) => !e.eventorRaceId || !raceWizardModel.importedIds.includes(e.eventorRaceId))
+          : oldEvents.filter((e) => !e.eventorRaceId || !raceWizardModel.importedIds.includes(e.eventorRaceId)),
       );
     }, [raceWizardModel.importedIds.length]);
 
@@ -530,7 +530,7 @@ const ResultWizardStep1ChooseRace = observer(
         <Spin size="large" />
       </SpinnerDiv>
     ) : null;
-  }
+  },
 );
 
 export default ResultWizardStep1ChooseRace;

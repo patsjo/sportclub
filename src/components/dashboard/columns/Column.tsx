@@ -24,7 +24,7 @@ interface IColumnProps {
   children: IChildColumnElement[] | IChildColumnElement;
 }
 const Column = ({ columns, index, children }: IColumnProps) => (
-  <StyledColumn className="parent" column={index} columns={columns} visible={index < columns} gap={18}>
+  <StyledColumn className="parent" column={index} columns={columns} visible={index < columns} gap={24}>
     {children}
   </StyledColumn>
 );

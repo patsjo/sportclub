@@ -1,18 +1,18 @@
 import JSZip from 'jszip';
 import { getBase64, getLogo, IPdfSettings } from './pdf';
 import pdfMake from 'pdfmake/build/pdfmake';
-import { IClubInfoProps, IInvoiceProps } from 'models/mobxClubModel';
+import { IClubInfoProps, IInvoiceProps } from '../models/mobxClubModel';
 import { Column, Content, ContentColumns, TDocumentDefinitions } from 'pdfmake/interfaces';
 import i18next from 'i18next';
-import moment, { Moment } from 'moment';
+import dayjs, { Dayjs } from 'dayjs';
 import { dateFormat } from './formHelper';
-import { generatePdfStatus } from 'components/results/ResultsFees';
+import { generatePdfStatus } from '../components/results/ResultsFees';
 
 export interface IInvoiceMetadata extends IInvoiceProps {
   title: string;
-  startDate: Moment;
-  endDate: Moment;
-  dueDate: Moment;
+  startDate: Dayjs;
+  endDate: Dayjs;
+  dueDate: Dayjs;
 }
 
 export interface IFeesRecord {
@@ -86,7 +86,7 @@ const getPdfDocDefinition = async (
   printObjects: IInvoicePrintObject[],
   pdfSettings: IPdfSettings,
   setProcessed: (value: React.SetStateAction<number>) => void,
-  setSpinnerText: (value: string | null) => void
+  setSpinnerText: (value: string | null) => void,
 ): Promise<TDocumentDefinitions> => {
   const docDefinition: TDocumentDefinitions = {
     info: {
@@ -142,7 +142,7 @@ const getPdfDocDefinition = async (
     const swishLogo = await getInvoiceSwishLogo(
       totalFeeToClub,
       printObject.invoiceMessage,
-      invoiceMetaData.swishNumber
+      invoiceMetaData.swishNumber,
     );
     const headerData: Column = {
       width: '*',
@@ -176,7 +176,7 @@ const getPdfDocDefinition = async (
               alignment: 'left',
               width: 'auto',
               stack: [
-                { text: moment().format(dateFormat), style: 'bold' },
+                { text: dayjs().format(dateFormat), style: 'bold' },
                 {
                   text: `${invoiceMetaData.endDate.format('YYYY')}-TÄVL-AVG-${
                     printObject.details.find(() => true)?.competitorId ?? 99999
@@ -362,7 +362,7 @@ const getPdfDocDefinition = async (
                   width: 'auto',
                   alignment: 'right',
                   stack: [swishLogo ? { image: swishLogo, fit: [80, 80] } : null].filter(
-                    (stack) => stack != null
+                    (stack) => stack != null,
                   ) as Content[],
                 },
               ],
@@ -405,7 +405,7 @@ export const getInvoicePdf = async (
   printObjects: IInvoicePrintObject[],
   pdfSettings: IPdfSettings,
   setProcessed: (value: React.SetStateAction<number>) => void,
-  setSpinnerText: (value: string | null) => void
+  setSpinnerText: (value: string | null) => void,
 ): Promise<void> => {
   const logo = await getLogo(proxyurl, logoUrl);
   const docDefinition = await getPdfDocDefinition(
@@ -416,7 +416,7 @@ export const getInvoicePdf = async (
     printObjects,
     pdfSettings,
     setProcessed,
-    setSpinnerText
+    setSpinnerText,
   );
 
   if (generatePdfStatus.abortLoading) throw new Error();
@@ -428,9 +428,9 @@ export const getInvoicePdf = async (
         printObjects.length > 1
           ? invoiceMetaData.title
           : printObjects.length === 1
-          ? printObjects[0].invoiceMessage
-          : 'No data'
-      }.pdf`
+            ? printObjects[0].invoiceMessage
+            : 'No data'
+      }.pdf`,
     );
 };
 
@@ -442,7 +442,7 @@ export const getInvoiceZip = async (
   printObjects: IInvoicePrintObject[],
   pdfSettings: IPdfSettings,
   setProcessed: (value: React.SetStateAction<number>) => void,
-  setSpinnerText: (value: string | null) => void
+  setSpinnerText: (value: string | null) => void,
 ): Promise<void> => {
   const logo = await getLogo(proxyurl, logoUrl);
   const zip = new JSZip();
@@ -456,7 +456,7 @@ export const getInvoiceZip = async (
       [printObject],
       pdfSettings,
       setProcessed,
-      setSpinnerText
+      setSpinnerText,
     );
     const data = await getBase64(pdfMake.createPdf(docDefinition));
     zip.file(`${printObject.invoiceMessage}.pdf`, data, { base64: true });

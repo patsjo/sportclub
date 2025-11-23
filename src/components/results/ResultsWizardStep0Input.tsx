@@ -1,12 +1,12 @@
 import { DatePicker, Form, Switch } from 'antd';
 import { FormInstance } from 'antd/lib/form';
+import dayjs from 'dayjs';
 import { observer } from 'mobx-react';
-import moment from 'moment';
 import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FormSelect, dateFormat, errorRequiredField } from 'utils/formHelper';
-import { useMobxStore } from 'utils/mobxStore';
-import { useResultWizardStore } from 'utils/resultWizardStore';
+import { FormSelect, dateFormat, errorRequiredField } from '../../utils/formHelper';
+import { useMobxStore } from '../../utils/mobxStore';
+import { useResultWizardStore } from '../../utils/resultWizardStore';
 import FormItem from '../formItems/FormItem';
 
 interface IResultWizardStep0InputProps {
@@ -22,7 +22,7 @@ const ResultWizardStep0Input = observer(({ onMount }: IResultWizardStep0InputPro
   useEffect(() => {
     if (formRef.current) {
       formRef.current.validateFields();
-      onMount && onMount(formRef.current);
+      onMount?.(formRef.current);
     }
   }, [formRef.current]);
 
@@ -33,8 +33,8 @@ const ResultWizardStep0Input = observer(({ onMount }: IResultWizardStep0InputPro
       layout="vertical"
       initialValues={{
         Club: clubModel.raceClubs.selectedClub?.clubId.toString(),
-        QueryStartDate: moment(raceWizardModel.queryStartDate, dateFormat),
-        QueryEndDate: moment(raceWizardModel.queryEndDate, dateFormat),
+        QueryStartDate: raceWizardModel.queryStartDate ? dayjs(raceWizardModel.queryStartDate, dateFormat) : null,
+        QueryEndDate: raceWizardModel.queryEndDate ? dayjs(raceWizardModel.queryEndDate, dateFormat) : null,
         QueryIncludeExisting: raceWizardModel.queryIncludeExisting,
         QueryForEventWithNoEntry: raceWizardModel.queryForEventWithNoEntry,
         QueryForCompetitorWithNoClub: raceWizardModel.queryForCompetitorWithNoClub,
@@ -62,7 +62,7 @@ const ResultWizardStep0Input = observer(({ onMount }: IResultWizardStep0InputPro
         <DatePicker
           format={dateFormat}
           allowClear={false}
-          onChange={(date) => raceWizardModel.setStringValue('queryStartDate', date!.format(dateFormat))}
+          onChange={(date) => raceWizardModel.setStringValue('queryStartDate', date.format(dateFormat))}
         />
       </FormItem>
       <FormItem
@@ -79,7 +79,7 @@ const ResultWizardStep0Input = observer(({ onMount }: IResultWizardStep0InputPro
         <DatePicker
           format={dateFormat}
           allowClear={false}
-          onChange={(date) => raceWizardModel.setStringValue('queryEndDate', date!.format(dateFormat))}
+          onChange={(date) => raceWizardModel.setStringValue('queryEndDate', date.format(dateFormat))}
         />
       </FormItem>
       <FormItem name="QueryIncludeExisting" label={t('results.QueryIncludeExisting')} valuePropName="checked">

@@ -1,7 +1,7 @@
 import { useLocalObservable } from 'mobx-react';
-import { GlobalStateModel, IGlobalStateModel } from 'models/globalStateModel';
-import { IMobxClubModel, MobxClubModel } from 'models/mobxClubModel';
-import { ISessionModel, SessionModel } from 'models/sessionModel';
+import { GlobalStateModel, IGlobalStateModel } from '../models/globalStateModel';
+import { IMobxClubModel, MobxClubModel } from '../models/mobxClubModel';
+import { ISessionModel, SessionModel } from '../models/sessionModel';
 import React from 'react';
 
 interface IMobxStore {

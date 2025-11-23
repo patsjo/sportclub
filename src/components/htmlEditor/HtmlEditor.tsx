@@ -1,15 +1,15 @@
 import { CopyOutlined } from '@ant-design/icons';
-import ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor.js';
+import { ClassicEditor } from 'ckeditor5';
 import { Alert, Button, Form, Input, message, Popconfirm, Select, Spin } from 'antd';
 import copy from 'copy-to-clipboard';
 import { observer } from 'mobx-react';
-import { ICouncilModel, IGroupModel, IUserModel } from 'models/userModel';
+import { ICouncilModel, IGroupModel, IUserModel } from '../../models/userModel';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { useMobxStore } from 'utils/mobxStore';
-import { IHtmlPageGroupResponse, IHtmlPageResponse } from 'utils/responseInterfaces';
+import { useMobxStore } from '../../utils/mobxStore';
+import { IHtmlPageGroupResponse, IHtmlPageResponse } from '../../utils/responseInterfaces';
 import { PostJsonData } from '../../utils/api';
 import { errorRequiredField, hasErrors } from '../../utils/formHelper';
 import { getPageId } from '../../utils/htmlEditorMenuHelper';
@@ -40,6 +40,7 @@ const StyledContainer = styled.div`
 `;
 
 const HtmlEditor = observer(() => {
+  const [messageApi, contextHolder] = message.useMessage();
   const location = useLocation();
   const { clubModel, globalStateModel, sessionModel } = useMobxStore();
   const { t } = useTranslation();
@@ -49,9 +50,9 @@ const HtmlEditor = observer(() => {
       location.pathname === '/page/new'
         ? -1
         : globalStateModel.htmlEditorMenu
-        ? getPageId(globalStateModel.htmlEditorMenu, decodeURI(location.pathname)) ?? -1000
-        : undefined,
-    [globalStateModel.htmlEditorMenu, location.pathname]
+          ? (getPageId(globalStateModel.htmlEditorMenu, decodeURI(location.pathname)) ?? -1000)
+          : undefined,
+    [globalStateModel.htmlEditorMenu, location.pathname],
   );
   const [error, setError] = useState<string | undefined>();
   const [isReadOnly, setIsReadOnly] = useState(location.pathname !== '/page/new');
@@ -114,7 +115,7 @@ const HtmlEditor = observer(() => {
         password: sessionModel.password,
       },
       true,
-      sessionModel.authorizationHeader
+      sessionModel.authorizationHeader,
     )
       .then((pageResponse: IHtmlPageResponse) => {
         setPageId(pageResponse.pageId);
@@ -168,13 +169,13 @@ const HtmlEditor = observer(() => {
           password: sessionModel.password,
         },
         true,
-        sessionModel.authorizationHeader
+        sessionModel.authorizationHeader,
       )
         .then((pageResponse) => {
           setPageId(pageResponse.iPageID);
           setData(htmlData);
           setSaving(false);
-          globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, filesModule, sessionModel, message);
+          globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, filesModule, sessionModel, messageApi);
           if (values.iMenuPath !== location.pathname) navigate(values.iMenuPath, { replace: true });
         })
         .catch((e) => {
@@ -202,6 +203,7 @@ const HtmlEditor = observer(() => {
     <Alert message="Error" description={error} type="error" showIcon />
   ) : (
     <StyledContainer>
+      {contextHolder}
       {!isReadOnly ? (
         <Form
           form={form}
@@ -259,7 +261,7 @@ const HtmlEditor = observer(() => {
             message.success(
               `${t('htmlEditor.CopyUrl')}: ${window.location.origin}/${
                 menuPath.startsWith('/') ? menuPath.substr(1) : menuPath
-              }`
+              }`,
             );
           }}
         >
@@ -293,10 +295,10 @@ const HtmlEditor = observer(() => {
                   password: sessionModel.password,
                 },
                 true,
-                sessionModel.authorizationHeader
+                sessionModel.authorizationHeader,
               )
                 .then(() => {
-                  globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, filesModule, sessionModel, message);
+                  globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, filesModule, sessionModel, messageApi);
                   navigate('/', { replace: true });
                 })
                 .catch((e) => {

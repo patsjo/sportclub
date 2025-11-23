@@ -1,13 +1,13 @@
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import { Col, message, Row, Skeleton } from 'antd';
 import { observer } from 'mobx-react';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { useMobxStore } from 'utils/mobxStore';
-import { ICalendarActivity, ICalendarDomains, ICalendarEvent } from 'utils/responseCalendarInterfaces';
+import { useMobxStore } from '../../../utils/mobxStore';
+import { ICalendarActivity, ICalendarDomains, ICalendarEvent } from '../../../utils/responseCalendarInterfaces';
 import { PostJsonData } from '../../../utils/api';
 import { dateFormat } from '../../../utils/formHelper';
 import { GetDates, GetMonthName } from '../calendarHelper';
@@ -128,13 +128,11 @@ const MonthlyCalendar = observer(() => {
   const navigate = useNavigate();
 
   if (globalStateModel.startDate == null) {
-    globalStateModel.setDashboard(
-      navigate,
-      '/calendar',
-      moment().startOf('month').format(dateFormat),
-      moment().endOf('month').format(dateFormat),
-      1
-    );
+    globalStateModel.setValues({
+      startDate: dayjs().startOf('month').format(dateFormat),
+      endDate: dayjs().endOf('month').format(dateFormat),
+      type: 1,
+    });
   }
 
   useEffect(() => {
@@ -145,8 +143,8 @@ const MonthlyCalendar = observer(() => {
 
     const data = {
       iType: 'ACTIVITIES',
-      iFromDate: moment(globalStateModel.startDate).isoWeekday(1).format('YYYY-MM-DD'),
-      iToDate: moment(globalStateModel.endDate).isoWeekday(7).format('YYYY-MM-DD'),
+      iFromDate: dayjs(globalStateModel.startDate).isoWeekday(1).format('YYYY-MM-DD'),
+      iToDate: dayjs(globalStateModel.endDate).isoWeekday(7).format('YYYY-MM-DD'),
     };
     const eventsData = {
       ...data,
@@ -182,7 +180,7 @@ const MonthlyCalendar = observer(() => {
               groupId: 0,
               repeatingGid: null,
               repeatingModified: false,
-            })
+            }),
           ),
         ]);
         setLoaded(true);
@@ -197,11 +195,11 @@ const MonthlyCalendar = observer(() => {
       globalStateModel.setDashboard(
         navigate,
         '/calendar',
-        moment(globalStateModel.startDate).add(-1, 'months').startOf('month').format(dateFormat),
-        moment(globalStateModel.startDate).add(-1, 'months').endOf('month').format(dateFormat),
-        1
+        dayjs(globalStateModel.startDate).add(-1, 'months').startOf('month').format(dateFormat),
+        dayjs(globalStateModel.startDate).add(-1, 'months').endOf('month').format(dateFormat),
+        1,
       ),
-    []
+    [],
   );
 
   const onNext = useCallback(
@@ -209,19 +207,19 @@ const MonthlyCalendar = observer(() => {
       globalStateModel.setDashboard(
         navigate,
         '/calendar',
-        moment(globalStateModel.startDate).add(1, 'months').startOf('month').format(dateFormat),
-        moment(globalStateModel.startDate).add(1, 'months').endOf('month').format(dateFormat),
-        1
+        dayjs(globalStateModel.startDate).add(1, 'months').startOf('month').format(dateFormat),
+        dayjs(globalStateModel.startDate).add(1, 'months').endOf('month').format(dateFormat),
+        1,
       ),
-    []
+    [],
   );
 
-  const startDate = moment(globalStateModel.startDate);
+  const startDate = dayjs(globalStateModel.startDate);
   const startMonday = startDate.clone().isoWeekday(1);
   const endSunday = startDate.clone().endOf('month').isoWeekday(7);
   const days = [...Array(7)].map((_, i) => i);
   const weeks = [...Array(endSunday.add(1, 'days').diff(startMonday, 'weeks'))].map((_, i) => i);
-  const isCurrentMonth = (date: moment.Moment) => startDate.format('MM') === date.format('MM');
+  const isCurrentMonth = (date: dayjs.Dayjs) => startDate.format('MM') === date.format('MM');
 
   return (
     <MonthlyContainer>
@@ -230,10 +228,7 @@ const MonthlyCalendar = observer(() => {
           <Col span={4}>
             <LeftOutlined onClick={onPrevious} />
           </Col>
-          <Col span={16} style={{ textAlign: 'center' }}>{`${GetMonthName(
-            moment(globalStateModel.startDate),
-            t
-          )}`}</Col>
+          <Col span={16} style={{ textAlign: 'center' }}>{`${GetMonthName(dayjs(globalStateModel.startDate), t)}`}</Col>
           <Col span={4} style={{ textAlign: 'right' }}>
             <RightOutlined onClick={onNext} />
           </Col>

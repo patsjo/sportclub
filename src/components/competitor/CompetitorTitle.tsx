@@ -4,8 +4,8 @@ import { observer } from 'mobx-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
-import { useMobxStore } from 'utils/mobxStore';
-import { ICompetitor, ICompetitorInfo } from 'utils/responseCompetitorInterfaces';
+import { useMobxStore } from '../../utils/mobxStore';
+import { ICompetitor, ICompetitorInfo } from '../../utils/responseCompetitorInterfaces';
 import { PostJsonData } from '../../utils/api';
 import CompetitorPresentationModal from './CompetitorPresentationModal';
 

@@ -1,13 +1,13 @@
 import { AreaChartOutlined, AuditOutlined } from '@ant-design/icons';
 import { message } from 'antd';
 import { observer } from 'mobx-react';
-import { IRaceClubsProps, IRaceCompetitor } from 'models/resultModel';
-import moment from 'moment';
+import { IRaceClubsProps, IRaceCompetitor } from '../../../models/resultModel';
+import dayjs from 'dayjs';
 import React, { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { PostJsonData } from 'utils/api';
-import { useMobxStore } from 'utils/mobxStore';
+import { PostJsonData } from '../../../utils/api';
+import { useMobxStore } from '../../../utils/mobxStore';
 import MenuItem from '../MenuItem';
 const RenounceModal = lazy(() => import('../../results/RenounceModal'));
 
@@ -21,8 +21,8 @@ const ResultsSubMenus = observer(() => {
   const [loadingCompetitor, setLoadingCompetitor] = useState(true);
   const navigate = useNavigate();
   const daysSinceRenounce = useMemo(
-    () => (!competitor?.excludeTime ? 0 : moment().diff(moment(competitor.excludeTime), 'days')),
-    [competitor?.excludeTime]
+    () => (!competitor?.excludeTime ? 0 : dayjs().diff(dayjs(competitor.excludeTime), 'days')),
+    [competitor?.excludeTime],
   );
 
   const onRegretRenounce = useCallback(() => {
@@ -41,7 +41,7 @@ const ResultsSubMenus = observer(() => {
         password: sessionModel.password,
       },
       true,
-      sessionModel.authorizationHeader
+      sessionModel.authorizationHeader,
     )
       .then(() => {
         oldCompetitor?.regretRenounce();
@@ -65,7 +65,7 @@ const ResultsSubMenus = observer(() => {
         iType: 'CLUBS',
       },
       true,
-      sessionModel.authorizationHeader
+      sessionModel.authorizationHeader,
     )
       .then((clubsJson: IRaceClubsProps) => {
         clubModel.setRaceClubs(clubsJson);
@@ -159,6 +159,7 @@ const ResultsSubMenus = observer(() => {
           globalStateModel.setDashboard(navigate, '/results/fees');
         }}
       />
+      {/*
       <MenuItem
         key={'menuItem#resultsConvert'}
         icon="cloud-upload"
@@ -169,7 +170,7 @@ const ResultsSubMenus = observer(() => {
           globalStateModel.setRightMenuVisible(false);
           setTimeout(() => setAddOldResultsWizardModalIsOpen(true), 0);
         }}
-      />
+      />*/}
       {sessionModel.loggedIn &&
       sessionModel.eventorPersonId &&
       (loadingCompetitor || (competitor && !competitor.excludeResults)) ? (

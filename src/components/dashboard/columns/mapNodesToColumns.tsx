@@ -2,11 +2,11 @@ import React from 'react';
 import styled from 'styled-components';
 
 export interface IChildContainerProps {
-  key: React.Key;
-  column: number | undefined;
-  preferredColumn?: number;
+  key: string | number;
+  column?: number;
+  preferredColumn: '50%leftPreferred' | '50%rightFixed' | 'rightFixed' | 'secondRightFixed' | undefined;
   preferredHeight?: number;
-  marginBottom?: number;
+  paddingBottom?: number;
 }
 export interface IChildColumn extends IChildContainerProps {
   height: number;
@@ -17,7 +17,7 @@ export interface IChildColumn extends IChildContainerProps {
 export type IChildColumnElement = React.ReactElement<IChildColumn>;
 
 export const ChildContainer = styled.div<IChildContainerProps>`
-  margin-bottom: ${(props) => (props.marginBottom !== undefined ? props.marginBottom + 'px' : 'unset')};
+  padding-bottom: ${(props) => (props.paddingBottom !== undefined ? props.paddingBottom + 'px' : 'unset')};
   width: 100%;
 `;
 
@@ -26,35 +26,27 @@ const getColumn = (child: IChildColumn, columns: number, heights: number[], tota
   const totalHeightPerColumn = totalHeight / columns;
   if (child.preferredColumn === undefined) {
     index = heights.indexOf(Math.min(...heights));
-  } else if (child.preferredColumn === -50 && columns > 1) {
-    const weightedHeights =
-      totalHeightPerColumn > 840
-        ? heights.map((h, idx) => (h > 1280 ? h : idx < columns / 2 ? (h < 280 ? 840 : 840 + 0.44 * (h - 280)) : h))
-        : heights;
+  } else if (child.preferredColumn === '50%rightFixed' && columns > 1) {
+    const weightedHeights = heights.map((h, idx) => (idx < columns / 2 ? Number.MAX_SAFE_INTEGER : h));
     index = weightedHeights.lastIndexOf(Math.min(...weightedHeights));
     if (index < 0) index = columns - 1;
-  } else if (child.preferredColumn === 50 && columns > 1) {
+  } else if (child.preferredColumn === '50%leftPreferred' && columns > 1) {
     const weightedHeights =
       totalHeightPerColumn > 840
         ? heights.map((h, idx) => (h > 1280 ? h : idx > columns / 2 ? (h < 280 ? 840 : 840 + 0.44 * (h - 280)) : h))
         : heights;
     index = weightedHeights.indexOf(Math.min(...weightedHeights));
     if (index < 0) index = 0;
-  } else if (child.preferredColumn < 0 && columns > 2) {
+  } else if (child.preferredColumn === 'rightFixed') {
+    index = columns - 1;
+  } else if (child.preferredColumn === 'secondRightFixed' && columns > 2) {
     index =
       totalHeightPerColumn > 840 || heights[columns + child.preferredColumn] < 280
-        ? columns + child.preferredColumn
+        ? columns - 2
         : heights.lastIndexOf(Math.min(...heights));
     if (index < 0) index = 0;
-  } else if (child.preferredColumn < 0) {
+  } else if (child.preferredColumn === 'secondRightFixed') {
     index = columns - 1;
-  } else if (child.preferredColumn < columns && columns > 2) {
-    index =
-      totalHeightPerColumn > 840 || heights[child.preferredColumn] < 280
-        ? child.preferredColumn
-        : heights.indexOf(Math.min(...heights));
-  } else if (child.preferredColumn < columns) {
-    index = 0;
   } else {
     index = heights.indexOf(Math.min(...heights));
   }
@@ -66,7 +58,8 @@ export const maxColumns = 5;
 export const getDefaultChild = (reactChild: IChildColumnElement, columns: number): IChildColumn => {
   const child: IChildColumn = {
     key: reactChild!.key!,
-    preferredColumn: reactChild!.props.column,
+    preferredColumn: reactChild!.props.preferredColumn,
+    preferredHeight: reactChild!.props.preferredHeight,
     reactChild: reactChild,
     column: 0,
     height: reactChild.props.preferredHeight ?? 0,
@@ -78,14 +71,14 @@ export const getDefaultChild = (reactChild: IChildColumnElement, columns: number
 
 export const recalculateChildDistribution = (
   updatedChilds: IChildColumn[],
-  childHeights: Record<React.Key, number>,
+  childHeights: Record<string | number, number>,
   columns: number,
-  recalculateAll: boolean
+  recalculateAll: boolean,
 ) => {
   let aboveChildAlreadyCalculated = !recalculateAll;
   const heights = [...Array(columns)].fill(0);
   const newChildDistribution = [...Array(maxColumns)].map((): IChildColumn[] => []);
-  const totalHeight = updatedChilds.reduce((a, b) => a + (b.key ? childHeights[b.key] ?? b.height : b.height), 0);
+  const totalHeight = updatedChilds.reduce((a, b) => a + (b.key ? (childHeights[b.key] ?? b.height) : b.height), 0);
 
   updatedChilds.forEach((child) => {
     if (child.key != null) {
@@ -105,6 +98,7 @@ export const recalculateChildDistribution = (
       newChildDistribution[child.column!].push(child);
     }
   });
-
+  console.log(heights);
+  console.log(updatedChilds.map((c) => ({ col: c.column, h: c.height })));
   return newChildDistribution;
 };

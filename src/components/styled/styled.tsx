@@ -3,6 +3,7 @@ import { Table, Tag } from 'antd';
 import { TFunction } from 'i18next';
 import { MouseEventHandler } from 'react';
 import styled from 'styled-components';
+import type { TableProps } from 'antd/es/table';
 
 const StyledDeleteTwoTone = styled(DeleteTwoTone)`
   &&& {
@@ -40,8 +41,12 @@ export const NoWrap = styled.div`
   white-space: nowrap;
 `;
 
-export const SpinnerDiv = styled.div`
-  display: ${({ visible = true }: { visible?: boolean }) => (visible ? 'block' : 'none')};
+interface ISpinnerDivProps {
+  visible?: boolean;
+}
+
+export const SpinnerDiv = styled.div<ISpinnerDivProps>`
+  display: ${({ visible = true }) => (visible ? 'block' : 'none')};
   text-align: center;
   width: 100%;
 `;
@@ -65,7 +70,15 @@ export const StyledIcon = ({ type, ...props }: IStyledIconProps) => {
   }
 };
 
-export const StyledTable = styled(Table)`
+export interface IStyledTableProps<RecordType> extends TableProps<RecordType> {
+  minWidth?: number;
+}
+
+const StyledTableComponent = <RecordType extends object>(props: IStyledTableProps<RecordType>) => {
+  return <Table {...props} />;
+};
+
+export const StyledTable = styled(StyledTableComponent)`
   .table-row-red,
   .table-row-red:hover,
   .table-row-red:hover > td,
@@ -74,7 +87,7 @@ export const StyledTable = styled(Table)`
   }
   &&& {
     margin-top: 8px;
-    min-width: ${({ minWidth }: { minWidth?: number }) => (minWidth ? `${minWidth}px` : 'unset')};
+    min-width: ${({ minWidth }) => (minWidth ? `${minWidth}px` : 'unset')};
   }
   &&& .ant-table-scroll > .ant-table-body {
     overflow-x: auto !important;

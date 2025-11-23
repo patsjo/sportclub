@@ -30,7 +30,9 @@ const CustomLineChart = observer(
           <Legend />
           {valueKeys
             .map((valueKey, idx) => ({ valueKey, idx }))
-            .filter(({ valueKey }) => data.some((d) => d[valueKey] > 0))
+            .filter(({ valueKey }) =>
+              data.some((d) => typeof d[valueKey] === 'number' && !isNaN(d[valueKey]) && d[valueKey] > 0),
+            )
             .map(({ valueKey, idx }) => (
               <Line
                 type="monotone"
@@ -45,6 +47,6 @@ const CustomLineChart = observer(
         </LineChart>
       </Col>
     );
-  }
+  },
 );
 export default CustomLineChart;

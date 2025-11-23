@@ -4,9 +4,9 @@
   "editor.formatOnSave": true,
   "eslint.quiet": true,
   "eslint.alwaysShowStatus": true,
-  "eslint.options": {
-    "fixAll": true,
-    "organizeImports": true
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit"
   },
   "eslint.validate": ["javascript", "javascriptreact", "html", "json", "typescript", "typescriptreact"],
   "php.validate.run": "onType",

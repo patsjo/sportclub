@@ -1,11 +1,11 @@
 import { DatePicker, Form, Switch } from 'antd';
 import { FormInstance } from 'antd/lib/form';
 import { observer } from 'mobx-react';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useMobxStore } from 'utils/mobxStore';
-import { useResultWizardStore } from 'utils/resultWizardStore';
+import { useMobxStore } from '../../utils/mobxStore';
+import { useResultWizardStore } from '../../utils/resultWizardStore';
 import { FormSelect, dateFormat, errorRequiredField } from '../../utils/formHelper';
 import FormItem from '../formItems/FormItem';
 
@@ -33,8 +33,8 @@ const InvoiceWizardStep0Input = observer(({ onMount }: IInvoiceWizardStep0InputP
       layout="vertical"
       initialValues={{
         Club: clubModel.raceClubs.selectedClub?.clubId.toString(),
-        QueryStartDate: moment(raceWizardModel.queryStartDate, dateFormat),
-        QueryEndDate: moment(raceWizardModel.queryEndDate, dateFormat),
+        QueryStartDate: dayjs(raceWizardModel.queryStartDate, dateFormat),
+        QueryEndDate: dayjs(raceWizardModel.queryEndDate, dateFormat),
         QueryIncludeExisting: raceWizardModel.queryIncludeExisting,
       }}
     >

@@ -7,16 +7,15 @@ interface IMenuItemProps {
   isSubMenu: boolean;
   level: number;
 }
-const MenuItem = styled(Menu.Item)`
+const MenuItem = styled(Menu.Item)<IMenuItemProps>`
   &&& {
     background-color: #ffffff;
     color: #231f20;
     line-height: 22px !important;
     height: 22px !important;
     padding: 0 !important;
-    margin-left: ${({ isSubMenu, level }: IMenuItemProps) => (isSubMenu ? '24px' : (level - 1) * 24 + 'px')};
-    width: ${({ isSubMenu, level }: IMenuItemProps) =>
-      isSubMenu ? 'calc(100% - 24px)' : 'calc(100% - ' + (level - 1) * 24 + 'px)'};
+    margin-left: ${({ isSubMenu, level }) => (isSubMenu ? '24px' : (level - 1) * 24 + 'px')};
+    width: ${({ isSubMenu, level }) => (isSubMenu ? 'calc(100% - 24px)' : 'calc(100% - ' + (level - 1) * 24 + 'px)')};
   }
   &&&::after {
     border-right: none;

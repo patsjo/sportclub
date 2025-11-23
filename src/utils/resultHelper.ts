@@ -1,4 +1,5 @@
-import { IPersonRaceResult, IPersonResult, ITeamMemberRaceResult, ITeamMemberResult } from 'models/iof.xsd-3.0';
+import dayjs from 'dayjs';
+import { IPersonRaceResult, IPersonResult, ITeamMemberRaceResult, ITeamMemberResult } from '../models/iof.xsd-3.0';
 import {
   IRaceClassClassificationProps,
   IRaceClassLevelProps,
@@ -10,8 +11,7 @@ import {
   IRaceResultProps,
   IRaceTeamResult,
   IRaceTeamResultProps,
-} from 'models/resultModel';
-import moment from 'moment';
+} from '../models/resultModel';
 import { timeFormat } from './formHelper';
 import {
   IEventorEntryFee,
@@ -27,6 +27,7 @@ import {
   PaymentTypes,
   SportCodeTypes,
   difficulties,
+  difficultiesArray,
   distances,
   failedReasons,
   lightConditions,
@@ -53,7 +54,7 @@ export const GetTimeWithHour = (timeString?: string | null): string | null => {
 
 const PrivateFormatTime = (timeString: string): string => {
   const isNegative = timeString.substr(0, 1) === '-';
-  const time = moment(GetTimeWithHour(timeString.replace('-', '')), timeFormat);
+  const time = dayjs(GetTimeWithHour(timeString.replace('-', '')), timeFormat);
 
   if (time.get('hour') === 0) {
     return `${isNegative ? '-' : ''}${time.format('m:ss')}`;
@@ -73,13 +74,13 @@ export const ConvertTimeToSeconds = (timeString: string | null | undefined): num
     if (!timeString || timeString.length < 4) {
       return 0;
     }
-    const momentTime = moment(timeString.length <= 5 ? `0:${timeString}` : timeString, timeFormat);
-    if (!moment.isMoment(momentTime)) {
+    const dayjsTime = dayjs(timeString.length <= 5 ? `0:${timeString}` : timeString, timeFormat);
+    if (!dayjs.isDayjs(dayjsTime)) {
       return 0;
     }
-    const hh = momentTime.get('hour');
-    const mm = momentTime.get('minute');
-    const ss = momentTime.get('second');
+    const hh = dayjsTime.get('hour');
+    const mm = dayjsTime.get('minute');
+    const ss = dayjsTime.get('second');
     return hh * 3600 + mm * 60 + ss;
   } catch (e) {
     return 0;
@@ -91,14 +92,14 @@ const ConvertTimeWithFractionsToSeconds = (timeString: string | null): number =>
     if (!timeString || timeString.length < 8) {
       return 0;
     }
-    const momentTime = moment(timeString, 'HH:mm:ss.SSS');
-    if (!moment.isMoment(momentTime)) {
+    const dayjsTime = dayjs(timeString, 'HH:mm:ss.SSS');
+    if (!dayjs.isDayjs(dayjsTime)) {
       return 0;
     }
-    const hh = momentTime.get('hour');
-    const mm = momentTime.get('minute');
-    const ss = momentTime.get('second');
-    const SSS = momentTime.get('millisecond');
+    const hh = dayjsTime.get('hour');
+    const mm = dayjsTime.get('minute');
+    const ss = dayjsTime.get('second');
+    const SSS = dayjsTime.get('millisecond');
     return hh * 3600 + mm * 60 + ss + SSS / 1000;
   } catch (e) {
     return 0;
@@ -110,7 +111,7 @@ export const ConvertSecondsToTime = (timeInSeconds: number): string => {
   const hours = Math.floor(absTimeInSeconds / 3600);
   const minutes = Math.floor((absTimeInSeconds - hours * 3600) / 60);
   const seconds = Math.floor(absTimeInSeconds - hours * 3600 - minutes * 60);
-  const time = moment({ hours: hours, minutes: minutes, seconds: seconds });
+  const time = dayjs(`${hours}:${minutes}:${seconds}`, 'HH:mm:ss');
   return timeInSeconds < 0 ? `-${time.format('HH:mm:ss')}` : time.format('HH:mm:ss');
 };
 
@@ -120,7 +121,7 @@ export const ConvertSecondsWithFractionsToTime = (timeInSeconds?: number): strin
   const minutes = Math.floor((timeInSeconds - hours * 3600) / 60);
   const seconds = Math.floor(timeInSeconds - hours * 3600 - minutes * 60);
   const milliseconds = Math.floor(1000 * (timeInSeconds - hours * 3600 - minutes * 60 - seconds));
-  const time = moment({ hours: hours, minutes: minutes, seconds: seconds, milliseconds: milliseconds });
+  const time = dayjs(`${hours}:${minutes}:${seconds}`, 'HH:mm:ss');
   return time.format('HH:mm:ss.SSS');
 };
 
@@ -130,36 +131,36 @@ export const WinnerTime = (timeStr: string, timeDiffStr: string | null, position
   } else if (!timeDiffStr) {
     return null;
   }
-  const time = timeStr.length > 5 ? moment(timeStr, 'HH:mm:ss') : moment(`00:${timeStr}`, 'HH:mm:ss');
-  const timeDiff = timeDiffStr.length > 5 ? moment(timeDiffStr, 'HH:mm:ss') : moment(`00:${timeDiffStr}`, 'HH:mm:ss');
+  let time = timeStr.length > 5 ? dayjs(timeStr, 'HH:mm:ss') : dayjs(`00:${timeStr}`, 'HH:mm:ss');
+  const timeDiff = timeDiffStr.length > 5 ? dayjs(timeDiffStr, 'HH:mm:ss') : dayjs(`00:${timeDiffStr}`, 'HH:mm:ss');
 
-  time.subtract(timeDiff.second(), 'seconds');
-  time.subtract(timeDiff.minute(), 'minutes');
-  time.subtract(timeDiff.hour(), 'hours');
+  time = time.subtract(timeDiff.second(), 'seconds');
+  time = time.subtract(timeDiff.minute(), 'minutes');
+  time = time.subtract(timeDiff.hour(), 'hours');
   return time.format('HH:mm:ss');
 };
 
 export const TimeDiff = (time1Str?: string | null, time2Str?: string | null, useFormatTime = false): string => {
   if (!time1Str || !time2Str) return useFormatTime ? PrivateFormatTime('00:00:00') : '00:00:00';
 
-  const time1 = time1Str.length > 5 ? moment(time1Str, 'HH:mm:ss') : moment(`00:${time1Str}`, 'HH:mm:ss');
-  const time2 = time2Str.length > 5 ? moment(time2Str, 'HH:mm:ss') : moment(`00:${time2Str}`, 'HH:mm:ss');
+  let time1 = time1Str.length > 5 ? dayjs(time1Str, 'HH:mm:ss') : dayjs(`00:${time1Str}`, 'HH:mm:ss');
+  let time2 = time2Str.length > 5 ? dayjs(time2Str, 'HH:mm:ss') : dayjs(`00:${time2Str}`, 'HH:mm:ss');
 
   if (time2.isBefore(time1)) {
-    time1.subtract(time2.second(), 'seconds');
-    time1.subtract(time2.minute(), 'minutes');
-    time1.subtract(time2.hour(), 'hours');
+    time1 = time1.subtract(time2.second(), 'seconds');
+    time1 = time1.subtract(time2.minute(), 'minutes');
+    time1 = time1.subtract(time2.hour(), 'hours');
     return `-${useFormatTime ? PrivateFormatTime(time1.format('HH:mm:ss')) : time1.format('HH:mm:ss')}`;
   }
-  time2.subtract(time1.second(), 'seconds');
-  time2.subtract(time1.minute(), 'minutes');
-  time2.subtract(time1.hour(), 'hours');
+  time2 = time2.subtract(time1.second(), 'seconds');
+  time2 = time2.subtract(time1.minute(), 'minutes');
+  time2 = time2.subtract(time1.hour(), 'hours');
   return useFormatTime ? PrivateFormatTime(time2.format('HH:mm:ss')) : time2.format('HH:mm:ss');
 };
 
 export const GetAge = (birthDateStr: string, raceDateStr: string): number => {
-  const raceYear = moment(raceDateStr, 'YYYY-MM-DD').year();
-  const birthYear = moment(birthDateStr, 'YYYY-MM-DD').year();
+  const raceYear = dayjs(raceDateStr, 'YYYY-MM-DD').year();
+  const birthYear = dayjs(birthDateStr, 'YYYY-MM-DD').year();
 
   return raceYear - birthYear;
 };
@@ -176,8 +177,8 @@ export const GetFees = (entryFees: IEventorEntryFee[], entryFeeIds: string[], co
   const competitorEntryFees = entryFees.filter(
     (fee) =>
       entryFeeIds.includes(fee.EntryFeeId) &&
-      (!fee.FromDateOfBirth || moment(competitorBirthday, 'yyyy-mm-dd').isSameOrAfter(fee.FromDateOfBirth.Date)) &&
-      (!fee.ToDateOfBirth || moment(competitorBirthday, 'yyyy-mm-dd').isSameOrBefore(fee.ToDateOfBirth.Date))
+      (!fee.FromDateOfBirth || dayjs(competitorBirthday, 'yyyy-mm-dd').isSameOrAfter(fee.FromDateOfBirth.Date)) &&
+      (!fee.ToDateOfBirth || dayjs(competitorBirthday, 'yyyy-mm-dd').isSameOrBefore(fee.ToDateOfBirth.Date)),
   );
   if (competitorEntryFees == null || competitorEntryFees.length === 0) {
     return fees;
@@ -193,12 +194,12 @@ export const GetFees = (entryFees: IEventorEntryFee[], entryFeeIds: string[], co
       : competitorEntryFees.filter(
           (fee) =>
             (!fee.ValidFromDate || (fee.ValidToDate && fee.ValidToDate.Date === firstValidToDate)) &&
-            (fee['@attributes'].valueOperator ?? 'fixed') === 'fixed'
+            (fee['@attributes'].valueOperator ?? 'fixed') === 'fixed',
         );
   const lateFees = competitorEntryFees.filter(
     (fee) =>
       !originalFees.map((oFee) => oFee.EntryFeeId).includes(fee.EntryFeeId) &&
-      (fee['@attributes'].valueOperator ?? 'fixed') === 'fixed'
+      (fee['@attributes'].valueOperator ?? 'fixed') === 'fixed',
   );
   const extraPercentage = competitorEntryFees.find((fee) => fee['@attributes'].valueOperator === 'percent');
 
@@ -245,7 +246,7 @@ export const GetSecondsWithFractionsPerKiloMeter = (timeString: string, length: 
 export const GetRacePoint = (
   raceEventClassification: IRaceEventClassificationProps,
   raceClassClassification: IRaceClassClassificationProps,
-  result: IRaceResultProps
+  result: IRaceResultProps,
 ): number | null => {
   const basePoint =
     raceEventClassification.basePoint -
@@ -281,7 +282,7 @@ export const GetRacePoint = (
 export const GetRaceOldPoint = (
   raceEventClassification: IRaceEventClassificationProps,
   raceClassClassification: IRaceClassClassificationProps,
-  result: IRaceResultProps
+  result: IRaceResultProps,
 ): number | null => {
   if (
     result.failedReason ||
@@ -301,7 +302,7 @@ export const GetRaceOldPoint = (
     raceEventClassification.oldPositionBasePoint -
       (result.position > 1 ? 5 : 0) -
       (result.position > 2 ? result.position : 0),
-    0
+    0,
   );
   const nofStartsPoint = Math.min(Math.round((result.nofStartsInClass - 1) / 5), 30);
   const competitorTime = ConvertTimeToSeconds(result.competitorTime);
@@ -319,7 +320,7 @@ export const GetRaceOldPoint = (
 export const GetPointRunTo1000 = (
   raceEventClassification: IRaceEventClassificationProps,
   raceClassClassification: IRaceClassClassificationProps,
-  result: IRaceResultProps | IRaceTeamResultProps
+  result: IRaceResultProps | IRaceTeamResultProps,
 ): number | null => {
   const basePoint = raceEventClassification.base1000Point - raceClassClassification.decreaseBase1000Point;
 
@@ -345,10 +346,28 @@ export const GetPointRunTo1000 = (
   return points;
 };
 
+export const GetClassLevel = (classLevels: IRaceClassLevelProps[], classShortName: string | null) => {
+  if (!classShortName) return undefined;
+  let classLevel = classLevels
+    .filter((cl) => classShortName.indexOf(cl.classShortName) >= 0)
+    .sort((a, b) => (a.classShortName.length < b.classShortName.length ? 1 : -1))
+    .find(() => true);
+
+  const difficulty = difficultiesArray.find((d) => classShortName.toLowerCase().indexOf(d.toLowerCase()) >= 0);
+
+  if (!classLevel && difficulty) {
+    classLevel = classLevels
+      .filter((cl) => cl.classTypeShortName === 'Ö' && cl.difficulty === difficulty)
+      .find(() => true);
+  }
+
+  return classLevel;
+};
+
 export const ResetClassClassifications = (
   raceEvent: IRaceEvent,
   eventClassifications: IRaceEventClassificationProps[] | null | undefined,
-  classLevels: IRaceClassLevelProps[]
+  classLevels: IRaceClassLevelProps[],
 ) => {
   let results: IRaceResult[] | IRaceTeamResult[] = [];
   if (raceEvent.results && raceEvent.results.length > 0) {
@@ -357,18 +376,14 @@ export const ResetClassClassifications = (
     results = raceEvent.teamResults;
   }
   results.forEach((result) => {
-    if (!result.deviantEventClassificationId) {
-      const classLevel = classLevels
-        .filter((cl) => result.className.indexOf(cl.classShortName) >= 0)
-        .sort((a, b) => (a.classShortName.length < b.classShortName.length ? 1 : -1))
-        .find(() => true);
-      const classClassificationId = GetClassClassificationId(
-        raceEvent.eventClassificationId as EventClassificationIdTypes | null | undefined,
-        classLevel,
-        eventClassifications
-      );
-      result.setNumberValueOrNull('classClassificationId', classClassificationId);
-    }
+    const classLevel = GetClassLevel(classLevels, result.className);
+    const classClassificationId = GetClassClassificationId(
+      result.deviantEventClassificationId ??
+        (raceEvent.eventClassificationId as EventClassificationIdTypes | null | undefined),
+      classLevel,
+      eventClassifications,
+    );
+    result.setNumberValueOrNull('classClassificationId', classClassificationId);
   });
 };
 
@@ -376,7 +391,7 @@ export const GetCompetitorFee = (
   paymentModel: PaymentTypes,
   result: IRaceResultProps,
   age: number | null,
-  classClassification: IRaceClassClassificationProps | undefined
+  classClassification: IRaceClassClassificationProps | undefined,
 ): number => {
   if (result.originalFee == null || result.lateFee == null) {
     return 0;
@@ -392,14 +407,14 @@ export const GetCompetitorFee = (
       return result.failedReason === failedReasons.NotStarted
         ? result.originalFee + result.lateFee
         : (age === null || age > 20) && (!classClassification || classClassification.classTypeShortName !== 'E')
-        ? result.originalFee / 2 + result.lateFee
-        : result.lateFee;
+          ? result.originalFee / 2 + result.lateFee
+          : result.lateFee;
     case payments.defaultFee50And100IfNotFinished:
       return result.failedReason === failedReasons.NotStarted || result.failedReason === failedReasons.NotFinished
         ? result.originalFee + result.lateFee
         : (age === null || age > 20) && (!classClassification || classClassification.classTypeShortName !== 'E')
-        ? result.originalFee / 2 + result.lateFee
-        : result.lateFee;
+          ? result.originalFee / 2 + result.lateFee
+          : result.lateFee;
     case payments.defaultFeePaidByCompetitor:
       return 0;
     default:
@@ -410,7 +425,7 @@ export const GetCompetitorFee = (
 export const CalculateCompetitorsFee = (
   raceEvent: IRaceEvent,
   selectedClub: IRaceClub,
-  eventClassifications: IRaceEventClassificationProps[]
+  eventClassifications: IRaceEventClassificationProps[],
 ) => {
   if (raceEvent.results && raceEvent.results.length > 0) {
     raceEvent.results.forEach((result) => {
@@ -422,7 +437,7 @@ export const CalculateCompetitorsFee = (
 
       result.setNumberValueOrNull(
         'feeToClub',
-        GetCompetitorFee(raceEvent.paymentModel as PaymentTypes, result, age, classClassification)
+        GetCompetitorFee(raceEvent.paymentModel as PaymentTypes, result, age, classClassification),
       );
     });
   }
@@ -443,21 +458,21 @@ export const GetClassShortName = (className?: string | null): string | null => {
   const inskIndex = className.toLowerCase().indexOf('insk');
 
   if (eIndex >= 0) {
-    return `${className.substr(0, eIndex)}E${className.substr(eIndex + 5)}`;
+    return `${className.substring(0, eIndex)}E${className.substr(eIndex + 5)}`;
   } else if (lIndex >= 0) {
-    return `${className.substr(0, lIndex)}L${className.substr(lIndex + 5)}`;
+    return `${className.substring(0, lIndex)}L${className.substr(lIndex + 5)}`;
   } else if (kIndex >= 0) {
-    return `${className.substr(0, kIndex)}K${className.substr(kIndex + 5)}`;
+    return `${className.substring(0, kIndex)}K${className.substr(kIndex + 5)}`;
   } else if (mIndex >= 0) {
-    return `${className.substr(0, mIndex)}M${className.substr(mIndex + 7)}`;
+    return `${className.substring(0, mIndex)}M${className.substr(mIndex + 7)}`;
   } else if (l2Index >= 0) {
-    return `${className.substr(0, l2Index)}L${className.substr(l2Index + 5)}`;
+    return `${className.substring(0, l2Index)}L${className.substr(l2Index + 5)}`;
   } else if (o3Index >= 0) {
-    return `Ö${className.substr(2)}`;
+    return `Ö${className.substring(2)}`;
   } else if (o2Index >= 0) {
-    return `Ö${className.substr(13)}`;
+    return `Ö${className.substring(13)}`;
   } else if (oIndex >= 0) {
-    return `Ö${className.substr(6)}`;
+    return `Ö${className.substring(6)}`;
   } else if (inskIndex >= 0) {
     return 'INSK';
   } else {
@@ -468,7 +483,7 @@ export const GetClassShortName = (className?: string | null): string | null => {
 export const GetClassClassificationId = (
   eventClassificationId: EventClassificationIdTypes | null | undefined,
   classLevel: IRaceClassLevelProps | null | undefined,
-  eventClassifications: IRaceEventClassificationProps[] | null | undefined
+  eventClassifications: IRaceEventClassificationProps[] | null | undefined,
 ): number | null => {
   if (!eventClassificationId || !classLevel || !eventClassifications) {
     return null;
@@ -483,7 +498,7 @@ export const GetClassClassificationId = (
         (cc.classTypeShortName && cc.classTypeShortName === classLevel.classTypeShortName) ||
         (cc.ageUpperLimit && cc.ageUpperLimit >= classLevel.age) ||
         (cc.ageLowerLimit && cc.ageLowerLimit <= classLevel.age) ||
-        (!cc.classTypeShortName && !cc.ageUpperLimit && !cc.ageLowerLimit)
+        (!cc.classTypeShortName && !cc.ageUpperLimit && !cc.ageLowerLimit),
     )
     .sort((a, b) => (!a.ageUpperLimit ? 1 : b.ageUpperLimit && a.ageUpperLimit > b.ageUpperLimit ? 1 : -1))
     .find(() => true);
@@ -498,7 +513,7 @@ export const GetAward = (
   classLevels: IRaceClassLevelProps[],
   result: IRaceResultProps,
   competitorAge: number | null,
-  isSprint: boolean
+  isSprint: boolean,
 ): AwardTypes | null => {
   if (
     result.failedReason === failedReasons.NotStarted ||
@@ -509,14 +524,10 @@ export const GetAward = (
   }
 
   const classClassification = raceEventClassification.classClassifications?.find(
-    (cc) => cc.classClassificationId === result.classClassificationId
+    (cc) => cc.classClassificationId === result.classClassificationId,
   );
-  let classLevel:
-    | { classShortName: string; classTypeShortName: string; age: number | null; difficulty?: string | null }
-    | undefined = classLevels
-    .filter((cl) => result.className.indexOf(cl.classShortName) >= 0)
-    .sort((a, b) => (a.classShortName.length < b.classShortName.length ? 1 : -1))
-    .find(() => true);
+  const shortClassName = GetClassShortName(result.className);
+  let classLevel = GetClassLevel(classLevels, shortClassName);
 
   if (classClassification) {
     let age = classLevel ? classLevel.age : null;
@@ -527,29 +538,30 @@ export const GetAward = (
     }
 
     classLevel = {
-      age: age,
+      age: age ?? competitorAge ?? 21,
       classShortName: result.className,
       classTypeShortName: classClassification.classTypeShortName ? classClassification.classTypeShortName : 'T',
-      difficulty: result.difficulty,
+      difficulty: classLevel?.difficulty ?? result.difficulty ?? difficulties.black,
     };
   }
 
   if (!classLevel) {
     classLevel = {
-      age: competitorAge,
+      age: competitorAge ?? 21,
       classShortName: result.className,
       classTypeShortName: 'T',
+      difficulty: result.difficulty ?? difficulties.black,
     };
   }
 
   if (classLevel.classTypeShortName === 'Ö') {
-    classLevel.age = competitorAge;
+    classLevel.age = competitorAge ?? classLevel.age;
   }
 
   if (
-    result.className.toLowerCase().indexOf('insk') >= 0 ||
-    result.className.toLowerCase().indexOf('u') >= 0 ||
-    ((result.className.toLowerCase().indexOf('ö') >= 0 ||
+    classLevel.classTypeShortName === 'I' ||
+    result.className.toLowerCase().startsWith('u') ||
+    ((classLevel.classTypeShortName === 'Ö' ||
       result.failedReason === failedReasons.Finished ||
       result.failedReason === failedReasons.Approved) &&
       classLevel.age &&
@@ -557,6 +569,7 @@ export const GetAward = (
   ) {
     return 'UJ';
   }
+
   if (result.failedReason != null || result.nofStartsInClass == null || result.nofStartsInClass < 2) {
     return null;
   }
@@ -678,7 +691,7 @@ export const GetAward = (
 
 export const CalculateAllAwards = (raceClubs: IRaceClubs, raceEvent: IRaceEvent) => {
   const raceEventClassification = raceClubs.eventClassifications.find(
-    (ec) => ec.eventClassificationId === raceEvent.eventClassificationId
+    (ec) => ec.eventClassificationId === raceEvent.eventClassificationId,
   );
   if (raceEventClassification)
     raceEvent.results?.forEach((result) => {
@@ -692,9 +705,9 @@ export const CalculateAllAwards = (raceClubs: IRaceClubs, raceEvent: IRaceEvent)
               raceClubs.classLevels,
               result,
               age,
-              raceEvent.raceDistance === distances.sprint
+              raceEvent.raceDistance === distances.sprint,
             )
-          : null
+          : null,
       );
     });
 };
@@ -704,7 +717,7 @@ export const GetRanking = (
   rankingBasepoint: number,
   result: IRaceResultProps | IRaceTeamResultProps,
   sportCode: SportCodeTypes,
-  raceLightCondition: LightConditionTypes
+  raceLightCondition: LightConditionTypes,
 ): number | null => {
   if (
     sportCode === 'INOL' ||
@@ -760,8 +773,8 @@ export const GetRanking = (
         (result.deviantRaceLightCondition === lightConditions.day
           ? 0
           : result.deviantRaceLightCondition === lightConditions.night
-          ? 0.03
-          : 0.02);
+            ? 0.03
+            : 0.02);
       baseLengthInMeter *= lengthFactor;
     }
   } else if (sportCode === 'SKIO') {
@@ -794,7 +807,7 @@ interface ISplitTimes {
 }
 
 const GetBestSplitTimes = (
-  splitTimes: ISplitTimes[]
+  splitTimes: ISplitTimes[],
 ): { bestSplitTimes: ISplitTime[]; secondBestSplitTimes: ISplitTime[] } => {
   let bestSplitTimes: ISplitTime[] = [];
   let secondBestSplitTimes: ISplitTime[] = [];
@@ -810,7 +823,7 @@ const GetBestSplitTimes = (
     }));
     secondBestSplitTimes = uniqueSplitTimes.map((controlCode) => {
       const firstTime = Math.min(
-        ...allSplitTimes.filter((ast) => ast.controlCode === controlCode).map((ast) => ast.time)
+        ...allSplitTimes.filter((ast) => ast.controlCode === controlCode).map((ast) => ast.time),
       );
       const secondTime = allSplitTimes
         .filter((ast) => ast.controlCode === controlCode)
@@ -844,7 +857,7 @@ const GetBestSplitTimes = (
 };
 
 export const GetSplitTimes = (
-  personResults: IEventorPersonResult[]
+  personResults: IEventorPersonResult[],
 ): { splitTimes: ISplitTimes[]; bestSplitTimes: ISplitTime[]; secondBestSplitTimes: ISplitTime[] } => {
   const splitTimes: ISplitTimes[] = personResults
     .filter((pr) => {
@@ -876,16 +889,16 @@ export const GetSplitTimes = (
               controlCode: `${i === 0 ? 'S' : stArray[i - 1].controlCode}-${st.controlCode}`,
               controlOrder: st.sequence,
               time: i === 0 ? st.time : st.time - stArray[i - 1].time,
-            })
+            }),
           )
           .sort((a, b) => (a.controlCode > b.controlCode ? 1 : b.controlCode > a.controlCode ? -1 : 0)),
-      })
+      }),
     );
   return { splitTimes, ...GetBestSplitTimes(splitTimes) };
 };
 
 export const GetIOFSplitTimes = (
-  personResults: (Omit<IPersonResult, 'Result'> & { Result?: IPersonRaceResult })[]
+  personResults: (Omit<IPersonResult, 'Result'> & { Result?: IPersonRaceResult })[],
 ): { splitTimes: ISplitTimes[]; bestSplitTimes: ISplitTime[]; secondBestSplitTimes: ISplitTime[] } => {
   const splitTimes: ISplitTimes[] = personResults
     .filter((pr) => {
@@ -911,10 +924,10 @@ export const GetIOFSplitTimes = (
               controlCode: `${i === 0 ? 'S' : stArray[i - 1].controlCode}-${st.controlCode}`,
               controlOrder: st.sequence,
               time: i === 0 ? st.time : st.time - stArray[i - 1].time,
-            })
+            }),
           )
           .sort((a, b) => (a.controlCode > b.controlCode ? 1 : b.controlCode > a.controlCode ? -1 : 0)),
-      })
+      }),
     );
   return { splitTimes, ...GetBestSplitTimes(splitTimes) };
 };
@@ -928,7 +941,7 @@ interface IRelaySplitTime {
 export const GetRelaySplitTimes = (teamResults: IEventorTeamResult[]): IRelaySplitTime[] => {
   const allTeamMemberResult = teamResults.reduce(
     (a, b) => a.concat(b.TeamMemberResult),
-    [] as IEventorTeamMemberResult[]
+    [] as IEventorTeamMemberResult[],
   );
   const allLegsSplitTimes: IRelaySplitTime[] = allTeamMemberResult
     .map((r) => r.Leg)
@@ -973,13 +986,13 @@ export const GetRelaySplitTimes = (teamResults: IEventorTeamResult[]): IRelaySpl
 export const GetIOFRelaySplitTimes = (
   teamResults: {
     TeamMemberResult: (Omit<ITeamMemberResult, 'Result'> & { Result?: ITeamMemberRaceResult })[] | undefined;
-  }[]
+  }[],
 ): IRelaySplitTime[] => {
   const allTeamMemberResult = teamResults
     .filter((tr) => tr.TeamMemberResult)
     .reduce(
       (a, b) => a.concat(b.TeamMemberResult!),
-      [] as (Omit<ITeamMemberResult, 'Result'> & { Result?: ITeamMemberRaceResult })[]
+      [] as (Omit<ITeamMemberResult, 'Result'> & { Result?: ITeamMemberRaceResult })[],
     );
   const allLegsSplitTimes: IRelaySplitTime[] = allTeamMemberResult
     .filter((r) => r.Result?.Leg != null)
@@ -1025,7 +1038,7 @@ export const GetMissingTime = (
   personId: string | number,
   splitTimes: ISplitTimes[],
   bestSplitTimes: ISplitTime[],
-  secondBestSplitTimes: ISplitTime[]
+  secondBestSplitTimes: ISplitTime[],
 ): string | null => {
   let totalMissingTimeSeconds = 0;
 
@@ -1061,7 +1074,7 @@ export const GetMissingTime = (
         pst.bestSplitTime &&
         pst.bestSplitTime.time >= shortTimeLimit &&
         pst.bestSplitTime.nofTimes &&
-        pst.bestSplitTime.nofTimes >= Math.round(splitTimes.length / 2)
+        pst.bestSplitTime.nofTimes >= Math.round(splitTimes.length / 2),
     );
     countTop25Percentage = Math.round(personSplitTimesWithoutTheShortest.length / 4);
 
@@ -1113,7 +1126,7 @@ export const GetMissingTime = (
           ? Math.trunc(
               pst.time -
                 (pst.time === pst.bestSplitTime.time ? pst.secondBestSplitTime.time : pst.bestSplitTime.time) *
-                  (1.0 + baseLineM + baseLineK * pst.controlOrder!)
+                  (1.0 + baseLineM + baseLineK * pst.controlOrder!),
             )
           : 0;
 

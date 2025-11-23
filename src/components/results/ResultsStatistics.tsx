@@ -1,12 +1,12 @@
 import { message, Spin } from 'antd';
-import { ICustomChart } from 'components/charts/ChartInterface';
-import CustomLineChart from 'components/charts/CustomLineChart';
-import CustomStackedBarChart from 'components/charts/CustomStackedBarChart';
+import { ICustomChart } from '../charts/ChartInterface';
+import CustomLineChart from '../charts/CustomLineChart';
+import CustomStackedBarChart from '../charts/CustomStackedBarChart';
 import { observer } from 'mobx-react';
 import React, { useRef, useState } from 'react';
 import styled from 'styled-components';
-import { useMobxStore } from 'utils/mobxStore';
-import { useSize } from 'utils/useSize';
+import { useMobxStore } from '../../utils/mobxStore';
+import { useSize } from '../../utils/useSize';
 import { PostJsonData } from '../../utils/api';
 import { SpinnerDiv } from '../styled/styled';
 

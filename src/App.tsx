@@ -23,16 +23,17 @@ const SpinnerDiv = styled.div`
 interface IStickyHolderProps {
   top: number;
 }
-const StickyHolder = styled.div`
+const StickyHolder = styled.div<IStickyHolderProps>`
   position: -webkit-sticky;
   position: sticky;
-  top: ${({ top }: IStickyHolderProps) => top}px;
+  top: ${({ top }) => top}px;
   transition: top 0.3s;
   z-index: 1000;
 `;
 
 const LayoutHeader = styled(Layout.Header)`
   &&& {
+    line-height: unset;
     color: ${(props) => props.theme.palette.primary.contrastText};
     background-color: ${(props) => props.theme.palette.primary.main};
     padding-left: 10px;
@@ -44,7 +45,9 @@ const LayoutHeader = styled(Layout.Header)`
     align-items: center;
     -webkit-box-pack: justify;
     justify-content: space-between;
-    box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2), 0px 4px 5px 0px rgba(0, 0, 0, 0.14),
+    box-shadow:
+      0px 2px 4px -1px rgba(0, 0, 0, 0.2),
+      0px 4px 5px 0px rgba(0, 0, 0, 0.14),
       0px 1px 10px 0px rgba(0, 0, 0, 0.12);
   }
 `;
@@ -69,14 +72,14 @@ const StyledLogo = styled.img`
 interface IStyledTitleLogoProps {
   maxWidth: number;
 }
-const StyledTitleLogo = styled.img`
+const StyledTitleLogo = styled.img<IStyledTitleLogoProps>`
   & {
     margin-top: 10px;
     margin-bottom: 10px;
     display: inline-flex;
     cursor: pointer;
   }
-  @media screen and (max-width: ${({ maxWidth }: IStyledTitleLogoProps) => maxWidth}px) {
+  @media screen and (max-width: ${({ maxWidth }) => maxWidth}px) {
     display: none !important;
   }
 `;
@@ -84,7 +87,7 @@ const StyledTitleLogo = styled.img`
 interface IStyledHeaderProps {
   maxWidth: number;
 }
-const StyledHeader = styled.div`
+const StyledHeader = styled.div<IStyledHeaderProps>`
   & {
     cursor: pointer;
     margin-top: 20px;
@@ -94,10 +97,10 @@ const StyledHeader = styled.div`
     white-space: nowrap;
     display: inline-flex;
     overflow: hidden;
-    width: calc(100% - 190px - ${({ maxWidth }: IStyledHeaderProps) => maxWidth}px);
+    width: calc(100% - 190px - ${({ maxWidth }) => maxWidth}px);
   }
   @media screen and (max-width: 719px) {
-    width: calc(100% - ${({ maxWidth }: IStyledHeaderProps) => maxWidth}px);
+    width: calc(100% - ${({ maxWidth }) => maxWidth}px);
   }
 `;
 
@@ -110,6 +113,7 @@ const StyledEllipsis = styled.div`
 `;
 
 const App = () => {
+  const [messageApi, contextHolder] = message.useMessage();
   const scrollTop = useRef(0);
   const [scrollStickyPos, setScrollStickyPos] = useState(0);
   const sessionModel = useRef<ISessionModel>(new SessionModel(getLocalStorage()));
@@ -145,7 +149,7 @@ const App = () => {
               },
             ]
           : [],
-    })
+    }),
   );
 
   const onScroll = useCallback(() => {
@@ -165,7 +169,7 @@ const App = () => {
     const filesModule = clubModel.current.modules.find((module) => module.name === 'Files');
 
     document.title = clubModel.current.title;
-    globalStateModel.current.fetchHtmlEditorMenu(htmlEditorModule, filesModule, sessionModel.current, message);
+    globalStateModel.current.fetchHtmlEditorMenu(htmlEditorModule, filesModule, sessionModel.current, messageApi);
     window.addEventListener('scroll', onScroll);
 
     if (sessionModel.current.username && sessionModel.current.username.length > 0) {
@@ -177,7 +181,7 @@ const App = () => {
         },
         true,
         { 'X-Requested-With': 'XMLHttpRequest' },
-        1
+        1,
       )
         .then((json) => {
           if (json) {
@@ -219,6 +223,7 @@ const App = () => {
         globalStateModel: globalStateModel.current,
       }}
     >
+      {contextHolder}
       <ThemeProvider theme={clubModel.current.theme}>
         <Suspense
           fallback={

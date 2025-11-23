@@ -1,13 +1,13 @@
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import { Col, message, Row, Skeleton } from 'antd';
 import { observer } from 'mobx-react';
-import { IGraphic } from 'models/graphic';
-import moment from 'moment';
+import { IGraphic } from '../../../models/graphic';
+import dayjs from 'dayjs';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
-import { useMobxStore } from 'utils/mobxStore';
-import { ICalendarActivity, ICalendarDomains, ICalendarEvent } from 'utils/responseCalendarInterfaces';
+import { useMobxStore } from '../../../utils/mobxStore';
+import { ICalendarActivity, ICalendarDomains, ICalendarEvent } from '../../../utils/responseCalendarInterfaces';
 import { PostJsonData } from '../../../utils/api';
 import { DirectionPngUrl } from '../../map/OSMOrienteeringMap';
 import { GetDates } from '../calendarHelper';
@@ -65,12 +65,13 @@ const ActivityUrl = styled.a`
 
 const DirectionImage = styled.img`
   margin-left: 4px;
+  vertical-align: text-bottom;
 `;
 
 const WeeklyCalendar = observer(() => {
   const { clubModel, globalStateModel } = useMobxStore();
   const { t } = useTranslation();
-  const [firstDateInWeek, setFirstDateInWeek] = useState(moment().startOf('day').isoWeekday(1));
+  const [firstDateInWeek, setFirstDateInWeek] = useState(dayjs().startOf('day').isoWeekday(1));
   const [loaded, setLoaded] = useState(false);
   const [activities, setActivities] = useState<ICalendarActivity[]>([]);
   const [domains, setDomains] = useState<ICalendarDomains>({ activityTypes: [], groups: [], users: [] });
@@ -117,7 +118,7 @@ const WeeklyCalendar = observer(() => {
                 name: act.header,
                 time: act.date + (act.time === '00:00' ? '' : ` ${act.time}`),
               },
-            })
+            }),
           );
         const eventGraphics = eventsJson
           .filter((event) => event.longitude && event.latitude)
@@ -133,7 +134,7 @@ const WeeklyCalendar = observer(() => {
                 name: `${event.organiserName}, ${event.name}`,
                 time: event.date + (event.time === '00:00' ? '' : ` ${event.time}`),
               },
-            })
+            }),
           );
         isMounted && globalStateModel.setGraphics(['calendar', 'event'], [...activityGraphics, ...eventGraphics]);
         isMounted && setDomains(domainsJson);
@@ -179,7 +180,7 @@ const WeeklyCalendar = observer(() => {
             <LeftOutlined onClick={onPrevious} />
           </Col>
           <Col span={16} style={{ textAlign: 'center' }}>{`${t('calendar.Week')} ${firstDateInWeek.format(
-            'W - GGGG'
+            'W - GGGG',
           )}`}</Col>
           <Col span={4} style={{ textAlign: 'right' }}>
             <RightOutlined onClick={onNext} />
@@ -227,7 +228,7 @@ const WeeklyCalendar = observer(() => {
                           </ActivityUrl>
                         ) : null}
                       </CalendarItem>
-                    )
+                    ),
                   )}
               </Skeleton>
             </Col>

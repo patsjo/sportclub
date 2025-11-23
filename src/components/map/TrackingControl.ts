@@ -1,7 +1,7 @@
 import { TFunction } from 'i18next';
 import { Control } from 'ol/control';
 import { getWidth } from 'ol/extent';
-import Feature from 'ol/Feature';
+import Feature, { FeatureLike } from 'ol/Feature';
 import Geolocation from 'ol/Geolocation';
 import { Geometry, Point, Polygon } from 'ol/geom';
 import { Vector as VectorLayer } from 'ol/layer';
@@ -11,7 +11,7 @@ import { Vector as VectorSource } from 'ol/source';
 import * as wgs84Sphere from 'ol/sphere';
 import { Circle as CircleStyle, Fill as FillStyle, Icon as IconStyle, Stroke as StrokeStyle, Style } from 'ol/style';
 import View from 'ol/View';
-import { ConvertSecondsToTime, FormatTime } from 'utils/resultHelper';
+import { ConvertSecondsToTime, FormatTime } from '../../utils/resultHelper';
 import { mapProjection } from './useOpenLayersMap';
 
 const maxAccuracy = 25;
@@ -43,8 +43,8 @@ export class TrackingControl extends Control {
   private latestPosition?: number[];
   private accuracyFeature?: Feature<Polygon>;
   private positionFeature?: Feature<Point>;
-  private positionLayer?: VectorLayer<VectorSource<Geometry>>;
-  private oldPositionsLayer?: VectorLayer<VectorSource<Geometry>>;
+  private positionLayer?: VectorLayer;
+  private oldPositionsLayer?: VectorLayer;
   private intervalId?: NodeJS.Timeout;
   private setTrackingText: (htmlText?: string) => void;
 
@@ -120,20 +120,20 @@ export class TrackingControl extends Control {
             ctx.strokeStyle = 'rgba(224,48,32,0.75)';
             ctx.stroke();
           },
-        })
+        }),
       );
 
       this.positionFeature = new Feature();
       this.positionFeature.setStyle(
         new Style({
           image: new IconStyle({
-            imgSize: [31, 31],
+            size: [31, 31],
             img: trackingCanvas,
           }),
-        })
+        }),
       );
       this.positionLayer = new VectorLayer({
-        source: new VectorSource<Geometry>({
+        source: new VectorSource({
           features: [this.accuracyFeature, this.positionFeature],
         }),
       });
@@ -151,7 +151,7 @@ export class TrackingControl extends Control {
             }),
           }),
         }),
-        source: new VectorSource<Point>({
+        source: new VectorSource({
           features: [],
         }),
       });
@@ -256,7 +256,7 @@ export class TrackingControl extends Control {
       if (pos && this.latestPosition) {
         const dist = wgs84Sphere.getDistance(
           proj.transform(this.latestPosition, mapProjection, 'EPSG:4326'),
-          proj.transform(pos, mapProjection, 'EPSG:4326')
+          proj.transform(pos, mapProjection, 'EPSG:4326'),
         );
         if (dist > Math.max(0.15 * this.accuracy, 0.75 * maxAccuracy)) coordsOutsideAccuracy.push(pos);
       }
@@ -265,7 +265,7 @@ export class TrackingControl extends Control {
       (coord) =>
         new Feature<Point>({
           geometry: new Point(coord),
-        })
+        }),
     );
     this.oldPositionsLayer?.getSource()?.clear();
     this.oldPositionsLayer?.getSource()?.addFeatures(features);

@@ -1,32 +1,33 @@
 import { CaretRightOutlined, FileOutlined, LinkOutlined, SettingOutlined } from '@ant-design/icons';
 import { Menu } from 'antd';
 import { FormInstance } from 'antd/lib/form';
+import { MessageInstance } from 'antd/lib/message/interface';
 import { TFunction } from 'i18next';
-import { IGlobalStateModel } from 'models/globalStateModel';
-import { IMenu, IMenuItem } from 'models/htmlEditorModel';
-import { IMobxClubModel } from 'models/mobxClubModel';
-import { ISessionModel } from 'models/sessionModel';
 import styled from 'styled-components';
-import { DownloadData } from 'utils/api';
+import { IGlobalStateModel } from '../../models/globalStateModel';
+import { IMenu, IMenuItem } from '../../models/htmlEditorModel';
+import { IMobxClubModel } from '../../models/mobxClubModel';
+import { ISessionModel } from '../../models/sessionModel';
+import { DownloadData } from '../../utils/api';
 import MaterialIcon from '../materialIcon/MaterialIcon';
 import MenuItem from '../menu/MenuItem';
-import { HtmlEditorLinkModal } from './HtmlEditorLinkModal';
 import { FileEditorModal } from './FileEditorModal';
 import { FolderEditorModal } from './FolderEditorModal';
+import { HtmlEditorLinkModal } from './HtmlEditorLinkModal';
 
 interface IStyledSubMenu {
   level: number;
 }
-const StyledSubMenu = styled(Menu.SubMenu)`
+const StyledSubMenu = styled(Menu.SubMenu)<IStyledSubMenu>`
   &&& {
-    line-height: 22px;
+    line-height: 22px !important;
     padding: 0;
   }
   &&& .ant-menu-submenu-title {
-    margin-left: ${(props: IStyledSubMenu) => (props.level - 1) * 24}px;
-    width: calc(100% - ${(props: IStyledSubMenu) => (props.level - 1) * 24}px);
-    line-height: 22px;
-    height: 22px;
+    margin-left: ${(props) => (props.level - 1) * 24}px;
+    width: calc(100% - ${(props) => (props.level - 1) * 24}px);
+    line-height: 22px !important;
+    height: 22px !important;
     padding: 0 !important;
   }
 `;
@@ -39,7 +40,8 @@ const getMenuItems = (
   t: TFunction,
   globalStateModel: IGlobalStateModel,
   sessionModel: ISessionModel,
-  clubModel: IMobxClubModel
+  clubModel: IMobxClubModel,
+  messageApi: MessageInstance,
 ) =>
   items.map((item) => (
     <MenuItem
@@ -71,7 +73,8 @@ const getMenuItems = (
                 htmEditorLinkform,
                 globalStateModel,
                 sessionModel,
-                clubModel
+                clubModel,
+                messageApi,
               )
                 .then()
                 .catch((error) => {
@@ -87,7 +90,7 @@ const getMenuItems = (
             onClick={(event) => {
               event.stopPropagation();
               globalStateModel.setRightMenuVisible(false);
-              FileEditorModal(t, item.fileId!, fileEditorForm, globalStateModel, sessionModel, clubModel)
+              FileEditorModal(t, item.fileId!, fileEditorForm, globalStateModel, sessionModel, clubModel, messageApi)
                 .then()
                 .catch((error) => {
                   console.error(error);
@@ -113,7 +116,7 @@ const getMenuItems = (
               username: sessionModel.username,
               password: sessionModel.password,
             },
-            sessionModel.authorizationHeader
+            sessionModel.authorizationHeader,
           );
         }
       }}
@@ -129,7 +132,8 @@ export const getHtmlEditorMenus = (
   t: TFunction,
   globalStateModel: IGlobalStateModel,
   sessionModel: ISessionModel,
-  clubModel: IMobxClubModel
+  clubModel: IMobxClubModel,
+  messageApi: MessageInstance,
 ) => (
   <>
     {getMenuItems(
@@ -140,7 +144,8 @@ export const getHtmlEditorMenus = (
       t,
       globalStateModel,
       sessionModel,
-      clubModel
+      clubModel,
+      messageApi,
     )}
     {menu.subMenus.map((subMenu) => (
       <StyledSubMenu
@@ -160,7 +165,15 @@ export const getHtmlEditorMenus = (
                 onClick={(event) => {
                   event.stopPropagation();
                   globalStateModel.setRightMenuVisible(false);
-                  FolderEditorModal(t, subMenu.folderId!, fileEditorForm, globalStateModel, sessionModel, clubModel)
+                  FolderEditorModal(
+                    t,
+                    subMenu.folderId!,
+                    fileEditorForm,
+                    globalStateModel,
+                    sessionModel,
+                    clubModel,
+                    messageApi,
+                  )
                     .then()
                     .catch((error) => {
                       console.error(error);
@@ -181,7 +194,8 @@ export const getHtmlEditorMenus = (
           t,
           globalStateModel,
           sessionModel,
-          clubModel
+          clubModel,
+          messageApi,
         )}
       </StyledSubMenu>
     ))}

@@ -1,8 +1,8 @@
-<FilesMatch "\.(gif|jpg|jpeg|png)$">
-  <IfModule mod_headers.c>
-    Header always set Access-Control-Allow-Origin "*"
-  </IfModule>
-</FilesMatch>
+
+<IfModule mod_headers.c>
+    SetEnvIfNoCase Query_String "\.(gif|jpg|jpeg|png)$" isImage=1
+    Header always set Access-Control-Allow-Origin "*" env=isImage
+</IfModule>
 
 <IfModule mod_rewrite.c> 
   Options -MultiViews

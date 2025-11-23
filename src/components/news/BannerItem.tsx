@@ -1,9 +1,9 @@
-import { IChildContainerProps } from 'components/dashboard/columns/mapNodesToColumns';
+import { IChildContainerProps } from '../dashboard/columns/mapNodesToColumns';
 import { observer } from 'mobx-react';
-import { INewsItem } from 'models/newsModel';
+import { INewsItem } from '../../models/newsModel';
 import React from 'react';
 import styled from 'styled-components';
-import { useMobxStore } from 'utils/mobxStore';
+import { useMobxStore } from '../../utils/mobxStore';
 import { PostJsonData } from '../../utils/api';
 import { getImage } from '../../utils/imageHelper';
 import FadeOutItem from '../fadeOutItem/FadeOutItem';
@@ -114,6 +114,7 @@ const BannerItem = observer(({ ref, newsObject }: IBannerItemProps) => {
   return newsModule && (sessionModel.loggedIn || !newsObject.link) ? (
     <FadeOutItem
       ref={ref}
+      paddingBottom={0}
       module={newsModule}
       content={
         <BannerHolder hasImage={Image != null}>
@@ -143,7 +144,7 @@ const BannerItem = observer(({ ref, newsObject }: IBannerItemProps) => {
             password: sessionModel.password,
           },
           true,
-          sessionModel.authorizationHeader
+          sessionModel.authorizationHeader,
         )
       }
       onDelete={() => globalStateModel.news?.removeNewsItem(newsObject)}

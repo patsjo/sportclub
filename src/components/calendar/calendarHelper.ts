@@ -1,18 +1,18 @@
 import { TFunction } from 'i18next';
-import moment from 'moment';
+import dayjs from 'dayjs';
 
-const GetDayOfWeek = (date: moment.Moment, t: TFunction): string => {
+const GetDayOfWeek = (date: dayjs.Dayjs, t: TFunction): string => {
   const dayOfWeek = date.isoWeekday();
   return t(`calendar.DayOfWeek${dayOfWeek}`);
 };
 
-export const GetMonthName = (date: moment.Moment, t: TFunction): string => {
+export const GetMonthName = (date: dayjs.Dayjs, t: TFunction): string => {
   const month = date.format('M');
   const year = date.format('YYYY');
   return `${t(`calendar.Month${month}`)} - ${year}`;
 };
 
-const GetGaussEasterSunday = (year: number): moment.Moment => {
+const GetGaussEasterSunday = (year: number): dayjs.Dayjs => {
   const a = year % 19;
   const b = year % 4;
   const c = year % 7;
@@ -23,7 +23,7 @@ const GetGaussEasterSunday = (year: number): moment.Moment => {
   const N = (4 + k - q) % 7;
   const d = (19 * a + M) % 30;
   const e = (2 * b + 4 * c + 6 * d + N) % 7;
-  const easterSunday = moment(`${year.toString()}-03-22`, 'YYYY-MM-DD');
+  const easterSunday = dayjs(`${year.toString()}-03-22`, 'YYYY-MM-DD');
   easterSunday.add(d + e, 'days');
 
   if (d === 29 && e === 6) {
@@ -36,7 +36,7 @@ const GetGaussEasterSunday = (year: number): moment.Moment => {
   return easterSunday;
 };
 
-const GetHolidayName = (date: moment.Moment, t: TFunction): string | undefined => {
+const GetHolidayName = (date: dayjs.Dayjs, t: TFunction): string | undefined => {
   if (!date) {
     return undefined;
   }
@@ -86,7 +86,7 @@ const GetHolidayName = (date: moment.Moment, t: TFunction): string | undefined =
   return undefined;
 };
 
-const GetHolidayColor = (date: moment.Moment): 'grey' | 'red' | 'black' | undefined => {
+const GetHolidayColor = (date: dayjs.Dayjs): 'grey' | 'red' | 'black' | undefined => {
   if (!date) {
     return undefined;
   }
@@ -118,13 +118,13 @@ const GetHolidayColor = (date: moment.Moment): 'grey' | 'red' | 'black' | undefi
 };
 
 interface IDate {
-  date: moment.Moment;
+  date: dayjs.Dayjs;
   dayOfWeek: string;
   color: 'grey' | 'red' | 'black' | undefined;
   holidayName?: string;
 }
 
-export const GetDates = (startDate: moment.Moment, numberOfDates: number, t: TFunction) => {
+export const GetDates = (startDate: dayjs.Dayjs, numberOfDates: number, t: TFunction) => {
   const dates: IDate[] = [];
 
   for (let i = 0; i < numberOfDates; i++) {

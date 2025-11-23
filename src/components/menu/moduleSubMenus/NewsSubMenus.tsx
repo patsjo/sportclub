@@ -1,9 +1,9 @@
 import { observer } from 'mobx-react';
-import { INewsItemProps, NewsItem } from 'models/newsModel';
+import { INewsItemProps, NewsItem } from '../../../models/newsModel';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { useMobxStore } from 'utils/mobxStore';
+import { useMobxStore } from '../../../utils/mobxStore';
 import NewsEdit from '../../news/NewsEdit';
 import MenuItem from '../MenuItem';
 

@@ -7,7 +7,7 @@ import { UploadRequestOption as RcCustomRequestOptions } from 'rc-upload/lib/int
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
-import { IFile } from 'utils/formHelper';
+import { IFile } from '../../utils/formHelper';
 import { getFileType } from '../../utils/fileHelper';
 import FileIcon from '../materialIcon/FileIcon';
 import MaterialIcon from '../materialIcon/MaterialIcon';
@@ -15,10 +15,14 @@ import FormItem from './FormItem';
 
 declare type BeforeUploadValueType = void | boolean | string | Blob | File;
 
-const StyledUploadDragger = styled(Upload.Dragger)`
+interface IStyledUploadDraggerProps {
+  visible: boolean;
+}
+
+const StyledUploadDragger = styled(Upload.Dragger)<IStyledUploadDraggerProps>`
   &&&.ant-upload.ant-upload-drag {
     margin-top: 5px;
-    display: ${({ visible }: { visible: boolean }) => (visible ? 'block' : 'none')};
+    display: ${({ visible }) => (visible ? 'block' : 'none')};
   }
   &.upload-list-inline .ant-upload-list-item {
     float: left;
@@ -200,7 +204,7 @@ const UploadDragger = ({
   return (
     <FormItem name={fieldName} valuePropName="fileList" getValueFromEvent={onNormFiles}>
       {asThumbnail ? (
-        <ImgCrop rotate quality={0.9} beforeCrop={(file) => validFile(file) && file.size <= maxByteSize && asThumbnail}>
+        <ImgCrop quality={0.9} beforeCrop={(file) => validFile(file) && file.size <= maxByteSize && asThumbnail}>
           <StyledUploadDragger
             type="drag"
             customRequest={addFile}

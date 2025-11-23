@@ -1,12 +1,11 @@
 import { Col, Form, Input, InputNumber, Row, Select } from 'antd';
-import InputTime, { stringToMilliSeconds } from 'components/formItems/InputTime';
-import { IMobxClubModel } from 'models/mobxClubModel';
-import { IRaceTeamResult, IRaceTeamResultProps } from 'models/resultModel';
-import { IRaceWizard } from 'models/resultWizardModel';
-import { ISessionModel } from 'models/sessionModel';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
+import { IMobxClubModel } from '../../models/mobxClubModel';
+import { IRaceTeamResult, IRaceTeamResultProps } from '../../models/resultModel';
+import { IRaceWizard } from '../../models/resultWizardModel';
+import { ISessionModel } from '../../models/sessionModel';
 import { FormSelect, INumberOption, errorRequiredField, hasErrors, timeFormat } from '../../utils/formHelper';
 import {
   DifficultyTypes,
@@ -18,8 +17,9 @@ import {
   failedReasons,
   raceLightConditionOptions,
 } from '../../utils/resultConstants';
-import { GetClassClassificationId } from '../../utils/resultHelper';
+import { GetClassClassificationId, GetClassLevel, GetClassShortName } from '../../utils/resultHelper';
 import FormItem from '../formItems/FormItem';
+import InputTime, { stringToMilliSeconds } from '../formItems/InputTime';
 import { StyledIcon } from '../styled/styled';
 import { AddMapCompetitorConfirmModal } from './AddMapCompetitorConfirmModal';
 
@@ -160,7 +160,7 @@ const EditResultRelay = ({
                   },
                   result.className,
                   clubModel,
-                  sessionModel
+                  sessionModel,
                 )
                   .then((competitor) => {
                     result.competitorId = competitor ? competitor.competitorId : -1;
@@ -209,16 +209,14 @@ const EditResultRelay = ({
             <Input
               onChange={(e) => {
                 result.className = e.currentTarget.value;
-                const classLevel = raceClubs.classLevels
-                  .filter((cl) => result.className.indexOf(cl.classShortName) >= 0)
-                  .sort((a, b) => (a.classShortName.length < b.classShortName.length ? 1 : -1))
-                  .find(() => true);
+                const shortClassName = GetClassShortName(result.className);
+                const classLevel = GetClassLevel(raceClubs.classLevels, shortClassName);
                 result.classClassificationId = GetClassClassificationId(
                   result.deviantEventClassificationId
                     ? (result.deviantEventClassificationId as EventClassificationIdTypes)
                     : eventClassificationId,
                   classLevel,
-                  raceClubs.eventClassifications
+                  raceClubs.eventClassifications,
                 );
                 result.difficulty = classLevel ? classLevel.difficulty : null;
                 formRef.current.setFieldsValue({
@@ -233,7 +231,7 @@ const EditResultRelay = ({
                     r.failedReason == null &&
                     r.teamResultId !== result.teamResultId &&
                     r.classClassificationId != null &&
-                    r.difficulty != null
+                    r.difficulty != null,
                 );
                 if (resultWithSameClass && autoUpdateResultWithSameClass) {
                   result.classClassificationId = resultWithSameClass.classClassificationId;
@@ -260,7 +258,7 @@ const EditResultRelay = ({
                       'iTotalNofStartsInClass',
                       'iDeviantEventClassificationId',
                     ],
-                    { force: true }
+                    { force: true },
                   );
                 }
                 const resultWithSameClassAndTeam = results.find(
@@ -271,7 +269,7 @@ const EditResultRelay = ({
                     r.teamResultId !== result.teamResultId &&
                     r.classClassificationId != null &&
                     r.difficulty != null &&
-                    r.teamName != null
+                    r.teamName != null,
                 );
                 if (resultWithSameClassAndTeam && autoUpdateResultWithSameClass) {
                   result.teamFailedReason = resultWithSameClassAndTeam.teamFailedReason;
@@ -294,7 +292,7 @@ const EditResultRelay = ({
                       'iServiceFeeToClub',
                       'iServiceFeeDescription',
                     ],
-                    { force: true }
+                    { force: true },
                   );
                 }
               }}
@@ -327,7 +325,7 @@ const EditResultRelay = ({
                     r.failedReason == null &&
                     r.teamResultId !== result.teamResultId &&
                     r.classClassificationId != null &&
-                    r.difficulty != null
+                    r.difficulty != null,
                 );
                 if (resultWithSameClass && autoUpdateResultWithSameClass) {
                   result.difficulty = resultWithSameClass.difficulty;
@@ -353,7 +351,7 @@ const EditResultRelay = ({
                       'iNofStartsInClass',
                       'iDeviantRaceLightCondition',
                     ],
-                    { force: true }
+                    { force: true },
                   );
                 }
               }}
@@ -377,7 +375,7 @@ const EditResultRelay = ({
                 raceClubs.classClassificationOptions(
                   result.deviantEventClassificationId
                     ? (result.deviantEventClassificationId as EventClassificationIdTypes)
-                    : eventClassificationId
+                    : eventClassificationId,
                 ) ?? []
               }
               onChange={(code) => {
@@ -387,10 +385,10 @@ const EditResultRelay = ({
                     (r) =>
                       r.className === result.className &&
                       r.stage === result.stage &&
-                      r.teamResultId !== result.teamResultId
+                      r.teamResultId !== result.teamResultId,
                   );
                   resultsWithSameClass.forEach((r) =>
-                    r.setNumberValueOrNull('classClassificationId', result.classClassificationId)
+                    r.setNumberValueOrNull('classClassificationId', result.classClassificationId),
                   );
                 }
               }}
@@ -413,7 +411,7 @@ const EditResultRelay = ({
               onChange={(code: DifficultyTypes) => {
                 result.difficulty = code;
                 const raceWinnerResult = raceWizardModel.raceWinnerResults.find(
-                  (wr) => wr.className === `${result.className} - ${result.stage}`
+                  (wr) => wr.className === `${result.className} - ${result.stage}`,
                 );
                 if (raceWinnerResult && result.difficulty) raceWinnerResult.setDifficulty(result.difficulty);
                 if (
@@ -436,7 +434,7 @@ const EditResultRelay = ({
                     (r) =>
                       r.className === result.className &&
                       r.stage === result.stage &&
-                      r.teamResultId !== result.teamResultId
+                      r.teamResultId !== result.teamResultId,
                   );
                   resultsWithSameClass.forEach((r) => r.setDifficulty(result.difficulty as DifficultyTypes));
                 }
@@ -492,12 +490,12 @@ const EditResultRelay = ({
                     (r) =>
                       r.className === result.className &&
                       r.stage === result.stage &&
-                      r.teamResultId !== result.teamResultId
+                      r.teamResultId !== result.teamResultId,
                   );
                   resultsWithSameClass.forEach((r) => r.setNumberValueOrNull('lengthInMeter', result.lengthInMeter));
                 }
                 const raceWinnerResult = raceWizardModel.raceWinnerResults.find(
-                  (wr) => wr.className === `${result.className} - ${result.stage}`
+                  (wr) => wr.className === `${result.className} - ${result.stage}`,
                 );
                 if (raceWinnerResult && result.lengthInMeter) raceWinnerResult.setLengthInMeter(result.lengthInMeter);
                 if (
@@ -533,7 +531,7 @@ const EditResultRelay = ({
                   ['iLengthInMeter', 'iCompetitorTime', 'iWinnerTime', 'iSecondTime', 'iPosition', 'iNofStartsInClass'],
                   {
                     force: true,
-                  }
+                  },
                 );
               }}
             />
@@ -574,7 +572,7 @@ const EditResultRelay = ({
                 validator: (rule, value, callback) => {
                   const competitorTime = stringToMilliSeconds(
                     formRef.current.getFieldValue('iCompetitorTime'),
-                    timeFormat
+                    timeFormat,
                   );
                   const winnerTime = stringToMilliSeconds(value, timeFormat);
                   if (competitorTime > 0 && winnerTime > 0 && competitorTime < winnerTime) {
@@ -592,7 +590,7 @@ const EditResultRelay = ({
               onChange={(time) => {
                 result.winnerTime = time;
                 const raceWinnerResult = raceWizardModel.raceWinnerResults.find(
-                  (wr) => wr.className === `${result.className} - ${result.stage}`
+                  (wr) => wr.className === `${result.className} - ${result.stage}`,
                 );
                 if (raceWinnerResult && result.lengthInMeter) raceWinnerResult.setLengthInMeter(result.lengthInMeter);
                 if (raceWinnerResult && result.winnerTime?.length === timeFormat.length)
@@ -618,7 +616,7 @@ const EditResultRelay = ({
                     (r) =>
                       r.className === result.className &&
                       r.stage === result.stage &&
-                      r.teamResultId !== result.teamResultId
+                      r.teamResultId !== result.teamResultId,
                   );
                   resultsWithSameClass.forEach((r) => r.setStringValueOrNull('winnerTime', result.winnerTime));
                 }
@@ -654,7 +652,7 @@ const EditResultRelay = ({
                     (r) =>
                       r.className === result.className &&
                       r.stage === result.stage &&
-                      r.teamResultId !== result.teamResultId
+                      r.teamResultId !== result.teamResultId,
                   );
                   resultsWithSameClass.forEach((r) => r.setStringValueOrNull('secondTime', result.secondTime));
                 }
@@ -719,10 +717,10 @@ const EditResultRelay = ({
                     (r) =>
                       r.className === result.className &&
                       r.stage === result.stage &&
-                      r.teamResultId !== result.teamResultId
+                      r.teamResultId !== result.teamResultId,
                   );
                   resultsWithSameClass.forEach((r) =>
-                    r.setNumberValueOrNull('nofStartsInClass', result.nofStartsInClass)
+                    r.setNumberValueOrNull('nofStartsInClass', result.nofStartsInClass),
                   );
                 }
               }}
@@ -758,7 +756,7 @@ const EditResultRelay = ({
                 result.totalStages = value as number;
                 if (autoUpdateResultWithSameClass) {
                   const resultsWithSameClass = results.filter(
-                    (r) => r.className === result.className && r.teamResultId !== result.teamResultId
+                    (r) => r.className === result.className && r.teamResultId !== result.teamResultId,
                   );
                   resultsWithSameClass.forEach((r) => r.setNumberValue('totalStages', result.totalStages));
                 }
@@ -901,10 +899,10 @@ const EditResultRelay = ({
                 result.totalNofStartsInClass = value;
                 if (autoUpdateResultWithSameClass) {
                   const resultsWithSameClass = results.filter(
-                    (r) => r.className === result.className && r.teamResultId !== result.teamResultId
+                    (r) => r.className === result.className && r.teamResultId !== result.teamResultId,
                   );
                   resultsWithSameClass.forEach((r) =>
-                    r.setNumberValueOrNull('totalNofStartsInClass', result.totalNofStartsInClass)
+                    r.setNumberValueOrNull('totalNofStartsInClass', result.totalNofStartsInClass),
                   );
                 }
               }}
@@ -967,14 +965,12 @@ const EditResultRelay = ({
               }))}
               onChange={(code) => {
                 result.deviantEventClassificationId = code;
-                const classLevel = raceClubs.classLevels
-                  .filter((cl) => result.className.indexOf(cl.classShortName) >= 0)
-                  .sort((a, b) => (a.classShortName.length < b.classShortName.length ? 1 : -1))
-                  .find(() => true);
+                const shortClassName = GetClassShortName(result.className);
+                const classLevel = GetClassLevel(raceClubs.classLevels, shortClassName);
                 result.classClassificationId = GetClassClassificationId(
                   code ? code : eventClassificationId,
                   classLevel,
-                  raceClubs.eventClassifications
+                  raceClubs.eventClassifications,
                 );
                 formRef.current.setFieldsValue({
                   iClassClassificationId:

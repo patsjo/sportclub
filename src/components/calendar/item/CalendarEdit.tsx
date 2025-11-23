@@ -1,14 +1,14 @@
 import { GlobalOutlined } from '@ant-design/icons';
 import { Button, Col, DatePicker, Form, Input, InputNumber, message, Modal, Row, Switch } from 'antd';
-import InputTime from 'components/formItems/InputTime';
+import InputTime from '../../formItems/InputTime';
 import { observer } from 'mobx-react';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
-import { PostJsonData } from 'utils/api';
-import { useMobxStore } from 'utils/mobxStore';
-import { ICalendarActivity, ICalendarDomains } from 'utils/responseCalendarInterfaces';
+import { PostJsonData } from '../../../utils/api';
+import { useMobxStore } from '../../../utils/mobxStore';
+import { ICalendarActivity, ICalendarDomains } from '../../../utils/responseCalendarInterfaces';
 import { v4 as uuidv4 } from 'uuid';
 import {
   dateFormat,
@@ -123,7 +123,7 @@ const CalendarEdit = observer(({ title, calendarObject, domains, open, onClose, 
           password: sessionModel.password,
         },
         true,
-        sessionModel.authorizationHeader
+        sessionModel.authorizationHeader,
       )
         .then((calendarObjectResponse: ICalendarActivity) => {
           onChange && onChange(calendarObjectResponse);
@@ -135,7 +135,7 @@ const CalendarEdit = observer(({ title, calendarObject, domains, open, onClose, 
           setSaving(false);
         });
     },
-    [isRepeating]
+    [isRepeating],
   );
 
   const onChooseMapPosition = useCallback(() => {
@@ -152,7 +152,7 @@ const CalendarEdit = observer(({ title, calendarObject, domains, open, onClose, 
       exists,
       globalStateModel,
       sessionModel,
-      clubModel
+      clubModel,
     ).then((selectedPosition) => {
       if (selectedPosition) {
         setFieldsValue({ iLongitude: selectedPosition.longitude, iLatitude: selectedPosition.latitude });
@@ -189,7 +189,7 @@ const CalendarEdit = observer(({ title, calendarObject, domains, open, onClose, 
             iActivityTypeID: calendarObject.activityTypeId,
             iGroupID: calendarObject.groupId,
             iHeader: calendarObject.header,
-            iActivityDay: moment(calendarObject.date, dateFormat),
+            iActivityDay: dayjs(calendarObject.date, dateFormat),
             iActivityTime: calendarObject.time,
             iActivityDurationMinutes: calendarObject.activityDurationMinutes,
             iPlace: calendarObject.place,
@@ -205,8 +205,8 @@ const CalendarEdit = observer(({ title, calendarObject, domains, open, onClose, 
               !calendarObject.firstRepeatingDate || !calendarObject.lastRepeatingDate
                 ? null
                 : [
-                    moment(calendarObject.firstRepeatingDate, dateFormat),
-                    moment(calendarObject.lastRepeatingDate, dateFormat),
+                    dayjs(calendarObject.firstRepeatingDate, dateFormat),
+                    dayjs(calendarObject.lastRepeatingDate, dateFormat),
                   ],
           }}
           onValuesChange={() => hasErrors(form).then((notValid) => setValid(!notValid))}

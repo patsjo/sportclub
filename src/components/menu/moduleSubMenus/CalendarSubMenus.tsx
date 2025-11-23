@@ -1,12 +1,12 @@
 import { message } from 'antd';
-import { MaterialIconsType } from 'components/materialIcon/MaterialIcon';
+import { MaterialIconsType } from '../../materialIcon/MaterialIcon';
 import { observer } from 'mobx-react';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { useMobxStore } from 'utils/mobxStore';
-import { ICalendarActivity, ICalendarDomains } from 'utils/responseCalendarInterfaces';
+import { useMobxStore } from '../../../utils/mobxStore';
+import { ICalendarActivity, ICalendarDomains } from '../../../utils/responseCalendarInterfaces';
 import { PostJsonData } from '../../../utils/api';
 import { dateFormat } from '../../../utils/formHelper';
 import CalendarEdit from '../../calendar/item/CalendarEdit';
@@ -49,7 +49,7 @@ const CalendarSubMenus = observer(() => {
       {
         iType: 'DOMAINS',
       },
-      true
+      true,
     )
       .then((domainsJson: ICalendarDomains) => {
         setDomains(domainsJson);
@@ -80,9 +80,9 @@ const CalendarSubMenus = observer(() => {
           globalStateModel.setDashboard(
             navigate,
             '/calendar',
-            moment().startOf('month').format(dateFormat),
-            moment().endOf('month').format(dateFormat),
-            1
+            dayjs().startOf('month').format(dateFormat),
+            dayjs().endOf('month').format(dateFormat),
+            1,
           );
         }}
       />

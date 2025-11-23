@@ -1,13 +1,13 @@
-import { IMobxClubModel } from 'models/mobxClubModel';
-import { INewsItemProps } from 'models/newsModel';
+import { IMobxClubModel } from '../models/mobxClubModel';
+import { INewsItemProps } from '../models/newsModel';
 import { ReactElement } from 'react';
-import { StyledComponent } from 'styled-components';
+import { IStyledComponent } from 'styled-components';
 
 export const getImage = (
   maxSize: number,
-  ImageComp: StyledComponent<'img', any, any, never>,
+  ImageComp: IStyledComponent<'web', any>,
   newsObject: INewsItemProps,
-  clubModel: IMobxClubModel
+  clubModel: IMobxClubModel,
 ): ReactElement<any, any> | null => {
   let Image: ReactElement<any, any> | null = null;
   if (newsObject.imageWidth && newsObject.imageHeight && newsObject.imageWidth > 0 && newsObject.imageHeight > 0) {

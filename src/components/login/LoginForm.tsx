@@ -4,7 +4,7 @@ import { observer } from 'mobx-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
-import { useMobxStore } from 'utils/mobxStore';
+import { useMobxStore } from '../../utils/mobxStore';
 import { PostJsonData } from '../../utils/api';
 import { errorRequiredField, hasErrors } from '../../utils/formHelper';
 import FormItem from '../formItems/FormItem';

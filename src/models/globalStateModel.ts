@@ -1,7 +1,6 @@
-import { MessageApi } from 'antd/lib/message';
 import { action, makeObservable, observable } from 'mobx';
 import { NavigateFunction } from 'react-router-dom';
-import { IFolderResponse, IMenuResponse } from 'utils/responseInterfaces';
+import { IFolderResponse, IMenuResponse } from '../utils/responseInterfaces';
 import { PostJsonData } from '../utils/api';
 import { getMenus } from '../utils/htmlEditorMenuHelper';
 import { GraphicAttributeTypesType, IGraphic } from './graphic';
@@ -9,6 +8,7 @@ import { IMenu } from './htmlEditorModel';
 import { IModule } from './mobxClubModel';
 import { INewsModel, INewsModelProps, NewsModel } from './newsModel';
 import { ISessionModel } from './sessionModel';
+import { MessageInstance } from 'antd/lib/message/interface';
 
 interface IGlobalStateModelProps {
   rightMenuVisible: boolean;
@@ -30,8 +30,9 @@ export interface IGlobalStateModel extends Omit<IGlobalStateModelProps, 'news'> 
     path: string,
     startDate?: string,
     endDate?: string,
-    newsTypeId?: number
+    newsTypeId?: number,
   ) => void;
+  setValues: (values: Partial<IGlobalStateModelProps>) => void;
   setHtmlEditor: (navigate: NavigateFunction, path: string) => void;
   setGraphics: (types: GraphicAttributeTypesType[], graphics: IGraphic[]) => Promise<void>;
   setHtmlEditorMenu: (menu: IMenu) => void;
@@ -39,7 +40,7 @@ export interface IGlobalStateModel extends Omit<IGlobalStateModelProps, 'news'> 
     htmlEditorModule: IModule | undefined,
     filesModule: IModule | undefined,
     sessionModel: ISessionModel,
-    message: MessageApi
+    messageApi: MessageInstance,
   ) => Promise<void>;
 }
 
@@ -74,6 +75,7 @@ export class GlobalStateModel implements IGlobalStateModel {
       htmlEditorMenu: observable,
       setRightMenuVisible: action.bound,
       setDashboard: action.bound,
+      setValues: action.bound,
       setHtmlEditor: action.bound,
       setGraphics: action.bound,
       setHtmlEditorMenu: action.bound,
@@ -98,6 +100,10 @@ export class GlobalStateModel implements IGlobalStateModel {
     navigate(path, { replace: true });
   }
 
+  setValues(values: Partial<IGlobalStateModelProps>) {
+    Object.assign(this, values);
+  }
+
   setHtmlEditor(navigate: NavigateFunction, path: string) {
     this.rightMenuVisible = false;
     navigate(path, { replace: true });
@@ -105,7 +111,7 @@ export class GlobalStateModel implements IGlobalStateModel {
 
   async setGraphics(types: GraphicAttributeTypesType[], graphics: IGraphic[]) {
     this.graphics = this.graphics.filter(
-      (gr) => !(types as (GraphicAttributeTypesType | 'logo' | undefined)[]).includes(gr.attributes?.type)
+      (gr) => !(types as (GraphicAttributeTypesType | 'logo' | undefined)[]).includes(gr.attributes?.type),
     );
     this.graphics = [...this.graphics, ...graphics];
     await this.updateGraphics(this.graphics);
@@ -119,11 +125,11 @@ export class GlobalStateModel implements IGlobalStateModel {
     htmlEditorModule: IModule | undefined,
     filesModule: IModule | undefined,
     sessionModel: ISessionModel,
-    message: MessageApi
+    messageApi: MessageInstance,
   ) {
     try {
       const menusResponse = htmlEditorModule
-        ? ((await PostJsonData(
+        ? (((await PostJsonData(
             htmlEditorModule.queryUrl,
             {
               iType: 'MENUS',
@@ -131,11 +137,11 @@ export class GlobalStateModel implements IGlobalStateModel {
               password: sessionModel.password,
             },
             true,
-            sessionModel.authorizationHeader
-          )) as IMenuResponse[] | undefined) ?? []
+            sessionModel.authorizationHeader,
+          )) as IMenuResponse[] | undefined) ?? [])
         : [];
       const filesResponse = filesModule
-        ? ((await PostJsonData(
+        ? (((await PostJsonData(
             filesModule.queryUrl,
             {
               iType: 'FILES',
@@ -143,11 +149,11 @@ export class GlobalStateModel implements IGlobalStateModel {
               password: sessionModel.password,
             },
             true,
-            sessionModel.authorizationHeader
-          )) as IMenuResponse[] | undefined) ?? []
+            sessionModel.authorizationHeader,
+          )) as IMenuResponse[] | undefined) ?? [])
         : [];
       const foldersResponse = filesModule
-        ? ((await PostJsonData(
+        ? (((await PostJsonData(
             filesModule.queryUrl,
             {
               iType: 'FOLDERS',
@@ -155,12 +161,12 @@ export class GlobalStateModel implements IGlobalStateModel {
               password: sessionModel.password,
             },
             true,
-            sessionModel.authorizationHeader
-          )) as IFolderResponse[] | undefined) ?? []
+            sessionModel.authorizationHeader,
+          )) as IFolderResponse[] | undefined) ?? [])
         : [];
       this.setHtmlEditorMenu(getMenus([...menusResponse, ...filesResponse], foldersResponse));
     } catch (e: any) {
-      message.error(e?.message);
+      messageApi.error(e?.message);
     }
   }
 }

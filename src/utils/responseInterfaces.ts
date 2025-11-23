@@ -1,4 +1,4 @@
-import { IRaceEventProps, IRaceResultProps, IRaceTeamResultProps } from 'models/resultModel';
+import { IRaceEventProps, IRaceResultProps, IRaceTeamResultProps } from '../models/resultModel';
 import {
   DistanceTypes,
   EventClassificationIdTypes,
@@ -83,7 +83,7 @@ export interface IFeeResponse {
   totalFeeToClub?: number;
 }
 
-interface IViewResultRaceInfo {
+export interface IViewResultRaceInfo {
   eventClassificationId: EventClassificationIdTypes;
   eventId: number;
   eventorId: number;
@@ -97,7 +97,7 @@ interface IViewResultRaceInfo {
   sportCode: SportCodeTypes;
 }
 
-export interface IViewResult extends IRaceResultProps, IViewResultRaceInfo {
+export interface IViewResult extends IRaceResultProps {
   firstName?: string;
   lastName?: string;
   gender?: GenderType;
@@ -105,7 +105,7 @@ export interface IViewResult extends IRaceResultProps, IViewResultRaceInfo {
   serviceFeeToClub: number;
 }
 
-export interface IViewTeamResult extends IRaceTeamResultProps, IViewResultRaceInfo {
+export interface IViewTeamResult extends IRaceTeamResultProps {
   firstName?: string;
   lastName?: string;
   gender?: GenderType;
@@ -114,8 +114,8 @@ export interface IViewTeamResult extends IRaceTeamResultProps, IViewResultRaceIn
 }
 
 export interface IIndividualViewResultResponse {
-  results: IViewResult[];
-  teamResults: IViewTeamResult[];
+  results: (IViewResult & IViewResultRaceInfo)[];
+  teamResults: (IViewTeamResult & IViewResultRaceInfo)[];
 }
 export interface IClubViewResultResponse extends IRaceEventProps {
   results: IViewResult[];

@@ -1,7 +1,7 @@
 import { Col, DatePicker, Form, Input, Row, Select } from 'antd';
-import { ISessionModel } from 'models/sessionModel';
-import { ICouncilModel, IGroupModel, IUserModel } from 'models/userModel';
-import moment from 'moment';
+import { ISessionModel } from '../../models/sessionModel';
+import { ICouncilModel, IGroupModel, IUserModel } from '../../models/userModel';
+import dayjs from 'dayjs';
 import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { dateFormat, errorRequiredField, FormSelect, hasErrors } from '../../utils/formHelper';
@@ -32,7 +32,7 @@ const EditUser = ({ groups, councils, user, sessionModel, onValidate }: IEditUse
       id={formId}
       ref={formRef}
       layout="vertical"
-      initialValues={{ ...user, birthDay: user.birthDay ? moment(user.birthDay, dateFormat) : null }}
+      initialValues={{ ...user, birthDay: user.birthDay ? dayjs(user.birthDay, dateFormat) : null }}
       onValuesChange={() => hasErrors(formRef.current).then((notValid) => onValidate(!notValid))}
     >
       <Row gutter={8}>

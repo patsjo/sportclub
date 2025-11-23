@@ -1,5 +1,5 @@
 import { action, makeObservable, observable } from 'mobx';
-import moment from 'moment';
+import dayjs from 'dayjs';
 
 export interface ILocalStorageEventSelectorWizard {
   queryStartDate: string;
@@ -21,8 +21,8 @@ const setLocalStorage = (eventSelectorWizard: ILocalStorageEventSelectorWizard) 
 };
 
 export const getLocalStorage = (): IEventSelectorWizardProps => {
-  const startDate = moment().format('YYYY-MM-DD');
-  const endDate = moment().add(2, 'months').endOf('month').format('YYYY-MM-DD');
+  const startDate = dayjs().format('YYYY-MM-DD');
+  const endDate = dayjs().add(2, 'months').endOf('month').format('YYYY-MM-DD');
   try {
     const eventSelectorWizardData = localStorage.getItem('eventSelectorWizard');
 

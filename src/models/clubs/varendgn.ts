@@ -1,4 +1,4 @@
-import { IMobxClubModelProps } from 'models/mobxClubModel';
+import { IMobxClubModelProps } from '../../models/mobxClubModel';
 
 const varendgn: IMobxClubModelProps = {
   title: 'Värend GN',
@@ -20,7 +20,7 @@ const varendgn: IMobxClubModelProps = {
   logoutUrl: 'https://varendgn.se/log_out.php',
   attachmentUrl: 'https://varendgn.se/showfile.php?iFileID=',
   invoice: {
-    breakMonthDay: '0101',
+    breakMonthDay: '1231',
     daysToDueDate: 31,
     account: '421 20 09-7',
     accountType: 'Postgiro',

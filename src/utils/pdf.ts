@@ -1,7 +1,7 @@
 import { ColumnType } from 'antd/lib/table';
 import JSZip from 'jszip';
 import pdfMake from 'pdfmake/build/pdfmake';
-import * as pdfFonts from 'pdfmake/build/vfs_fonts';
+import pdfFonts from 'pdfmake/build/vfs_fonts';
 import {
   ContentColumns,
   ContentTable,
@@ -11,7 +11,7 @@ import {
   TDocumentDefinitions,
 } from 'pdfmake/interfaces';
 
-pdfMake.vfs = pdfFonts.pdfMake.vfs;
+pdfMake.vfs = pdfFonts.vfs;
 
 export interface IPdfSettings {
   pageSize: PageSize;

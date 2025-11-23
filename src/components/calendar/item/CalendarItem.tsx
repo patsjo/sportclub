@@ -2,8 +2,8 @@ import { observer } from 'mobx-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
-import { useMobxStore } from 'utils/mobxStore';
-import { ICalendarActivity, ICalendarDomains } from 'utils/responseCalendarInterfaces';
+import { useMobxStore } from '../../../utils/mobxStore';
+import { ICalendarActivity, ICalendarDomains } from '../../../utils/responseCalendarInterfaces';
 import { PostJsonData } from '../../../utils/api';
 import FadeOutItem from '../../fadeOutItem/FadeOutItem';
 import CalendarEdit from './CalendarEdit';
@@ -44,7 +44,7 @@ const CalendarBy = styled.div`
 `;
 const Activity = styled.div`
   font-size: 12px;
-  line-height: 1;
+  line-height: 1.5em;
   padding-top: 2px;
   padding-bottom: 2px;
 `;
@@ -61,6 +61,7 @@ const CalendarItem = observer(({ calendarObject, domains, children }: ICalendarI
 
   return calendarModule ? (
     <FadeOutItem
+      paddingBottom={0}
       module={calendarModule}
       content={
         <Activity key={`activity#${calendarObject.activityId}`}>
@@ -120,7 +121,7 @@ const CalendarItem = observer(({ calendarObject, domains, children }: ICalendarI
                   password: sessionModel.password,
                 },
                 true,
-                sessionModel.authorizationHeader
+                sessionModel.authorizationHeader,
               )
           : undefined
       }
@@ -140,7 +141,7 @@ const CalendarItem = observer(({ calendarObject, domains, children }: ICalendarI
                   password: sessionModel.password,
                 },
                 true,
-                sessionModel.authorizationHeader
+                sessionModel.authorizationHeader,
               )
           : undefined
       }

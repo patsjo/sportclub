@@ -1,7 +1,7 @@
 import { Space, Typography } from 'antd';
 import { ReactNode, useEffect, useRef } from 'react';
 import styled from 'styled-components';
-import { useSize } from 'utils/useSize';
+import { useSize } from '../../utils/useSize';
 
 const Title = Typography.Title;
 
@@ -53,7 +53,7 @@ const FullScreenWizard = ({ title, footer, children, onContentOffsetHeight }: IF
   return (
     <FullScreenContainer>
       <TitleContainer>
-        <Title level={2} ellipsis={{ expandable: false, tooltip: false, rows: 1 }}>
+        <Title level={2} ellipsis={{ expandable: false, tooltip: false, rows: 1 }} style={{ margin: 0 }}>
           {title}
         </Title>
       </TitleContainer>

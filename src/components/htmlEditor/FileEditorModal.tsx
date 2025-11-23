@@ -1,19 +1,20 @@
 import { LinkOutlined } from '@ant-design/icons';
-import { Form, Input, message, Modal, Select, Switch } from 'antd';
+import { Form, Input, Modal, Select, Switch } from 'antd';
 import { FormInstance } from 'antd/lib/form';
 import { ModalFuncProps } from 'antd/lib/modal';
 import { TFunction } from 'i18next';
-import { IGlobalStateModel } from 'models/globalStateModel';
-import { IMobxClubModel } from 'models/mobxClubModel';
-import { ISessionModel } from 'models/sessionModel';
+import { IGlobalStateModel } from '../../models/globalStateModel';
+import { IMobxClubModel } from '../../models/mobxClubModel';
+import { ISessionModel } from '../../models/sessionModel';
 import styled from 'styled-components';
 import { PostJsonData } from '../../utils/api';
 import { errorRequiredField, hasErrors, IFile, maxByteSize } from '../../utils/formHelper';
 import FormItem from '../formItems/FormItem';
-import { ICouncilModel, IGroupModel, IUserModel } from 'models/userModel';
-import { IFileResponse, IFolderResponse } from 'utils/responseInterfaces';
-import UploadDragger from 'components/formItems/UploadDragger';
-import { fileAsBase64, getFileType } from 'utils/fileHelper';
+import { ICouncilModel, IGroupModel, IUserModel } from '../../models/userModel';
+import { IFileResponse, IFolderResponse } from '../../utils/responseInterfaces';
+import UploadDragger from '../formItems/UploadDragger';
+import { fileAsBase64, getFileType } from '../../utils/fileHelper';
+import { MessageInstance } from 'antd/lib/message/interface';
 
 const { TextArea } = Input;
 const { confirm } = Modal;
@@ -32,7 +33,8 @@ export const FileEditorModal = async (
   >,
   globalStateModel: IGlobalStateModel,
   sessionModel: ISessionModel,
-  clubModel: IMobxClubModel
+  clubModel: IMobxClubModel,
+  messageApi: MessageInstance,
 ): Promise<IFileResponse | null | undefined> => {
   const formId = 'fileEditorForm' + Math.floor(Math.random() * 1000000000000000);
   const filesModule = clubModel.modules.find((module) => module.name === 'Files');
@@ -44,20 +46,20 @@ export const FileEditorModal = async (
     usersModule?.queryUrl,
     { username: sessionModel.username, password: sessionModel.password },
     true,
-    sessionModel.authorizationHeader
+    sessionModel.authorizationHeader,
   )) as { users: IUserModel[]; groups: IGroupModel[]; councils: ICouncilModel[] };
   const foldersJson = (await PostJsonData(
     filesModule?.queryUrl,
     { iType: 'FOLDERS', username: sessionModel.username, password: sessionModel.password },
     true,
-    sessionModel.authorizationHeader
+    sessionModel.authorizationHeader,
   )) as IFolderResponse[];
   if (fileId >= 0) {
     const fileJson = (await PostJsonData(
       filesModule?.queryUrl,
       { iType: 'FILE', fileId: fileId, username: sessionModel.username, password: sessionModel.password },
       true,
-      sessionModel.authorizationHeader
+      sessionModel.authorizationHeader,
     )) as IFileResponse;
     form && form.setFieldsValue({ ...fileJson, files: [] });
   } else {
@@ -106,7 +108,7 @@ export const FileEditorModal = async (
                   disabled: fileId > 0 ? false : notValid,
                 },
                 okText: notValid && fileId > 0 ? t('common.Delete') : t('common.Save'),
-              })
+              }),
             )
           }
         >
@@ -226,14 +228,14 @@ export const FileEditorModal = async (
                 password: sessionModel.password,
               },
               true,
-              sessionModel.authorizationHeader
+              sessionModel.authorizationHeader,
             )
               .then(() => {
-                globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, filesModule, sessionModel, message);
+                globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, filesModule, sessionModel, messageApi);
                 resolve(null);
               })
               .catch((e) => {
-                message.error(e.message);
+                messageApi.error(e.message);
                 confirmModal.update({
                   okButtonProps: {
                     loading: false,
@@ -260,14 +262,14 @@ export const FileEditorModal = async (
                   password: sessionModel.password,
                 },
                 true,
-                sessionModel.authorizationHeader
+                sessionModel.authorizationHeader,
               )
                 .then((fileResponse: IFileResponse) => {
-                  globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, filesModule, sessionModel, message);
+                  globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, filesModule, sessionModel, messageApi);
                   resolve(fileResponse);
                 })
                 .catch((e) => {
-                  message.error(e.message);
+                  messageApi.error(e.message);
                   confirmModal.update({
                     okButtonProps: {
                       loading: false,

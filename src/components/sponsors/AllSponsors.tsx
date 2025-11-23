@@ -1,8 +1,8 @@
 import { observer } from 'mobx-react';
-import { ISponsorProps } from 'models/mobxClubModel';
+import { ISponsorProps } from '../../models/mobxClubModel';
 import React from 'react';
 import styled from 'styled-components';
-import { useMobxStore } from 'utils/mobxStore';
+import { useMobxStore } from '../../utils/mobxStore';
 import Columns from '../dashboard/columns/Columns';
 
 const SponsorLink = styled.a`

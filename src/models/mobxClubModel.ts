@@ -42,7 +42,7 @@ class League implements ILeagueProps {
       this.rankingLeagueAgeLimit,
       this.rankingRelayLeagueAgeLimit,
       this.points1000LeagueAgeLimit,
-      this.pointsLeagueAgeLimit
+      this.pointsLeagueAgeLimit,
     );
   }
 }
@@ -93,7 +93,7 @@ interface ITypographyProps {
   useNextVariants?: boolean;
 }
 
-interface IThemeProps {
+export interface IThemeProps {
   palette: IPaletteProps;
   typography: ITypographyProps;
 }
@@ -286,7 +286,7 @@ class MapGroupLayer implements IMapGroupLayer {
         this.layers = layers.map((l) =>
           l.type === 'base-tile'
             ? new MapTileLayer(l as IMapTileLayerProps)
-            : new MapGroupLayer(l as IMapGroupLayerProps)
+            : new MapGroupLayer(l as IMapGroupLayerProps),
         );
     }
 
@@ -351,7 +351,7 @@ class Map implements IMap {
         this.layers = layers.map((l) =>
           l.type === 'base-tile'
             ? new MapTileLayer(l as IMapTileLayerProps)
-            : new MapGroupLayer(l as IMapGroupLayerProps)
+            : new MapGroupLayer(l as IMapGroupLayerProps),
         );
     }
 

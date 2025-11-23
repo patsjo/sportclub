@@ -1,4 +1,4 @@
-import { IMenu } from 'models/htmlEditorModel';
+import { IMenu } from '../models/htmlEditorModel';
 import { IFolderResponse, IMenuResponse } from './responseInterfaces';
 
 interface ISplittedMenu {
@@ -13,8 +13,8 @@ interface ISplittedMenu {
 const getMenuLevels = (
   splittedMenus: ISplittedMenu[],
   foldersResponse: IFolderResponse[],
-  level = 1,
-  parentFolderId = 0
+  level: number,
+  parentFolderId: number | undefined,
 ): IMenu => ({
   menuItems: splittedMenus
     .filter((m) => m.menuPaths.length === level)
@@ -32,7 +32,7 @@ const getMenuLevels = (
     .filter(
       (m, index, self) =>
         m.menuPaths.length > level &&
-        index === self.findIndex((m2) => m.menuPaths[level - 1] === m2.menuPaths[level - 1])
+        index === self.findIndex((m2) => m.menuPaths[level - 1] === m2.menuPaths[level - 1]),
     )
     .map((m, index, self) => {
       const menuPath = `/${m.menuPaths.slice(0, level).join('/')}`;
@@ -40,11 +40,11 @@ const getMenuLevels = (
       return {
         subMenus: getMenuLevels(
           splittedMenus.filter(
-            (m2) => m2.menuPaths.length > level && m.menuPaths[level - 1] === m2.menuPaths[level - 1]
+            (m2) => m2.menuPaths.length > level && m.menuPaths[level - 1] === m2.menuPaths[level - 1],
           ),
           foldersResponse,
           level + 1,
-          menuFolder?.folderId
+          menuFolder?.folderId,
         ),
         description: m.menuPaths.slice(level - 1, level).join(''),
         level: level,
@@ -63,7 +63,7 @@ const getMenuLevels = (
           folderId: folder.folderId,
           createdByUserId: folder.createdByUserId,
           bothMenus: false,
-        }))
+        })),
     )
     .filter((m, _, self) => !m.folderId || self.filter((sm) => sm.folderId === m.folderId).length === 1 || m.bothMenus),
 });
@@ -74,8 +74,8 @@ export const getMenus = (menus: IMenuResponse[], foldersResponse: IFolderRespons
       a.menuPath.toLowerCase() > b.menuPath.toLowerCase()
         ? 1
         : b.menuPath.toLowerCase() > a.menuPath.toLowerCase()
-        ? -1
-        : 0
+          ? -1
+          : 0,
     )
     .map((menu) => ({
       menuPath: menu.menuPath,
@@ -86,7 +86,7 @@ export const getMenus = (menus: IMenuResponse[], foldersResponse: IFolderRespons
       url: menu.url,
       createdByUserId: menu.createdByUserId,
     }));
-  const menuLevels = getMenuLevels(splittedMenus, foldersResponse);
+  const menuLevels = getMenuLevels(splittedMenus, foldersResponse, 1, 0);
 
   return menuLevels;
 };
@@ -108,14 +108,14 @@ export const getPageId = (menu: IMenu, menuPath: string, level = 0): number | nu
     subMenu = menu.subMenus?.find(
       (m) =>
         m.description.toLocaleLowerCase().replace(/\s+/g, '') ===
-        menuPaths[level].toLocaleLowerCase().replace(/\s+/g, '')
+        menuPaths[level].toLocaleLowerCase().replace(/\s+/g, ''),
     );
     if (subMenu) {
       return getPageId(subMenu.subMenus, menuPath, level + 1);
     }
   }
   menuItem = menu.menuItems?.find(
-    (m) => m.menuPath.toLocaleLowerCase().replace(/\s+/g, '') === menuPath.toLocaleLowerCase().replace(/\s+/g, '')
+    (m) => m.menuPath.toLocaleLowerCase().replace(/\s+/g, '') === menuPath.toLocaleLowerCase().replace(/\s+/g, ''),
   );
   if (menuItem) {
     return menuItem.pageId;

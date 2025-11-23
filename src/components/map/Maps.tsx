@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { useMobxStore } from 'utils/mobxStore';
+import { useMobxStore } from '../../utils/mobxStore';
 import OSMOrienteeringMap from './OSMOrienteeringMap';
 
 const MapContainer = styled.div`

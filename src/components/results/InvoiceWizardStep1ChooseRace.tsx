@@ -1,12 +1,12 @@
-import { message, Spin } from 'antd';
+import { message, Spin, Table } from 'antd';
 import { ColumnType } from 'antd/lib/table';
 import { TableRowSelection } from 'antd/lib/table/interface';
 import { observer } from 'mobx-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useMobxStore } from 'utils/mobxStore';
-import { IEventViewResultResponse } from 'utils/responseInterfaces';
-import { useResultWizardStore } from 'utils/resultWizardStore';
+import { useMobxStore } from '../../utils/mobxStore';
+import { IEventViewResultResponse } from '../../utils/responseInterfaces';
+import { useResultWizardStore } from '../../utils/resultWizardStore';
 import { PostJsonData } from '../../utils/api';
 import { SpinnerDiv, StyledTable } from '../styled/styled';
 
@@ -37,7 +37,7 @@ const InvoiceWizardStep1ChooseRace = observer(
 
       raceWizardModel.setNumberValueOrNull(
         'selectedEventId',
-        selectedEventId != null ? parseInt(selectedEventId as string) : null
+        selectedEventId != null ? parseInt(selectedEventId as string) : null,
       );
       setSelectedRowKeys(keys);
       onValidate(true);
@@ -70,17 +70,17 @@ const InvoiceWizardStep1ChooseRace = observer(
           setTotalFee(
             data.reduce((a, b) => {
               return a + (b.fee ?? 0);
-            }, 0)
+            }, 0),
           );
           setTotalFeeToClub(
             data.reduce((a, b) => {
               return a + (b.feeToClub ?? 0);
-            }, 0)
+            }, 0),
           );
           setTotalServiceFeeToClub(
             data.reduce((a, b) => {
               return a + (b.serviceFeeToClub ?? 0);
-            }, 0)
+            }, 0),
           );
           setLoaded(true);
         })
@@ -98,9 +98,9 @@ const InvoiceWizardStep1ChooseRace = observer(
               (e): IInvoiceEvent => ({
                 ...e,
                 invoiceVerified: e.invoiceVerified || raceWizardModel.importedIds.includes(e.eventId),
-              })
+              }),
             )
-          : oldEvents.filter((e) => !raceWizardModel.importedIds.includes(e.eventId))
+          : oldEvents.filter((e) => !raceWizardModel.importedIds.includes(e.eventId)),
       );
     }, [raceWizardModel.importedIds.length]);
 
@@ -180,18 +180,18 @@ const InvoiceWizardStep1ChooseRace = observer(
         scroll={{ x: true }}
         tableLayout="fixed"
         summary={() => (
-          <StyledTable.Summary fixed>
-            <StyledTable.Summary.Row>
-              <StyledTable.Summary.Cell index={0} />
-              <StyledTable.Summary.Cell index={1}>Total</StyledTable.Summary.Cell>
-              <StyledTable.Summary.Cell index={2} />
-              <StyledTable.Summary.Cell index={3} />
-              <StyledTable.Summary.Cell index={4} />
-              <StyledTable.Summary.Cell index={5}>{totalFee}</StyledTable.Summary.Cell>
-              <StyledTable.Summary.Cell index={6}>{totalFeeToClub}</StyledTable.Summary.Cell>
-              <StyledTable.Summary.Cell index={7}>{totalServiceFeeToClub}</StyledTable.Summary.Cell>
-            </StyledTable.Summary.Row>
-          </StyledTable.Summary>
+          <Table.Summary fixed>
+            <Table.Summary.Row>
+              <Table.Summary.Cell index={0} />
+              <Table.Summary.Cell index={1}>Total</Table.Summary.Cell>
+              <Table.Summary.Cell index={2} />
+              <Table.Summary.Cell index={3} />
+              <Table.Summary.Cell index={4} />
+              <Table.Summary.Cell index={5}>{totalFee}</Table.Summary.Cell>
+              <Table.Summary.Cell index={6}>{totalFeeToClub}</Table.Summary.Cell>
+              <Table.Summary.Cell index={7}>{totalServiceFeeToClub}</Table.Summary.Cell>
+            </Table.Summary.Row>
+          </Table.Summary>
         )}
         size="middle"
       />
@@ -200,7 +200,7 @@ const InvoiceWizardStep1ChooseRace = observer(
         <Spin size="large" />
       </SpinnerDiv>
     ) : null;
-  }
+  },
 );
 
 export default InvoiceWizardStep1ChooseRace;

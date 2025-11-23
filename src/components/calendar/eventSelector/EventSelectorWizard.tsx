@@ -1,15 +1,15 @@
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import { Button, Spin, Steps, message } from 'antd';
-import FullScreenWizard from 'components/styled/FullscreenWizard';
+import FullScreenWizard from '../../styled/FullscreenWizard';
 import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
-import { IRaceClubsProps } from 'models/resultModel';
+import { IRaceClubsProps } from '../../../models/resultModel';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { useMobxStore } from 'utils/mobxStore';
-import { useSize } from 'utils/useSize';
+import { useMobxStore } from '../../../utils/mobxStore';
+import { useSize } from '../../../utils/useSize';
 import {
   EventSelectorWizard as EventSelectorWizardModel,
   getLocalStorage,

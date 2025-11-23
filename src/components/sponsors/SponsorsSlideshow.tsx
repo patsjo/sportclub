@@ -1,11 +1,11 @@
 import { observer } from 'mobx-react';
-import { ISponsorProps } from 'models/mobxClubModel';
+import { ISponsorProps } from '../../models/mobxClubModel';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Zoom } from 'react-slideshow-image';
 import 'react-slideshow-image/dist/styles.css';
 import styled from 'styled-components';
-import { useMobxStore } from 'utils/mobxStore';
+import { useMobxStore } from '../../utils/mobxStore';
 
 const zoomOutProperties = {
   duration: 3000,
