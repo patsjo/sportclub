@@ -561,7 +561,7 @@ const okorion: IMobxClubModelProps = {
         height: 288,
       },
       url: 'https://www.okq8.se/pa-stationen/bensinstationer/jamjo-riksvagen/',
-      active: false,
+      active: true,
     },
     {
       name: 'Roxtec',
