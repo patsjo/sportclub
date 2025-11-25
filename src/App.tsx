@@ -51,12 +51,9 @@ const LayoutHeader = styled(Layout.Header)`
       0px 1px 10px 0px rgba(0, 0, 0, 0.12);
   }
 `;
-const { Content: LayoutContent } = Layout;
-const ContentArea = styled.div`
-  & {
-    margin-top: 24px;
-    margin-left: 12px;
-    margin-right: 12px;
+const LayoutContent = styled(Layout.Content)`
+  &&& {
+    max-width: 2000px;
   }
 `;
 const StyledLogo = styled.img`

@@ -1,7 +1,7 @@
 import { Spin } from 'antd';
-import { SpinnerDiv } from '../components/styled/styled';
 import { observer } from 'mobx-react';
 import React, { useCallback, useRef, useState } from 'react';
+import { SpinnerDiv } from '../components/styled/styled';
 
 const getParentElement = (el: HTMLElement | null): HTMLElement | null => {
   return el && el.parentElement;

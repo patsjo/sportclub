@@ -20,8 +20,8 @@ const varendgn: IMobxClubModelProps = {
   logoutUrl: 'https://oknorrvirdarna.se/log_out.php',
   attachmentUrl: 'https://oknorrvirdarna.se/showfile.php?iFileID=',
   invoice: {
-    breakMonthDay: '1231',
-    daysToDueDate: 31,
+    breakMonthDay: '1130',
+    daysToDueDate: 21,
     account: '10 68 79-0',
     accountType: 'Postgiro',
     message: 'Tävlingsavgift, {name}',

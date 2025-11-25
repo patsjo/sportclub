@@ -1,18 +1,18 @@
 import { CopyOutlined } from '@ant-design/icons';
-import { ClassicEditor } from 'ckeditor5';
 import { Alert, Button, Form, Input, message, Popconfirm, Select, Spin } from 'antd';
+import { ClassicEditor } from 'ckeditor5';
 import copy from 'copy-to-clipboard';
 import { observer } from 'mobx-react';
-import { ICouncilModel, IGroupModel, IUserModel } from '../../models/userModel';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { useMobxStore } from '../../utils/mobxStore';
-import { IHtmlPageGroupResponse, IHtmlPageResponse } from '../../utils/responseInterfaces';
+import { ICouncilModel, IGroupModel, IUserModel } from '../../models/userModel';
 import { PostJsonData } from '../../utils/api';
 import { errorRequiredField, hasErrors } from '../../utils/formHelper';
 import { getPageId } from '../../utils/htmlEditorMenuHelper';
+import { useMobxStore } from '../../utils/mobxStore';
+import { IHtmlPageGroupResponse, IHtmlPageResponse } from '../../utils/responseInterfaces';
 import FormItem from '../formItems/FormItem';
 import { SpinnerDiv } from '../styled/styled';
 import CustomCKEditor from './CustomCKEditor';
@@ -27,17 +27,7 @@ const StyledButton = styled(Button)`
   }
 `;
 
-const StyledContainer = styled.div`
-  margin: 0 auto;
-  max-width: 80%;
-
-  @media screen and (min-width: 1500px) {
-    max-width: 1200px;
-  }
-  @media screen and (max-width: 1000px) {
-    max-width: 800px;
-  }
-`;
+const StyledContainer = styled.div``;
 
 const HtmlEditor = observer(() => {
   const [messageApi, contextHolder] = message.useMessage();

@@ -1,12 +1,24 @@
-# sportclub 1.2
+# sportclub 2.0
 
-This is a react app for sports like orienteering, volleyball or any other sport.
+This is a react app for sports like orienteering or any other sport, with the following key functionality:
+
+- Dashboard, with news, calendar, map, facebook and race results
+- News
+- Calendar with map connection
+- Maps
+- Results with statistics, club/personal list, invoice verification, send invoice to members, and much more
+- Member presentation, Stars, where we present each runners personal skils
+- Integration to the swedish orienteering fedartion system Eventor (import results)
+- Create/Edit custom webpages (user friendly, and can include images, tables and much more styling), and connect them into the menu
+- Create/Edit external links into the menu
+- Upload files, and connect them into the menu
+- Administrate members
 
 ## Contribute
 
 It's free to use this as you like, but I will be happy if:
 
-- You pay a small amount for all the time spent. 38000+ lines of code and 800+ hours. Swish between 50 SEK and 3500 SEK to 0723-750908 (Patrik Sjökvist).
+- You pay a small amount for all the time spent. 40000+ lines of code and 900+ hours. Swish between 50 SEK and 3500 SEK to 0723-750908 (Patrik Sjökvist).
 - If you contribute with some development or testing.
 
 ## Clubs using sportclub / Samples

@@ -73,6 +73,7 @@ import {
 } from '../../utils/resultConstants';
 import {
   CalculateAllAwards,
+  CalculateAllClassClassificationId,
   CalculateCompetitorsFee,
   ConvertSecondsToTime,
   ConvertSecondsWithFractionsToTime,
@@ -1835,6 +1836,7 @@ const ResultWizardStep2EditRace = observer(
                 clubModel.raceClubs.eventClassifications,
               );
               CalculateAllAwards(clubModel.raceClubs, raceWizardModel.raceEvent);
+              CalculateAllClassClassificationId(clubModel.raceClubs!, raceWizardModel.raceEvent!);
               raceWizardModel.raceEvent.results.forEach((result) => {
                 if (result.missingTime?.substr(-5) !== ManuallyEditedMissingTimePostfix) {
                   result.setStringValueOrNull('missingTime', result.missingTime);
@@ -2490,7 +2492,7 @@ const ResultWizardStep2EditRace = observer(
               ]}
             >
               <FormSelect
-                dropdownMatchSelectWidth={false}
+                popupMatchSelectWidth={false}
                 allowClear={false}
                 options={clubModel.raceClubs.eventClassificationOptions}
                 onChange={(code) => {
@@ -2501,6 +2503,7 @@ const ResultWizardStep2EditRace = observer(
                     clubModel.raceClubs!.classLevels,
                   );
                   CalculateAllAwards(clubModel.raceClubs!, raceWizardModel.raceEvent!);
+                  CalculateAllClassClassificationId(clubModel.raceClubs!, raceWizardModel.raceEvent!);
                   onValidate(!!raceWizardModel.raceEvent?.valid);
                 }}
               />

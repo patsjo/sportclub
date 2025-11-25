@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import Column from './Column';
 import ColumnItem from './ColumnItem';
@@ -34,9 +34,6 @@ const getColumns = (width: number): number => {
 };
 
 const StyledColumns = styled.div`
-  &&& {
-    max-width: 2000px;
-  }
   &&& + div {
     margin-left: 0;
     margin-right: 0;

@@ -1,28 +1,28 @@
 import { DatePicker, Form, message, Space, Spin } from 'antd';
+import dayjs from 'dayjs';
 import { TFunction } from 'i18next';
 import { observer } from 'mobx-react';
-import { IMobxClubModel } from '../../models/mobxClubModel';
-import dayjs from 'dayjs';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
+import { IMobxClubModel } from '../../models/mobxClubModel';
+import { PickRequired } from '../../models/typescriptPartial';
+import { PostJsonData } from '../../utils/api';
+import { getTextColorBasedOnBackground } from '../../utils/colorHelper';
+import { dateFormat, errorRequiredField, FormSelect } from '../../utils/formHelper';
 import { useMobxStore } from '../../utils/mobxStore';
+import { IPrintTableColumn } from '../../utils/pdf';
+import { getInvoicePdf, getInvoiceZip, IFeesRecord, IInvoicePrintObject } from '../../utils/pdfInvoice';
 import {
   IFeeResponse,
   IIndividualViewResultResponse,
   IPrintSettings,
   IPrintSettingsColumn,
 } from '../../utils/responseInterfaces';
-import { PostJsonData } from '../../utils/api';
-import { dateFormat, errorRequiredField, FormSelect, INumberOption, IOption } from '../../utils/formHelper';
-import { getPdf, getZip, IPrintInput, IPrintObject, IPrintTable, IPrintTableColumn } from '../../utils/pdf';
 import FormItem from '../formItems/FormItem';
-import { SpinnerDiv, StyledTable } from '../styled/styled';
+import { SpinnerDiv } from '../styled/styled';
 import TablePrintSettingButtons from '../tableSettings/TablePrintSettingButtons';
-import { PickRequired } from '../../models/typescriptPartial';
 import { CompetitorTable } from '../users/Competitors';
-import { getTextColorBasedOnBackground, lightenColor } from '../../utils/colorHelper';
-import { getInvoicePdf, getInvoiceZip, IFeesRecord, IInvoicePrintObject } from '../../utils/pdfInvoice';
 
 export const generatePdfStatus = { abortLoading: false };
 
@@ -374,7 +374,7 @@ const ResultsFees = observer(() => {
       setSpinnerTitle(null);
       setSpinnerText(null);
     },
-    [clubModel, getPrintObject, fee, fromDate, toDate],
+    [clubModel, getPrintObject, fee, fromDate, toDate, dueDate],
   );
 
   const onPrintAll = useCallback(
@@ -453,7 +453,7 @@ const ResultsFees = observer(() => {
       setSpinnerTitle(null);
       setSpinnerText(null);
     },
-    [t, clubModel, sessionModel, fees, fromDate, toDate, getPrintObject],
+    [t, clubModel, sessionModel, fees, fromDate, toDate, dueDate, getPrintObject],
   );
 
   const Spinner = (

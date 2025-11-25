@@ -1,28 +1,22 @@
-import { mapProjection } from '../map/useOpenLayersMap';
 import { observer } from 'mobx-react';
 import Feature from 'ol/Feature';
 import { Point } from 'ol/geom';
 import { toLonLat } from 'ol/proj';
-import styled from 'styled-components';
-import { useMobxStore } from '../../utils/mobxStore';
 import InfiniteScroll from '../../utils/infinityScroll';
+import { useMobxStore } from '../../utils/mobxStore';
 import WeeklyCalendar from '../calendar/weekly/WeeklyCalendar';
 import useEventorEntries from '../eventor/useEventorEntries';
 import ShowFacebookTimeline from '../facebook/ShowFacebookTimeline';
 import OSMOrienteeringMap from '../map/OSMOrienteeringMap';
+import { mapProjection } from '../map/useOpenLayersMap';
 import useBanners from '../news/useBanners';
 import useNews from '../news/useNews';
 import SponsorsSlideshow from '../sponsors/SponsorsSlideshow';
 import Columns from './columns/Columns';
 import { ChildContainer } from './columns/mapNodesToColumns';
 
-const SpinnerDiv = styled.div`
-  text-align: center;
-  width: 100%;
-`;
-
 const Dashboard = observer(() => {
-  const { clubModel, globalStateModel } = useMobxStore();
+  const { clubModel } = useMobxStore();
   const eventorEntries = useEventorEntries(clubModel);
   const { loadMoreCallback, newsItems } = useNews(true);
   const bannerItems = useBanners();

@@ -461,7 +461,7 @@ const okorion: IMobxClubModelProps = {
         height: 239,
       },
       url: 'http://www.eye-do.se/',
-      active: true,
+      active: false,
     },
     {
       name: 'ICA Supermarket Jämjö',
@@ -524,11 +524,21 @@ const okorion: IMobxClubModelProps = {
       active: true,
     },
     {
+      name: 'K-Vagnen',
+      logo: {
+        url: 'https://okorion.com/images/sponsors/k-vagnen.png',
+        width: 645,
+        height: 132,
+      },
+      url: 'https://k-vagnen.com/',
+      active: true,
+    },
+    {
       name: 'Länsförsäkringar Blekinge',
       logo: {
-        url: 'https://okorion.com/images/sponsors/lansforsakringar.png',
-        width: 501,
-        height: 100,
+        url: 'https://okorion.com/images/sponsors/logo_lansforsakringar_blekinge.svg',
+        width: 848,
+        height: 184,
       },
       url: 'https://www.lansforsakringar.se/blekinge/',
       active: true,
@@ -542,6 +552,16 @@ const okorion: IMobxClubModelProps = {
       },
       url: 'https://martinsgrus.se/',
       active: true,
+    },
+    {
+      name: 'OKQ8 ',
+      logo: {
+        url: 'https://okorion.com/images/sponsors/okq8.png',
+        width: 508,
+        height: 288,
+      },
+      url: 'https://www.okq8.se/pa-stationen/bensinstationer/jamjo-riksvagen/',
+      active: false,
     },
     {
       name: 'Roxtec',
@@ -610,7 +630,7 @@ const okorion: IMobxClubModelProps = {
         height: 848,
       },
       url: 'https://www.wsp.com/sv-SE',
-      active: true,
+      active: false,
     },
     {
       name: 'XL Bygg Jämjö',

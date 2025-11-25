@@ -493,14 +493,15 @@ export const GetClassClassificationId = (
     return null;
   }
   const classClassification = eventClassification.classClassifications
-    ?.filter(
-      (cc) =>
-        (cc.classTypeShortName && cc.classTypeShortName === classLevel.classTypeShortName) ||
-        (cc.ageUpperLimit && cc.ageUpperLimit >= classLevel.age) ||
-        (cc.ageLowerLimit && cc.ageLowerLimit <= classLevel.age) ||
-        (!cc.classTypeShortName && !cc.ageUpperLimit && !cc.ageLowerLimit),
-    )
-    .sort((a, b) => (!a.ageUpperLimit ? 1 : b.ageUpperLimit && a.ageUpperLimit > b.ageUpperLimit ? 1 : -1))
+    ?.map((cc) => ({
+      ...cc,
+      accuracy:
+        (cc.classTypeShortName && cc.classTypeShortName === classLevel.classTypeShortName ? 1 : 0) +
+        (!cc.ageUpperLimit || cc.ageUpperLimit >= classLevel.age ? 1 : 0) +
+        (!cc.ageLowerLimit || cc.ageLowerLimit <= classLevel.age ? 1 : 0),
+    }))
+    ?.filter((cc) => cc.accuracy >= 2)
+    .sort((a, b) => b.accuracy - a.accuracy)
     .find(() => true);
   if (!classClassification) {
     return null;
@@ -709,6 +710,26 @@ export const CalculateAllAwards = (raceClubs: IRaceClubs, raceEvent: IRaceEvent)
             )
           : null,
       );
+    });
+};
+
+export const CalculateAllClassClassificationId = (raceClubs: IRaceClubs, raceEvent: IRaceEvent) => {
+  const raceEventClassification = raceClubs.eventClassifications.find(
+    (ec) => ec.eventClassificationId === raceEvent.eventClassificationId,
+  );
+  if (raceEventClassification)
+    raceEvent.results?.forEach((result) => {
+      const shortClassName = GetClassShortName(result.className);
+      const classLevel = GetClassLevel(raceClubs.classLevels, shortClassName);
+      result.setValues({
+        classClassificationId: GetClassClassificationId(
+          result.deviantEventClassificationId
+            ? (result.deviantEventClassificationId as EventClassificationIdTypes)
+            : raceEventClassification.eventClassificationId,
+          classLevel,
+          raceClubs.eventClassifications,
+        ),
+      });
     });
 };
 

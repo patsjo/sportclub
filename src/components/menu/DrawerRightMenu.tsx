@@ -1,4 +1,4 @@
-import { Button, Col, Drawer, Form, Menu, message, Row, Spin } from 'antd';
+import { Button, Col, Drawer, Form, Menu, message, Row, Spin, Typography } from 'antd';
 import { observer } from 'mobx-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -14,6 +14,7 @@ import MaterialIcon, { MaterialIconsType } from '../materialIcon/MaterialIcon';
 import MenuItem from './MenuItem';
 import ModuleSubMenu from './moduleSubMenus/ModuleSubMenu';
 
+const { Title } = Typography;
 const StyledMenu = styled(Menu)`
   &&&.ant-menu-inline {
     border-right: 0px;
@@ -45,7 +46,11 @@ const DrawerRightMenu = observer(() => {
     <Drawer
       title={
         <Row>
-          <Col flex="auto">{t('common.Menu')}</Col>
+          <Col flex="auto">
+            <Title level={3} style={{ margin: 0 }}>
+              {t('common.Menu')}
+            </Title>
+          </Col>
           <Col flex="40px">
             <Button
               type="text"
