@@ -48,9 +48,9 @@ const InfiniteScroll = observer(
 
     const eventListenerOptions = useCallback(
       (): EventListenerOptions => ({
-        capture: useCapture,
+        capture: useCapture
       }),
-      [useCapture],
+      [useCapture]
     );
 
     const scrollListener = useCallback(async () => {
@@ -89,7 +89,7 @@ const InfiniteScroll = observer(
         loadingRef.current = false;
         return false;
       }
-    }, [loadMore, hasMore]);
+    }, [hasMore, loadMore, scrollComponent, threshold, useWindow]);
 
     React.useEffect(() => {
       const options = eventListenerOptions();
@@ -101,13 +101,11 @@ const InfiniteScroll = observer(
 
       return () => {
         const options = eventListenerOptions();
-        const scrollEl: EventTarget | null = useWindow ? window : getParentElement(scrollComponent.current);
-
         scrollEl?.removeEventListener('scroll', scrollListener, options);
         scrollEl?.removeEventListener('resize', scrollListener, options);
         scrollEl?.removeEventListener('wheel', (e: Event) => mousewheelListener(e as WheelEvent), options);
       };
-    }, [scrollListener, eventListenerOptions]);
+    }, [scrollListener, eventListenerOptions, useWindow, scrollComponent]);
 
     React.useEffect(() => {
       const initialLoad = async () => {
@@ -122,11 +120,11 @@ const InfiniteScroll = observer(
           parentHeight + threshold > scrollComponent.current.scrollHeight
         ) {
           if (!loadingRef.current) moreToLoad = await scrollListener();
-          else await new Promise((resolve) => setTimeout(() => resolve(true), 200));
+          else await new Promise(resolve => setTimeout(() => resolve(true), 200));
         }
       };
       initialLoad();
-    }, [scrollListener, scrollComponent.current, threshold]);
+    }, [scrollListener, threshold, useWindow, scrollComponent]);
 
     return (
       <div ref={divScrollRef}>
@@ -136,6 +134,6 @@ const InfiniteScroll = observer(
         </SpinnerDiv>
       </div>
     );
-  },
+  }
 );
 export default InfiniteScroll;

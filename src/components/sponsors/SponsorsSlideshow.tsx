@@ -1,10 +1,10 @@
 import { observer } from 'mobx-react';
-import { ISponsorProps } from '../../models/mobxClubModel';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Zoom } from 'react-slideshow-image';
 import 'react-slideshow-image/dist/styles.css';
-import styled from 'styled-components';
+import { styled } from 'styled-components';
+import { ISponsorProps } from '../../models/mobxClubModel';
 import { useMobxStore } from '../../utils/mobxStore';
 
 const zoomOutProperties = {
@@ -14,7 +14,7 @@ const zoomOutProperties = {
   indicators: true,
   scale: 0.4,
   arrows: false,
-  pauseOnHover: true,
+  pauseOnHover: true
 };
 
 const SponsorContainer = styled.div`
@@ -53,7 +53,7 @@ const SponsorsSlideshow = observer(() => {
   const { t } = useTranslation();
   const { clubModel } = useMobxStore();
   const sponsors = React.useMemo<ISponsorProps[] | undefined>(
-    () => (clubModel.sponsors ? clubModel.sponsors.filter((s) => s.active) : undefined),
+    () => (clubModel.sponsors ? shuffle(clubModel.sponsors.filter(s => s.active)) : undefined),
     [clubModel.sponsors]
   );
 
@@ -61,10 +61,10 @@ const SponsorsSlideshow = observer(() => {
     <SponsorContainer className="slide-container">
       <SponsorText>{t('common.OurSponsors')}</SponsorText>
       <Zoom {...zoomOutProperties}>
-        {shuffle(sponsors).map((sponsor, index) =>
+        {sponsors.map((sponsor, index) =>
           sponsor.url ? (
-            <SponsorLink href={sponsor.url} target="_blank">
-              <SponsorImage key={`sponsor#${index}`} src={sponsor.logo.url} />
+            <SponsorLink key={`sponsor#${index}`} href={sponsor.url} target="_blank">
+              <SponsorImage src={sponsor.logo.url} />
             </SponsorLink>
           ) : (
             <SponsorImage key={`sponsor#${index}`} src={sponsor.logo.url} />

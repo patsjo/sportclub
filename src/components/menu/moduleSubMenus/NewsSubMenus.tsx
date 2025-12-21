@@ -1,8 +1,8 @@
 import { observer } from 'mobx-react';
-import { INewsItemProps, NewsItem } from '../../../models/newsModel';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { INewsItemProps, NewsItem } from '../../../models/newsModel';
 import { useMobxStore } from '../../../utils/mobxStore';
 import NewsEdit from '../../news/NewsEdit';
 import MenuItem from '../MenuItem';
@@ -17,13 +17,13 @@ const defaultNewsObject: INewsItemProps = {
   newsTypeId: 1,
   text: '',
   modificationDate: new Date().toISOString().substr(0, 10),
-  modifiedBy: '',
+  modifiedBy: ''
 };
 
 const NewsSubMenus = observer(() => {
   const { t } = useTranslation();
   const { clubModel, globalStateModel, sessionModel } = useMobxStore();
-  const newsModule = React.useMemo(() => clubModel.modules.find((module) => module.name === 'News'), []);
+  const newsModule = React.useMemo(() => clubModel.modules.find(module => module.name === 'News'), [clubModel.modules]);
   const [addNewsModalIsOpen, setAddNewsModalIsOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -39,10 +39,10 @@ const NewsSubMenus = observer(() => {
       ) : null}
       <MenuItem
         key={'menuItem#newsAdd'}
+        isSubMenu
         icon="plus"
         name={t('news.Add')}
         disabled={!newsModule?.addUrl || !sessionModel.loggedIn}
-        isSubMenu
         onClick={() => {
           globalStateModel.setRightMenuVisible(false);
           setTimeout(() => setAddNewsModalIsOpen(true), 0);
@@ -50,27 +50,27 @@ const NewsSubMenus = observer(() => {
       />
       <MenuItem
         key={'menuItem#news'}
+        isSubMenu
         icon={'NewsIcon'}
         name={t('modules.News')}
-        isSubMenu
         onClick={() => {
           globalStateModel.setDashboard(navigate, '/news', '1900-01-01', '2099-12-31');
         }}
       />
       <MenuItem
         key={'menuItem#newsLongTime'}
+        isSubMenu
         icon={'NewsIcon'}
         name={t('news.LongTimeNews')}
-        isSubMenu
         onClick={() => {
           globalStateModel.setDashboard(navigate, '/news', '1900-01-01', '2099-12-31', 2);
         }}
       />
       <MenuItem
         key={'menuItem#educations'}
+        isSubMenu
         icon="book"
         name={t('news.Educations')}
-        isSubMenu
         onClick={() => {
           globalStateModel.setDashboard(navigate, '/news', '1900-01-01', '2099-12-31', 3);
         }}

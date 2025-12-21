@@ -1,10 +1,11 @@
 import { DatePicker, Form, Input, Tabs } from 'antd';
 import dayjs from 'dayjs';
-import React, { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { dateFormat, errorRequiredField, FormSelect, INumberOption } from '../../utils/formHelper';
+import { dateFormat, errorRequiredField, INumberOption } from '../../utils/formHelper';
 import { genderOptions, GenderType } from '../../utils/resultConstants';
 import FormItem from '../formItems/FormItem';
+import { FormSelect } from '../formItems/FormSelect';
 
 const { TabPane } = Tabs;
 
@@ -29,6 +30,9 @@ interface IAddMapCompetitor {
   defaultActiveKey: string;
   onTabChange: (key: string) => void;
   onValidate: (valid: boolean) => void;
+  onChange: (
+    changes: Partial<Omit<IAddLinkCompetitor, 'newCompetitor'> & { newCompetitor: Partial<INewCompetitorForm> }>
+  ) => void;
 }
 const AddMapCompetitor = ({
   addLinkCompetitor,
@@ -36,8 +40,10 @@ const AddMapCompetitor = ({
   defaultActiveKey,
   onTabChange,
   onValidate,
+  onChange
 }: IAddMapCompetitor) => {
   const { t } = useTranslation();
+  // eslint-disable-next-line react-hooks/purity
   const formId = useMemo(() => 'addMapCompetitor' + Math.floor(Math.random() * 1000000000000000), []);
 
   const validate = useCallback(
@@ -54,11 +60,11 @@ const AddMapCompetitor = ({
             !!iGender &&
             !!iStartDate &&
             iFirstName.length > 0 &&
-            iLastName.length > 0,
+            iLastName.length > 0
         );
       }
     },
-    [addLinkCompetitor, onValidate],
+    [addLinkCompetitor, onValidate]
   );
 
   const onThisTabChange = useCallback(
@@ -66,189 +72,190 @@ const AddMapCompetitor = ({
       onTabChange(key);
       validate(key);
     },
-    [onTabChange, validate],
+    [onTabChange, validate]
   );
 
   useEffect(() => {
     validate(defaultActiveKey);
-  }, []);
+  }, [defaultActiveKey, validate]);
 
   return (
     <Form
       id={formId}
       layout="vertical"
       initialValues={{
-        iCompetitorId:
+        ...addLinkCompetitor,
+        competitorId:
           !addLinkCompetitor.competitorId || addLinkCompetitor.competitorId === -1
             ? undefined
             : addLinkCompetitor.competitorId,
-        iFirstName: addLinkCompetitor.newCompetitor.iFirstName,
-        iLastName: addLinkCompetitor.newCompetitor.iLastName,
-        iBirthDay: !addLinkCompetitor.newCompetitor.iBirthDay
-          ? null
-          : dayjs(addLinkCompetitor.newCompetitor.iBirthDay, dateFormat),
-        iGender: addLinkCompetitor.newCompetitor.iGender,
-        iStartDate: !addLinkCompetitor.newCompetitor.iStartDate
-          ? null
-          : dayjs(addLinkCompetitor.newCompetitor.iStartDate, dateFormat),
+        firstName: addLinkCompetitor.newCompetitor.iFirstName,
+        lastName: addLinkCompetitor.newCompetitor.iLastName,
+        birthDay: addLinkCompetitor.newCompetitor.iBirthDay,
+        gender: addLinkCompetitor.newCompetitor.iGender,
+        startDate: addLinkCompetitor.newCompetitor.iStartDate
       }}
     >
       <Tabs defaultActiveKey={defaultActiveKey} onChange={onThisTabChange}>
-        <TabPane tab={t('results.MapCompetitor')} key="1">
+        <TabPane key="1" tab={t('results.MapCompetitor')}>
           <FormItem
-            name="iCompetitorId"
+            name="competitorId"
             label={t('results.Competitor')}
             rules={[
               {
                 required: true,
-                message: errorRequiredField(t, 'results.Competitor'),
-              },
+                message: errorRequiredField(t, 'results.Competitor')
+              }
             ]}
           >
             <FormSelect
+              showSearch
               style={{ minWidth: 174, maxWidth: 334 }}
               allowClear={true}
-              showSearch
               optionFilterProp="children"
-              filterOption={(input, option) => option?.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+              filterOption={(input, option) =>
+                option!.label!.toString().toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
               options={competitorsOptions}
               onChange={(code: number) => {
-                addLinkCompetitor.competitorId = code == null ? -1 : code;
-                onValidate(addLinkCompetitor.competitorId != null && addLinkCompetitor.competitorId !== -1);
+                onChange({ competitorId: code == null ? -1 : code });
+                onValidate(code != null && code !== -1);
               }}
             />
           </FormItem>
         </TabPane>
-        <TabPane tab={t('results.AddCompetitor')} key="2">
+        <TabPane key="2" tab={t('results.AddCompetitor')}>
           <FormItem
-            name="iFirstName"
+            name="firstName"
             label={t('results.FirstName')}
             rules={[
               {
                 required: true,
-                message: errorRequiredField(t, 'results.FirstName'),
-              },
+                message: errorRequiredField(t, 'results.FirstName')
+              }
             ]}
           >
             <Input
-              onChange={(e) => {
-                addLinkCompetitor.newCompetitor.iFirstName = e.currentTarget.value;
+              onChange={e => {
+                onChange({ newCompetitor: { iFirstName: e.currentTarget.value } });
                 onValidate(
-                  !!addLinkCompetitor.newCompetitor.iFirstName &&
+                  !!e.currentTarget.value &&
                     !!addLinkCompetitor.newCompetitor.iLastName &&
                     !!addLinkCompetitor.newCompetitor.iBirthDay &&
                     !!addLinkCompetitor.newCompetitor.iGender &&
                     !!addLinkCompetitor.newCompetitor.iStartDate &&
-                    addLinkCompetitor.newCompetitor.iFirstName.length > 0 &&
-                    addLinkCompetitor.newCompetitor.iLastName.length > 0,
+                    e.currentTarget.value.length > 0 &&
+                    addLinkCompetitor.newCompetitor.iLastName.length > 0
                 );
               }}
             />
           </FormItem>
           <FormItem
-            name="iLastName"
+            name="lastName"
             label={t('results.LastName')}
             rules={[
               {
                 required: true,
-                message: errorRequiredField(t, 'results.LastName'),
-              },
+                message: errorRequiredField(t, 'results.LastName')
+              }
             ]}
           >
             <Input
-              onChange={(e) => {
-                addLinkCompetitor.newCompetitor.iLastName = e.currentTarget.value;
+              onChange={e => {
+                onChange({ newCompetitor: { iLastName: e.currentTarget.value } });
                 onValidate(
                   !!addLinkCompetitor.newCompetitor.iFirstName &&
-                    !!addLinkCompetitor.newCompetitor.iLastName &&
+                    !!e.currentTarget.value &&
                     !!addLinkCompetitor.newCompetitor.iBirthDay &&
                     !!addLinkCompetitor.newCompetitor.iGender &&
                     !!addLinkCompetitor.newCompetitor.iStartDate &&
                     addLinkCompetitor.newCompetitor.iFirstName.length > 0 &&
-                    addLinkCompetitor.newCompetitor.iLastName.length > 0,
+                    e.currentTarget.value.length > 0
                 );
               }}
             />
           </FormItem>
           <FormItem
-            name="iGender"
+            name="gender"
             label={t('results.Gender')}
             rules={[
               {
                 required: true,
-                message: errorRequiredField(t, 'results.Gender'),
-              },
+                message: errorRequiredField(t, 'results.Gender')
+              }
             ]}
           >
             <FormSelect
               style={{ minWidth: 60, maxWidth: 100 }}
               options={genderOptions(t)}
               onChange={(value: GenderType) => {
-                addLinkCompetitor.newCompetitor.iGender = value;
+                onChange({ newCompetitor: { iGender: value } });
                 onValidate(
                   !!addLinkCompetitor.newCompetitor.iFirstName &&
                     !!addLinkCompetitor.newCompetitor.iLastName &&
                     !!addLinkCompetitor.newCompetitor.iBirthDay &&
-                    !!addLinkCompetitor.newCompetitor.iGender &&
+                    !!value &&
                     !!addLinkCompetitor.newCompetitor.iStartDate &&
                     addLinkCompetitor.newCompetitor.iFirstName.length > 0 &&
-                    addLinkCompetitor.newCompetitor.iLastName.length > 0,
+                    addLinkCompetitor.newCompetitor.iLastName.length > 0
                 );
               }}
             />
           </FormItem>
           <FormItem
-            name="iBirthDay"
+            name="birthDay"
             label={t('results.BirthDay')}
             rules={[
               {
                 required: true,
-                type: 'object',
-                message: errorRequiredField(t, 'results.BirthDay'),
-              },
+                message: errorRequiredField(t, 'results.BirthDay')
+              }
             ]}
+            normalize={(value: dayjs.Dayjs) => (value ? value.format(dateFormat) : null)}
+            getValueProps={(value: string | undefined) => ({ value: value ? dayjs(value, dateFormat) : null })}
           >
             <DatePicker
               format={dateFormat}
               allowClear={false}
-              onChange={(date) => {
-                addLinkCompetitor.newCompetitor.iBirthDay = date?.format(dateFormat);
+              onChange={date => {
+                onChange({ newCompetitor: { iBirthDay: date?.format(dateFormat) } });
                 onValidate(
                   !!addLinkCompetitor.newCompetitor.iFirstName &&
                     !!addLinkCompetitor.newCompetitor.iLastName &&
-                    !!addLinkCompetitor.newCompetitor.iBirthDay &&
+                    !!date &&
                     !!addLinkCompetitor.newCompetitor.iGender &&
                     !!addLinkCompetitor.newCompetitor.iStartDate &&
                     addLinkCompetitor.newCompetitor.iFirstName.length > 0 &&
-                    addLinkCompetitor.newCompetitor.iLastName.length > 0,
+                    addLinkCompetitor.newCompetitor.iLastName.length > 0
                 );
               }}
             />
           </FormItem>
           <FormItem
-            name="iStartDate"
+            name="startDate"
             label={t('results.StartDate')}
             rules={[
               {
                 required: true,
-                type: 'object',
-                message: errorRequiredField(t, 'results.StartDate'),
-              },
+                message: errorRequiredField(t, 'results.StartDate')
+              }
             ]}
+            normalize={(value: dayjs.Dayjs) => (value ? value.format(dateFormat) : null)}
+            getValueProps={(value: string | undefined) => ({ value: value ? dayjs(value, dateFormat) : null })}
           >
             <DatePicker
               format={dateFormat}
               allowClear={false}
-              onChange={(date) => {
-                addLinkCompetitor.newCompetitor.iStartDate = date?.format(dateFormat);
+              onChange={date => {
+                onChange({ newCompetitor: { iStartDate: date?.format(dateFormat) } });
                 onValidate(
                   !!addLinkCompetitor.newCompetitor.iFirstName &&
                     !!addLinkCompetitor.newCompetitor.iLastName &&
                     !!addLinkCompetitor.newCompetitor.iBirthDay &&
                     !!addLinkCompetitor.newCompetitor.iGender &&
-                    !!addLinkCompetitor.newCompetitor.iStartDate &&
+                    !!date &&
                     addLinkCompetitor.newCompetitor.iFirstName.length > 0 &&
-                    addLinkCompetitor.newCompetitor.iLastName.length > 0,
+                    addLinkCompetitor.newCompetitor.iLastName.length > 0
                 );
               }}
             />

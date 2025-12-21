@@ -25,10 +25,10 @@ import {
   StarOutlined,
   TeamOutlined,
   TrophyOutlined,
-  UserOutlined,
+  UserOutlined
 } from '@ant-design/icons';
 import React from 'react';
-import styled from 'styled-components';
+import { styled } from 'styled-components';
 
 const StyledImg = styled.img`
   vertical-align: middle;

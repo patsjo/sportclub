@@ -1,18 +1,18 @@
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import { Button, Spin, Steps, message } from 'antd';
-import FullScreenWizard from '../styled/FullscreenWizard';
 import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
-import { IRaceClubsProps } from '../../models/resultModel';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
+import { styled } from 'styled-components';
+import { IRaceClubsProps } from '../../models/resultModel';
+import { RaceWizard, getLocalStorage } from '../../models/resultWizardModel';
+import { PostJsonData } from '../../utils/api';
 import { useMobxStore } from '../../utils/mobxStore';
 import { ResultWizardStoreProvider } from '../../utils/resultWizardStore';
 import { useSize } from '../../utils/useSize';
-import { RaceWizard, getLocalStorage } from '../../models/resultWizardModel';
-import { PostJsonData } from '../../utils/api';
+import FullScreenWizard from '../styled/FullscreenWizard';
 import { SpinnerDiv } from '../styled/styled';
 import InvoiceWizardStep0Input from './InvoiceWizardStep0Input';
 import InvoiceWizardStep1ChooseRace from './InvoiceWizardStep1ChooseRace';
@@ -40,12 +40,12 @@ const InvoiceWizard = observer(() => {
 
   const next = useCallback(() => {
     setNextStepValid(false);
-    setWizardStep((oldStep) => oldStep + 1);
+    setWizardStep(oldStep => oldStep + 1);
   }, []);
 
   const prev = useCallback(() => {
     setNextStepValid(wizardStep === 1 || (wizardStep === 2 && raceWizardModel.current.selectedEventId != null));
-    setWizardStep((oldStep) => oldStep - 1);
+    setWizardStep(oldStep => oldStep - 1);
   }, [wizardStep]);
 
   const onValidate = useCallback((valid: boolean) => {
@@ -54,44 +54,46 @@ const InvoiceWizard = observer(() => {
 
   const onClose = useCallback(() => {
     globalStateModel.setDashboard(navigate, '/');
-  }, []);
+  }, [globalStateModel, navigate]);
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  const save = useCallback((shouldClose = true, onSuccess = () => {}) => {
-    const { raceEvent } = raceWizardModel.current;
-    const resultsModule = clubModel.modules.find((module) => module.name === 'Results');
-    const saveUrl = raceEvent?.eventId === -1 ? resultsModule?.addUrl : resultsModule?.updateUrl;
+  const save = useCallback(
+    (shouldClose = true, onSuccess = () => {}) => {
+      const { raceEvent } = raceWizardModel.current;
+      const resultsModule = clubModel.modules.find(module => module.name === 'Results');
+      const saveUrl = raceEvent?.eventId === -1 ? resultsModule?.addUrl : resultsModule?.updateUrl;
 
-    if (!raceEvent || !saveUrl) return;
+      if (!raceEvent || !saveUrl) return;
 
-    setSaving(true);
-    const snapshot = toJS(raceEvent);
+      setSaving(true);
+      const snapshot = toJS(raceEvent);
 
-    PostJsonData(
-      saveUrl,
-      {
-        ...snapshot,
-        iType: 'EVENT_VERIFY',
-        username: sessionModel.username,
-        password: sessionModel.password,
-      },
-      true,
-      sessionModel.authorizationHeader
-    )
-      .then(() => {
-        setSaving(false);
-        onSuccess();
-        shouldClose && onClose();
-      })
-      .catch((e) => {
-        message.error(e.message);
-        setSaving(false);
-      });
-  }, []);
+      PostJsonData(
+        saveUrl,
+        {
+          ...snapshot,
+          iType: 'EVENT_VERIFY',
+          username: sessionModel.username,
+          password: sessionModel.password
+        },
+        true,
+        sessionModel.authorizationHeader
+      )
+        .then(() => {
+          setSaving(false);
+          onSuccess();
+          if (shouldClose) onClose();
+        })
+        .catch(e => {
+          if (e?.message) message.error(e.message);
+          setSaving(false);
+        });
+    },
+    [clubModel.modules, onClose, sessionModel.authorizationHeader, sessionModel.password, sessionModel.username]
+  );
 
   const saveAndNextEvent = useCallback(() => {
     save(false, () => {
-      raceWizardModel.current.raceEvent?.eventId != null &&
+      if (raceWizardModel.current.raceEvent?.eventId != null)
         raceWizardModel.current.addImportedId(raceWizardModel.current.raceEvent?.eventId);
       raceWizardModel.current.setRaceEvent(null);
       raceWizardModel.current.setNumberValueOrNull('selectedEventId', null);
@@ -103,44 +105,47 @@ const InvoiceWizard = observer(() => {
   }, [save]);
 
   useEffect(() => {
-    const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
+    const url = clubModel.modules.find(module => module.name === 'Results')?.queryUrl;
     if (!url) return;
 
-    PostJsonData(
+    PostJsonData<IRaceClubsProps>(
       url,
       {
-        iType: 'CLUBS',
+        iType: 'CLUBS'
       },
       true,
       sessionModel.authorizationHeader
     )
-      .then((clubsJson: IRaceClubsProps) => {
-        clubModel.setRaceClubs(clubsJson);
-        setWizardStep(0);
+      .then(clubsJson => {
+        if (clubsJson) {
+          clubModel.setRaceClubs(clubsJson);
+          setWizardStep(0);
+        }
         setLoaded(true);
       })
-      .catch((e) => {
-        message.error(e.message);
-        onClose && onClose();
+      .catch(e => {
+        if (e?.message) message.error(e.message);
+        onClose?.();
       });
-  }, []);
+  }, [clubModel, onClose, sessionModel.authorizationHeader]);
 
   return (
     <ResultWizardStoreProvider store={{ raceWizardModel: raceWizardModel.current }}>
       <FullScreenWizard
         title={t('results.InvoiceVerifier')}
         footer={[
-          <Button disabled={wizardStep < 1} onClick={() => prev()}>
+          <Button key="prevButton" disabled={wizardStep < 1} onClick={prev}>
             <LeftOutlined />
             {t('common.Previous')}
           </Button>,
           wizardStep === 2 ? (
-            <Button disabled={!loaded || !nextStepValid} loading={saving} onClick={(e) => saveAndNextEvent()}>
+            <Button disabled={!loaded || !nextStepValid} loading={saving} onClick={saveAndNextEvent}>
               <LeftOutlined />
               {t('common.SaveAndNextEvent')}
             </Button>
           ) : null,
           <Button
+            key={wizardStep === 2 ? 'saveButton' : 'nextButton'}
             type="primary"
             disabled={!loaded || !nextStepValid}
             loading={saving}
@@ -149,10 +154,10 @@ const InvoiceWizard = observer(() => {
             {wizardStep === 2 ? t('common.Save') : t('common.Next')}
             {wizardStep === 2 ? null : <RightOutlined />}
           </Button>,
-          <Button onClick={onClose} loading={false}>
+          <Button key="cancelButton" loading={false} onClick={onClose}>
             {t('common.Cancel')}
-          </Button>,
-        ].filter((component) => !!component)}
+          </Button>
+        ].filter(component => !!component)}
         onContentOffsetHeight={setContentOffsetHeight}
       >
         <StyledModalContent>
@@ -167,17 +172,17 @@ const InvoiceWizard = observer(() => {
           {wizardStep >= 1 && raceWizardModel.current.existInEventor ? (
             <InvoiceWizardStep1ChooseRace
               height={Math.max(160, contentOffsetHeight - (stepsHeight ?? 32))}
-              onValidate={onValidate}
               visible={wizardStep === 1}
-              onFailed={() => prev()}
+              onValidate={onValidate}
+              onFailed={prev}
             />
           ) : null}
           {wizardStep >= 2 ? (
             <InvoiceWizardStep2EditRace
               height={Math.max(228, contentOffsetHeight - (stepsHeight ?? 32))}
-              onValidate={onValidate}
               visible={wizardStep === 2}
-              onFailed={() => prev()}
+              onValidate={onValidate}
+              onFailed={prev}
             />
           ) : null}
           {!loaded ? (

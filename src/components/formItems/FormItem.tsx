@@ -1,5 +1,6 @@
+import type { FormItemProps } from 'antd';
 import { Form } from 'antd';
-import styled from 'styled-components';
+import { styled } from 'styled-components';
 
 const FormItem = styled(Form.Item)`
   &&& {
@@ -17,6 +18,6 @@ const FormItem = styled(Form.Item)`
   &&& .ant-form-item-control-input {
     min-height: unset;
   }
-`;
+` as React.FC<FormItemProps>;
 
-export default FormItem;
+export default FormItem as <TValues = never>(props: FormItemProps<TValues>) => JSX.Element;

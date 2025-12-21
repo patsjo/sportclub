@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import styled from 'styled-components';
+import { styled } from 'styled-components';
 import Column from './Column';
 import ColumnItem from './ColumnItem';
 import {
@@ -7,21 +7,21 @@ import {
   IChildColumn,
   IChildColumnElement,
   maxColumns,
-  recalculateChildDistribution,
+  recalculateChildDistribution
 } from './mapNodesToColumns';
 
 const flatten = (list: (IChildColumnElement[] | IChildColumnElement | null)[]): IChildColumnElement[] =>
   list
-    .filter((a) => a)
+    .filter(a => a)
     .reduce(
       (a: IChildColumnElement[], b) => a.concat(Array.isArray(b) ? flatten(b) : (b as IChildColumnElement)),
-      [] as IChildColumnElement[],
+      [] as IChildColumnElement[]
     );
 
 const flattenChildColumn = (list: (IChildColumn[] | IChildColumn)[]): IChildColumn[] =>
   list.reduce(
     (a: IChildColumn[], b) => a.concat(Array.isArray(b) ? flattenChildColumn(b) : (b as IChildColumn)),
-    [] as IChildColumn[],
+    [] as IChildColumn[]
   );
 
 const getWidth = () => window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
@@ -47,14 +47,14 @@ interface IColumnsProps {
   children: (IChildColumnElement[] | IChildColumnElement | null)[];
 }
 const Columns = ({ children }: IColumnsProps) => {
-  const allReactChildren = flatten(children).filter((child) => child);
+  const allReactChildren = flatten(children).filter(child => child);
   const oldColumns = useRef(getColumns(getWidth()));
   const [columns, setColumns] = useState(oldColumns.current);
   const [childHeights, setChildHeights] = useState<Record<string | number, number>>({});
   const [childDistribution, setChildDistribution] = useState<IChildColumn[][]>([...Array(maxColumns)].map(() => []));
 
   const onHeightChange = useCallback((key: string | number, height: number) => {
-    setChildHeights((oldHeights) => {
+    setChildHeights(oldHeights => {
       const newHeights = { ...oldHeights };
       newHeights[key] = height;
       return newHeights;
@@ -78,22 +78,23 @@ const Columns = ({ children }: IColumnsProps) => {
   }, [columns]);
 
   useEffect(() => {
-    setChildDistribution((oldChildDistribution) => {
-      const updatedChilds = allReactChildren.map((reactChild) => {
-        const existingChild = flattenChildColumn(oldChildDistribution).find((c) => c.key === reactChild?.key);
+    setChildDistribution(oldChildDistribution => {
+      const updatedChilds = allReactChildren.map(reactChild => {
+        const existingChild = flattenChildColumn(oldChildDistribution).find(c => c.key === reactChild?.key);
         return existingChild ? existingChild : getDefaultChild(reactChild, columns);
       });
 
       return recalculateChildDistribution(updatedChilds, childHeights, columns, columns !== oldColumns.current);
     });
-  }, [allReactChildren.map((child) => child?.key).join(','), JSON.stringify(childHeights), columns]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allReactChildren.map(child => child?.key).join(','), JSON.stringify(childHeights), columns]);
 
   return (
     <StyledColumns key="columns">
       {childDistribution.map((column, i) => (
         <Column key={`column#${i}`} columns={columns} index={i}>
-          {column.map((child) => (
-            <ColumnItem key={`columnItem#${child.key}`} onHeightChange={(height) => onHeightChange(child.key, height)}>
+          {column.map(child => (
+            <ColumnItem key={`columnItem#${child.key}`} childKey={child.key} onHeightChange={onHeightChange}>
               {child.reactChild}
             </ColumnItem>
           ))}

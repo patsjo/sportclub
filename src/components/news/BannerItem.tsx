@@ -1,24 +1,26 @@
-import { IChildContainerProps } from '../dashboard/columns/mapNodesToColumns';
 import { observer } from 'mobx-react';
-import { INewsItem } from '../../models/newsModel';
 import React from 'react';
-import styled from 'styled-components';
-import { useMobxStore } from '../../utils/mobxStore';
+import { styled } from 'styled-components';
+import { IThemeProps } from '../../models/mobxClubModel';
+import { INewsItem } from '../../models/newsModel';
 import { PostJsonData } from '../../utils/api';
 import { getImage } from '../../utils/imageHelper';
+import { useMobxStore } from '../../utils/mobxStore';
+import { IChildContainerProps } from '../dashboard/columns/mapNodesToColumns';
 import FadeOutItem from '../fadeOutItem/FadeOutItem';
 import MaterialIcon from '../materialIcon/MaterialIcon';
 import NewsEdit from './NewsEdit';
 
 interface IBannerHolderProps {
   hasImage: boolean;
+  theme: IThemeProps;
 }
 const BannerHolder = styled.div<IBannerHolderProps>`
-  background-color: ${(props) => (props.hasImage ? 'inherit' : props.theme.palette.primary.main)};
+  background-color: ${props => (props.hasImage ? 'inherit' : props.theme.palette.primary.main)};
   border-radius: 8px;
-  color: ${(props) => (props.hasImage ? 'inherit' : props.theme.palette.primary.contrastText)};
-  padding: ${(props) => (props.hasImage ? '0' : '6px')};
-  text-align: ${(props) => (props.hasImage ? 'center' : 'inherit')};
+  color: ${props => (props.hasImage ? 'inherit' : props.theme.palette.primary.contrastText)};
+  padding: ${props => (props.hasImage ? '0' : '6px')};
+  text-align: ${props => (props.hasImage ? 'center' : 'inherit')};
   margin-bottom: 4px;
 `;
 
@@ -86,9 +88,9 @@ interface IBannerItemProps extends IChildContainerProps {
 
 const BannerItem = observer(({ ref, newsObject }: IBannerItemProps) => {
   const { globalStateModel, clubModel, sessionModel } = useMobxStore();
-  const newsModule = React.useMemo(() => clubModel.modules.find((module) => module.name === 'News'), []);
-  const Image = React.useMemo(() => getImage(1000, BannerImage, newsObject, clubModel), []);
-  const ImageBig = React.useMemo(() => getImage(400, NewsImage, newsObject, clubModel), []);
+  const newsModule = React.useMemo(() => clubModel.modules.find(module => module.name === 'News'), [clubModel.modules]);
+  const Image = React.useMemo(() => getImage(1000, BannerImage, newsObject, clubModel), [clubModel, newsObject]);
+  const ImageBig = React.useMemo(() => getImage(400, NewsImage, newsObject, clubModel), [clubModel, newsObject]);
 
   const FileDownload =
     newsObject && (!newsObject.imageWidth || !newsObject.imageHeight) && newsObject.fileId ? (
@@ -133,7 +135,7 @@ const BannerItem = observer(({ ref, newsObject }: IBannerItemProps) => {
       }
       modalColumns={3}
       editFormContent={
-        <NewsEdit newsObject={newsObject} onChange={(updatedNewsObject) => newsObject.setValues(updatedNewsObject)} />
+        <NewsEdit newsObject={newsObject} onChange={updatedNewsObject => newsObject.setValues(updatedNewsObject)} />
       }
       deletePromise={() =>
         PostJsonData(
@@ -141,10 +143,10 @@ const BannerItem = observer(({ ref, newsObject }: IBannerItemProps) => {
           {
             iNewsID: newsObject.id,
             username: sessionModel.username,
-            password: sessionModel.password,
+            password: sessionModel.password
           },
           true,
-          sessionModel.authorizationHeader,
+          sessionModel.authorizationHeader
         )
       }
       onDelete={() => globalStateModel.news?.removeNewsItem(newsObject)}

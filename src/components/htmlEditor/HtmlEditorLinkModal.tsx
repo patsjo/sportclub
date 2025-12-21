@@ -1,17 +1,18 @@
 import { LinkOutlined } from '@ant-design/icons';
-import { Form, Input, Modal } from 'antd';
+import { Form, Input } from 'antd';
 import { FormInstance } from 'antd/lib/form';
+import { MessageInstance } from 'antd/lib/message/interface';
 import { ModalFuncProps } from 'antd/lib/modal';
+import { HookAPI } from 'antd/lib/modal/useModal';
 import { TFunction } from 'i18next';
+import { styled } from 'styled-components';
 import { IGlobalStateModel } from '../../models/globalStateModel';
 import { IMobxClubModel } from '../../models/mobxClubModel';
 import { ISessionModel } from '../../models/sessionModel';
-import styled from 'styled-components';
 import { PostJsonData } from '../../utils/api';
 import { errorRequiredField, hasErrors } from '../../utils/formHelper';
 import FormItem from '../formItems/FormItem';
-import { MessageInstance } from 'antd/lib/message/interface';
-const { confirm } = Modal;
+
 declare type ConfigUpdate = ModalFuncProps | ((prevConfig: ModalFuncProps) => ModalFuncProps);
 
 const HelpText = styled.div`
@@ -21,6 +22,7 @@ const HelpText = styled.div`
 
 export const HtmlEditorLinkModal = (
   t: TFunction,
+  modal: HookAPI,
   linkId: number,
   menuPath: string,
   url: string,
@@ -28,7 +30,7 @@ export const HtmlEditorLinkModal = (
   globalStateModel: IGlobalStateModel,
   sessionModel: ISessionModel,
   clubModel: IMobxClubModel,
-  messageApi: MessageInstance,
+  messageApi: MessageInstance
 ) =>
   new Promise((resolve, reject) => {
     const formId = 'htmlEditorForm' + Math.floor(Math.random() * 1000000000000000);
@@ -36,8 +38,9 @@ export const HtmlEditorLinkModal = (
       destroy: () => void;
       update: (configUpdate: ConfigUpdate) => void;
     };
+
     // eslint-disable-next-line prefer-const
-    confirmModal = confirm({
+    confirmModal = modal.confirm({
       title: t('htmlEditor.MenuLink'),
       icon: <LinkOutlined />,
       content: (
@@ -48,17 +51,17 @@ export const HtmlEditorLinkModal = (
           initialValues={{
             iLinkID: linkId,
             iMenuPath: menuPath,
-            iUrl: url,
+            iUrl: url
           }}
           onValuesChange={() =>
-            hasErrors(form).then((notValid) =>
+            hasErrors(form).then(notValid =>
               confirmModal.update({
                 okButtonProps: {
                   danger: notValid && linkId > 0,
-                  disabled: linkId > 0 ? false : notValid,
+                  disabled: linkId > 0 ? false : notValid
                 },
-                okText: notValid && linkId > 0 ? t('common.Delete') : t('common.Save'),
-              }),
+                okText: notValid && linkId > 0 ? t('common.Delete') : t('common.Save')
+              })
             )
           }
         >
@@ -71,7 +74,7 @@ export const HtmlEditorLinkModal = (
             rules={[
               {
                 required: true,
-                message: errorRequiredField(t, 'htmlEditor.Path'),
+                message: errorRequiredField(t, 'htmlEditor.Path')
               },
               {
                 validator: (rule, value: string, callback) => {
@@ -83,8 +86,8 @@ export const HtmlEditorLinkModal = (
                     callback(t('htmlEditor.FormatError') ?? undefined);
                   }
                   callback();
-                },
-              },
+                }
+              }
             ]}
           >
             <Input />
@@ -95,8 +98,8 @@ export const HtmlEditorLinkModal = (
             rules={[
               {
                 required: true,
-                message: errorRequiredField(t, 'htmlEditor.Url'),
-              },
+                message: errorRequiredField(t, 'htmlEditor.Url')
+              }
             ]}
           >
             <Input />
@@ -106,68 +109,68 @@ export const HtmlEditorLinkModal = (
       ),
       okText: t('common.Save'),
       okButtonProps: {
-        disabled: true,
+        disabled: true
       },
       cancelText: t('common.Cancel'),
       onOk() {
-        hasErrors(form).then((notValid) => {
-          const htmlEditorModule = clubModel.modules.find((module) => module.name === 'HTMLEditor');
-          const filesModule = clubModel.modules.find((module) => module.name === 'Files');
+        hasErrors(form).then(notValid => {
+          const htmlEditorModule = clubModel.modules.find(module => module.name === 'HTMLEditor');
+          const filesModule = clubModel.modules.find(module => module.name === 'Files');
           const deleteUrl = htmlEditorModule?.deleteUrl;
           const saveUrl = linkId < 0 ? htmlEditorModule?.addUrl : htmlEditorModule?.updateUrl;
 
           confirmModal.update({
             okButtonProps: {
-              loading: true,
-            },
+              loading: true
+            }
           });
 
           if (notValid && linkId > 0) {
-            PostJsonData(
+            PostJsonData<undefined>(
               deleteUrl,
               {
                 iLinkID: linkId,
                 username: sessionModel.username,
-                password: sessionModel.password,
+                password: sessionModel.password
               },
               true,
-              sessionModel.authorizationHeader,
+              sessionModel.authorizationHeader
             )
-              .then((linkResponse) => {
+              .then(linkResponse => {
                 globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, filesModule, sessionModel, messageApi);
                 resolve(linkResponse);
               })
-              .catch((e) => {
-                messageApi.error(e.message);
+              .catch(e => {
+                if (e?.message) messageApi.error(e.message);
                 confirmModal.update({
                   okButtonProps: {
-                    loading: false,
-                  },
+                    loading: false
+                  }
                 });
               });
           } else {
-            form.validateFields().then((values) => {
-              PostJsonData(
+            form.validateFields().then(values => {
+              PostJsonData<{ iLinkID: number }>(
                 saveUrl,
                 {
                   ...values,
                   iLinkID: linkId,
                   username: sessionModel.username,
-                  password: sessionModel.password,
+                  password: sessionModel.password
                 },
                 true,
-                sessionModel.authorizationHeader,
+                sessionModel.authorizationHeader
               )
-                .then((linkResponse) => {
+                .then(linkResponse => {
                   globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, filesModule, sessionModel, messageApi);
                   resolve(linkResponse);
                 })
-                .catch((e) => {
-                  messageApi.error(e.message);
+                .catch(e => {
+                  if (e?.message) messageApi.error(e.message);
                   confirmModal.update({
                     okButtonProps: {
-                      loading: false,
-                    },
+                      loading: false
+                    }
                   });
                 });
             });
@@ -176,6 +179,6 @@ export const HtmlEditorLinkModal = (
       },
       onCancel() {
         reject();
-      },
+      }
     });
   });

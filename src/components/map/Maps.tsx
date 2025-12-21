@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import { styled } from 'styled-components';
 import { useMobxStore } from '../../utils/mobxStore';
 import OSMOrienteeringMap from './OSMOrienteeringMap';
 
@@ -17,12 +17,12 @@ const Maps = () => {
     <MapContainer>
       <OSMOrienteeringMap
         key="mapOnly"
+        useAllWidgets
         height="100%"
         width="100%"
         containerId="mapOnly"
         mapCenter={clubModel.map?.center}
         defaultExtent={clubModel.map?.fullExtent}
-        useAllWidgets
       />
     </MapContainer>
   );

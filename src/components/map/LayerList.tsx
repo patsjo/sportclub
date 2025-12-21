@@ -6,7 +6,7 @@ import { Control } from 'ol/control';
 import BaseLayer from 'ol/layer/Base';
 import GroupLayer from 'ol/layer/Group';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import styled from 'styled-components';
+import { styled } from 'styled-components';
 import LayerListItem from './LayerListItem';
 
 interface IStyledControlProps {
@@ -24,7 +24,7 @@ const StyledControl = styled.div<IStyledControlProps>`
   position: absolute;
   right: 2.5em;
   top: 4.5em;
-  display: ${(props) => (props.visible ? 'block' : 'none')};
+  display: ${props => (props.visible ? 'block' : 'none')};
 
   &&& .ant-tree {
     background-color: rgba(255, 255, 255, 0);
@@ -45,13 +45,13 @@ interface IDataNodeMap extends DataNode {
 const getTreeData = (map: Map, mapLayers?: Collection<BaseLayer>): IDataNodeMap[] => {
   const nodes: IDataNodeMap[] = [];
 
-  mapLayers?.forEach((mapLayer) => {
+  mapLayers?.forEach(mapLayer => {
     let layerProps = mapLayer.getProperties();
     layerProps = {
       type: layerProps.type,
       id: layerProps.id,
       title: layerProps.title,
-      zoomExtent: layerProps.zoomExtent,
+      zoomExtent: layerProps.zoomExtent
     };
     if (layerProps.type === 'group') {
       nodes.push({
@@ -60,7 +60,7 @@ const getTreeData = (map: Map, mapLayers?: Collection<BaseLayer>): IDataNodeMap[
         checkable: true,
         children: getTreeData(map, (mapLayer as GroupLayer).getLayers()),
         visible: mapLayer.getVisible(),
-        zoomExtent: layerProps.zoomExtent,
+        zoomExtent: layerProps.zoomExtent
       });
     } else if (layerProps.type === 'base-tile') {
       nodes.push({
@@ -69,7 +69,7 @@ const getTreeData = (map: Map, mapLayers?: Collection<BaseLayer>): IDataNodeMap[
         checkable: true,
         isLeaf: true,
         visible: mapLayer.getVisible(),
-        zoomExtent: layerProps.zoomExtent,
+        zoomExtent: layerProps.zoomExtent
       });
     }
   });
@@ -93,12 +93,12 @@ const LayerList = observer(({ map, visible }: ILayerListProps) => {
           checked: React.Key[];
           halfChecked: React.Key[];
         }
-      | React.Key[],
+      | React.Key[]
   ) => {
     const keys = checkedKeys as React.Key[];
-    const allMapLayers = map?.getAllLayers()?.filter((l) => l.getProperties().id) ?? [];
+    const allMapLayers = map?.getAllLayers()?.filter(l => l.getProperties().id) ?? [];
 
-    allMapLayers.forEach((l) => l.setVisible(keys.includes(l.getProperties().id)));
+    allMapLayers.forEach(l => l.setVisible(keys.includes(l.getProperties().id)));
     setCheckedKeys(keys);
   };
 
@@ -108,19 +108,20 @@ const LayerList = observer(({ map, visible }: ILayerListProps) => {
       setCheckedKeys(
         map
           .getAllLayers()
-          .filter((l) => l.getProperties().id && l.getVisible())
-          .map((l) => l.getProperties().id) ?? [],
+          .filter(l => l.getProperties().id && l.getVisible())
+          .map(l => l.getProperties().id) ?? []
       );
       const layerListTreeControl = new Control({
-        element: layerListRef.current,
+        element: layerListRef.current
       });
       map.addControl(layerListTreeControl);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, mapLayers, layerListRef.current]);
 
   return (
-    <StyledControl visible={visible} ref={layerListRef}>
-      <Tree checkable selectable={false} treeData={treeData} onCheck={onCheck} checkedKeys={checkedKeys} />
+    <StyledControl ref={layerListRef} visible={visible}>
+      <Tree checkable selectable={false} treeData={treeData} checkedKeys={checkedKeys} onCheck={onCheck} />
     </StyledControl>
   );
 });

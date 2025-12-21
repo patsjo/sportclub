@@ -1,11 +1,11 @@
-import { IChildContainerProps } from '../dashboard/columns/mapNodesToColumns';
 import { observer } from 'mobx-react';
-import { INewsItem } from '../../models/newsModel';
 import React from 'react';
-import styled from 'styled-components';
-import { useMobxStore } from '../../utils/mobxStore';
+import { styled } from 'styled-components';
+import { INewsItem } from '../../models/newsModel';
 import { PostJsonData } from '../../utils/api';
 import { getImage } from '../../utils/imageHelper';
+import { useMobxStore } from '../../utils/mobxStore';
+import { IChildContainerProps } from '../dashboard/columns/mapNodesToColumns';
 import FadeOutItem from '../fadeOutItem/FadeOutItem';
 import MaterialIcon from '../materialIcon/MaterialIcon';
 import NewsEdit from './NewsEdit';
@@ -73,9 +73,9 @@ interface INewsItemProps extends IChildContainerProps {
 }
 const NewsItem = observer(({ ref, newsObject }: INewsItemProps) => {
   const { globalStateModel, clubModel, sessionModel } = useMobxStore();
-  const newsModule = React.useMemo(() => clubModel.modules.find((module) => module.name === 'News'), []);
-  const Image = React.useMemo(() => getImage(200, NewsImage, newsObject, clubModel), []);
-  const ImageBig = React.useMemo(() => getImage(400, NewsImage, newsObject, clubModel), []);
+  const newsModule = React.useMemo(() => clubModel.modules.find(module => module.name === 'News'), [clubModel.modules]);
+  const Image = React.useMemo(() => getImage(200, NewsImage, newsObject, clubModel), [clubModel, newsObject]);
+  const ImageBig = React.useMemo(() => getImage(400, NewsImage, newsObject, clubModel), [clubModel, newsObject]);
 
   const FileDownload =
     newsObject && (!newsObject.imageWidth || !newsObject.imageHeight) && newsObject.fileId ? (
@@ -123,7 +123,7 @@ const NewsItem = observer(({ ref, newsObject }: INewsItemProps) => {
       }
       modalColumns={4}
       editFormContent={
-        <NewsEdit newsObject={newsObject} onChange={(updatedNewsObject) => newsObject.setValues(updatedNewsObject)} />
+        <NewsEdit newsObject={newsObject} onChange={updatedNewsObject => newsObject.setValues(updatedNewsObject)} />
       }
       deletePromise={() =>
         PostJsonData(
@@ -131,7 +131,7 @@ const NewsItem = observer(({ ref, newsObject }: INewsItemProps) => {
           {
             iNewsID: newsObject.id,
             username: sessionModel.username,
-            password: sessionModel.password,
+            password: sessionModel.password
           },
           true,
           sessionModel.authorizationHeader

@@ -1,5 +1,5 @@
 import { Skeleton } from 'antd';
-import styled from 'styled-components';
+import { styled } from 'styled-components';
 import Star from '../svg/Star';
 
 export const ContainerDiv = styled.div`
@@ -55,7 +55,7 @@ const FiveStars = ({ stars, label, size = 40 }: IFiveStarsProps) =>
         ) : stars < 0 ? (
           <InfoDiv>-</InfoDiv>
         ) : (
-          [1, 2, 3, 4, 5].map((star) => <Star key={`star${star}`} filled={star <= stars} size={size} />)
+          [1, 2, 3, 4, 5].map(star => <Star key={`star${star}`} filled={star <= stars} size={size} />)
         )}
       </StarsDiv>
     </ContainerDiv>
@@ -66,7 +66,7 @@ const FiveStars = ({ stars, label, size = 40 }: IFiveStarsProps) =>
       ) : stars < 0 ? (
         '-'
       ) : (
-        [1, 2, 3, 4, 5].map((star) => <Star key={`star${star}`} filled={star <= stars} size={size} />)
+        [1, 2, 3, 4, 5].map(star => <Star key={`star${star}`} filled={star <= stars} size={size} />)
       )}
     </OnlyStarsDiv>
   );

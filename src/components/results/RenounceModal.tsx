@@ -1,11 +1,11 @@
 import { Button, message, Modal, Popconfirm, Switch } from 'antd';
 import { observer } from 'mobx-react';
-import { IRaceCompetitor } from '../../models/resultModel';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import styled from 'styled-components';
-import { useMobxStore } from '../../utils/mobxStore';
+import { styled } from 'styled-components';
+import { IRaceCompetitor } from '../../models/resultModel';
 import { PostJsonData } from '../../utils/api';
+import { useMobxStore } from '../../utils/mobxStore';
 
 const StyledModalContent = styled.div``;
 
@@ -21,7 +21,7 @@ const RenounceModal = observer(({ competitor, open, onClose }: IRenounceModalPro
   const [saving, setSaving] = useState(false);
 
   const onSave = useCallback(() => {
-    const saveUrl = clubModel.modules.find((module) => module.name === 'Results')?.updateUrl;
+    const saveUrl = clubModel.modules.find(module => module.name === 'Results')?.updateUrl;
     if (!saveUrl) return;
     setSaving(true);
 
@@ -31,7 +31,7 @@ const RenounceModal = observer(({ competitor, open, onClose }: IRenounceModalPro
         iType: 'COMPETITOR_RENOUNCE',
         iCompetitorId: competitor.competitorId,
         username: sessionModel.username,
-        password: sessionModel.password,
+        password: sessionModel.password
       },
       true,
       sessionModel.authorizationHeader
@@ -41,11 +41,18 @@ const RenounceModal = observer(({ competitor, open, onClose }: IRenounceModalPro
         setSaving(false);
         onClose();
       })
-      .catch((e) => {
+      .catch(e => {
         setSaving(false);
-        message.error(e.message);
+        if (e?.message) message.error(e.message);
       });
-  }, []);
+  }, [
+    clubModel.modules,
+    competitor,
+    onClose,
+    sessionModel.authorizationHeader,
+    sessionModel.password,
+    sessionModel.username
+  ]);
 
   return (
     <Modal
@@ -53,19 +60,25 @@ const RenounceModal = observer(({ competitor, open, onClose }: IRenounceModalPro
       maskClosable={false}
       title={t('results.Renounce')}
       open={open}
-      onCancel={onClose}
       width="calc(100% - 80px)"
       style={{ top: 40 }}
       footer={[
-        <Popconfirm title={t('common.Confirm')} okText={t('common.Yes')} cancelText={t('common.No')} onConfirm={onSave}>
+        <Popconfirm
+          key="confirmSaveButton"
+          title={t('common.Confirm')}
+          okText={t('common.Yes')}
+          cancelText={t('common.No')}
+          onConfirm={onSave}
+        >
           <Button type="primary" disabled={!canSave} loading={saving}>
             {t('common.Save')}
           </Button>
         </Popconfirm>,
-        <Button onClick={onClose} loading={false}>
+        <Button key="cancelButton" loading={false} onClick={onClose}>
           {t('common.Cancel')}
-        </Button>,
+        </Button>
       ]}
+      onCancel={onClose}
     >
       <StyledModalContent>
         <ul>

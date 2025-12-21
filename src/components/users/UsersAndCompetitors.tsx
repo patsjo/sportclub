@@ -15,13 +15,13 @@ const UsersAndCompetitors = observer(() => {
         {
           key: 'users',
           label: t('users.Users'),
-          children: <Users />,
+          children: <Users />
         },
         {
           key: 'competitors',
           label: t('users.Competitors'),
-          children: <Competitors />,
-        },
+          children: <Competitors />
+        }
       ]}
     />
   );

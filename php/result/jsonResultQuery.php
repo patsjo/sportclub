@@ -17,6 +17,7 @@
 //#                     technicalRanking                     #
 //# 2021-08-21  PatSjo  Change to JSON in and out            #
 //# 2022-04-17  PatSjo  Added exclude competitor             #
+//# 2025-12-09  PatSjo  Fix fees sql                         #
 //############################################################
 
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/db.php");
@@ -687,16 +688,23 @@ elseif ($input->iType == "POINTS")
 }
 elseif ($input->iType == "FEES")
 {
-  $sql = "SELECT RACE_EVENT_RESULTS.COMPETITOR_ID, FIRST_NAME, LAST_NAME," .
+  $sql = "WITH RESULTS AS (" .
+    "  SELECT EVENT_ID, COMPETITOR_ID, ORIGINAL_FEE, LATE_FEE, FEE_TO_CLUB, SERVICEFEE_TO_CLUB " .
+    "  FROM RACE_EVENT_RESULTS " .
+    "  UNION ALL " .
+    "  SELECT EVENT_ID, COMPETITOR_ID, 0 AS ORIGINAL_FEE, 0 AS LATE_FEE, 0 AS FEE_TO_CLUB, SERVICEFEE_TO_CLUB " .
+    "  FROM RACE_EVENT_RESULTS_TEAM " .
+    ") " .
+    "SELECT RESULTS.COMPETITOR_ID, FIRST_NAME, LAST_NAME," .
     "   SUM(ORIGINAL_FEE) AS ORIGINAL_FEE," .
     "   SUM(LATE_FEE) AS LATE_FEE," .
     "   SUM(FEE_TO_CLUB) AS FEE_TO_CLUB, " .
     "   SUM(SERVICEFEE_TO_CLUB) AS SERVICEFEE_TO_CLUB " .
     "FROM RACE_EVENT " .
-    "INNER JOIN RACE_EVENT_RESULTS ON (RACE_EVENT.EVENT_ID = RACE_EVENT_RESULTS.EVENT_ID) ".
-    "INNER JOIN RACE_COMPETITORS ON (RACE_EVENT_RESULTS.COMPETITOR_ID = RACE_COMPETITORS.COMPETITOR_ID) ".
+    "INNER JOIN RESULTS ON (RACE_EVENT.EVENT_ID = RESULTS.EVENT_ID) ".
+    "INNER JOIN RACE_COMPETITORS ON (RESULTS.COMPETITOR_ID = RACE_COMPETITORS.COMPETITOR_ID) ".
     "WHERE 1=1 " . $whereStartDate . $whereEndDate . " " .
-    "GROUP BY RACE_EVENT_RESULTS.COMPETITOR_ID, FIRST_NAME, LAST_NAME " .
+    "GROUP BY RESULTS.COMPETITOR_ID, FIRST_NAME, LAST_NAME " .
     "ORDER BY LAST_NAME, FIRST_NAME";
 
   $result = \db\mysql_query($sql);

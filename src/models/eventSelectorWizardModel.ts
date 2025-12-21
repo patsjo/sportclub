@@ -1,5 +1,5 @@
-import { action, makeObservable, observable } from 'mobx';
 import dayjs from 'dayjs';
+import { action, makeObservable, observable } from 'mobx';
 
 export interface ILocalStorageEventSelectorWizard {
   queryStartDate: string;
@@ -14,7 +14,7 @@ const setLocalStorage = (eventSelectorWizard: ILocalStorageEventSelectorWizard) 
     queryEndDate: eventSelectorWizard.queryEndDate,
     maxDistanceNational: eventSelectorWizard.maxDistanceNational,
     maxDistanceDistrict: eventSelectorWizard.maxDistanceDistrict,
-    maxDistanceNearbyAndClub: eventSelectorWizard.maxDistanceNearbyAndClub,
+    maxDistanceNearbyAndClub: eventSelectorWizard.maxDistanceNearbyAndClub
   };
 
   localStorage.setItem('eventSelectorWizard', JSON.stringify(obj));
@@ -33,16 +33,16 @@ export const getLocalStorage = (): IEventSelectorWizardProps => {
       selectedEvents: [],
       ...(eventSelectorWizardData ? (JSON.parse(eventSelectorWizardData) as ILocalStorageEventSelectorWizard) : {}),
       queryStartDate: startDate,
-      queryEndDate: endDate,
+      queryEndDate: endDate
     };
-  } catch (error) {
+  } catch {
     return {
       queryStartDate: startDate,
       queryEndDate: endDate,
       maxDistanceNational: null,
       maxDistanceDistrict: 140,
       maxDistanceNearbyAndClub: 80,
-      selectedEvents: [],
+      selectedEvents: []
     };
   }
 };
@@ -87,7 +87,7 @@ export class EventSelectorWizard implements IEventSelectorWizard {
   selectedEvents: ISelectedEventProps[] = [];
 
   constructor(options?: Partial<IEventSelectorWizardProps>) {
-    options && Object.assign(this, options);
+    if (options) Object.assign(this, options);
     makeObservable(this, {
       queryStartDate: observable,
       queryEndDate: observable,
@@ -100,7 +100,7 @@ export class EventSelectorWizard implements IEventSelectorWizard {
       setMaxDistanceNational: action.bound,
       setMaxDistanceDistrict: action.bound,
       setMaxDistanceNearbyAndClub: action.bound,
-      setSelectedEvents: action.bound,
+      setSelectedEvents: action.bound
     });
   }
 

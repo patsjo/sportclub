@@ -1,9 +1,9 @@
 import { Button, message, Modal, Popconfirm } from 'antd';
 import { observer } from 'mobx-react';
-import { IModule } from '../../models/mobxClubModel';
 import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import styled from 'styled-components';
+import { styled } from 'styled-components';
+import { IModule } from '../../models/mobxClubModel';
 import { useMobxStore } from '../../utils/mobxStore';
 import { useSize } from '../../utils/useSize';
 
@@ -38,9 +38,9 @@ interface IContentProps {
   columns: number;
 }
 const StyledModalContent = styled.div<IContentProps>`
-  -webkit-columns: ${(props) => props.columns} 200px;
-  -moz-columns: ${(props) => props.columns} 200px;
-  columns: ${(props) => props.columns} 200px;
+  -webkit-columns: ${props => props.columns} 200px;
+  -moz-columns: ${props => props.columns} 200px;
+  columns: ${props => props.columns} 200px;
   -webkit-column-gap: 1em;
   -moz-column-gap: 1em;
   column-gap: 1em;
@@ -76,7 +76,7 @@ const FadeOutItem = observer(
     onDelete,
     deleteAllPromise,
     onDeleteAll,
-    maxHeight,
+    maxHeight
   }: IFadeOutItemProps) => {
     const { sessionModel } = useMobxStore();
     const { t } = useTranslation();
@@ -118,11 +118,11 @@ const FadeOutItem = observer(
             setSaving(true);
             deletePromise()
               .then(() => {
-                onDelete && onDelete();
+                onDelete?.();
                 closeModal();
               })
-              .catch((e) => {
-                message.error(e.message);
+              .catch(e => {
+                if (e?.message) message.error(e.message);
                 setSaving(false);
               });
           }}
@@ -143,11 +143,11 @@ const FadeOutItem = observer(
             setSaving(true);
             deleteAllPromise()
               .then(() => {
-                onDeleteAll && onDeleteAll();
+                onDeleteAll?.();
                 closeModal();
               })
-              .catch((e) => {
-                message.error(e.message);
+              .catch(e => {
+                if (e?.message) message.error(e.message);
                 setSaving(false);
               });
           }}
@@ -162,16 +162,16 @@ const FadeOutItem = observer(
       showEdit && editFormContent
         ? React.cloneElement(editFormContent, {
             open: showEdit,
-            onClose: closeModal,
+            onClose: closeModal
           })
         : null;
 
     return (
       <ItemHolder ref={ref} maxHeight={maxHeight} paddingBottom={paddingBottom}>
         <ItemFadeOut
-          onClick={openModal}
           maxHeight={maxHeight}
           height={height != null ? height - paddingBottom : undefined}
+          onClick={openModal}
         >
           <div ref={fadeOutRef}>{content}</div>
         </ItemFadeOut>
@@ -179,24 +179,24 @@ const FadeOutItem = observer(
           closable={false}
           maskClosable={false}
           open={showModalItem}
-          onCancel={closeModal}
           width="calc(100% - 80px)"
           style={{ top: 40, minWidth: 560, maxWidth: 800 }}
           footer={[
             ShowDeleteAllButton,
             ShowDeleteButton,
             ShowEditButton,
-            <Button type="primary" onClick={closeModal} loading={saving}>
+            <Button key="closeButton" type="primary" loading={saving} onClick={closeModal}>
               {t('common.Close')}
-            </Button>,
+            </Button>
           ]}
+          onCancel={closeModal}
         >
           <StyledModalContent columns={modalColumns}>{modalContent}</StyledModalContent>
         </Modal>
         {EditFormContent}
       </ItemHolder>
     );
-  },
+  }
 );
 
 export default FadeOutItem;

@@ -24,7 +24,7 @@ dayjs.extend(updateLocale);
 
 dayjs.locale('en');
 dayjs.updateLocale('en', {
-  weekStart: 1,
+  weekStart: 1
 });
 
 const root = ReactDOM.createRoot(document.getElementById('root')!);

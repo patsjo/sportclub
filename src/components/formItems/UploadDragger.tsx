@@ -4,11 +4,11 @@ import ImgCrop from 'antd-img-crop';
 import { FormInstance } from 'antd/lib/form';
 import { RcFile, UploadChangeParam, UploadFile } from 'antd/lib/upload/interface';
 import { UploadRequestOption as RcCustomRequestOptions } from 'rc-upload/lib/interface';
-import * as React from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import styled from 'styled-components';
-import { IFile } from '../../utils/formHelper';
+import { styled } from 'styled-components';
 import { getFileType } from '../../utils/fileHelper';
+import { IFile } from '../../utils/formHelper';
 import FileIcon from '../materialIcon/FileIcon';
 import MaterialIcon from '../materialIcon/MaterialIcon';
 import FormItem from './FormItem';
@@ -65,7 +65,7 @@ const CloseX = styled.div`
 `;
 
 interface IUploadDraggerProps {
-  form: FormInstance<any>;
+  form: FormInstance;
   fieldName: string;
   maxByteSize: number;
   multiple: boolean;
@@ -81,110 +81,127 @@ const UploadDragger = ({
   multiple,
   asThumbnail,
   allowedFileTypes,
-  onChange,
+  onChange
 }: IUploadDraggerProps) => {
   const { t } = useTranslation();
-  const [files, setFiles] = React.useState<IFile[]>((form.getFieldValue(fieldName) as IFile[]) || []);
+  const [files, setFiles] = useState<IFile[]>((form.getFieldValue(fieldName) as IFile[]) || []);
 
-  const addFile = ({ file, onSuccess }: RcCustomRequestOptions) => {
+  const addFile = useCallback(({ onSuccess }: RcCustomRequestOptions) => {
     setTimeout(() => {
       const response = new Response(null, { status: 200 });
       const xhr = new XMLHttpRequest();
-      onSuccess && onSuccess(response, xhr);
+      onSuccess?.(response, xhr);
     }, 0);
-  };
+  }, []);
 
-  const onNormFiles = ({ file, fileList }: { file?: IFile; fileList?: IFile[] }): IFile[] => {
-    let tmpFileList: IFile[] = fileList ? fileList : file ? [file] : [];
+  const validFile = useCallback(
+    (file: UploadFile | File) => {
+      const fileType = getFileType(file);
 
-    tmpFileList = tmpFileList.filter((f) => validFile(f) && f.size && f.size <= maxByteSize);
-
-    return tmpFileList;
-  };
-
-  const beforeUpload = (file: RcFile, FileList: RcFile[]): BeforeUploadValueType | Promise<BeforeUploadValueType> => {
-    const fileIsValid = validFile(file);
-    const sizeIsValid = file.size <= maxByteSize;
-    if (fileIsValid && sizeIsValid && asThumbnail) {
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const img = document.createElement('img');
-          img.src = reader.result ? (reader.result as string) : '';
-          img.onload = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = 150;
-            canvas.height = 150;
-            const size = Math.min(img.naturalWidth, img.naturalHeight);
-            const x = img.naturalWidth > img.naturalHeight ? Math.round((img.naturalWidth - img.naturalHeight) / 2) : 0;
-            const y = img.naturalHeight > img.naturalWidth ? Math.round((img.naturalHeight - img.naturalWidth) / 2) : 0;
-            const ctx = canvas.getContext('2d');
-            ctx?.drawImage(img, x, y, size, size, 0, 0, 150, 150);
-            canvas.toBlob(() => resolve());
-          };
-        };
-        reader.readAsDataURL(file);
-      });
-    }
-    return fileIsValid && sizeIsValid;
-  };
-
-  const onDelete = async (file: UploadFile<any>) => {
-    const { setFieldsValue, getFieldValue } = form;
-    let files: IFile[] = getFieldValue(fieldName) || [];
-    files = files.filter((f) => f.uid !== file.uid);
-
-    setFieldsValue({ [fieldName]: files });
-    setFiles(files);
-    onChange && (await onChange(files));
-  };
-
-  const onUploadChange = async ({ file, fileList }: UploadChangeParam<UploadFile<any>>) => {
-    const { setFieldsValue } = form;
-    const fileIsValid = validFile(file);
-    const sizeIsValid = file.size && file.size <= maxByteSize;
-    if (!fileIsValid) {
-      message.error(t('error.FileTypeNotSupported'));
-    }
-    if (!sizeIsValid) {
-      const maxByteSizeMegaByte = Math.round(maxByteSize / 1024 / 1024);
-      message.error(t('error.FileSizeTooLarge').replace('{0}', maxByteSizeMegaByte.toString()));
-    }
-    if (!multiple && fileList.length > 1) {
-      while (fileList.length > 1) {
-        fileList.pop();
+      if (Array.isArray(allowedFileTypes) && allowedFileTypes.length > 0) {
+        return allowedFileTypes.includes(fileType);
       }
-    }
-    if (!sizeIsValid || !fileIsValid) {
-      fileList = fileList.filter((f) => f.uid !== file.uid);
-    }
-    if (!fileList.some((f) => f.status === 'uploading')) {
-      setFieldsValue({ [fieldName]: fileList });
-      setFiles(fileList);
-      onChange && (await onChange(fileList));
-    }
-  };
+      const isImage = fileType.match(/^image\/.*$/) != null;
+      const isPdf = fileType === 'application/pdf';
+      const isWord =
+        fileType === 'application/msword' ||
+        fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      const isExcel =
+        fileType === 'application/vnd.ms-excel' ||
+        fileType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      const isPowerpoint =
+        fileType === 'application/vnd.ms-powerpoint' ||
+        fileType === 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
 
-  const validFile = (file: UploadFile<any> | File) => {
-    const fileType = getFileType(file);
+      return isImage || isPdf || isWord || isExcel || isPowerpoint;
+    },
+    [allowedFileTypes]
+  );
 
-    if (Array.isArray(allowedFileTypes) && allowedFileTypes.length > 0) {
-      return allowedFileTypes.includes(fileType);
-    }
-    const isImage = fileType.match(/^image\/.*$/) != null;
-    const isPdf = fileType === 'application/pdf';
-    const isWord =
-      fileType === 'application/msword' ||
-      fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-    const isExcel =
-      fileType === 'application/vnd.ms-excel' ||
-      fileType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-    const isPowerpoint =
-      fileType === 'application/vnd.ms-powerpoint' ||
-      fileType === 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+  const onNormFiles = useCallback(
+    ({ file, fileList }: { file?: IFile; fileList?: IFile[] }): IFile[] => {
+      let tmpFileList: IFile[] = fileList ? fileList : file ? [file] : [];
 
-    return isImage || isPdf || isWord || isExcel || isPowerpoint;
-  };
+      tmpFileList = tmpFileList.filter(f => validFile(f) && f.size && f.size <= maxByteSize);
+
+      return tmpFileList;
+    },
+    [maxByteSize, validFile]
+  );
+
+  const beforeUpload = useCallback(
+    (file: RcFile): BeforeUploadValueType | Promise<BeforeUploadValueType> => {
+      const fileIsValid = validFile(file);
+      const sizeIsValid = file.size <= maxByteSize;
+      if (fileIsValid && sizeIsValid && asThumbnail) {
+        return new Promise(resolve => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const img = document.createElement('img');
+            img.src = reader.result ? (reader.result as string) : '';
+            img.onload = () => {
+              const canvas = document.createElement('canvas');
+              canvas.width = 150;
+              canvas.height = 150;
+              const size = Math.min(img.naturalWidth, img.naturalHeight);
+              const x =
+                img.naturalWidth > img.naturalHeight ? Math.round((img.naturalWidth - img.naturalHeight) / 2) : 0;
+              const y =
+                img.naturalHeight > img.naturalWidth ? Math.round((img.naturalHeight - img.naturalWidth) / 2) : 0;
+              const ctx = canvas.getContext('2d');
+              ctx?.drawImage(img, x, y, size, size, 0, 0, 150, 150);
+              canvas.toBlob(() => resolve());
+            };
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+      return fileIsValid && sizeIsValid;
+    },
+    [asThumbnail, maxByteSize, validFile]
+  );
+
+  const onDelete = useCallback(
+    async (file: UploadFile) => {
+      const { setFieldsValue, getFieldValue } = form;
+      let files: IFile[] = getFieldValue(fieldName) || [];
+      files = files.filter(f => f.uid !== file.uid);
+
+      setFieldsValue({ [fieldName]: files });
+      setFiles(files);
+      await onChange?.(files);
+    },
+    [fieldName, form, onChange]
+  );
+
+  const onUploadChange = useCallback(
+    async ({ file, fileList }: UploadChangeParam<UploadFile>) => {
+      const { setFieldsValue } = form;
+      const fileIsValid = validFile(file);
+      const sizeIsValid = file.size && file.size <= maxByteSize;
+      if (!fileIsValid) {
+        message.error(t('error.FileTypeNotSupported'));
+      }
+      if (!sizeIsValid) {
+        const maxByteSizeMegaByte = Math.round(maxByteSize / 1024 / 1024);
+        message.error(t('error.FileSizeTooLarge').replace('{0}', maxByteSizeMegaByte.toString()));
+      }
+      if (!multiple && fileList.length > 1) {
+        while (fileList.length > 1) {
+          fileList.pop();
+        }
+      }
+      if (!sizeIsValid || !fileIsValid) {
+        fileList = fileList.filter(f => f.uid !== file.uid);
+      }
+      if (!fileList.some(f => f.status === 'uploading')) {
+        setFieldsValue({ [fieldName]: fileList });
+        setFiles(fileList);
+        await onChange?.(fileList);
+      }
+    },
+    [fieldName, form, maxByteSize, multiple, onChange, t, validFile]
+  );
 
   const nofFiles = files ? files.length : 0;
 
@@ -204,7 +221,7 @@ const UploadDragger = ({
   return (
     <FormItem name={fieldName} valuePropName="fileList" getValueFromEvent={onNormFiles}>
       {asThumbnail ? (
-        <ImgCrop quality={0.9} beforeCrop={(file) => validFile(file) && file.size <= maxByteSize && asThumbnail}>
+        <ImgCrop quality={0.9} beforeCrop={file => validFile(file) && file.size <= maxByteSize && asThumbnail}>
           <StyledUploadDragger
             type="drag"
             customRequest={addFile}
@@ -219,9 +236,9 @@ const UploadDragger = ({
             }
             beforeUpload={beforeUpload}
             showUploadList={multiple ? { showPreviewIcon: false } : false}
+            data-testid="attachmentsInput"
             onChange={onUploadChange}
             onRemove={onDelete}
-            data-testid="attachmentsInput"
           >
             <StyledP className="ant-upload-drag-icon">
               <StyledUploadIcon />
@@ -244,9 +261,9 @@ const UploadDragger = ({
           }
           beforeUpload={beforeUpload}
           showUploadList={multiple ? { showPreviewIcon: false } : false}
+          data-testid="attachmentsInput"
           onChange={onUploadChange}
           onRemove={onDelete}
-          data-testid="attachmentsInput"
         >
           <StyledP className="ant-upload-drag-icon">
             <StyledUploadIcon />

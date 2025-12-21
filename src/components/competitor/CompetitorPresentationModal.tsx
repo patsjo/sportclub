@@ -2,12 +2,13 @@ import { Form, Input, message, Modal } from 'antd';
 import { observer } from 'mobx-react';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import styled from 'styled-components';
-import { useMobxStore } from '../../utils/mobxStore';
-import { ICompetitorInfo } from '../../utils/responseCompetitorInterfaces';
+import { styled } from 'styled-components';
 import { PostJsonData } from '../../utils/api';
 import { fileAsUrl } from '../../utils/fileHelper';
-import { maxByteSize } from '../../utils/formHelper';
+import { IFile, maxByteSize } from '../../utils/formHelper';
+import { useMobxStore } from '../../utils/mobxStore';
+import { ICompetitorInfoRequest } from '../../utils/requestInterfaces';
+import { ICompetitorInfo } from '../../utils/responseCompetitorInterfaces';
 import FormItem from '../formItems/FormItem';
 import UploadDragger from '../formItems/UploadDragger';
 
@@ -20,6 +21,10 @@ const StyledModal = styled(Modal)`
 `;
 const StyledModalContent = styled.div``;
 
+interface ICompetitorInfoFormProps extends ICompetitorInfoRequest {
+  iFiles?: IFile[];
+}
+
 interface ICompetitorPresentationModalProps {
   name: string;
   competitorInfo: ICompetitorInfo;
@@ -31,46 +36,60 @@ const CompetitorPresentationModal = observer(
   ({ name, competitorInfo, open, onClose, onChange }: ICompetitorPresentationModalProps) => {
     const { clubModel, sessionModel } = useMobxStore();
     const { t } = useTranslation();
-    const [form] = Form.useForm();
+    const [form] = Form.useForm<ICompetitorInfoFormProps>();
     const [saving, setSaving] = useState(false);
     const formId = 'competitorEditForm' + Math.floor(Math.random() * 10000000000000000);
 
-    const onSave = useCallback(async (values) => {
-      const saveUrl = clubModel.modules.find((module) => module.name === 'Results')?.updateUrl;
-      if (!saveUrl) return;
+    const onSave = useCallback(
+      async (formValues: ICompetitorInfoFormProps) => {
+        const saveUrl = clubModel.modules.find(module => module.name === 'Results')?.updateUrl;
+        if (!saveUrl) return;
 
-      setSaving(true);
-      if (!Array.isArray(values.iFiles)) {
-        values.iFiles = [];
-      }
-      if (values.iFiles.length === 0) {
-        values.iThumbnail = null;
-      } else if (!values.iFiles[0].originalFile) {
-        values.iThumbnail = await fileAsUrl(values.iFiles[0].originFileObj);
-      }
-      values.iFileID = undefined;
-      values.iFiles = undefined;
-      PostJsonData(
-        saveUrl,
-        {
-          ...values,
-          iType: 'COMPETITOR_INFO',
-          username: sessionModel.username,
-          password: sessionModel.password,
-        },
-        true,
-        sessionModel.authorizationHeader
-      )
-        .then((competitorResponse: ICompetitorInfo) => {
-          onChange && onChange(competitorResponse);
-          setSaving(false);
-          onClose();
-        })
-        .catch((e) => {
-          message.error(e.message);
-          setSaving(false);
-        });
-    }, []);
+        setSaving(true);
+        const values: ICompetitorInfoRequest = {
+          iCompetitorId: formValues.iCompetitorId,
+          iSeniorAchievements: formValues.iSeniorAchievements,
+          iJuniorAchievements: formValues.iJuniorAchievements,
+          iYouthAchievements: formValues.iYouthAchievements,
+          iThumbnail: formValues.iThumbnail
+        };
+        if (!formValues.iFiles?.length) {
+          values.iThumbnail = null;
+        } else if (!formValues.iFiles[0].isOriginalFile && formValues.iFiles[0].originFileObj) {
+          values.iThumbnail = await fileAsUrl(formValues.iFiles[0].originFileObj);
+        }
+        PostJsonData<ICompetitorInfo>(
+          saveUrl,
+          {
+            ...values,
+            iType: 'COMPETITOR_INFO',
+            username: sessionModel.username,
+            password: sessionModel.password
+          },
+          true,
+          sessionModel.authorizationHeader
+        )
+          .then(competitorResponse => {
+            setSaving(false);
+            if (competitorResponse) {
+              onChange?.(competitorResponse);
+              onClose();
+            }
+          })
+          .catch(e => {
+            if (e?.message) message.error(e.message);
+            setSaving(false);
+          });
+      },
+      [
+        clubModel.modules,
+        onChange,
+        onClose,
+        sessionModel.authorizationHeader,
+        sessionModel.password,
+        sessionModel.username
+      ]
+    );
 
     return (
       <StyledModal
@@ -82,14 +101,14 @@ const CompetitorPresentationModal = observer(
         okButtonProps={{ loading: saving }}
         cancelText={t('common.Cancel')}
         cancelButtonProps={{ loading: saving }}
+        style={{ top: 40 }}
+        width={800}
         onOk={() => {
-          form.validateFields().then((values) => {
+          form.validateFields().then(values => {
             onSave(values);
           });
         }}
         onCancel={onClose}
-        style={{ top: 40 }}
-        width={800}
       >
         <StyledModalContent>
           <Form
@@ -105,15 +124,15 @@ const CompetitorPresentationModal = observer(
               iFiles: competitorInfo.thumbnail
                 ? [
                     {
-                      uid: 1,
+                      uid: '1',
                       name: 'thumbnail.png',
                       type: 'image/png',
                       size: 0,
                       status: 'done',
-                      originalFile: true,
-                    },
+                      isOriginalFile: true
+                    }
                   ]
-                : [],
+                : []
             }}
           >
             <FormItem name="iCompetitorId">

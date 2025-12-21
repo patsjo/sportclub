@@ -14,11 +14,11 @@ const getMenuLevels = (
   splittedMenus: ISplittedMenu[],
   foldersResponse: IFolderResponse[],
   level: number,
-  parentFolderId: number | undefined,
+  parentFolderId: number | undefined
 ): IMenu => ({
   menuItems: splittedMenus
-    .filter((m) => m.menuPaths.length === level)
-    .map((m) => ({
+    .filter(m => m.menuPaths.length === level)
+    .map(m => ({
       pageId: m.pageId,
       linkId: m.linkId,
       fileId: m.fileId,
@@ -26,46 +26,43 @@ const getMenuLevels = (
       description: m.menuPaths.slice(level - 1).join(''),
       url: m.url,
       level: level,
-      createdByUserId: m.createdByUserId,
+      createdByUserId: m.createdByUserId
     })),
   subMenus: splittedMenus
     .filter(
       (m, index, self) =>
-        m.menuPaths.length > level &&
-        index === self.findIndex((m2) => m.menuPaths[level - 1] === m2.menuPaths[level - 1]),
+        m.menuPaths.length > level && index === self.findIndex(m2 => m.menuPaths[level - 1] === m2.menuPaths[level - 1])
     )
-    .map((m, index, self) => {
+    .map(m => {
       const menuPath = `/${m.menuPaths.slice(0, level).join('/')}`;
-      const menuFolder = foldersResponse.find((folder) => folder.menuPath === menuPath);
+      const menuFolder = foldersResponse.find(folder => folder.menuPath === menuPath);
       return {
         subMenus: getMenuLevels(
-          splittedMenus.filter(
-            (m2) => m2.menuPaths.length > level && m.menuPaths[level - 1] === m2.menuPaths[level - 1],
-          ),
+          splittedMenus.filter(m2 => m2.menuPaths.length > level && m.menuPaths[level - 1] === m2.menuPaths[level - 1]),
           foldersResponse,
           level + 1,
-          menuFolder?.folderId,
+          menuFolder?.folderId
         ),
         description: m.menuPaths.slice(level - 1, level).join(''),
         level: level,
         folderId: menuFolder?.folderId,
         createdByUserId: menuFolder?.createdByUserId,
-        bothMenus: true,
+        bothMenus: true
       };
     })
     .concat(
       foldersResponse
-        .filter((folder) => folder.parentFolderId === parentFolderId)
-        .map((folder) => ({
+        .filter(folder => folder.parentFolderId === parentFolderId)
+        .map(folder => ({
           subMenus: getMenuLevels([], foldersResponse, level + 1, folder.folderId),
           description: folder.folderName,
           level: level,
           folderId: folder.folderId,
           createdByUserId: folder.createdByUserId,
-          bothMenus: false,
-        })),
+          bothMenus: false
+        }))
     )
-    .filter((m, _, self) => !m.folderId || self.filter((sm) => sm.folderId === m.folderId).length === 1 || m.bothMenus),
+    .filter((m, _, self) => !m.folderId || self.filter(sm => sm.folderId === m.folderId).length === 1 || m.bothMenus)
 });
 
 export const getMenus = (menus: IMenuResponse[], foldersResponse: IFolderResponse[]): IMenu => {
@@ -75,16 +72,16 @@ export const getMenus = (menus: IMenuResponse[], foldersResponse: IFolderRespons
         ? 1
         : b.menuPath.toLowerCase() > a.menuPath.toLowerCase()
           ? -1
-          : 0,
+          : 0
     )
-    .map((menu) => ({
+    .map(menu => ({
       menuPath: menu.menuPath,
       menuPaths: menu.menuPath.replace(/^[\s/]+|[\s/]+$/g, '').split('/'),
       pageId: menu.pageId,
       linkId: menu.linkId,
       fileId: menu.fileId,
       url: menu.url,
-      createdByUserId: menu.createdByUserId,
+      createdByUserId: menu.createdByUserId
     }));
   const menuLevels = getMenuLevels(splittedMenus, foldersResponse, 1, 0);
 
@@ -95,27 +92,27 @@ export const getPageId = (menu: IMenu, menuPath: string, level = 0): number | nu
   if (!menu) {
     return null;
   }
-  let menuItem = menu.menuItems?.find((m) => m.menuPath === menuPath);
+  let menuItem = menu.menuItems?.find(m => m.menuPath === menuPath);
   if (menuItem) {
     return menuItem.pageId;
   }
   const menuPaths = menuPath.replace(/^[\s/]+|[\s/]+$/g, '').split('/');
   if (Array.isArray(menuPaths) && menuPaths.length > level + 1) {
-    let subMenu = menu.subMenus?.find((m) => m.description === menuPaths[level]);
+    let subMenu = menu.subMenus?.find(m => m.description === menuPaths[level]);
     if (subMenu) {
       return getPageId(subMenu.subMenus, menuPath, level + 1);
     }
     subMenu = menu.subMenus?.find(
-      (m) =>
+      m =>
         m.description.toLocaleLowerCase().replace(/\s+/g, '') ===
-        menuPaths[level].toLocaleLowerCase().replace(/\s+/g, ''),
+        menuPaths[level].toLocaleLowerCase().replace(/\s+/g, '')
     );
     if (subMenu) {
       return getPageId(subMenu.subMenus, menuPath, level + 1);
     }
   }
   menuItem = menu.menuItems?.find(
-    (m) => m.menuPath.toLocaleLowerCase().replace(/\s+/g, '') === menuPath.toLocaleLowerCase().replace(/\s+/g, ''),
+    m => m.menuPath.toLocaleLowerCase().replace(/\s+/g, '') === menuPath.toLocaleLowerCase().replace(/\s+/g, '')
   );
   if (menuItem) {
     return menuItem.pageId;

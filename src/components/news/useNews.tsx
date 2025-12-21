@@ -1,11 +1,11 @@
 import { Spin } from 'antd';
-import { IChildContainerProps } from '../dashboard/columns/mapNodesToColumns';
-import { INewsItemProps } from '../../models/newsModel';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
-import styled from 'styled-components';
-import { useMobxStore } from '../../utils/mobxStore';
+import { styled } from 'styled-components';
+import { INewsItemProps } from '../../models/newsModel';
 import { PostJsonData } from '../../utils/api';
+import { useMobxStore } from '../../utils/mobxStore';
+import { IChildContainerProps } from '../dashboard/columns/mapNodesToColumns';
 import NewsItem from './NewsItem';
 
 const SpinnerDiv = styled.div<IChildContainerProps>`
@@ -26,7 +26,7 @@ const useNews = (withinDashboard: boolean) => {
     if (loadingRef.current) {
       return true;
     }
-    const url = clubModel.modules.find((module) => module.name === 'News')?.queryUrl;
+    const url = clubModel.modules.find(module => module.name === 'News')?.queryUrl;
     if (!url) return false;
 
     loadingRef.current = true;
@@ -40,50 +40,49 @@ const useNews = (withinDashboard: boolean) => {
       iEndDate: withinDashboard ? '' : globalStateModel.endDate ? globalStateModel.endDate : '2099-12-31',
       iNewsTypeID: globalStateModel.type ? globalStateModel.type : '',
       offset: offset,
-      limit: limit,
+      limit: limit
     };
 
     try {
-      const json: INewsItemProps[] = await PostJsonData(url, data, false);
+      const json = await PostJsonData<INewsItemProps[]>(url, data, false);
       const newArray = json != null ? json : [];
-      newArray.forEach((newsItem) => {
+      newArray.forEach(newsItem => {
         newsItem.link = newsItem.link && decodeURIComponent(newsItem.link);
       });
       globalStateModel.news?.addNewsItemsToBottom(newArray);
       setFirstLoading(false);
       loadingRef.current = false;
       return newArray.length === limit;
-    } catch (e) {
+    } catch {
       setFirstLoading(false);
       loadingRef.current = false;
       return false;
     }
   }, [
-    today,
-    location.pathname,
-    globalStateModel.type,
+    clubModel.modules,
+    globalStateModel.news,
     globalStateModel.startDate,
     globalStateModel.endDate,
-    clubModel.modules,
-    globalStateModel.news?.limit,
-    globalStateModel.news?.offset,
+    globalStateModel.type,
+    today,
+    withinDashboard
   ]);
 
   const newsItems = useMemo(
     () =>
       withinDashboard
         ? globalStateModel.news?.newsItems?.filter(
-            (newsItem) => !newsItem.expireDate || newsItem.expireDate >= todayIsoString,
+            newsItem => !newsItem.expireDate || newsItem.expireDate >= todayIsoString
           )
         : globalStateModel.news?.newsItems,
-    [todayIsoString, globalStateModel.news?.newsItems, withinDashboard],
+    [todayIsoString, globalStateModel.news?.newsItems, withinDashboard]
   );
 
   return {
     loadMoreCallback: loadNews,
     newsItems:
       !firstLoading && newsItems
-        ? newsItems.map((newsObject) => (
+        ? newsItems.map(newsObject => (
             <NewsItem
               key={'newsObject#' + newsObject.id}
               preferredColumn={location.pathname === '/' ? '50%leftPreferred' : undefined}
@@ -98,8 +97,8 @@ const useNews = (withinDashboard: boolean) => {
               preferredHeight={100}
             >
               <Spin size="large" />
-            </SpinnerDiv>,
-          ],
+            </SpinnerDiv>
+          ]
   };
 };
 

@@ -1,8 +1,8 @@
 import { observer } from 'mobx-react';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useMobxStore } from '../../utils/mobxStore';
 import { GetJsonData } from '../../utils/api';
+import { useMobxStore } from '../../utils/mobxStore';
 import MenuItem from '../menu/MenuItem';
 import LoginForm from './LoginForm';
 
@@ -11,19 +11,6 @@ const LoginMenuItem = observer(() => {
   const { t } = useTranslation();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
-
-  const openModal = useCallback(() => {
-    if (sessionModel.loggedIn) {
-      onLogout();
-      return;
-    }
-    globalStateModel.setRightMenuVisible(false);
-    setShowLoginModal(true);
-  }, [sessionModel]);
-
-  const closeModal = useCallback(() => {
-    setShowLoginModal(false);
-  }, []);
 
   const onLogout = useCallback(() => {
     setLoggingOut(true);
@@ -38,6 +25,19 @@ const LoginMenuItem = observer(() => {
         setLoggingOut(false);
       });
   }, [clubModel, sessionModel]);
+
+  const openModal = useCallback(() => {
+    if (sessionModel.loggedIn) {
+      onLogout();
+      return;
+    }
+    globalStateModel.setRightMenuVisible(false);
+    setShowLoginModal(true);
+  }, [globalStateModel, onLogout, sessionModel.loggedIn]);
+
+  const closeModal = useCallback(() => {
+    setShowLoginModal(false);
+  }, []);
 
   return (
     <>

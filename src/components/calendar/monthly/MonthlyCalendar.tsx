@@ -1,15 +1,15 @@
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import { Col, message, Row, Skeleton } from 'antd';
-import { observer } from 'mobx-react';
 import dayjs from 'dayjs';
+import { observer } from 'mobx-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
-import { useMobxStore } from '../../../utils/mobxStore';
-import { ICalendarActivity, ICalendarDomains, ICalendarEvent } from '../../../utils/responseCalendarInterfaces';
+import { styled } from 'styled-components';
 import { PostJsonData } from '../../../utils/api';
 import { dateFormat } from '../../../utils/formHelper';
+import { useMobxStore } from '../../../utils/mobxStore';
+import { ICalendarActivity, ICalendarDomains, ICalendarEvent } from '../../../utils/responseCalendarInterfaces';
 import { GetDates, GetMonthName } from '../calendarHelper';
 import CalendarItem from '../item/CalendarItem';
 
@@ -81,12 +81,12 @@ const DayContainerCol = styled(Col)`
 `;
 
 const DateContainer = styled.div`
-  color: ${(props) => props.color};
+  color: ${props => props.color};
   text-align: center;
 `;
 
 const BigDate = styled.div`
-  color: ${(props) => props.color};
+  color: ${props => props.color};
   font-size: 28px;
   line-height: 1;
   float: right;
@@ -94,7 +94,7 @@ const BigDate = styled.div`
 `;
 
 const SmallDateDescription = styled.div`
-  color: ${(props) => props.color};
+  color: ${props => props.color};
   font-size: 10px;
   white-space: nowrap;
   overflow: hidden;
@@ -105,7 +105,7 @@ const SmallDateDescription = styled.div`
 `;
 
 const Activity = styled.div`
-  color: ${(props) => props.color};
+  color: ${props => props.color};
   font-size: 12px;
   line-height: 1;
   padding-top: 3px;
@@ -116,7 +116,7 @@ const Activity = styled.div`
 `;
 
 const ActivityUrl = styled.a`
-  color: ${(props) => props.color};
+  color: ${props => props.color};
 `;
 
 const MonthlyCalendar = observer(() => {
@@ -131,36 +131,37 @@ const MonthlyCalendar = observer(() => {
     globalStateModel.setValues({
       startDate: dayjs().startOf('month').format(dateFormat),
       endDate: dayjs().endOf('month').format(dateFormat),
-      type: 1,
+      type: 1
     });
   }
 
   useEffect(() => {
     setLoaded(false);
     setActivities([]);
-    const url = clubModel.modules.find((module) => module.name === 'Calendar')?.queryUrl;
+    const url = clubModel.modules.find(module => module.name === 'Calendar')?.queryUrl;
     if (!url) return;
 
     const data = {
       iType: 'ACTIVITIES',
       iFromDate: dayjs(globalStateModel.startDate).isoWeekday(1).format('YYYY-MM-DD'),
-      iToDate: dayjs(globalStateModel.endDate).isoWeekday(7).format('YYYY-MM-DD'),
+      iToDate: dayjs(globalStateModel.endDate).isoWeekday(7).format('YYYY-MM-DD')
     };
     const eventsData = {
       ...data,
-      iType: 'EVENTS',
+      iType: 'EVENTS'
     };
     const domainsData = {
       ...data,
-      iType: 'DOMAINS',
+      iType: 'DOMAINS'
     };
 
-    const activitesPromise = PostJsonData(url, data, true);
-    const eventsPromise = PostJsonData(url, eventsData, true);
-    const domainsPromise = PostJsonData(url, domainsData, true);
+    const activitesPromise = PostJsonData<ICalendarActivity[]>(url, data, true);
+    const eventsPromise = PostJsonData<ICalendarEvent[]>(url, eventsData, true);
+    const domainsPromise = PostJsonData<ICalendarDomains>(url, domainsData, true);
 
     Promise.all([activitesPromise, eventsPromise, domainsPromise])
-      .then(([activitiesJson, eventsJson, domainsJson]: [ICalendarActivity[], ICalendarEvent[], ICalendarDomains]) => {
+      .then(([activitiesJson, eventsJson, domainsJson]) => {
+        if (!activitiesJson || !eventsJson || !domainsJson) return;
         setDomains(domainsJson);
         setActivities([
           ...activitiesJson,
@@ -179,16 +180,16 @@ const MonthlyCalendar = observer(() => {
               description: event.name,
               groupId: 0,
               repeatingGid: null,
-              repeatingModified: false,
-            }),
-          ),
+              repeatingModified: false
+            })
+          )
         ]);
         setLoaded(true);
       })
-      .catch((e) => {
-        message.error(e.message);
+      .catch(e => {
+        if (e?.message) message.error(e.message);
       });
-  }, [globalStateModel.startDate]);
+  }, [clubModel.modules, globalStateModel.endDate, globalStateModel.startDate]);
 
   const onPrevious = useCallback(
     () =>
@@ -197,9 +198,9 @@ const MonthlyCalendar = observer(() => {
         '/calendar',
         dayjs(globalStateModel.startDate).add(-1, 'months').startOf('month').format(dateFormat),
         dayjs(globalStateModel.startDate).add(-1, 'months').endOf('month').format(dateFormat),
-        1,
+        1
       ),
-    [],
+    [globalStateModel, navigate]
   );
 
   const onNext = useCallback(
@@ -209,9 +210,9 @@ const MonthlyCalendar = observer(() => {
         '/calendar',
         dayjs(globalStateModel.startDate).add(1, 'months').startOf('month').format(dateFormat),
         dayjs(globalStateModel.startDate).add(1, 'months').endOf('month').format(dateFormat),
-        1,
+        1
       ),
-    [],
+    [globalStateModel, navigate]
   );
 
   const startDate = dayjs(globalStateModel.startDate);
@@ -236,23 +237,23 @@ const MonthlyCalendar = observer(() => {
       </MonthlyHeader>
       <MonthlyDayRow>
         <HeaderContainerCol span={1} />
-        {days.map((day) => (
-          <HeaderContainerCol span={day < 5 ? 3 : 4}>
+        {days.map(day => (
+          <HeaderContainerCol key={day} span={day < 5 ? 3 : 4}>
             <DateContainer color={day === 6 ? 'red' : day === 5 ? 'grey' : 'black'}>
               {t(`calendar.DayOfWeek${day + 1}`)}
             </DateContainer>
           </HeaderContainerCol>
         ))}
       </MonthlyDayRow>
-      {weeks.map((week) => (
-        <MonthlyDayRow>
+      {weeks.map(week => (
+        <MonthlyDayRow key={`${startMonday.format('YYYYMMDD')}-W${week}`}>
           <WeekCol span={1}>
             <WeekColText>v. {startMonday.clone().add(week, 'weeks').format('WW')}</WeekColText>
           </WeekCol>
-          {GetDates(startMonday.clone().add(week, 'weeks'), 7, t).map((dateObj) => (
+          {GetDates(startMonday.clone().add(week, 'weeks'), 7, t).map(dateObj => (
             <DayContainerCol
-              span={dateObj.date.isoWeekday() < 6 ? 3 : 4}
               key={`MonthlyCalendar${dateObj.date.format('YYYYMMDD')}`}
+              span={dateObj.date.isoWeekday() < 6 ? 3 : 4}
             >
               <BigDate color={isCurrentMonth(dateObj.date) ? dateObj.color : dayNotInMonthColor}>
                 {dateObj.date.format('D')}
@@ -260,10 +261,10 @@ const MonthlyCalendar = observer(() => {
               <SmallDateDescription color={isCurrentMonth(dateObj.date) ? dateObj.color : dayNotInMonthColor}>
                 {dateObj.holidayName}
               </SmallDateDescription>
-              <Skeleton loading={!loaded} active paragraph={false}>
+              <Skeleton active loading={!loaded} paragraph={false}>
                 {activities
-                  .filter((act) => act.date === dateObj.date.format('YYYY-MM-DD'))
-                  .map((act) => (
+                  .filter(act => act.date === dateObj.date.format('YYYY-MM-DD'))
+                  .map(act => (
                     <Activity
                       key={`activity#${act.activityId}`}
                       color={isCurrentMonth(dateObj.date) ? 'inherit' : dayNotInMonthColor}

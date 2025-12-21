@@ -1,8 +1,8 @@
 import { useLocalObservable } from 'mobx-react';
+import React from 'react';
 import { GlobalStateModel, IGlobalStateModel } from '../models/globalStateModel';
 import { IMobxClubModel, MobxClubModel } from '../models/mobxClubModel';
 import { ISessionModel, SessionModel } from '../models/sessionModel';
-import React from 'react';
 
 interface IMobxStore {
   clubModel: IMobxClubModel;
@@ -18,7 +18,7 @@ const MobxStoreContext = React.createContext<IMobxStore>({
       organisationNumber: '',
       address1: '',
       zip: '',
-      city: '',
+      city: ''
     },
     defaultLanguage: 'en',
     logo: { url: 'https://', width: 0, height: 0 },
@@ -26,28 +26,28 @@ const MobxStoreContext = React.createContext<IMobxStore>({
       palette: {
         primary: {
           main: '#5882E4',
-          contrastText: '#ffffff',
+          contrastText: '#ffffff'
         },
         secondary: {
           main: '#ffffff',
-          contrastText: '#000000',
+          contrastText: '#000000'
         },
         error: {
           main: '#aa3333',
-          contrastText: '#000000',
+          contrastText: '#000000'
         },
         contrastThreshold: 3,
-        tonalOffset: 0.2,
+        tonalOffset: 0.2
       },
       typography: {
         fontFamily:
           '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol"',
-        fontSize: 12,
-      },
-    },
+        fontSize: 12
+      }
+    }
   }),
   globalStateModel: new GlobalStateModel(),
-  sessionModel: new SessionModel(),
+  sessionModel: new SessionModel()
 });
 
 interface IMobxStoreProvider {

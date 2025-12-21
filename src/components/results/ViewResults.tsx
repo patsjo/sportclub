@@ -1,12 +1,14 @@
 import { Form, message, Spin } from 'antd';
-import { TFunction } from 'i18next';
-import { observer } from 'mobx-react';
-import { IMobxClubModel } from '../../models/mobxClubModel';
 import dayjs from 'dayjs';
+import { observer } from 'mobx-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import styled from 'styled-components';
+import { styled } from 'styled-components';
+import { IRaceClubsProps } from '../../models/resultModel';
+import { PostJsonData } from '../../utils/api';
+import { INumberOption, IOption } from '../../utils/formHelper';
 import { useMobxStore } from '../../utils/mobxStore';
+import { getPdf, getZip, IPrintInput, IPrintObject, IPrintTable, IPrintTableColumn } from '../../utils/pdf';
 import {
   IClubViewResultResponse,
   IEventViewResultResponse,
@@ -14,19 +16,17 @@ import {
   IPrintSettings,
   IPrintSettingsColumn,
   IViewResult,
-  IViewTeamResult,
+  IViewTeamResult
 } from '../../utils/responseInterfaces';
-import { PostJsonData } from '../../utils/api';
-import { FormSelect, INumberOption, IOption } from '../../utils/formHelper';
-import { getPdf, getZip, IPrintInput, IPrintObject, IPrintTable, IPrintTableColumn } from '../../utils/pdf';
 import {
   failedReasons,
   ManuallyEditedMissingTimePostfix,
   raceDistanceOptions,
-  raceLightConditionOptions,
+  raceLightConditionOptions
 } from '../../utils/resultConstants';
 import { FormatTime } from '../../utils/resultHelper';
 import FormItem from '../formItems/FormItem';
+import { FormSelect } from '../formItems/FormSelect';
 import { SpinnerDiv, StyledTable } from '../styled/styled';
 import TablePrintSettingButtons from '../tableSettings/TablePrintSettingButtons';
 
@@ -53,274 +53,6 @@ const Col = styled.div`
   vertical-align: bottom;
 `;
 
-const columns = (
-  t: TFunction,
-  clubModel: IMobxClubModel,
-  isIndividual: boolean,
-): IPrintTableColumn<IViewResult | IViewTeamResult>[] => {
-  const cols: IPrintTableColumn<IViewResult | IViewTeamResult>[] = [];
-  if (isIndividual) {
-    cols.push({
-      title: t('results.Date'),
-      selected: true,
-      dataIndex: 'raceDate',
-      key: 'raceDate',
-      fixed: 'left',
-      width: 90,
-    });
-    cols.push({
-      title: t('results.Name'),
-      selected: true,
-      dataIndex: 'name',
-      key: 'name',
-      fixed: 'left',
-      width: 180,
-      render: (id: string) => (id == null ? null : id),
-    });
-    cols.push({
-      title: t('results.Club'),
-      selected: false,
-      dataIndex: 'organiserName',
-      key: 'organiserName',
-      fixed: 'left',
-      width: 180,
-      render: (id: string) => (id == null ? null : id),
-    });
-  } else {
-    cols.push({
-      title: t('results.Competitor'),
-      selected: true,
-      dataIndex: 'competitorId',
-      key: 'competitorId',
-      fixed: 'left',
-      width: 180,
-      render: (id: number) => (id == null ? null : clubModel.raceClubs?.selectedClub?.competitorById(id)?.fullName),
-    });
-  }
-
-  cols.push({
-    title: t('results.Sport'),
-    selected: false,
-    dataIndex: 'sportCode',
-    key: 'sportCode',
-  });
-  cols.push({
-    title: t('results.EventClassification'),
-    selected: false,
-    dataIndex: 'eventClassificationId',
-    key: 'eventClassificationId',
-    render: (value: string, record) =>
-      clubModel.raceClubs?.eventClassifications.find(
-        (ec) =>
-          ec.eventClassificationId ===
-          (record.deviantEventClassificationId ? record.deviantEventClassificationId : value),
-      )?.description,
-  });
-  cols.push({
-    title: t('results.Class'),
-    selected: true,
-    dataIndex: 'className',
-    key: 'className',
-  });
-  cols.push({
-    title: t('results.Difficulty'),
-    selected: false,
-    dataIndex: 'difficulty',
-    key: 'difficulty',
-  });
-  cols.push({
-    title: t('results.LengthInMeter'),
-    selected: true,
-    dataIndex: 'lengthInMeter',
-    key: 'lengthInMeter',
-  });
-  cols.push({
-    title: t('results.Time'),
-    selected: true,
-    dataIndex: 'competitorTime',
-    key: 'competitorTime',
-    render: (value: string, record) =>
-      record.failedReason != null
-        ? record.failedReason.charAt(0).toUpperCase() + record.failedReason.substr(1).toLowerCase()
-        : record.failedReason == null && value == null
-          ? null
-          : FormatTime(value),
-  });
-  cols.push({
-    title: t('results.WinnerTime'),
-    selected: true,
-    dataIndex: 'winnerTime',
-    key: 'winnerTime',
-    render: (value: string) => FormatTime(value),
-  });
-  cols.push({
-    title: t('results.SecondTime'),
-    selected: false,
-    dataIndex: 'secondTime',
-    key: 'secondTime',
-    render: (value: string) => (value ? FormatTime(value) : ''),
-  });
-  cols.push({
-    title: t('results.Position'),
-    selected: true,
-    dataIndex: 'position',
-    key: 'position',
-  });
-  cols.push({
-    title: t('results.NofStartsInClass'),
-    selected: true,
-    dataIndex: 'nofStartsInClass',
-    key: 'nofStartsInClass',
-  });
-  cols.push({
-    title: t('results.MissingTime'),
-    selected: true,
-    dataIndex: 'missingTime',
-    key: 'missingTime',
-    render: (value) =>
-      value?.substr(-5) === ManuallyEditedMissingTimePostfix ? FormatTime(value) + '*' : FormatTime(value),
-  });
-  cols.push({
-    title: t('results.RankingLeague'),
-    selected: true,
-    dataIndex: 'ranking',
-    key: 'ranking',
-  });
-  cols.push({
-    title: t('results.RankingSpeedLeague'),
-    selected: true,
-    dataIndex: 'speedRanking',
-    key: 'speedRanking',
-  });
-  cols.push({
-    title: t('results.RankingTechnicalLeague'),
-    selected: true,
-    dataIndex: 'technicalRanking',
-    key: 'technicalRanking',
-  });
-  cols.push({
-    title: t('results.Points1000League'),
-    selected: true,
-    dataIndex: 'points1000',
-    key: 'points1000',
-  });
-
-  return cols;
-};
-
-const resultsColumns = (t: TFunction, clubModel: IMobxClubModel): IPrintTableColumn<IViewResult>[] => [
-  {
-    title: t('results.PointsLeague'),
-    selected: true,
-    dataIndex: 'points',
-    key: 'points',
-  },
-  {
-    title: t('results.PointsOldLeague'),
-    selected: false,
-    dataIndex: 'pointsOld',
-    key: 'pointsOld',
-  },
-  {
-    title: t('results.Award'),
-    selected: true,
-    dataIndex: 'award',
-    key: 'award',
-  },
-  {
-    title: t('results.RaceLightCondition'),
-    selected: false,
-    dataIndex: 'raceLightCondition',
-    key: 'raceLightCondition',
-    render: (value) => raceLightConditionOptions(t).find((opt) => opt.code === value)?.description,
-  },
-  {
-    title: t('results.OriginalFee'),
-    selected: false,
-    dataIndex: 'originalFee',
-    key: 'originalFee',
-  },
-  {
-    title: t('results.LateFee'),
-    selected: false,
-    dataIndex: 'lateFee',
-    key: 'lateFee',
-  },
-  {
-    title: t('results.FeeToClub'),
-    selected: true,
-    dataIndex: 'feeToClub',
-    key: 'feeToClub',
-  },
-  {
-    title: t('results.ServiceFeeToClub'),
-    selected: true,
-    dataIndex: 'serviceFeeToClub',
-    key: 'serviceFeeToClub',
-  },
-  {
-    title: t('calendar.Description'),
-    selected: true,
-    dataIndex: 'serviceFeeDescription',
-    key: 'serviceFeeDescription',
-  },
-  {
-    title: t('results.TotalFeeToClub'),
-    selected: true,
-    dataIndex: 'totalFeeToClub',
-    key: 'totalFeeToClub',
-    render: (_text, record) => record.feeToClub + record.serviceFeeToClub,
-  },
-];
-
-const teamResultsColumns = (t: TFunction, clubModel: IMobxClubModel): IPrintTableColumn<IViewTeamResult>[] => [
-  {
-    title: t('results.Stage'),
-    selected: true,
-    dataIndex: 'stage',
-    key: 'stage',
-    render: (value, record) =>
-      record.stage == null || record.totalStages == null
-        ? null
-        : `${record.stage} ${t('common.Of')} ${record.totalStages}`,
-  },
-  {
-    title: t('results.DeltaPositions'),
-    selected: true,
-    dataIndex: 'deltaPositions',
-    key: 'deltaPositions',
-  },
-  {
-    title: t('results.DeltaTimeBehind'),
-    selected: true,
-    dataIndex: 'deltaTimeBehind',
-    key: 'deltaTimeBehind',
-    render: (value) => FormatTime(value),
-  },
-  {
-    title: t('results.RaceLightCondition'),
-    selected: false,
-    dataIndex: 'raceLightCondition',
-    key: 'raceLightCondition',
-    render: (value, record) =>
-      raceLightConditionOptions(t).find(
-        (opt) => opt.code === (record.deviantRaceLightCondition ? record.deviantRaceLightCondition : value),
-      )?.description,
-  },
-  {
-    title: t('results.ServiceFeeToClub'),
-    selected: true,
-    dataIndex: 'serviceFeeToClub',
-    key: 'serviceFeeToClub',
-  },
-  {
-    title: t('results.ServiceFeeDescription'),
-    selected: true,
-    dataIndex: 'serviceFeeDescription',
-    key: 'serviceFeeDescription',
-  },
-];
-
 interface IViewResultsProps {
   isIndividual: boolean;
 }
@@ -339,35 +71,275 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
   const [total, setTotal] = useState(0);
   const [spinnerTitle, setSpinnerTitle] = useState<string | null>(null);
   const [spinnerText, setSpinnerText] = useState<string | null>(null);
-
-  useEffect(() => {
-    const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
-    if (!url) return;
-
-    PostJsonData(
-      url,
-      {
-        iType: 'CLUBS',
-      },
-      true,
-      sessionModel.authorizationHeader,
-    )
-      .then((clubsJson) => {
-        clubModel.setRaceClubs(clubsJson);
-        if (isIndividual) {
-          setLoading(false);
-        } else {
-          updateEventYear(year);
-        }
-      })
-      .catch((e) => {
-        message.error(e.message);
+  const columns = useMemo<IPrintTableColumn<IViewResult | IViewTeamResult>[]>(() => {
+    const cols: IPrintTableColumn<IViewResult | IViewTeamResult>[] = [];
+    if (isIndividual) {
+      cols.push({
+        title: t('results.Date'),
+        selected: true,
+        dataIndex: 'raceDate',
+        key: 'raceDate',
+        fixed: 'left',
+        width: 90
       });
-  }, []);
+      cols.push({
+        title: t('results.Name'),
+        selected: true,
+        dataIndex: 'name',
+        key: 'name',
+        fixed: 'left',
+        width: 180,
+        render: (id: string) => (id == null ? null : id)
+      });
+      cols.push({
+        title: t('results.Club'),
+        selected: false,
+        dataIndex: 'organiserName',
+        key: 'organiserName',
+        fixed: 'left',
+        width: 180,
+        render: (id: string) => (id == null ? null : id)
+      });
+    } else {
+      cols.push({
+        title: t('results.Competitor'),
+        selected: true,
+        dataIndex: 'competitorId',
+        key: 'competitorId',
+        fixed: 'left',
+        width: 180,
+        render: (id: number) => (id == null ? null : clubModel.raceClubs?.selectedClub?.competitorById(id)?.fullName)
+      });
+    }
 
-  const onAbortLoading = () => {
-    abortLoading = true;
-  };
+    cols.push({
+      title: t('results.Sport'),
+      selected: false,
+      dataIndex: 'sportCode',
+      key: 'sportCode'
+    });
+    cols.push({
+      title: t('results.EventClassification'),
+      selected: false,
+      dataIndex: 'eventClassificationId',
+      key: 'eventClassificationId',
+      render: (value: string, record) =>
+        clubModel.raceClubs?.eventClassifications.find(
+          ec =>
+            ec.eventClassificationId ===
+            (record.deviantEventClassificationId ? record.deviantEventClassificationId : value)
+        )?.description
+    });
+    cols.push({
+      title: t('results.Class'),
+      selected: true,
+      dataIndex: 'className',
+      key: 'className'
+    });
+    cols.push({
+      title: t('results.Difficulty'),
+      selected: false,
+      dataIndex: 'difficulty',
+      key: 'difficulty'
+    });
+    cols.push({
+      title: t('results.LengthInMeter'),
+      selected: true,
+      dataIndex: 'lengthInMeter',
+      key: 'lengthInMeter'
+    });
+    cols.push({
+      title: t('results.Time'),
+      selected: true,
+      dataIndex: 'competitorTime',
+      key: 'competitorTime',
+      render: (value: string, record) =>
+        record.failedReason != null
+          ? record.failedReason.charAt(0).toUpperCase() + record.failedReason.substr(1).toLowerCase()
+          : record.failedReason == null && value == null
+            ? null
+            : FormatTime(value)
+    });
+    cols.push({
+      title: t('results.WinnerTime'),
+      selected: true,
+      dataIndex: 'winnerTime',
+      key: 'winnerTime',
+      render: (value: string) => FormatTime(value)
+    });
+    cols.push({
+      title: t('results.SecondTime'),
+      selected: false,
+      dataIndex: 'secondTime',
+      key: 'secondTime',
+      render: (value: string) => (value ? FormatTime(value) : '')
+    });
+    cols.push({
+      title: t('results.Position'),
+      selected: true,
+      dataIndex: 'position',
+      key: 'position'
+    });
+    cols.push({
+      title: t('results.NofStartsInClass'),
+      selected: true,
+      dataIndex: 'nofStartsInClass',
+      key: 'nofStartsInClass'
+    });
+    cols.push({
+      title: t('results.MissingTime'),
+      selected: true,
+      dataIndex: 'missingTime',
+      key: 'missingTime',
+      render: value =>
+        value?.substr(-5) === ManuallyEditedMissingTimePostfix ? FormatTime(value) + '*' : FormatTime(value)
+    });
+    cols.push({
+      title: t('results.RankingLeague'),
+      selected: true,
+      dataIndex: 'ranking',
+      key: 'ranking'
+    });
+    cols.push({
+      title: t('results.RankingSpeedLeague'),
+      selected: true,
+      dataIndex: 'speedRanking',
+      key: 'speedRanking'
+    });
+    cols.push({
+      title: t('results.RankingTechnicalLeague'),
+      selected: true,
+      dataIndex: 'technicalRanking',
+      key: 'technicalRanking'
+    });
+    cols.push({
+      title: t('results.Points1000League'),
+      selected: true,
+      dataIndex: 'points1000',
+      key: 'points1000'
+    });
+
+    return cols;
+  }, [clubModel.raceClubs?.eventClassifications, clubModel.raceClubs?.selectedClub, isIndividual, t]);
+
+  const resultsColumns = useMemo<IPrintTableColumn<IViewResult>[]>(
+    () => [
+      {
+        title: t('results.PointsLeague'),
+        selected: true,
+        dataIndex: 'points',
+        key: 'points'
+      },
+      {
+        title: t('results.PointsOldLeague'),
+        selected: false,
+        dataIndex: 'pointsOld',
+        key: 'pointsOld'
+      },
+      {
+        title: t('results.Award'),
+        selected: true,
+        dataIndex: 'award',
+        key: 'award'
+      },
+      {
+        title: t('results.RaceLightCondition'),
+        selected: false,
+        dataIndex: 'raceLightCondition',
+        key: 'raceLightCondition',
+        render: value => raceLightConditionOptions(t).find(opt => opt.code === value)?.description
+      },
+      {
+        title: t('results.OriginalFee'),
+        selected: false,
+        dataIndex: 'originalFee',
+        key: 'originalFee'
+      },
+      {
+        title: t('results.LateFee'),
+        selected: false,
+        dataIndex: 'lateFee',
+        key: 'lateFee'
+      },
+      {
+        title: t('results.FeeToClub'),
+        selected: true,
+        dataIndex: 'feeToClub',
+        key: 'feeToClub'
+      },
+      {
+        title: t('results.ServiceFeeToClub'),
+        selected: true,
+        dataIndex: 'serviceFeeToClub',
+        key: 'serviceFeeToClub'
+      },
+      {
+        title: t('calendar.Description'),
+        selected: true,
+        dataIndex: 'serviceFeeDescription',
+        key: 'serviceFeeDescription'
+      },
+      {
+        title: t('results.TotalFeeToClub'),
+        selected: true,
+        dataIndex: 'totalFeeToClub',
+        key: 'totalFeeToClub',
+        render: (_text, record) => record.feeToClub + record.serviceFeeToClub
+      }
+    ],
+    [t]
+  );
+
+  const teamResultsColumns = useMemo<IPrintTableColumn<IViewTeamResult>[]>(
+    () => [
+      {
+        title: t('results.Stage'),
+        selected: true,
+        dataIndex: 'stage',
+        key: 'stage',
+        render: (value, record) =>
+          record.stage == null || record.totalStages == null
+            ? null
+            : `${record.stage} ${t('common.Of')} ${record.totalStages}`
+      },
+      {
+        title: t('results.DeltaPositions'),
+        selected: true,
+        dataIndex: 'deltaPositions',
+        key: 'deltaPositions'
+      },
+      {
+        title: t('results.DeltaTimeBehind'),
+        selected: true,
+        dataIndex: 'deltaTimeBehind',
+        key: 'deltaTimeBehind',
+        render: value => FormatTime(value)
+      },
+      {
+        title: t('results.RaceLightCondition'),
+        selected: false,
+        dataIndex: 'raceLightCondition',
+        key: 'raceLightCondition',
+        render: (value, record) =>
+          raceLightConditionOptions(t).find(
+            opt => opt.code === (record.deviantRaceLightCondition ? record.deviantRaceLightCondition : value)
+          )?.description
+      },
+      {
+        title: t('results.ServiceFeeToClub'),
+        selected: true,
+        dataIndex: 'serviceFeeToClub',
+        key: 'serviceFeeToClub'
+      },
+      {
+        title: t('results.ServiceFeeDescription'),
+        selected: true,
+        dataIndex: 'serviceFeeDescription',
+        key: 'serviceFeeDescription'
+      }
+    ],
+    [t]
+  );
 
   const updateEventYear = useCallback(
     (newYear: number) => {
@@ -376,58 +348,90 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
 
       setYear(newYear);
 
-      const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
+      const url = clubModel.modules.find(module => module.name === 'Results')?.queryUrl;
       if (!url) return;
 
       setLoading(true);
 
-      PostJsonData(
+      PostJsonData<IEventViewResultResponse[]>(
         url,
         {
           iType: 'EVENTS',
           iFromDate: fromDate,
-          iToDate: toDate,
+          iToDate: toDate
         },
-        true,
+        true
       )
-        .then((eventsJson: IEventViewResultResponse[]) => {
-          setEvents(eventsJson.reverse());
+        .then(eventsJson => {
+          setEvents(eventsJson?.reverse() ?? []);
           setResult(undefined);
           setLoading(false);
         })
-        .catch((e) => {
-          if (e && e.message) {
-            message.error(e.message);
-          }
+        .catch(e => {
+          if (e?.message) message.error(e.message);
           setEvents([]);
           setResult(undefined);
           setLoading(false);
         });
     },
-    [clubModel],
+    [clubModel]
   );
+
+  useEffect(() => {
+    const url = clubModel.modules.find(module => module.name === 'Results')?.queryUrl;
+    if (!url) return;
+
+    PostJsonData<IRaceClubsProps>(
+      url,
+      {
+        iType: 'CLUBS'
+      },
+      true,
+      sessionModel.authorizationHeader
+    )
+      .then(clubsJson => {
+        if (clubsJson) {
+          clubModel.setRaceClubs(clubsJson);
+          if (isIndividual) {
+            setLoading(false);
+          } else {
+            updateEventYear(year);
+          }
+        }
+      })
+      .catch(e => {
+        if (e?.message) message.error(e.message);
+      });
+  }, [clubModel, isIndividual, sessionModel.authorizationHeader, updateEventYear, year]);
+
+  const onAbortLoading = useCallback(() => {
+    abortLoading = true;
+  }, []);
 
   const updateEvent = useCallback(
     (eventId: number) => {
-      const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
+      const url = clubModel.modules.find(module => module.name === 'Results')?.queryUrl;
       if (!url) return;
 
       setLoading(true);
 
-      PostJsonData(url, { iType: 'EVENT', iEventId: eventId }, true, sessionModel.authorizationHeader)
-        .then((eventJson: IClubViewResultResponse) => {
+      PostJsonData<IClubViewResultResponse>(
+        url,
+        { iType: 'EVENT', iEventId: eventId },
+        true,
+        sessionModel.authorizationHeader
+      )
+        .then(eventJson => {
           setResult(eventJson);
           setLoading(false);
         })
-        .catch((e) => {
-          if (e && e.message) {
-            message.error(e.message);
-          }
+        .catch(e => {
+          if (e?.message) message.error(e.message);
           setResult(undefined);
           setLoading(false);
         });
     },
-    [clubModel],
+    [clubModel.modules, sessionModel.authorizationHeader]
   );
 
   const updateCompetitor = useCallback(
@@ -438,44 +442,42 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
       if (newYear && newCompetitorId) {
         const fromDate = dayjs(`${newYear}`, 'YYYY').format('YYYY-MM-DD');
         const toDate = dayjs(fromDate, 'YYYY-MM-DD').add(1, 'years').subtract(1, 'days').format('YYYY-MM-DD');
-        const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
+        const url = clubModel.modules.find(module => module.name === 'Results')?.queryUrl;
         if (!url) return;
 
         setLoading(true);
 
-        PostJsonData(
+        PostJsonData<IIndividualViewResultResponse>(
           url,
           { iType: 'COMPETITOR', iFromDate: fromDate, iToDate: toDate, iCompetitorId: newCompetitorId },
           true,
-          sessionModel.authorizationHeader,
+          sessionModel.authorizationHeader
         )
-          .then((competitorJson: IIndividualViewResultResponse) => {
+          .then(competitorJson => {
             setResult(competitorJson);
             setLoading(false);
           })
-          .catch((e) => {
-            if (e && e.message) {
-              message.error(e.message);
-            }
+          .catch(e => {
+            if (e?.message) message.error(e.message);
             setResult(undefined);
             setLoading(false);
           });
       }
     },
-    [clubModel, sessionModel],
+    [clubModel, sessionModel]
   );
 
   const getPrintObject = useCallback(
     (
       settings: IPrintSettings,
       printResult: IIndividualViewResultResponse | IClubViewResultResponse,
-      printCompetitorId?: number,
+      printCompetitorId?: number
     ): IPrintObject<IViewResult | IViewTeamResult> => {
       if (!printResult || !clubModel.raceClubs)
         return {
           header: 'No data',
           inputs: [],
-          tables: [],
+          tables: []
         };
 
       let header = 'No data';
@@ -496,7 +498,7 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
               ? indResult.results.reduce((sum, obj) => (sum += obj.feeToClub + obj.serviceFeeToClub), 0)
               : 0) +
             (indResult.teamResults ? indResult.teamResults.reduce((sum, obj) => (sum += obj.serviceFeeToClub), 0) : 0)
-          ).toString(),
+          ).toString()
         });
         nofStarts =
           (indResult.results
@@ -505,7 +507,7 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
           (indResult.teamResults
             ? indResult.teamResults.reduce(
                 (sum, obj) => (sum += obj.failedReason !== failedReasons.NotStarted ? 1 : 0),
-                0,
+                0
               )
             : 0);
       } else if (!isIndividual) {
@@ -515,22 +517,21 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
         inputs.push({ label: t('results.Club'), value: clubResult.organiserName ?? '' });
         inputs.push({
           label: t('results.RaceLightCondition'),
-          value:
-            raceLightConditionOptions(t).find((opt) => opt.code === clubResult.raceLightCondition)?.description ?? '',
+          value: raceLightConditionOptions(t).find(opt => opt.code === clubResult.raceLightCondition)?.description ?? ''
         });
         inputs.push({
           label: t('results.RaceDistance'),
-          value: raceDistanceOptions(t).find((opt) => opt.code === clubResult.raceDistance)?.description ?? '',
+          value: raceDistanceOptions(t).find(opt => opt.code === clubResult.raceDistance)?.description ?? ''
         });
         inputs.push({
           label: t('results.EventClassification'),
           value:
-            clubModel.raceClubs.eventClassificationOptions.find((opt) => opt.code === clubResult.eventClassificationId)
-              ?.description ?? '',
+            clubModel.raceClubs.eventClassificationOptions.find(opt => opt.code === clubResult.eventClassificationId)
+              ?.description ?? ''
         });
         inputs.push({
           label: t('results.Sport'),
-          value: clubModel.raceClubs.sportOptions.find((opt) => opt.code === clubResult.sportCode)?.description ?? '',
+          value: clubModel.raceClubs.sportOptions.find(opt => opt.code === clubResult.sportCode)?.description ?? ''
         });
         nofStarts =
           (clubResult.results
@@ -539,164 +540,166 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
           (clubResult.teamResults
             ? clubResult.teamResults.reduce(
                 (sum, obj) => (sum += obj.failedReason !== failedReasons.NotStarted ? 1 : 0),
-                0,
+                0
               )
             : 0);
       }
 
       inputs.push({
         label: t('results.TotalNofStarts'),
-        value: nofStarts.toString(),
+        value: nofStarts.toString()
       });
 
       if (Array.isArray(printResult?.results) && printResult.results.length > 0) {
         tables.push({
-          columns: [
-            ...columns(t, clubModel, isIndividual),
-            ...(resultsColumns(t, clubModel) as IPrintTableColumn<IViewResult | IViewTeamResult>[]),
-          ].filter((col) => settings.pdf.columns.some((s) => col.key === s.key && s.selected)),
-          dataSource: printResult.results as (IViewResult | IViewTeamResult)[],
+          columns: [...columns, ...(resultsColumns as IPrintTableColumn<IViewResult | IViewTeamResult>[])].filter(col =>
+            settings.pdf.columns.some(s => col.key === s.key && s.selected)
+          ),
+          dataSource: printResult.results as (IViewResult | IViewTeamResult)[]
         });
       }
       if (Array.isArray(printResult?.teamResults) && printResult.teamResults.length > 0) {
         tables.push({
-          columns: [
-            ...columns(t, clubModel, isIndividual),
-            ...(teamResultsColumns(t, clubModel) as IPrintTableColumn<IViewResult | IViewTeamResult>[]),
-          ].filter((col) => settings.pdf.columns.some((s) => col.key === s.key && s.selected)),
-          dataSource: printResult.teamResults as (IViewResult | IViewTeamResult)[],
+          columns: [...columns, ...(teamResultsColumns as IPrintTableColumn<IViewResult | IViewTeamResult>[])].filter(
+            col => settings.pdf.columns.some(s => col.key === s.key && s.selected)
+          ),
+          dataSource: printResult.teamResults as (IViewResult | IViewTeamResult)[]
         });
       }
 
       if (abortLoading) throw new Error();
-      setProcessed((oldValue) => oldValue + 1);
+      setProcessed(oldValue => oldValue + 1);
 
       return { header, inputs, tables };
     },
-    [t, clubModel, isIndividual, year],
+    [clubModel.raceClubs, isIndividual, t, year, columns, resultsColumns, teamResultsColumns]
   );
 
-  const onExcel = useCallback(
-    async (settings: IPrintSettings): Promise<void> => {
-      if (!year || !result || (isIndividual && competitorId == null)) return;
-      const header = `${t('results.Date')};${t('results.Name')};${t('results.Club')};${t('results.Sport')};${t(
-        'results.EventClassification',
-      )};${t('results.Class')};${t('results.Difficulty')};${t('results.LengthInMeter')};${t('results.Time')};${t(
-        'results.WinnerTime',
-      )};${t('results.SecondTime')};${t('results.Position')};${t('results.NofStartsInClass')};${t(
-        'results.MissingTime',
-      )};${t('results.Ranking')};${t('results.RankingSpeedLeague')};${t('results.RankingTechnicalLeague')};${t(
-        'results.Points1000League',
-      )};${t('results.PointsLeague')};${t('results.Award')};${t('results.RaceLightCondition')};${t(
-        'results.OriginalFee',
-      )};${t('results.LateFee')};${t('results.FeeToClub')};${t('results.ServiceFeeToClub')};${t(
-        'results.ServiceFeeDescription',
-      )};${t('results.TotalFeeToClub')};${t('results.Stage')};${t('results.DeltaPositions')};${t(
-        'results.DeltaTimeBehind',
-      )}`;
-      const rows = isIndividual
-        ? [
-            ...(result as IIndividualViewResultResponse).results.map(
-              (r) =>
-                `${r.raceDate};${r.name.replaceAll(';', '/')};${r.organiserName.replaceAll(';', '/')};${r.sportCode};${
-                  clubModel.raceClubs?.eventClassifications.find(
-                    (ec) =>
-                      ec.eventClassificationId ===
-                      (r.deviantEventClassificationId ? r.deviantEventClassificationId : r.eventClassificationId),
-                  )?.description
-                };${r.className};${r.difficulty};${r.lengthInMeter};${r.competitorTime ?? ''};${r.winnerTime ?? ''};${
-                  r.secondTime ?? ''
-                };${r.position ?? ''};${r.nofStartsInClass ?? ''};${r.missingTime ?? ''};${r.ranking ?? ''};${
-                  r.speedRanking ?? ''
-                };${r.technicalRanking ?? ''};${r.points1000 ?? ''};${r.points ?? ''};${r.award ?? ''};${
-                  raceLightConditionOptions(t).find((opt) => opt.code === r.raceLightCondition)?.description ?? ''
-                };${r.originalFee};${r.lateFee};${r.feeToClub};${r.serviceFeeToClub};${r.serviceFeeDescription ?? ''};${
-                  r.feeToClub + r.serviceFeeToClub
-                };;;`,
-            ),
-            ...(result as IIndividualViewResultResponse).teamResults.map(
-              (r) =>
-                `${r.raceDate};${r.name.replaceAll(';', '/')};${r.organiserName.replaceAll(';', '/')};${r.sportCode};${
-                  clubModel.raceClubs?.eventClassifications.find(
-                    (ec) =>
-                      ec.eventClassificationId ===
-                      (r.deviantEventClassificationId ? r.deviantEventClassificationId : r.eventClassificationId),
-                  )?.description
-                };${r.className};${r.difficulty};${r.lengthInMeter};${r.competitorTime ?? ''};${r.winnerTime ?? ''};${
-                  r.secondTime ?? ''
-                };${r.position ?? ''};${r.nofStartsInClass ?? ''};${r.missingTime ?? ''};${r.ranking ?? ''};${
-                  r.speedRanking ?? ''
-                };${r.technicalRanking ?? ''};${r.points1000 ?? ''};;;${
-                  raceLightConditionOptions(t).find(
-                    (opt) => opt.code === (r.deviantRaceLightCondition ?? r.raceLightCondition),
-                  )?.description ?? ''
-                };;;${r.feeToClub ?? ''};${r.serviceFeeToClub};${r.serviceFeeDescription ?? ''};${
-                  (r.feeToClub ?? '') + r.serviceFeeToClub
-                };${r.stage ?? ''};${r.deltaPositions ?? ''};${r.deltaTimeBehind ?? ''}`,
-            ),
-          ]
-        : [
-            ...(result as IClubViewResultResponse).results.map(
-              (r) =>
-                `${(result as IClubViewResultResponse).raceDate};${(result as IClubViewResultResponse).name?.replaceAll(';', '/')};${(result as IClubViewResultResponse).organiserName?.replaceAll(';', '/')};${(result as IClubViewResultResponse).sportCode};${
-                  clubModel.raceClubs?.eventClassifications.find(
-                    (ec) =>
-                      ec.eventClassificationId ===
-                      (r.deviantEventClassificationId
-                        ? r.deviantEventClassificationId
-                        : (result as IClubViewResultResponse).eventClassificationId),
-                  )?.description
-                };${r.className};${r.difficulty};${r.lengthInMeter};${r.competitorTime ?? ''};${r.winnerTime ?? ''};${
-                  r.secondTime ?? ''
-                };${r.position ?? ''};${r.nofStartsInClass ?? ''};${r.missingTime ?? ''};${r.ranking ?? ''};${
-                  r.speedRanking ?? ''
-                };${r.technicalRanking ?? ''};${r.points1000 ?? ''};${r.points ?? ''};${r.award ?? ''};${
-                  raceLightConditionOptions(t).find(
-                    (opt) => opt.code === (result as IClubViewResultResponse).raceLightCondition,
-                  )?.description ?? ''
-                };${r.originalFee};${r.lateFee};${r.feeToClub};${r.serviceFeeToClub};${r.serviceFeeDescription ?? ''};${
-                  r.feeToClub + r.serviceFeeToClub
-                };;;`,
-            ),
-            ...(result as IClubViewResultResponse).teamResults.map(
-              (r) =>
-                `${(result as IClubViewResultResponse).raceDate};${(result as IClubViewResultResponse).name?.replaceAll(';', '/')};${(result as IClubViewResultResponse).organiserName?.replaceAll(';', '/')};${(result as IClubViewResultResponse).sportCode};${
-                  clubModel.raceClubs?.eventClassifications.find(
-                    (ec) =>
-                      ec.eventClassificationId ===
-                      (r.deviantEventClassificationId
-                        ? r.deviantEventClassificationId
-                        : (result as IClubViewResultResponse).eventClassificationId),
-                  )?.description
-                };${r.className};${r.difficulty};${r.lengthInMeter};${r.competitorTime ?? ''};${r.winnerTime ?? ''};${
-                  r.secondTime ?? ''
-                };${r.position ?? ''};${r.nofStartsInClass ?? ''};${r.missingTime ?? ''};${r.ranking ?? ''};${
-                  r.speedRanking ?? ''
-                };${r.technicalRanking ?? ''};${r.points1000 ?? ''};;;${
-                  raceLightConditionOptions(t).find(
-                    (opt) =>
-                      opt.code ===
-                      (r.deviantRaceLightCondition ?? (result as IClubViewResultResponse).raceLightCondition),
-                  )?.description ?? ''
-                };;;${r.feeToClub ?? ''};${r.serviceFeeToClub};${r.serviceFeeDescription ?? ''};${
-                  (r.feeToClub ?? '') + r.serviceFeeToClub
-                };${r.stage ?? ''};${r.deltaPositions ?? ''};${r.deltaTimeBehind ?? ''}`,
-            ),
-          ];
-      const csvBlob = new Blob([`${header}\r\n${rows.join('\r\n')}`], { type: 'text/plain' });
-      const link = document.createElement('a');
-      link.download = isIndividual
-        ? `${t('modules.Results')} - ${
-            clubModel.raceClubs?.selectedClub?.competitorById(competitorId)?.fullName
-          } ${year}.txt`
-        : `${t('modules.Results')} - ${(result as IClubViewResultResponse).raceDate} ${
-            (result as IClubViewResultResponse).name
-          }.txt`;
-      link.href = URL.createObjectURL(csvBlob);
-      link.click();
-    },
-    [year, isIndividual, result, clubModel, competitorId, result],
-  );
+  const onExcel = useCallback(async (): Promise<void> => {
+    if (!year || !result || (isIndividual && competitorId == null)) return;
+    const header = `${t('results.Date')};${t('results.Name')};${t('results.Club')};${t('results.Sport')};${t(
+      'results.EventClassification'
+    )};${t('results.Class')};${t('results.Difficulty')};${t('results.LengthInMeter')};${t('results.Time')};${t(
+      'results.WinnerTime'
+    )};${t('results.SecondTime')};${t('results.Position')};${t('results.NofStartsInClass')};${t(
+      'results.MissingTime'
+    )};${t('results.Ranking')};${t('results.RankingSpeedLeague')};${t('results.RankingTechnicalLeague')};${t(
+      'results.Points1000League'
+    )};${t('results.PointsLeague')};${t('results.Award')};${t('results.RaceLightCondition')};${t(
+      'results.OriginalFee'
+    )};${t('results.LateFee')};${t('results.FeeToClub')};${t('results.ServiceFeeToClub')};${t(
+      'results.ServiceFeeDescription'
+    )};${t('results.TotalFeeToClub')};${t('results.Stage')};${t('results.DeltaPositions')};${t(
+      'results.DeltaTimeBehind'
+    )}`;
+    const rows = isIndividual
+      ? [
+          ...(result as IIndividualViewResultResponse).results.map(
+            r =>
+              `${r.raceDate};${r.name.replaceAll(';', '/')};${r.organiserName.replaceAll(';', '/')};${r.sportCode};${
+                clubModel.raceClubs?.eventClassifications.find(
+                  ec =>
+                    ec.eventClassificationId ===
+                    (r.deviantEventClassificationId ? r.deviantEventClassificationId : r.eventClassificationId)
+                )?.description
+              };${r.className};${r.difficulty};${r.lengthInMeter};${r.competitorTime ?? ''};${r.winnerTime ?? ''};${
+                r.secondTime ?? ''
+              };${r.position ?? ''};${r.nofStartsInClass ?? ''};${r.missingTime ?? ''};${r.ranking ?? ''};${
+                r.speedRanking ?? ''
+              };${r.technicalRanking ?? ''};${r.points1000 ?? ''};${r.points ?? ''};${r.award ?? ''};${
+                raceLightConditionOptions(t).find(opt => opt.code === r.raceLightCondition)?.description ?? ''
+              };${r.originalFee};${r.lateFee};${r.feeToClub};${r.serviceFeeToClub};${r.serviceFeeDescription ?? ''};${
+                r.feeToClub + r.serviceFeeToClub
+              };;;`
+          ),
+          ...(result as IIndividualViewResultResponse).teamResults.map(
+            r =>
+              `${r.raceDate};${r.name.replaceAll(';', '/')};${r.organiserName.replaceAll(';', '/')};${r.sportCode};${
+                clubModel.raceClubs?.eventClassifications.find(
+                  ec =>
+                    ec.eventClassificationId ===
+                    (r.deviantEventClassificationId ? r.deviantEventClassificationId : r.eventClassificationId)
+                )?.description
+              };${r.className};${r.difficulty};${r.lengthInMeter};${r.competitorTime ?? ''};${r.winnerTime ?? ''};${
+                r.secondTime ?? ''
+              };${r.position ?? ''};${r.nofStartsInClass ?? ''};${r.missingTime ?? ''};${r.ranking ?? ''};${
+                r.speedRanking ?? ''
+              };${r.technicalRanking ?? ''};${r.points1000 ?? ''};;;${
+                raceLightConditionOptions(t).find(
+                  opt => opt.code === (r.deviantRaceLightCondition ?? r.raceLightCondition)
+                )?.description ?? ''
+              };;;${r.feeToClub ?? ''};${r.serviceFeeToClub};${r.serviceFeeDescription ?? ''};${
+                (r.feeToClub ?? '') + r.serviceFeeToClub
+              };${r.stage ?? ''};${r.deltaPositions ?? ''};${r.deltaTimeBehind ?? ''}`
+          )
+        ]
+      : [
+          ...(result as IClubViewResultResponse).results.map(
+            r =>
+              `${(result as IClubViewResultResponse).raceDate};${(result as IClubViewResultResponse).name?.replaceAll(';', '/')};${(result as IClubViewResultResponse).organiserName?.replaceAll(';', '/')};${(result as IClubViewResultResponse).sportCode};${
+                clubModel.raceClubs?.eventClassifications.find(
+                  ec =>
+                    ec.eventClassificationId ===
+                    (r.deviantEventClassificationId
+                      ? r.deviantEventClassificationId
+                      : (result as IClubViewResultResponse).eventClassificationId)
+                )?.description
+              };${r.className};${r.difficulty};${r.lengthInMeter};${r.competitorTime ?? ''};${r.winnerTime ?? ''};${
+                r.secondTime ?? ''
+              };${r.position ?? ''};${r.nofStartsInClass ?? ''};${r.missingTime ?? ''};${r.ranking ?? ''};${
+                r.speedRanking ?? ''
+              };${r.technicalRanking ?? ''};${r.points1000 ?? ''};${r.points ?? ''};${r.award ?? ''};${
+                raceLightConditionOptions(t).find(
+                  opt => opt.code === (result as IClubViewResultResponse).raceLightCondition
+                )?.description ?? ''
+              };${r.originalFee};${r.lateFee};${r.feeToClub};${r.serviceFeeToClub};${r.serviceFeeDescription ?? ''};${
+                r.feeToClub + r.serviceFeeToClub
+              };;;`
+          ),
+          ...(result as IClubViewResultResponse).teamResults.map(
+            r =>
+              `${(result as IClubViewResultResponse).raceDate};${(result as IClubViewResultResponse).name?.replaceAll(';', '/')};${(result as IClubViewResultResponse).organiserName?.replaceAll(';', '/')};${(result as IClubViewResultResponse).sportCode};${
+                clubModel.raceClubs?.eventClassifications.find(
+                  ec =>
+                    ec.eventClassificationId ===
+                    (r.deviantEventClassificationId
+                      ? r.deviantEventClassificationId
+                      : (result as IClubViewResultResponse).eventClassificationId)
+                )?.description
+              };${r.className};${r.difficulty};${r.lengthInMeter};${r.competitorTime ?? ''};${r.winnerTime ?? ''};${
+                r.secondTime ?? ''
+              };${r.position ?? ''};${r.nofStartsInClass ?? ''};${r.missingTime ?? ''};${r.ranking ?? ''};${
+                r.speedRanking ?? ''
+              };${r.technicalRanking ?? ''};${r.points1000 ?? ''};;;${
+                raceLightConditionOptions(t).find(
+                  opt =>
+                    opt.code === (r.deviantRaceLightCondition ?? (result as IClubViewResultResponse).raceLightCondition)
+                )?.description ?? ''
+              };;;${r.feeToClub ?? ''};${r.serviceFeeToClub};${r.serviceFeeDescription ?? ''};${
+                (r.feeToClub ?? '') + r.serviceFeeToClub
+              };${r.stage ?? ''};${r.deltaPositions ?? ''};${r.deltaTimeBehind ?? ''}`
+          )
+        ];
+    const csvBlob = new Blob([`${header}\r\n${rows.join('\r\n')}`], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.download = isIndividual
+      ? `${t('modules.Results')} - ${
+          clubModel.raceClubs?.selectedClub?.competitorById(competitorId)?.fullName
+        } ${year}.txt`
+      : `${t('modules.Results')} - ${(result as IClubViewResultResponse).raceDate} ${
+          (result as IClubViewResultResponse).name
+        }.txt`;
+    link.href = URL.createObjectURL(csvBlob);
+    link.click();
+  }, [
+    year,
+    result,
+    isIndividual,
+    competitorId,
+    t,
+    clubModel.raceClubs?.selectedClub,
+    clubModel.raceClubs?.eventClassifications
+  ]);
 
   const onPrint = useCallback(
     async (settings: IPrintSettings): Promise<void> => {
@@ -712,21 +715,19 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
       try {
         const printObject = getPrintObject(settings, result, competitorId);
         await getPdf(clubModel.corsProxy, clubModel.logo.url, printObject.header, [printObject], settings.pdf);
-      } catch (e: any) {
-        if (e && e.message) {
-          message.error(e.message);
-        }
+      } catch (e: unknown) {
+        if (e && (e as { message: string }).message) message.error((e as { message: string }).message);
       }
       setTotal(0);
       setSpinnerTitle(null);
       setSpinnerText(null);
     },
-    [clubModel, getPrintObject, result, competitorId],
+    [result, clubModel.corsProxy, clubModel.logo.url, t, getPrintObject, competitorId]
   );
 
   const onPrintAll = useCallback(
     async (settings: IPrintSettings, allInOnePdf: boolean): Promise<void> => {
-      const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
+      const url = clubModel.modules.find(module => module.name === 'Results')?.queryUrl;
       let competitorsOptions: INumberOption[] = [];
       const resultJsons: (IIndividualViewResultResponse | IClubViewResultResponse)[] = [];
 
@@ -746,34 +747,32 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
 
           for (const option of competitorsOptions) {
             setSpinnerText(option.description);
-            resultJsons.push(
-              (await PostJsonData(
-                url,
-                { iType: 'COMPETITOR', iFromDate: fromDate, iToDate: toDate, iCompetitorId: option.code },
-                true,
-                sessionModel.authorizationHeader,
-              )) as IIndividualViewResultResponse,
+            const resultJson = await PostJsonData<IIndividualViewResultResponse>(
+              url,
+              { iType: 'COMPETITOR', iFromDate: fromDate, iToDate: toDate, iCompetitorId: option.code },
+              true,
+              sessionModel.authorizationHeader
             );
-            await new Promise((resolve) => setTimeout(resolve, Math.floor(Math.random() * 200)));
+            if (resultJson) resultJsons.push(resultJson);
+            await new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * 200)));
             if (abortLoading) throw new Error();
-            setProcessed((oldValue) => oldValue + 1);
+            setProcessed(oldValue => oldValue + 1);
           }
         } else {
           setTotal(events?.length ?? 1);
 
           for (const event of events.slice().reverse()) {
             setSpinnerText(event.name);
-            resultJsons.push(
-              (await PostJsonData(
-                url,
-                { iType: 'EVENT', iEventId: event.eventId },
-                true,
-                sessionModel.authorizationHeader,
-              )) as IClubViewResultResponse,
+            const resultJson = await PostJsonData<IClubViewResultResponse>(
+              url,
+              { iType: 'EVENT', iEventId: event.eventId },
+              true,
+              sessionModel.authorizationHeader
             );
-            await new Promise((resolve) => setTimeout(resolve, Math.floor(Math.random() * 200)));
+            if (resultJson) resultJsons.push(resultJson);
+            await new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * 200)));
             if (abortLoading) throw new Error();
-            setProcessed((oldValue) => oldValue + 1);
+            setProcessed(oldValue => oldValue + 1);
           }
         }
 
@@ -781,8 +780,8 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
         setSpinnerText(null);
         setProcessed(0);
         const printObjects = resultJsons
-          .filter((printResult) => printResult && (printResult.results?.length || printResult.teamResults?.length))
-          .map((printResult, index) => {
+          .filter(printResult => printResult && (printResult.results?.length || printResult.teamResults?.length))
+          .map(printResult => {
             let printCompetitorId: number | undefined;
             if (isIndividual) {
               printCompetitorId = printResult.results.length
@@ -798,7 +797,7 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
             clubModel.logo.url,
             `${t(isIndividual ? 'results.Individual' : 'results.Latest')} ${year}`,
             printObjects,
-            settings.pdf,
+            settings.pdf
           );
         } else {
           await getZip(
@@ -806,19 +805,17 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
             clubModel.logo.url,
             `${t(isIndividual ? 'results.Individual' : 'results.Latest')} ${year}`,
             printObjects,
-            settings.pdf,
+            settings.pdf
           );
         }
-      } catch (e: any) {
-        if (e && e.message) {
-          message.error(e.message);
-        }
+      } catch (e) {
+        if (e && (e as { message: string }).message) message.error((e as { message: string }).message);
       }
       setTotal(0);
       setSpinnerTitle(null);
       setSpinnerText(null);
     },
-    [t, clubModel, sessionModel, isIndividual, year, events, getPrintObject],
+    [t, clubModel, sessionModel, isIndividual, year, events, getPrintObject]
   );
 
   const Spinner = (
@@ -830,11 +827,11 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
   const currentYear = new Date().getFullYear();
   const yearOptions: IOption[] = [...Array(1 + currentYear - fromYear)].map((_, i) => ({
     code: (currentYear - i).toString(),
-    description: (currentYear - i).toString(),
+    description: (currentYear - i).toString()
   }));
-  const eventOptions: IOption[] = events.map((option) => ({
+  const eventOptions: IOption[] = events.map(option => ({
     code: option.eventId,
-    description: `${option.date}, ${option.name}`,
+    description: `${option.date}, ${option.name}`
   }));
   const clubResult = !isIndividual && result ? (result as IClubViewResultResponse) : undefined;
 
@@ -843,7 +840,7 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
       id={formId}
       layout="vertical"
       initialValues={{
-        Year: year,
+        Year: year
       }}
     >
       <StyledRow>
@@ -853,7 +850,7 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
               disabled={loading}
               style={{ width: 80 }}
               options={yearOptions}
-              onChange={(value) => (isIndividual ? updateCompetitor(value, competitorId) : updateEventYear(value))}
+              onChange={value => (isIndividual ? updateCompetitor(value, competitorId) : updateEventYear(value))}
             />
           </FormItem>
         </Col>
@@ -861,29 +858,33 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
           {isIndividual ? (
             <FormItem name="Competitor" label={t('results.Competitor')}>
               <FormSelect
+                showSearch
                 disabled={loading}
                 style={{ maxWidth: 600, width: '100%' }}
-                dropdownMatchSelectWidth={false}
+                popupMatchSelectWidth={false}
                 options={
                   loading || !clubModel.raceClubs ? [] : (clubModel.raceClubs.selectedClub?.competitorsOptions ?? [])
                 }
-                showSearch
                 optionFilterProp="children"
-                filterOption={(input, option) => option?.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-                onChange={(competitorId) => updateCompetitor(year, competitorId)}
+                filterOption={(input, option) =>
+                  option!.label!.toString().toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+                onChange={competitorId => updateCompetitor(year, competitorId)}
               />
             </FormItem>
           ) : (
             <FormItem name="Club" label={t('results.Step1ChooseRace')}>
               <FormSelect
+                showSearch
                 disabled={loading}
                 style={{ maxWidth: 600, width: '100%' }}
-                dropdownMatchSelectWidth={false}
+                popupMatchSelectWidth={false}
                 options={eventOptions}
-                showSearch
                 optionFilterProp="children"
-                filterOption={(input, option) => option?.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-                onChange={(eventId) => updateEvent(eventId)}
+                filterOption={(input, option) =>
+                  option!.label!.toString().toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+                onChange={eventId => updateEvent(eventId)}
               />
             </FormItem>
           )}
@@ -891,11 +892,9 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
         <Col>
           <TablePrintSettingButtons
             localStorageName="results"
-            columns={[
-              ...columns(t, clubModel, isIndividual),
-              ...resultsColumns(t, clubModel),
-              ...teamResultsColumns(t, clubModel),
-            ].filter((col, idx, arr) => arr.findIndex((c) => c.key === col.key) === idx)}
+            columns={[...columns, ...resultsColumns, ...teamResultsColumns].filter(
+              (col, idx, arr) => arr.findIndex(c => c.key === col.key) === idx
+            )}
             disablePrint={loading || !result}
             disablePrintAll={loading}
             processed={processed}
@@ -930,13 +929,13 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
               {(result.results
                 ? (result.results as { feeToClub: number; serviceFeeToClub: number }[]).reduce(
                     (sum, obj) => (sum += obj.feeToClub + obj.serviceFeeToClub),
-                    0,
+                    0
                   )
                 : 0) +
                 (result.teamResults
                   ? (result.teamResults as { serviceFeeToClub: number }[]).reduce(
                       (sum, obj) => (sum += obj.serviceFeeToClub),
-                      0,
+                      0
                     )
                   : 0)}
             </td>
@@ -963,22 +962,20 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
             <td>
               <b>{t('results.RaceLightCondition')}:</b>
             </td>
-            <td>
-              {raceLightConditionOptions(t).find((opt) => opt.code === clubResult.raceLightCondition)?.description}
-            </td>
+            <td>{raceLightConditionOptions(t).find(opt => opt.code === clubResult.raceLightCondition)?.description}</td>
           </tr>
           <tr>
             <td>
               <b>{t('results.RaceDistance')}:</b>
             </td>
-            <td>{raceDistanceOptions(t).find((opt) => opt.code === clubResult.raceDistance)?.description}</td>
+            <td>{raceDistanceOptions(t).find(opt => opt.code === clubResult.raceDistance)?.description}</td>
             <td>
               <b>{t('results.EventClassification')}:</b>
             </td>
             <td>
               {
                 clubModel.raceClubs?.eventClassificationOptions.find(
-                  (opt) => opt.code === clubResult.eventClassificationId,
+                  opt => opt.code === clubResult.eventClassificationId
                 )?.description
               }
             </td>
@@ -987,17 +984,15 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
             <td>
               <b>{t('results.Sport')}:</b>
             </td>
-            <td>{clubModel.raceClubs?.sportOptions.find((opt) => opt.code === clubResult.sportCode)?.description}</td>
+            <td>{clubModel.raceClubs?.sportOptions.find(opt => opt.code === clubResult.sportCode)?.description}</td>
           </tr>
         </StyledTable2>
       ) : null}
       {!loading && result && result.results?.length ? (
         <StyledTable
-          columns={
-            [...columns(t, clubModel, isIndividual), ...resultsColumns(t, clubModel)].filter((col) =>
-              columnsSetting.some((s) => col.key === s.key && s.selected),
-            ) as IPrintTableColumn<any>[]
-          }
+          columns={[...(columns as IPrintTableColumn<IViewResult>[]), ...resultsColumns].filter(col =>
+            columnsSetting.some(s => col.key === s.key && s.selected)
+          )}
           dataSource={result.results}
           size="middle"
           pagination={false}
@@ -1008,11 +1003,9 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
       ) : null}
       {!loading && result && result.teamResults?.length ? (
         <StyledTable
-          columns={
-            [...columns(t, clubModel, isIndividual), ...teamResultsColumns(t, clubModel)].filter((col) =>
-              columnsSetting.some((s) => col.key === s.key && s.selected),
-            ) as IPrintTableColumn<any>[]
-          }
+          columns={[...(columns as IPrintTableColumn<IViewTeamResult>[]), ...teamResultsColumns].filter(col =>
+            columnsSetting.some(s => col.key === s.key && s.selected)
+          )}
           dataSource={result.teamResults}
           size="middle"
           pagination={false}

@@ -75,12 +75,8 @@ interface IEventorEventClassRaceInfo {
   '@attributes': { minRunners: string; maxRunners: string; noOfEntries: string; noOfStarts: string; relayLeg?: string };
   ClassRaceStatus?: { '@attributes': { value: 'notAllocated' } };
   EventRaceId: string;
-  Name: any;
+  Name: string;
   PunchingUnitType: IEventorPunchingUnitType;
-}
-
-export interface IEventorEventClasses {
-  EventClass: IEventorEventClass[] | IEventorEventClass;
 }
 
 export interface IEventorCompetitor {
@@ -122,7 +118,7 @@ export interface IEventorEntries {
 }
 
 export interface IEventorEntry {
-  BibNumber: any;
+  BibNumber: string;
   Competitor: IEventorCompetitor;
   CreatedBy: IEventorCreatedBy;
   EntryClass: IEventorEntryClass;
@@ -204,7 +200,7 @@ export interface IEventorEvent {
   ClassTypeId?: string[] | string;
   DisciplineId?: string;
   EventAttributeId?: string;
-  HashTableEntry?: any;
+  HashTableEntry?: unknown;
 }
 
 export interface IEventorEvents {
@@ -218,7 +214,7 @@ export interface IEventorEventRace {
     raceDistance: 'Long' | 'Middle' | 'Sprint';
   };
   EventId: string;
-  Name: any;
+  Name: string;
   RaceDate: IEventorDateTime;
   EventCenterPosition: IEventorPosition;
 }

@@ -14,7 +14,7 @@ export class LayerListControl extends Control {
     element.appendChild(button);
 
     super({
-      element: element,
+      element: element
     });
 
     this.showLayerList = false;

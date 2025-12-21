@@ -3,16 +3,17 @@ import { useSize } from '../../../utils/useSize';
 import { IChildColumnElement } from './mapNodesToColumns';
 
 interface IColumnItemProps {
-  onHeightChange: (newHeight: number) => void;
+  childKey: string | number;
+  onHeightChange: (key: string | number, newHeight: number) => void;
   children: IChildColumnElement;
 }
-const ColumnItem = ({ onHeightChange, children }: IColumnItemProps) => {
+const ColumnItem = ({ childKey, onHeightChange, children }: IColumnItemProps) => {
   const ref = useRef<HTMLDivElement>(null);
   const { height } = useSize(ref, ['height']);
 
   useEffect(() => {
-    onHeightChange(height ?? 0);
-  }, [height]);
+    onHeightChange(childKey, height ?? 0);
+  }, [childKey, height, onHeightChange]);
 
   return <div ref={ref}>{children}</div>;
 };

@@ -1,6 +1,6 @@
 import { Space, Typography } from 'antd';
 import { ReactNode, useEffect, useRef } from 'react';
-import styled from 'styled-components';
+import { styled } from 'styled-components';
 import { useSize } from '../../utils/useSize';
 
 const Title = Typography.Title;
@@ -47,8 +47,8 @@ const FullScreenWizard = ({ title, footer, children, onContentOffsetHeight }: IF
   const { height: contentHeight } = useSize(contentRef, ['height'], 'offset');
 
   useEffect(() => {
-    onContentOffsetHeight && contentHeight != null && onContentOffsetHeight(contentHeight);
-  }, [contentHeight]);
+    if (onContentOffsetHeight && contentHeight != null) onContentOffsetHeight(contentHeight);
+  }, [contentHeight, onContentOffsetHeight]);
 
   return (
     <FullScreenContainer>

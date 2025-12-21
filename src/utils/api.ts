@@ -6,12 +6,12 @@ const rxFour = /(?:^|:|,)(?:\s*\[)+/g;
 const isJSON = (input: string) =>
   input.length && rxOne.test(input.replace(rxTwo, '@').replace(rxThree, ']').replace(rxFour, ''));
 
-const fetch_retry = async (
+const fetch_retry = async <T>(
   input: RequestInfo,
   init: RequestInit | undefined,
   throwError: boolean,
   n: number
-): Promise<any> => {
+): Promise<T | undefined> => {
   try {
     const res = await fetch(input, init);
     const text = await res.text();
@@ -27,17 +27,17 @@ const fetch_retry = async (
     }
 
     if (json) return json;
-    return text;
-  } catch (error: any) {
-    if (n === 1 && throwError) throw new Error(error?.message);
+    return text as T;
+  } catch (error) {
+    if (n === 1 && throwError) throw new Error((error as { message: string } | undefined)?.message);
     if (n === 1) return undefined;
-    return fetch_retry(input, init, throwError, n - 1);
+    return fetch_retry<T>(input, init, throwError, n - 1);
   }
 };
 
-export async function GetJsonData(url = '', throwError = true, requestHeaders = {}, retries = RETRIES) {
+export async function GetJsonData<T>(url = '', throwError = true, requestHeaders = {}, retries = RETRIES) {
   // Default options are marked with *
-  return fetch_retry(
+  return fetch_retry<T>(
     url,
     {
       method: 'GET', // *GET, POST, PUT, DELETE, etc.
@@ -46,8 +46,8 @@ export async function GetJsonData(url = '', throwError = true, requestHeaders = 
       credentials: 'include', // include, *same-origin, omit
       headers: {
         ...requestHeaders,
-        Accept: 'application/json',
-      },
+        Accept: 'application/json'
+      }
       // redirect: "follow", // manual, *follow, error
       // referrer: "no-referrer" // no-referrer, *client
     },
@@ -56,9 +56,9 @@ export async function GetJsonData(url = '', throwError = true, requestHeaders = 
   );
 }
 
-export async function PostJsonData(url = '', data = {}, throwError = true, requestHeaders = {}, retries = RETRIES) {
+export async function PostJsonData<T>(url = '', data = {}, throwError = true, requestHeaders = {}, retries = RETRIES) {
   // Default options are marked with *
-  return fetch_retry(
+  return fetch_retry<T>(
     url,
     {
       method: 'POST', // *GET, POST, PUT, DELETE, etc.
@@ -68,18 +68,23 @@ export async function PostJsonData(url = '', data = {}, throwError = true, reque
       headers: {
         ...requestHeaders,
         Accept: 'application/json',
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
       // redirect: "follow", // manual, *follow, error
       // referrer: "no-referrer", // no-referrer, *client
-      body: JSON.stringify(data), // body data type must match "Content-Type" header
+      body: JSON.stringify(data) // body data type must match "Content-Type" header
     },
     throwError,
     retries
   );
 }
 
-export async function DownloadData(fileName, url, data = {}, requestHeaders = {}) {
+export async function DownloadData(
+  fileName: string,
+  url: string,
+  data: Record<string, unknown> = {},
+  requestHeaders: Record<string, string> = {}
+) {
   // Default options are marked with *
   const response = await fetch(url, {
     method: 'POST', // *GET, POST, PUT, DELETE, etc.
@@ -89,11 +94,11 @@ export async function DownloadData(fileName, url, data = {}, requestHeaders = {}
     headers: {
       ...requestHeaders,
       Accept: 'application/json',
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/json'
     },
     // redirect: "follow", // manual, *follow, error
     // referrer: "no-referrer", // no-referrer, *client
-    body: JSON.stringify(data), // body data type must match "Content-Type" header
+    body: JSON.stringify(data) // body data type must match "Content-Type" header
   });
 
   if (!response) {

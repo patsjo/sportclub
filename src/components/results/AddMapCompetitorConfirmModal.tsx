@@ -1,15 +1,14 @@
-import { Modal } from 'antd';
 import { ModalFuncProps } from 'antd/lib/modal';
+import { HookAPI } from 'antd/lib/modal/useModal';
 import { TFunction } from 'i18next';
 import { IMobxClubModel } from '../../models/mobxClubModel';
 import { IRaceCompetitor } from '../../models/resultModel';
 import { ISessionModel } from '../../models/sessionModel';
 import AddMapCompetitor, { IAddLinkCompetitor, INewCompetitorForm } from './AddMapCompetitor';
 
-const { confirm } = Modal;
-
 export const AddMapCompetitorConfirmModal = (
   t: TFunction,
+  modal: HookAPI,
   competitorId: number,
   personId: string | undefined,
   newCompetitor: INewCompetitorForm,
@@ -21,11 +20,11 @@ export const AddMapCompetitorConfirmModal = (
     let canReject = true;
     const confirmObject: IAddLinkCompetitor = {
       competitorId: competitorId,
-      newCompetitor: newCompetitor,
+      newCompetitor: newCompetitor
     };
     const option =
       competitorId === -1 &&
-      clubModel.raceClubs?.selectedClub?.competitorsOptions.find((opt) =>
+      clubModel.raceClubs?.selectedClub?.competitorsOptions.find(opt =>
         opt.description.startsWith(`${newCompetitor.iFirstName} ${newCompetitor.iLastName} (`)
       );
     if (option) {
@@ -36,8 +35,9 @@ export const AddMapCompetitorConfirmModal = (
       destroy: () => void;
       update: (configUpdate: ModalFuncProps | ((prevConfig: ModalFuncProps) => ModalFuncProps)) => void;
     };
+
     // eslint-disable-next-line prefer-const
-    confirmModal = confirm({
+    confirmModal = modal.confirm({
       title:
         t('results.ModalTitleMapCompetitor') + newCompetitor.iFirstName
           ? ` (${newCompetitor.iFirstName} ${newCompetitor.iLastName}, ${classShortName})`
@@ -47,20 +47,24 @@ export const AddMapCompetitorConfirmModal = (
           defaultActiveKey={selectedTabKey}
           addLinkCompetitor={confirmObject}
           competitorsOptions={clubModel.raceClubs?.selectedClub?.competitorsOptions ?? []}
-          onTabChange={(key) => (selectedTabKey = key)}
-          onValidate={(valid) =>
+          onTabChange={key => (selectedTabKey = key)}
+          onValidate={valid =>
             confirmModal.update({
               okButtonProps: {
-                disabled: !valid,
-              },
+                disabled: !valid
+              }
             })
           }
+          onChange={({ competitorId, newCompetitor }) => {
+            if (competitorId !== undefined) Object.assign(confirmObject, { competitorId });
+            if (newCompetitor !== undefined) Object.assign(confirmObject.newCompetitor, newCompetitor);
+          }}
         />
       ),
       closable: true,
       okText: t('common.Save'),
       okButtonProps: {
-        disabled: true,
+        disabled: true
       },
       cancelText: t('common.Skip'),
       onOk() {
@@ -78,7 +82,7 @@ export const AddMapCompetitorConfirmModal = (
           ) {
             comp
               .addEventorId(
-                clubModel.modules.find((module) => module.name === 'Results')!.addUrl!,
+                clubModel.modules.find(module => module.name === 'Results')!.addUrl!,
                 personId,
                 sessionModel.authorizationHeader
               )
@@ -89,12 +93,12 @@ export const AddMapCompetitorConfirmModal = (
         } else {
           clubModel.raceClubs?.selectedClub
             ?.addCompetitor(
-              clubModel.modules.find((module) => module.name === 'Results')!.addUrl!,
+              clubModel.modules.find(module => module.name === 'Results')!.addUrl!,
               confirmObject.newCompetitor,
               sessionModel.authorizationHeader
             )
             .then(
-              (competitorId) =>
+              competitorId =>
                 competitorId !== undefined && resolve(clubModel.raceClubs?.selectedClub?.competitorById(competitorId))
             );
         }
@@ -105,13 +109,13 @@ export const AddMapCompetitorConfirmModal = (
       },
       afterClose() {
         if (canReject) reject();
-      },
+      }
     });
     if (option) {
       confirmModal.update({
         okButtonProps: {
-          disabled: false,
-        },
+          disabled: false
+        }
       });
     }
   });

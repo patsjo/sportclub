@@ -7,7 +7,7 @@ const okorion: IMobxClubModelProps = {
     organisationNumber: '835000-4209',
     address1: 'Furudalsvägen 42',
     zip: '373 74',
-    city: 'Jämjö',
+    city: 'Jämjö'
   },
   defaultLanguage: 'sv',
   map: {
@@ -30,8 +30,8 @@ const okorion: IMobxClubModelProps = {
               xmin: 15.39838,
               ymin: 56.0,
               xmax: 16.08225,
-              ymax: 56.39629,
-            },
+              ymax: 56.39629
+            }
           },
           {
             type: 'base-tile',
@@ -44,16 +44,16 @@ const okorion: IMobxClubModelProps = {
               xmin: 15.39838,
               ymin: 56.0,
               xmax: 16.08225,
-              ymax: 56.39629,
+              ymax: 56.39629
             },
             zoomExtent: {
               xmin: 15.847,
               ymin: 56.158,
               xmax: 15.853,
-              ymax: 56.162,
-            },
-          },
-        ],
+              ymax: 56.162
+            }
+          }
+        ]
       },
       {
         type: 'group',
@@ -77,9 +77,9 @@ const okorion: IMobxClubModelProps = {
                   xmin: 15.42126,
                   ymin: 56.34907,
                   xmax: 15.4825,
-                  ymax: 56.39411,
+                  ymax: 56.39411
                 },
-                visible: false,
+                visible: false
               },
               {
                 type: 'base-tile',
@@ -92,9 +92,9 @@ const okorion: IMobxClubModelProps = {
                   xmin: 15.43325,
                   ymin: 56.36599,
                   xmax: 15.4818,
-                  ymax: 56.39413,
+                  ymax: 56.39413
                 },
-                visible: false,
+                visible: false
               },
               {
                 type: 'base-tile',
@@ -107,9 +107,9 @@ const okorion: IMobxClubModelProps = {
                   xmin: 15.42565,
                   ymin: 56.37695,
                   xmax: 15.47173,
-                  ymax: 56.39566,
+                  ymax: 56.39566
                 },
-                visible: false,
+                visible: false
               },
               {
                 type: 'base-tile',
@@ -122,11 +122,11 @@ const okorion: IMobxClubModelProps = {
                   xmin: 15.42648,
                   ymin: 56.37692,
                   xmax: 15.47189,
-                  ymax: 56.39565,
+                  ymax: 56.39565
                 },
-                visible: false,
-              },
-            ],
+                visible: false
+              }
+            ]
           },
           {
             type: 'group',
@@ -144,9 +144,9 @@ const okorion: IMobxClubModelProps = {
                   xmin: 15.77979,
                   ymin: 56.32512,
                   xmax: 15.82824,
-                  ymax: 56.34839,
+                  ymax: 56.34839
                 },
-                visible: false,
+                visible: false
               },
               {
                 type: 'base-tile',
@@ -159,9 +159,9 @@ const okorion: IMobxClubModelProps = {
                   xmin: 15.77979,
                   ymin: 56.32512,
                   xmax: 15.82824,
-                  ymax: 56.34839,
+                  ymax: 56.34839
                 },
-                visible: false,
+                visible: false
               },
               {
                 type: 'base-tile',
@@ -174,9 +174,9 @@ const okorion: IMobxClubModelProps = {
                   xmin: 15.78268,
                   ymin: 56.10822,
                   xmax: 15.83786,
-                  ymax: 56.13223,
+                  ymax: 56.13223
                 },
-                visible: false,
+                visible: false
               },
               {
                 type: 'base-tile',
@@ -189,9 +189,9 @@ const okorion: IMobxClubModelProps = {
                   xmin: 15.78268,
                   ymin: 56.10822,
                   xmax: 15.83786,
-                  ymax: 56.13223,
+                  ymax: 56.13223
                 },
-                visible: false,
+                visible: false
               },
               {
                 type: 'base-tile',
@@ -204,9 +204,9 @@ const okorion: IMobxClubModelProps = {
                   xmin: 15.78268,
                   ymin: 56.10822,
                   xmax: 15.83786,
-                  ymax: 56.13223,
+                  ymax: 56.13223
                 },
-                visible: false,
+                visible: false
               },
               {
                 type: 'base-tile',
@@ -219,11 +219,11 @@ const okorion: IMobxClubModelProps = {
                   xmin: 15.78268,
                   ymin: 56.10822,
                   xmax: 15.83786,
-                  ymax: 56.13223,
+                  ymax: 56.13223
                 },
-                visible: false,
-              },
-            ],
+                visible: false
+              }
+            ]
           },
           {
             type: 'group',
@@ -241,9 +241,9 @@ const okorion: IMobxClubModelProps = {
                   xmin: 15.81489,
                   ymin: 56.13409,
                   xmax: 15.87094,
-                  ymax: 56.16357,
+                  ymax: 56.16357
                 },
-                visible: false,
+                visible: false
               },
               {
                 type: 'base-tile',
@@ -256,9 +256,9 @@ const okorion: IMobxClubModelProps = {
                   xmin: 15.81489,
                   ymin: 56.13409,
                   xmax: 15.87094,
-                  ymax: 56.16357,
+                  ymax: 56.16357
                 },
-                visible: false,
+                visible: false
               },
               {
                 type: 'base-tile',
@@ -271,9 +271,9 @@ const okorion: IMobxClubModelProps = {
                   xmin: 15.7867,
                   ymin: 56.11002,
                   xmax: 15.82642,
-                  ymax: 56.13948,
+                  ymax: 56.13948
                 },
-                visible: false,
+                visible: false
               },
               {
                 type: 'base-tile',
@@ -286,15 +286,15 @@ const okorion: IMobxClubModelProps = {
                   xmin: 15.7867,
                   ymin: 56.11002,
                   xmax: 15.82642,
-                  ymax: 56.13948,
+                  ymax: 56.13948
                 },
-                visible: false,
-              },
-            ],
-          },
-        ],
-      },
-    ],
+                visible: false
+              }
+            ]
+          }
+        ]
+      }
+    ]
   },
   loginUrl: 'https://okorion.com/log_in.php',
   logoutUrl: 'https://okorion.com/log_out.php',
@@ -305,40 +305,40 @@ const okorion: IMobxClubModelProps = {
     account: '916-0219',
     accountType: 'Bankgiro',
     swishNumber: '123-198 58 37',
-    message: 'Tävlingsavgift, {name}',
+    message: 'Tävlingsavgift, {name}'
   },
   titleLogo: {
     url: 'https://okorion.com/images/okorion_text.png',
     width: 375,
-    height: 45,
+    height: 45
   },
   logo: {
     url: 'https://okorion.com/images/okorion_logo.png',
     width: 379,
-    height: 423,
+    height: 423
   },
   theme: {
     palette: {
       primary: {
         main: '#5882E4',
-        contrastText: '#ffffff',
+        contrastText: '#ffffff'
       },
       secondary: {
         main: '#ffffff',
-        contrastText: '#000000',
+        contrastText: '#000000'
       },
       error: {
         main: '#aa3333',
-        contrastText: '#000000',
+        contrastText: '#000000'
       },
       contrastThreshold: 3,
-      tonalOffset: 0.2,
+      tonalOffset: 0.2
     },
     typography: {
       fontFamily:
         '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol"',
-      fontSize: 12,
-    },
+      fontSize: 12
+    }
   },
   modules: [
     {
@@ -346,14 +346,14 @@ const okorion: IMobxClubModelProps = {
       addUrl: 'https://okorion.com/news/save.php',
       deleteUrl: 'https://okorion.com/news/delete.php',
       updateUrl: 'https://okorion.com/news/save.php',
-      queryUrl: 'https://okorion.com/news/jsonNewsQuery.php',
+      queryUrl: 'https://okorion.com/news/jsonNewsQuery.php'
     },
     {
       name: 'Calendar',
       queryUrl: 'https://okorion.com/calendar/jsonCalendarQuery.php',
       addUrl: 'https://okorion.com/calendar/saveCalendar.php',
       deleteUrl: 'https://okorion.com/calendar/delete.php',
-      updateUrl: 'https://okorion.com/calendar/saveCalendar.php',
+      updateUrl: 'https://okorion.com/calendar/saveCalendar.php'
     },
     { name: 'Stars' },
     { name: 'ScoringBoard' },
@@ -368,15 +368,15 @@ const okorion: IMobxClubModelProps = {
         rankingLeagueAgeLimit: 15,
         rankingRelayLeagueAgeLimit: 15,
         points1000LeagueAgeLimit: 0,
-        pointsLeagueAgeLimit: 15,
-      },
+        pointsLeagueAgeLimit: 15
+      }
     },
     {
       name: 'Users',
       addUrl: 'https://okorion.com/users/save.php',
       deleteUrl: 'https://okorion.com/users/delete.php',
       updateUrl: 'https://okorion.com/users/save.php',
-      queryUrl: 'https://okorion.com/users/jsonUserQuery.php',
+      queryUrl: 'https://okorion.com/users/jsonUserQuery.php'
     },
     { name: 'Photo' },
     {
@@ -384,21 +384,21 @@ const okorion: IMobxClubModelProps = {
       addUrl: 'https://okorion.com/htmlEditor/save.php',
       deleteUrl: 'https://okorion.com/htmlEditor/delete.php',
       updateUrl: 'https://okorion.com/htmlEditor/save.php',
-      queryUrl: 'https://okorion.com/htmlEditor/jsonHtmlEditorQuery.php',
+      queryUrl: 'https://okorion.com/htmlEditor/jsonHtmlEditorQuery.php'
     },
     {
       name: 'Files',
       addUrl: 'https://okorion.com/files/save.php',
       deleteUrl: 'https://okorion.com/files/delete.php',
       updateUrl: 'https://okorion.com/files/save.php',
-      queryUrl: 'https://okorion.com/files/jsonFilesQuery.php',
-    },
+      queryUrl: 'https://okorion.com/files/jsonFilesQuery.php'
+    }
   ],
   links: [{ name: 'SOFT', url: 'https://www.svenskorientering.se' }],
   sports: ['Orientering'],
   eventor: {
     organisationId: 288,
-    districtOrganisationId: 7,
+    districtOrganisationId: 7
   },
   corsProxy: 'https://okorion.com/proxy.php?csurl=',
   eventorCorsProxy: 'https://okorion.com/eventorProxyWithCache.php',
@@ -408,242 +408,242 @@ const okorion: IMobxClubModelProps = {
       logo: {
         url: 'https://okorion.com/images/sponsors/affarsverken.jpg',
         width: 2358,
-        height: 766,
+        height: 766
       },
       url: 'https://www.affarsverken.se/',
-      active: false,
+      active: false
     },
     {
       name: 'Bergkvarabuss',
       logo: {
         url: 'https://okorion.com/images/sponsors/bergkvarabuss.svg',
         width: 280,
-        height: 48,
+        height: 48
       },
       url: 'https://bergkvarabuss.se/',
-      active: false,
+      active: false
     },
     {
       name: 'BLT',
       logo: {
         url: 'https://okorion.com/images/sponsors/blt.svg',
         width: 300,
-        height: 61,
+        height: 61
       },
       url: 'https://blt.se/',
-      active: false,
+      active: false
     },
     {
       name: 'Börjessons',
       logo: {
         url: 'https://okorion.com/images/sponsors/borjessons.png',
         width: 620,
-        height: 183,
+        height: 183
       },
       url: 'https://www.borjessonsbil.se/',
-      active: true,
+      active: true
     },
     {
       name: 'EY',
       logo: {
         url: 'https://okorion.com/images/sponsors/ey.svg',
         width: 97,
-        height: 103,
+        height: 103
       },
       url: 'https://www.ey.com/sv_se',
-      active: true,
+      active: true
     },
     {
       name: 'eye do',
       logo: {
         url: 'https://okorion.com/images/sponsors/eyedo.png',
         width: 375,
-        height: 239,
+        height: 239
       },
       url: 'http://www.eye-do.se/',
-      active: false,
+      active: false
     },
     {
       name: 'ICA Supermarket Jämjö',
       logo: {
         url: 'https://okorion.com/images/sponsors/ica-jamjo.png',
         width: 500,
-        height: 313,
+        height: 313
       },
       url: 'https://www.ica.se/butiker/supermarket/karlskrona/ica-supermarket-jamjo-2450/start/',
-      active: true,
+      active: true
     },
     {
       name: 'iLOG',
       logo: {
         url: 'https://okorion.com/images/sponsors/ilog.png',
         width: 600,
-        height: 104,
+        height: 104
       },
       url: 'https://www.wip.se/',
-      active: true,
+      active: true
     },
     {
       name: 'Jämjö El',
       logo: {
         url: 'https://okorion.com/images/sponsors/jamjoel.jpg',
         width: 2196,
-        height: 424,
+        height: 424
       },
       url: 'https://www.jamjoel.se/',
-      active: false,
+      active: false
     },
     {
       name: 'Karlskronahem',
       logo: {
         url: 'https://okorion.com/images/sponsors/karlskronahem.svg',
         width: 220,
-        height: 63,
+        height: 63
       },
       url: 'https://www.karlskronahem.se/',
-      active: false,
+      active: false
     },
     {
       name: 'Karlskrona kommun',
       logo: {
         url: 'https://okorion.com/images/sponsors/bla-karlskrona-kommun.png',
         width: 2537,
-        height: 643,
+        height: 643
       },
       url: 'https://www.karlskrona.se/',
-      active: true,
+      active: true
     },
     {
       name: 'Destination Kosta',
       logo: {
         url: 'https://okorion.com/images/sponsors/destinationkosta.png',
         width: 986,
-        height: 591,
+        height: 591
       },
       url: 'https://destinationkosta.se/',
-      active: true,
+      active: true
     },
     {
       name: 'K-Vagnen',
       logo: {
         url: 'https://okorion.com/images/sponsors/k-vagnen.png',
         width: 645,
-        height: 132,
+        height: 132
       },
       url: 'https://k-vagnen.com/',
-      active: true,
+      active: true
     },
     {
       name: 'Länsförsäkringar Blekinge',
       logo: {
         url: 'https://okorion.com/images/sponsors/logo_lansforsakringar_blekinge.svg',
         width: 848,
-        height: 184,
+        height: 184
       },
       url: 'https://www.lansforsakringar.se/blekinge/',
-      active: true,
+      active: true
     },
     {
       name: 'Martins grus',
       logo: {
         url: 'https://okorion.com/images/sponsors/martinsgrus.png',
         width: 598,
-        height: 300,
+        height: 300
       },
       url: 'https://martinsgrus.se/',
-      active: true,
+      active: true
     },
     {
       name: 'OKQ8 ',
       logo: {
         url: 'https://okorion.com/images/sponsors/okq8.png',
         width: 508,
-        height: 288,
+        height: 288
       },
       url: 'https://www.okq8.se/pa-stationen/bensinstationer/jamjo-riksvagen/',
-      active: true,
+      active: true
     },
     {
       name: 'Roxtec',
       logo: {
         url: 'https://okorion.com/images/sponsors/roxtec.svg',
         width: 165,
-        height: 41,
+        height: 41
       },
       url: 'https://www.roxtec.com/sv/',
-      active: false,
+      active: false
     },
     {
       name: 'Sokigo',
       logo: {
         url: 'https://okorion.com/images/sponsors/sokigo-logo-rgb-blue-pos.svg',
         width: 1778,
-        height: 762,
+        height: 762
       },
       url: 'https://sokigo.com/',
-      active: false,
+      active: false
     },
     {
       name: 'Stensborgs VVS',
       logo: {
         url: 'https://okorion.com/images/sponsors/stensborg.png',
         width: 707,
-        height: 158,
+        height: 158
       },
-      active: true,
+      active: true
     },
     {
       name: 'Swedbank',
       logo: {
         url: 'https://okorion.com/images/sponsors/swedbank.png',
         width: 300,
-        height: 64,
+        height: 64
       },
       url: 'https://www.swedbank.se/',
-      active: false,
+      active: false
     },
     {
       name: 'Sydöstran',
       logo: {
         url: 'https://okorion.com/images/sponsors/sydostran.svg',
         width: 300,
-        height: 61,
+        height: 61
       },
       url: 'https://sydostran.se/',
-      active: false,
+      active: false
     },
     {
       name: 'Trimtex',
       logo: {
         url: 'https://okorion.com/images/sponsors/trimtex.png',
         width: 740,
-        height: 137,
+        height: 137
       },
       url: 'https://trimtex.se/',
-      active: true,
+      active: true
     },
     {
       name: 'WSP',
       logo: {
         url: 'https://okorion.com/images/sponsors/wsp.png',
         width: 1781,
-        height: 848,
+        height: 848
       },
       url: 'https://www.wsp.com/sv-SE',
-      active: false,
+      active: false
     },
     {
       name: 'XL Bygg Jämjö',
       logo: {
         url: 'https://okorion.com/images/sponsors/xlbygg_jamjo.png',
         width: 315,
-        height: 95,
+        height: 95
       },
       url: 'https://www.xlbygg.se/jamjo/',
-      active: false,
-    },
+      active: false
+    }
   ],
-  facebookUrl: 'https://www.facebook.com/okorion',
+  facebookUrl: 'https://www.facebook.com/okorion'
 };
 
 export default okorion;

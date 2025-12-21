@@ -29,7 +29,7 @@ const setLocalStorage = ({ username, password, rememberLogin }: ISessionModelPro
   const obj: ILocalStorageLogin = {
     username: rememberLogin ? username : '',
     password: rememberLogin ? password : '',
-    rememberLogin,
+    rememberLogin
   };
 
   localStorage.setItem('sessionData', window.btoa(switchCharacters(window.btoa(JSON.stringify(obj)))));
@@ -45,22 +45,22 @@ export const getLocalStorage = (): ISessionModelProps => {
         password: '',
         rememberLogin: false,
         canReadLocalStorage: true,
-        isAdmin: false,
+        isAdmin: false
       };
     }
 
     return {
       ...(JSON.parse(window.atob(switchCharacters(window.atob(sessionData)))) as ILocalStorageLogin),
       isAdmin: false,
-      canReadLocalStorage: true,
+      canReadLocalStorage: true
     };
-  } catch (error) {
+  } catch {
     return {
       username: '',
       password: '',
       rememberLogin: false,
       canReadLocalStorage: false,
-      isAdmin: false,
+      isAdmin: false
     };
   }
 };
@@ -99,7 +99,7 @@ export class SessionModel implements ISessionModel {
   canReadLocalStorage = false;
 
   constructor(options?: Partial<ISessionModelProps>) {
-    options && Object.assign(this, options);
+    if (options) Object.assign(this, options);
     makeObservable(this, {
       loggedIn: observable,
       username: observable,
@@ -114,7 +114,7 @@ export class SessionModel implements ISessionModel {
       setSuccessfullyLogin: action.bound,
       setFailedLogin: action.bound,
       setLogout: action.bound,
-      authorizationHeader: computed,
+      authorizationHeader: computed
     });
   }
 
@@ -125,7 +125,7 @@ export class SessionModel implements ISessionModel {
     try {
       setLocalStorage(this);
       this.canReadLocalStorage = true;
-    } catch (error) {
+    } catch {
       this.canReadLocalStorage = false;
     }
   }
@@ -156,7 +156,7 @@ export class SessionModel implements ISessionModel {
 
   get authorizationHeader() {
     return {
-      Authorization: 'Basic ' + window.btoa(`${this.username}:${this.password}`),
+      Authorization: 'Basic ' + window.btoa(`${this.username}:${this.password}`)
     };
   }
 }

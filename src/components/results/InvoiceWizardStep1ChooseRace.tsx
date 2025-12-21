@@ -4,10 +4,10 @@ import { TableRowSelection } from 'antd/lib/table/interface';
 import { observer } from 'mobx-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { PostJsonData } from '../../utils/api';
 import { useMobxStore } from '../../utils/mobxStore';
 import { IEventViewResultResponse } from '../../utils/responseInterfaces';
 import { useResultWizardStore } from '../../utils/resultWizardStore';
-import { PostJsonData } from '../../utils/api';
 import { SpinnerDiv, StyledTable } from '../styled/styled';
 
 interface IInvoiceEvent extends IEventViewResultResponse {
@@ -32,19 +32,22 @@ const InvoiceWizardStep1ChooseRace = observer(
     const [totalFeeToClub, setTotalFeeToClub] = useState(0);
     const [totalServiceFeeToClub, setTotalServiceFeeToClub] = useState(0);
 
-    const onSelectChange = useCallback((keys: React.Key[]) => {
-      const selectedEventId = Array.isArray(keys) ? keys[0] : keys;
+    const onSelectChange = useCallback(
+      (keys: React.Key[]) => {
+        const selectedEventId = Array.isArray(keys) ? keys[0] : keys;
 
-      raceWizardModel.setNumberValueOrNull(
-        'selectedEventId',
-        selectedEventId != null ? parseInt(selectedEventId as string) : null,
-      );
-      setSelectedRowKeys(keys);
-      onValidate(true);
-    }, []);
+        raceWizardModel.setNumberValueOrNull(
+          'selectedEventId',
+          selectedEventId != null ? parseInt(selectedEventId as string) : null
+        );
+        setSelectedRowKeys(keys);
+        onValidate(true);
+      },
+      [onValidate, raceWizardModel]
+    );
 
     useEffect(() => {
-      const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
+      const url = clubModel.modules.find(module => module.name === 'Results')?.queryUrl;
       if (!url) return;
 
       const queryData = {
@@ -52,63 +55,71 @@ const InvoiceWizardStep1ChooseRace = observer(
         iIncludeFees: true,
         iClubId: clubModel.raceClubs?.selectedClub?.clubId,
         iFromDate: raceWizardModel.queryStartDate,
-        iToDate: raceWizardModel.queryEndDate,
+        iToDate: raceWizardModel.queryEndDate
       };
 
-      PostJsonData(url, queryData, true, sessionModel.authorizationHeader)
-        .then((eventsJson: IEventViewResultResponse[]) => {
+      PostJsonData<IEventViewResultResponse[]>(url, queryData, true, sessionModel.authorizationHeader)
+        .then(eventsJson => {
           let events = eventsJson ? eventsJson : [];
           if (!raceWizardModel.queryIncludeExisting) {
-            events = events.filter((e) => !e.invoiceVerified);
+            events = events.filter(e => !e.invoiceVerified);
           }
           const data = events
             .sort((a, b) => (a.date > b.date ? 1 : a.date < b.date ? -1 : 0))
-            .map((event) => ({ ...event, key: event.eventId.toString() }));
+            .map(event => ({ ...event, key: event.eventId.toString() }));
 
           setSelectedRowKeys(undefined);
           setEvents(data);
           setTotalFee(
             data.reduce((a, b) => {
               return a + (b.fee ?? 0);
-            }, 0),
+            }, 0)
           );
           setTotalFeeToClub(
             data.reduce((a, b) => {
               return a + (b.feeToClub ?? 0);
-            }, 0),
+            }, 0)
           );
           setTotalServiceFeeToClub(
             data.reduce((a, b) => {
               return a + (b.serviceFeeToClub ?? 0);
-            }, 0),
+            }, 0)
           );
           setLoaded(true);
         })
-        .catch((e) => {
-          message.error(e.message);
-          onFailed && onFailed();
+        .catch(e => {
+          if (e?.message) message.error(e.message);
+          onFailed?.();
         });
-    }, []);
+    }, [
+      clubModel.modules,
+      clubModel.raceClubs?.selectedClub?.clubId,
+      onFailed,
+      raceWizardModel.queryEndDate,
+      raceWizardModel.queryIncludeExisting,
+      raceWizardModel.queryStartDate,
+      sessionModel.authorizationHeader
+    ]);
 
     useEffect(() => {
       setSelectedRowKeys([]);
-      setEvents((oldEvents) =>
+      setEvents(oldEvents =>
         raceWizardModel.queryIncludeExisting
           ? oldEvents.map(
               (e): IInvoiceEvent => ({
                 ...e,
-                invoiceVerified: e.invoiceVerified || raceWizardModel.importedIds.includes(e.eventId),
-              }),
+                invoiceVerified: e.invoiceVerified || raceWizardModel.importedIds.includes(e.eventId)
+              })
             )
-          : oldEvents.filter((e) => !raceWizardModel.importedIds.includes(e.eventId)),
+          : oldEvents.filter(e => !raceWizardModel.importedIds.includes(e.eventId))
       );
-    }, [raceWizardModel.importedIds.length]);
+    }, [raceWizardModel.importedIds, raceWizardModel.importedIds.length, raceWizardModel.queryIncludeExisting]);
 
     const rowSelection: TableRowSelection<IInvoiceEvent> = {
       selectedRowKeys,
       fixed: true,
       onChange: onSelectChange,
-      type: 'radio',
+      type: 'radio'
     };
     const columns: ColumnType<IInvoiceEvent>[] = [
       {
@@ -117,7 +128,7 @@ const InvoiceWizardStep1ChooseRace = observer(
         key: 'date',
         ellipsis: true,
         width: 100,
-        fixed: 'left',
+        fixed: 'left'
       },
       {
         title: t('results.Time'),
@@ -125,7 +136,7 @@ const InvoiceWizardStep1ChooseRace = observer(
         key: 'time',
         ellipsis: true,
         width: 80,
-        fixed: 'left',
+        fixed: 'left'
       },
       {
         title: t('results.Name'),
@@ -133,7 +144,7 @@ const InvoiceWizardStep1ChooseRace = observer(
         key: 'name',
         ellipsis: true,
         width: 200,
-        fixed: 'left',
+        fixed: 'left'
       },
       {
         title: t('results.InvoiceAlreadyVerified'),
@@ -141,40 +152,35 @@ const InvoiceWizardStep1ChooseRace = observer(
         key: 'invoiceVerified',
         render: (invoiceVerified: boolean) => (invoiceVerified ? t('common.Yes') : t('common.No')),
         ellipsis: true,
-        width: 120,
+        width: 120
       },
       {
         title: t('results.EventFee'),
         dataIndex: 'fee',
         key: 'fee',
         ellipsis: true,
-        width: 120,
+        width: 120
       },
       {
         title: t('results.FeeToClub'),
         dataIndex: 'feeToClub',
         key: 'feeToClub',
         ellipsis: true,
-        width: 120,
+        width: 120
       },
       {
         title: t('results.ServiceFeeToClub'),
         dataIndex: 'serviceFeeToClub',
         key: 'serviceFeeToClub',
         ellipsis: true,
-        width: 120,
-      },
+        width: 120
+      }
     ];
 
     return loaded && visible ? (
       <StyledTable
-        rowSelection={rowSelection as TableRowSelection<any>}
-        onRow={(record) => {
-          return {
-            onClick: () => onSelectChange([(record as IInvoiceEvent).key]),
-          };
-        }}
-        columns={columns as ColumnType<any>[]}
+        rowSelection={rowSelection}
+        columns={columns}
         dataSource={events}
         pagination={{ pageSize: Math.trunc((height - 128) / 32), hideOnSinglePage: true, showSizeChanger: false }}
         scroll={{ x: true }}
@@ -194,13 +200,18 @@ const InvoiceWizardStep1ChooseRace = observer(
           </Table.Summary>
         )}
         size="middle"
+        onRow={record => {
+          return {
+            onClick: () => onSelectChange([(record as IInvoiceEvent).key])
+          };
+        }}
       />
     ) : visible ? (
       <SpinnerDiv>
         <Spin size="large" />
       </SpinnerDiv>
     ) : null;
-  },
+  }
 );
 
 export default InvoiceWizardStep1ChooseRace;

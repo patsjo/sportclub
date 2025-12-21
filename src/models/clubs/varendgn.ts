@@ -8,13 +8,13 @@ const varendgn: IMobxClubModelProps = {
     address1: 'c/o Lars-Åke Sjökvist',
     address2: 'Sjövallavägen 55',
     zip: '352 59',
-    city: 'Växjö',
+    city: 'Växjö'
   },
   defaultLanguage: 'sv',
   map: {
     center: [14.85774, 56.91077],
     defaultZoomLevel: 12,
-    layers: [],
+    layers: []
   },
   loginUrl: 'https://varendgn.se/log_in.php',
   logoutUrl: 'https://varendgn.se/log_out.php',
@@ -24,40 +24,40 @@ const varendgn: IMobxClubModelProps = {
     daysToDueDate: 21,
     account: '421 20 09-7',
     accountType: 'Postgiro',
-    message: 'Tävlingsavgift, {name}',
+    message: 'Tävlingsavgift, {name}'
   },
   titleLogo: {
     url: 'https://varendgn.se/images/club_frontpage_03.png',
     width: 420,
-    height: 80,
+    height: 80
   },
   logo: {
     url: 'https://varendgn.se/images/icons/vgn.png',
     width: 300,
-    height: 300,
+    height: 300
   },
   theme: {
     palette: {
       primary: {
         main: '#e00000',
-        contrastText: '#ffffff',
+        contrastText: '#ffffff'
       },
       secondary: {
         main: '#ffffff',
-        contrastText: '#000000',
+        contrastText: '#000000'
       },
       error: {
         main: '#aa3333',
-        contrastText: '#000000',
+        contrastText: '#000000'
       },
       contrastThreshold: 3,
-      tonalOffset: 0.2,
+      tonalOffset: 0.2
     },
     typography: {
       fontFamily:
         '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol"',
-      fontSize: 12,
-    },
+      fontSize: 12
+    }
   },
   modules: [
     {
@@ -65,14 +65,14 @@ const varendgn: IMobxClubModelProps = {
       addUrl: 'https://varendgn.se/nyheter/save.php',
       deleteUrl: 'https://varendgn.se/nyheter/delete.php',
       updateUrl: 'https://varendgn.se/nyheter/save.php',
-      queryUrl: 'https://varendgn.se/nyheter/jsonNewsQuery.php',
+      queryUrl: 'https://varendgn.se/nyheter/jsonNewsQuery.php'
     },
     {
       name: 'Calendar',
       queryUrl: 'https://varendgn.se/kalender/jsonCalendarQuery.php',
       addUrl: 'https://varendgn.se/kalender/saveCalendar.php',
       deleteUrl: 'https://varendgn.se/kalender/delete.php',
-      updateUrl: 'https://varendgn.se/kalender/saveCalendar.php',
+      updateUrl: 'https://varendgn.se/kalender/saveCalendar.php'
     },
     { name: 'ScoringBoard' },
     { name: 'Eventor' },
@@ -81,14 +81,14 @@ const varendgn: IMobxClubModelProps = {
       addUrl: 'https://varendgn.se/result/save.php',
       deleteUrl: 'https://varendgn.se/result/delete.php',
       updateUrl: 'https://varendgn.se/result/save.php',
-      queryUrl: 'https://varendgn.se/result/jsonResultQuery.php',
+      queryUrl: 'https://varendgn.se/result/jsonResultQuery.php'
     },
     {
       name: 'Users',
       addUrl: 'https://varendgn.se/users/save.php',
       deleteUrl: 'https://varendgn.se/users/delete.php',
       updateUrl: 'https://varendgn.se/users/save.php',
-      queryUrl: 'https://varendgn.se/users/jsonUserQuery.php',
+      queryUrl: 'https://varendgn.se/users/jsonUserQuery.php'
     },
     { name: 'Photo' },
     {
@@ -96,26 +96,26 @@ const varendgn: IMobxClubModelProps = {
       addUrl: 'https://varendgn.se/htmlEditor/save.php',
       deleteUrl: 'https://varendgn.se/htmlEditor/delete.php',
       updateUrl: 'https://varendgn.se/htmlEditor/save.php',
-      queryUrl: 'https://varendgn.se/htmlEditor/jsonHtmlEditorQuery.php',
+      queryUrl: 'https://varendgn.se/htmlEditor/jsonHtmlEditorQuery.php'
     },
     {
       name: 'Files',
       addUrl: 'https://varendgn.se/files/save.php',
       deleteUrl: 'https://varendgn.se/files/delete.php',
       updateUrl: 'https://varendgn.se/files/save.php',
-      queryUrl: 'https://varendgn.se/files/jsonFilesQuery.php',
-    },
+      queryUrl: 'https://varendgn.se/files/jsonFilesQuery.php'
+    }
   ],
   links: [{ name: 'SOFT', url: 'https://www.svenskorientering.se' }],
   sports: ['Orientering'],
   eventor: {
     organisationId: 584,
-    districtOrganisationId: 2,
+    districtOrganisationId: 2
   },
   corsProxy: 'https://varendgn.se/proxy.php?csurl=',
   eventorCorsProxy: 'https://varendgn.se/eventorProxyWithCache.php',
   oldUrl: 'https://varendgn.se/old/',
-  sponsors: [],
+  sponsors: []
 };
 
 export default varendgn;

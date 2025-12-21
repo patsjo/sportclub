@@ -1,26 +1,28 @@
 {
   "compilerOptions": {
-    "baseUrl": "./src",
-    "declaration": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "target": "ESNext",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": false,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
+    //"baseUrl": "./src",
+    "target": "esnext",
     "module": "ESNext",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
+    "moduleResolution": "bundler", // node
+    "lib": ["dom", "dom.iterable", "esnext", "scripthost"],
+    "allowJs": false,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
+    "jsx": "react-jsx",
     "noEmit": true,
     "noFallthroughCasesInSwitch": true,
-    "jsx": "react-jsx",
-    "noImplicitAny": false,
-    "typeRoots": ["./types", "vite/client", "vite-plugin-svgr/client", "./node_modules/@types"]
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "sourceMap": true,
+    //"declaration": true,
+    //"experimentalDecorators": true,
+    //"emitDecoratorMetadata": true,
+    //"noImplicitAny": false,
+    "types": ["vite/client", "node"],
+    "typeRoots": ["types", "node_modules/@types"]
   },
-  "include": ["./src"]
+  "include": ["src", "vite.config.js"]
 }

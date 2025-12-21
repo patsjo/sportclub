@@ -1,29 +1,28 @@
 import { Empty, message, Modal, ModalFuncProps, Popconfirm, Spin, Table } from 'antd';
 import { ColumnType } from 'antd/lib/table';
 import { observer } from 'mobx-react';
-import { IRaceClubsProps, IRaceCompetitor } from '../../models/resultModel';
-import { PickRequired } from '../../models/typescriptPartial';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import styled from 'styled-components';
+import { styled } from 'styled-components';
+import { IRaceClubsProps, IRaceCompetitor } from '../../models/resultModel';
+import { PickRequired } from '../../models/typescriptPartial';
 import { PostJsonData } from '../../utils/api';
 import { getTextColorBasedOnBackground, lightenColor } from '../../utils/colorHelper';
 import { IOption } from '../../utils/formHelper';
 import { useMobxStore } from '../../utils/mobxStore';
 import { genderOptions } from '../../utils/resultConstants';
-import { IStyledTableProps, NoWrap, SpinnerDiv, StyledIcon, StyledTable } from '../styled/styled';
+import { IStyledTableProps, NoWrap, SpinnerDiv, StyledIcon } from '../styled/styled';
 import EditCompetitor from './EditCompetitor';
-
-const { confirm } = Modal;
 
 interface ICompetitorTableProps<RecordType> extends IStyledTableProps<RecordType> {
   familyBackgroundColor: string;
   familyTextColor: string;
 }
-const StyledCompetitorTableComponent = <RecordType extends object>(props: ICompetitorTableProps<RecordType>) => {
-  return <Table {...props} />;
-};
-export const CompetitorTable = styled(StyledCompetitorTableComponent)`
+export const CompetitorTable = styled(Table)<{
+  minWidth?: number;
+  familyBackgroundColor: string;
+  familyTextColor: string;
+}>`
   .table-row-red,
   .table-row-red:hover,
   .table-row-red:hover > td,
@@ -67,7 +66,7 @@ export const CompetitorTable = styled(StyledCompetitorTableComponent)`
   &&& .ant-table-row-level-1 > td > span.indent-level-1 {
     padding-left: 0 !important;
   }
-`;
+` as <T extends object>(props: ICompetitorTableProps<T>) => JSX.Element;
 
 interface ICompetitorTable extends PickRequired<IRaceCompetitor, 'firstName' | 'lastName'> {
   key: React.Key;
@@ -80,7 +79,7 @@ const competitorSort = (a: ICompetitorTable, b: ICompetitorTable) =>
   `${a.isFamily ? a.lastName.substring(a.lastName.indexOf(' ') + 1) : a.lastName} ${a.firstName}`
     .toLowerCase()
     .localeCompare(
-      `${b.isFamily ? b.lastName.substring(b.lastName.indexOf(' ') + 1) : b.lastName} ${b.firstName}`.toLowerCase(),
+      `${b.isFamily ? b.lastName.substring(b.lastName.indexOf(' ') + 1) : b.lastName} ${b.firstName}`.toLowerCase()
     );
 
 const Competitors = observer(() => {
@@ -88,6 +87,7 @@ const Competitors = observer(() => {
   const { clubModel, sessionModel } = useMobxStore();
   const [loaded, setLoaded] = useState(!sessionModel.isAdmin);
   const [saving, setSaving] = useState(false);
+  const [modal, contextHolder] = Modal.useModal();
 
   const familyOptions = useMemo(
     () =>
@@ -95,16 +95,16 @@ const Competitors = observer(() => {
         .map(
           (f): IOption => ({
             code: f.familyId,
-            description: f.familyName,
-          }),
+            description: f.familyName
+          })
         )
         .sort((a, b) =>
           a.description
             .substring(a.description.indexOf(' ') + 1)
             .toLowerCase()
-            .localeCompare(b.description.substring(b.description.indexOf(' ') + 1).toLowerCase()),
+            .localeCompare(b.description.substring(b.description.indexOf(' ') + 1).toLowerCase())
         ) ?? [],
-    [clubModel.raceClubs?.selectedClub?.families],
+    [clubModel.raceClubs?.selectedClub?.families]
   );
 
   const familesAndCompetitors = useMemo(() => {
@@ -116,25 +116,25 @@ const Competitors = observer(() => {
           firstName: t('users.Family'),
           lastName: f.familyName,
           children: clubModel.raceClubs?.selectedClub?.competitors
-            ?.filter((c) => c.familyId === f.familyId)
-            ?.map((c): ICompetitorTable => ({ key: `competitor${c.competitorId}`, ...c })),
-        }),
+            ?.filter(c => c.familyId === f.familyId)
+            ?.map((c): ICompetitorTable => ({ key: `competitor${c.competitorId}`, ...c }))
+        })
       ) ?? [];
     const competitors =
       clubModel.raceClubs?.selectedClub?.competitors
-        ?.filter((c) => c.familyId == null)
+        ?.filter(c => c.familyId == null)
         ?.map((c): ICompetitorTable => ({ key: `competitor${c.competitorId}`, ...c })) ?? [];
     return [...families, ...competitors]?.sort(competitorSort);
-  }, [clubModel.raceClubs?.selectedClub?.families, clubModel.raceClubs?.selectedClub?.competitors]);
+  }, [clubModel.raceClubs?.selectedClub?.families, clubModel.raceClubs?.selectedClub?.competitors, t]);
 
   const familyTableKeys = useMemo(
-    () => familesAndCompetitors.filter((f) => f.isFamily).map((f) => f.key),
-    [familesAndCompetitors],
+    () => familesAndCompetitors.filter(f => f.isFamily).map(f => f.key),
+    [familesAndCompetitors]
   );
 
   const onDeleteCompetitor = useCallback(
     (competitorId: number) => {
-      const url = clubModel.modules.find((module) => module.name === 'Results')?.deleteUrl;
+      const url = clubModel.modules.find(module => module.name === 'Results')?.deleteUrl;
 
       if (!sessionModel.loggedIn || !url) {
         return;
@@ -145,25 +145,28 @@ const Competitors = observer(() => {
         url,
         { iType: 'COMPETITOR', competitorId, clubId: clubModel.raceClubs?.selectedClub?.clubId },
         true,
-        sessionModel.authorizationHeader,
+        sessionModel.authorizationHeader
       )
         .then(() => {
           setSaving(false);
           setLoaded(false);
         })
-        .catch((e) => {
-          if (e && e.message) {
-            message.error(e.message);
-          }
+        .catch(e => {
+          if (e?.message) message.error(e.message);
           setSaving(false);
         });
     },
-    [clubModel.modules],
+    [
+      clubModel.modules,
+      clubModel.raceClubs?.selectedClub?.clubId,
+      sessionModel.authorizationHeader,
+      sessionModel.loggedIn
+    ]
   );
 
   const onDeleteFamily = useCallback(
     (familyId: number) => {
-      const url = clubModel.modules.find((module) => module.name === 'Results')?.deleteUrl;
+      const url = clubModel.modules.find(module => module.name === 'Results')?.deleteUrl;
 
       if (!sessionModel.loggedIn || !url) {
         return;
@@ -175,26 +178,24 @@ const Competitors = observer(() => {
           setSaving(false);
           setLoaded(false);
         })
-        .catch((e) => {
-          if (e && e.message) {
-            message.error(e.message);
-          }
+        .catch(e => {
+          if (e?.message) message.error(e.message);
           setSaving(false);
         });
     },
-    [clubModel.modules],
+    [clubModel.modules, sessionModel.authorizationHeader, sessionModel.loggedIn]
   );
 
   const onSaveCompetitor = useCallback(
     (competitor: ICompetitorTable & { familyName?: string }) => {
-      const url = clubModel.modules.find((module) => module.name === 'Results')?.updateUrl;
+      const url = clubModel.modules.find(module => module.name === 'Results')?.updateUrl;
 
       if (!sessionModel.loggedIn || !url) {
         return;
       }
       setSaving(true);
 
-      PostJsonData(
+      PostJsonData<IRaceCompetitor>(
         url,
         {
           iType: 'COMPETITOR',
@@ -208,54 +209,54 @@ const Competitors = observer(() => {
           iBirthDay: competitor.birthDay,
           iStartDate: competitor.startDate,
           iEndDate: competitor.endDate,
-          iEventorCompetitorIds: competitor.eventorCompetitorIds ?? [],
+          iEventorCompetitorIds: competitor.eventorCompetitorIds ?? []
         },
         true,
-        sessionModel.authorizationHeader,
+        sessionModel.authorizationHeader
       )
-        .then((updatedCompetitor: IRaceCompetitor) => {
-          const c = clubModel.raceClubs?.selectedClub?.competitors?.find(
-            (c) => c.competitorId === updatedCompetitor.competitorId,
-          );
-          if (competitor.familyId === -1 && updatedCompetitor.familyId) {
-            clubModel.raceClubs?.selectedClub?.addFamily(updatedCompetitor.familyId, competitor.familyName!);
+        .then(updatedCompetitor => {
+          if (updatedCompetitor) {
+            const c = clubModel.raceClubs?.selectedClub?.competitors?.find(
+              c => c.competitorId === updatedCompetitor.competitorId
+            );
+            if (competitor.familyId === -1 && updatedCompetitor.familyId) {
+              clubModel.raceClubs?.selectedClub?.addFamily(updatedCompetitor.familyId, competitor.familyName!);
+            }
+            if (c) {
+              c.setValues(updatedCompetitor);
+              clubModel.raceClubs?.selectedClub?.updateCompetitors();
+            }
+            setSaving(false);
           }
-          if (c) {
-            c.setValues(updatedCompetitor);
-            clubModel.raceClubs?.selectedClub?.updateCompetitors();
-          }
-          setSaving(false);
         })
-        .catch((e) => {
-          if (e && e.message) {
-            message.error(e.message);
-          }
+        .catch(e => {
+          if (e?.message) message.error(e.message);
           setSaving(false);
         });
     },
-    [clubModel.modules],
+    [clubModel.modules, clubModel.raceClubs?.selectedClub, sessionModel.authorizationHeader, sessionModel.loggedIn]
   );
 
   useEffect(() => {
-    const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
+    const url = clubModel.modules.find(module => module.name === 'Results')?.queryUrl;
     if (loaded || !url || !sessionModel.isAdmin) return;
 
-    PostJsonData(
+    PostJsonData<IRaceClubsProps>(
       url,
       {
-        iType: 'CLUBS',
+        iType: 'CLUBS'
       },
       true,
-      sessionModel.authorizationHeader,
+      sessionModel.authorizationHeader
     )
-      .then((clubsJson: IRaceClubsProps) => {
-        clubModel.setRaceClubs(clubsJson);
+      .then(clubsJson => {
+        if (clubsJson) clubModel.setRaceClubs(clubsJson);
         setLoaded(true);
       })
-      .catch((e) => {
-        message.error(e.message);
+      .catch(e => {
+        if (e?.message) message.error(e.message);
       });
-  }, [loaded]);
+  }, [clubModel, loaded, sessionModel.authorizationHeader, sessionModel.isAdmin]);
 
   const columns: ColumnType<ICompetitorTable>[] = [
     {
@@ -273,8 +274,9 @@ const Competitors = observer(() => {
                   destroy: () => void;
                   update: (configUpdate: ModalFuncProps | ((prevConfig: ModalFuncProps) => ModalFuncProps)) => void;
                 };
+
                 // eslint-disable-next-line prefer-const
-                confirmModal = confirm({
+                confirmModal = modal.confirm({
                   width: 800,
                   icon: <StyledIcon type="edit" />,
                   title: `${t('results.Edit')} (${record.firstName} ${record.lastName})`,
@@ -282,28 +284,29 @@ const Competitors = observer(() => {
                     <EditCompetitor
                       competitor={competitorObject}
                       familyOptions={familyOptions}
+                      onChange={changes => Object.assign(competitorObject, changes)}
                       onValidate={(valid: boolean) =>
                         confirmModal.update({
                           okButtonProps: {
-                            disabled: !valid,
-                          },
+                            disabled: !valid
+                          }
                         })
                       }
                     />
                   ),
                   okText: t('common.Save'),
                   okButtonProps: {
-                    disabled: true,
+                    disabled: true
                   },
                   cancelText: t('common.Cancel'),
                   onOk() {
                     confirmModal.update({
                       okButtonProps: {
-                        loading: true,
-                      },
+                        loading: true
+                      }
                     });
                     onSaveCompetitor(competitorObject);
-                  },
+                  }
                 });
               }}
             />
@@ -324,79 +327,84 @@ const Competitors = observer(() => {
             <StyledIcon type="delete" />
           </Popconfirm>
         </NoWrap>
-      ),
+      )
     },
     {
       title: t('users.FirstName'),
       dataIndex: 'firstName',
-      key: 'firstName',
+      key: 'firstName'
     },
     {
       title: t('users.LastName'),
       dataIndex: 'lastName',
-      key: 'lastName',
+      key: 'lastName'
     },
     {
       title: t('users.BirthDay'),
       dataIndex: 'birthDay',
       key: 'birthDay',
-      render: (value) => value?.substr(0, 4),
+      render: value => value?.substr(0, 4)
     },
     {
       title: t('users.Gender'),
       dataIndex: 'gender',
       key: 'gender',
-      render: (value) => genderOptions(t).find((opt) => opt.code === value)?.description ?? null,
+      render: value => genderOptions(t).find(opt => opt.code === value)?.description ?? null
     },
     {
       title: t('results.Renounce'),
       dataIndex: 'excludeResults',
       key: 'excludeResults',
-      render: (value) => (value ? t('common.Yes') : t('common.No')),
+      render: value => (value ? t('common.Yes') : t('common.No'))
     },
     {
       title: t('results.StartDate'),
       dataIndex: 'startDate',
-      key: 'startDate',
+      key: 'startDate'
     },
     {
       title: t('results.EndDate'),
       dataIndex: 'endDate',
-      key: 'endDate',
+      key: 'endDate'
     },
     {
       title: 'Eventor Id',
       dataIndex: 'eventorCompetitorIds',
       key: 'eventorCompetitorIds',
-      render: (values) => (Array.isArray(values) ? values.join(', ') : null),
-    },
+      render: values => (Array.isArray(values) ? values.join(', ') : null)
+    }
   ];
 
   const clubBgColor = lightenColor('#1075E0', 85);
   const clubTextColor = getTextColorBasedOnBackground(clubBgColor);
-  return loaded && sessionModel.isAdmin ? (
-    <CompetitorTable
-      familyBackgroundColor={clubBgColor}
-      familyTextColor={clubTextColor}
-      columns={columns as ColumnType<any>[]}
-      dataSource={familesAndCompetitors}
-      pagination={false}
-      size="middle"
-      expandable={{
-        defaultExpandAllRows: true,
-        expandedRowKeys: familyTableKeys,
-        expandedRowClassName: () => 'table-row-familymember',
-        rowExpandable: () => false,
-        showExpandColumn: false,
-      }}
-      rowClassName={(record: any) => (record.isFamily ? 'table-row-club' : '')}
-    />
-  ) : !loaded ? (
-    <SpinnerDiv>
-      <Spin size="large" />
-    </SpinnerDiv>
-  ) : (
-    <Empty description={t('common.Unauthorized')} />
+  return (
+    <>
+      {loaded && sessionModel.isAdmin ? (
+        <CompetitorTable
+          familyBackgroundColor={clubBgColor}
+          familyTextColor={clubTextColor}
+          columns={columns}
+          dataSource={familesAndCompetitors}
+          pagination={false}
+          size="middle"
+          expandable={{
+            defaultExpandAllRows: true,
+            expandedRowKeys: familyTableKeys,
+            expandedRowClassName: () => 'table-row-familymember',
+            rowExpandable: () => false,
+            showExpandColumn: false
+          }}
+          rowClassName={record => (record.isFamily ? 'table-row-club' : '')}
+        />
+      ) : !loaded ? (
+        <SpinnerDiv>
+          <Spin size="large" />
+        </SpinnerDiv>
+      ) : (
+        <Empty description={t('common.Unauthorized')} />
+      )}
+      {contextHolder}
+    </>
   );
 });
 

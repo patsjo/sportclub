@@ -1,11 +1,11 @@
 import { Spin } from 'antd';
-import { IChildContainerProps } from '../dashboard/columns/mapNodesToColumns';
-import { INewsItem, INewsItemProps, NewsItem } from '../../models/newsModel';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import styled from 'styled-components';
-import { useMobxStore } from '../../utils/mobxStore';
+import { styled } from 'styled-components';
+import { INewsItem, INewsItemProps, NewsItem } from '../../models/newsModel';
 import { PostJsonData } from '../../utils/api';
+import { useMobxStore } from '../../utils/mobxStore';
+import { IChildContainerProps } from '../dashboard/columns/mapNodesToColumns';
 import BannerItem from './BannerItem';
 
 const SpinnerDiv = styled.div<IChildContainerProps>`
@@ -25,19 +25,19 @@ const useBanners = () => {
       return;
     }
     loadingRef.current = true;
-    const url = clubModel.modules.find((module) => module.name === 'News')?.queryUrl;
+    const url = clubModel.modules.find(module => module.name === 'News')?.queryUrl;
     if (!url) return;
 
     const data = {
-      iNewsTypeID: 10,
+      iNewsTypeID: 10
     };
 
-    PostJsonData(url, data, false).then((json: INewsItemProps[]) => {
+    PostJsonData<INewsItemProps[]>(url, data, false).then(json => {
       const newArray = json != null ? json : [];
-      newArray.forEach((newsItem) => {
+      newArray.forEach(newsItem => {
         newsItem.link = newsItem.link && decodeURIComponent(newsItem.link);
       });
-      setBannerItems(newArray.map((item) => new NewsItem(item)));
+      setBannerItems(newArray.map(item => new NewsItem(item)));
       setFirstLoading(false);
       loadingRef.current = false;
     });
@@ -48,10 +48,10 @@ const useBanners = () => {
       return;
     }
     loadBanners();
-  }, [location.pathname]);
+  }, [loadBanners, location.pathname]);
 
   return !firstLoading
-    ? bannerItems.map((newsObject) => (
+    ? bannerItems.map(newsObject => (
         <BannerItem
           key={'bannerObject#' + newsObject.id}
           preferredColumn="50%rightFixed"
@@ -62,7 +62,7 @@ const useBanners = () => {
     : [
         <SpinnerDiv key="bannerObject#spinner" preferredColumn="50%rightFixed" preferredHeight={100}>
           <Spin size="large" />
-        </SpinnerDiv>,
+        </SpinnerDiv>
       ];
 };
 

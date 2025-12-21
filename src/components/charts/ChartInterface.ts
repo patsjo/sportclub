@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import { styled } from 'styled-components';
 
 export const paletteColors = [
   '#03a9f4', // Blue-Green
@@ -11,7 +11,7 @@ export const paletteColors = [
   '#f4df03', // Yellow
   '#f4aa80', // Pink
   '#473310', // Brown
-  '#0303c6', // Blue
+  '#0303c6' // Blue
 ];
 
 export const getWidth = (dataLength: number, maxWidth?: number, totalWidth?: number) =>

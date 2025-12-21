@@ -2,13 +2,16 @@ import { CaretRightOutlined, FileOutlined, LinkOutlined, SettingOutlined } from 
 import { Menu } from 'antd';
 import { FormInstance } from 'antd/lib/form';
 import { MessageInstance } from 'antd/lib/message/interface';
+import { HookAPI } from 'antd/lib/modal/useModal';
 import { TFunction } from 'i18next';
-import styled from 'styled-components';
+import { styled } from 'styled-components';
 import { IGlobalStateModel } from '../../models/globalStateModel';
 import { IMenu, IMenuItem } from '../../models/htmlEditorModel';
 import { IMobxClubModel } from '../../models/mobxClubModel';
 import { ISessionModel } from '../../models/sessionModel';
 import { DownloadData } from '../../utils/api';
+import { IFileUploadRequest, ISaveLinkRequest } from '../../utils/requestInterfaces';
+import { IFolderResponse } from '../../utils/responseInterfaces';
 import MaterialIcon from '../materialIcon/MaterialIcon';
 import MenuItem from '../menu/MenuItem';
 import { FileEditorModal } from './FileEditorModal';
@@ -24,8 +27,8 @@ const StyledSubMenu = styled(Menu.SubMenu)<IStyledSubMenu>`
     padding: 0;
   }
   &&& .ant-menu-submenu-title {
-    margin-left: ${(props) => (props.level - 1) * 24}px;
-    width: calc(100% - ${(props) => (props.level - 1) * 24}px);
+    margin-left: ${props => (props.level - 1) * 24}px;
+    width: calc(100% - ${props => (props.level - 1) * 24}px);
     line-height: 22px !important;
     height: 22px !important;
     padding: 0 !important;
@@ -35,15 +38,16 @@ const StyledSubMenu = styled(Menu.SubMenu)<IStyledSubMenu>`
 const getMenuItems = (
   items: IMenuItem[],
   setHtmlEditor: (path: string) => void,
-  htmEditorLinkform: FormInstance,
-  fileEditorForm: FormInstance,
+  htmEditorLinkform: FormInstance<ISaveLinkRequest>,
+  fileEditorForm: FormInstance<IFileUploadRequest>,
   t: TFunction,
+  modal: HookAPI,
   globalStateModel: IGlobalStateModel,
   sessionModel: ISessionModel,
   clubModel: IMobxClubModel,
-  messageApi: MessageInstance,
+  messageApi: MessageInstance
 ) =>
-  items.map((item) => (
+  items.map(item => (
     <MenuItem
       key={`menuItem#htmlEditor#${
         item.pageId ? `pageId#${item.pageId}` : item.linkId ? `linkId#${item.linkId}` : `fileId#${item.fileId}`
@@ -55,18 +59,18 @@ const getMenuItems = (
         ) : item.linkId && sessionModel.loggedIn && sessionModel.isAdmin ? (
           <SettingOutlined
             style={{ verticalAlign: 'middle', fontSize: 18 }}
-            onClick={(event) => {
+            onClick={event => {
               event.stopPropagation();
               globalStateModel.setRightMenuVisible(false);
-              htmEditorLinkform &&
-                htmEditorLinkform.setFieldsValue({
-                  iLinkID: item.linkId,
-                  iMenuPath: item.menuPath,
-                  iUrl: item.url,
-                });
+              htmEditorLinkform?.setFieldsValue({
+                iLinkID: item.linkId,
+                iMenuPath: item.menuPath,
+                iUrl: item.url
+              });
 
               HtmlEditorLinkModal(
                 t,
+                modal,
                 item.linkId!,
                 item.menuPath,
                 item.url!,
@@ -74,10 +78,10 @@ const getMenuItems = (
                 globalStateModel,
                 sessionModel,
                 clubModel,
-                messageApi,
+                messageApi
               )
                 .then()
-                .catch((error) => {
+                .catch(error => {
                   console.error(error);
                 });
             }}
@@ -87,12 +91,21 @@ const getMenuItems = (
           (sessionModel.isAdmin || sessionModel.id == item.createdByUserId) ? (
           <SettingOutlined
             style={{ verticalAlign: 'middle', fontSize: 18 }}
-            onClick={(event) => {
+            onClick={event => {
               event.stopPropagation();
               globalStateModel.setRightMenuVisible(false);
-              FileEditorModal(t, item.fileId!, fileEditorForm, globalStateModel, sessionModel, clubModel, messageApi)
+              FileEditorModal(
+                t,
+                modal,
+                item.fileId!,
+                fileEditorForm,
+                globalStateModel,
+                sessionModel,
+                clubModel,
+                messageApi
+              )
                 .then()
-                .catch((error) => {
+                .catch(error => {
                   console.error(error);
                 });
             }}
@@ -107,16 +120,16 @@ const getMenuItems = (
           setHtmlEditor(item.menuPath);
         } else if (item.linkId) {
           const win = window.open(item.url!, '_blank');
-          win && win.focus();
+          win?.focus();
         } else {
           await DownloadData(
             item.description,
             clubModel.attachmentUrl + item.fileId,
             {
               username: sessionModel.username,
-              password: sessionModel.password,
+              password: sessionModel.password
             },
-            sessionModel.authorizationHeader,
+            sessionModel.authorizationHeader
           );
         }
       }}
@@ -127,13 +140,15 @@ export const getHtmlEditorMenus = (
   menu: IMenu,
   setHtmlEditor: (path: string) => void,
   path: string,
-  htmEditorLinkform: FormInstance,
-  fileEditorForm: FormInstance,
+  htmEditorLinkform: FormInstance<ISaveLinkRequest>,
+  fileEditorForm: FormInstance<IFileUploadRequest>,
+  folderEditorForm: FormInstance<IFolderResponse>,
   t: TFunction,
+  modal: HookAPI,
   globalStateModel: IGlobalStateModel,
   sessionModel: ISessionModel,
   clubModel: IMobxClubModel,
-  messageApi: MessageInstance,
+  messageApi: MessageInstance
 ) => (
   <>
     {getMenuItems(
@@ -142,12 +157,13 @@ export const getHtmlEditorMenus = (
       htmEditorLinkform,
       fileEditorForm,
       t,
+      modal,
       globalStateModel,
       sessionModel,
       clubModel,
-      messageApi,
+      messageApi
     )}
-    {menu.subMenus.map((subMenu) => (
+    {menu.subMenus.map(subMenu => (
       <StyledSubMenu
         key={'subMenu#htmlEditor' + path + '#' + subMenu.description}
         level={subMenu.level}
@@ -162,20 +178,21 @@ export const getHtmlEditorMenus = (
             (sessionModel.isAdmin || sessionModel.id == subMenu.createdByUserId) ? (
               <SettingOutlined
                 style={{ verticalAlign: 'middle', fontSize: 18 }}
-                onClick={(event) => {
+                onClick={event => {
                   event.stopPropagation();
                   globalStateModel.setRightMenuVisible(false);
                   FolderEditorModal(
                     t,
+                    modal,
                     subMenu.folderId!,
-                    fileEditorForm,
+                    folderEditorForm,
                     globalStateModel,
                     sessionModel,
                     clubModel,
-                    messageApi,
+                    messageApi
                   )
                     .then()
-                    .catch((error) => {
+                    .catch(error => {
                       console.error(error);
                     });
                 }}
@@ -191,11 +208,13 @@ export const getHtmlEditorMenus = (
           path + '#' + subMenu.description,
           htmEditorLinkform,
           fileEditorForm,
+          folderEditorForm,
           t,
+          modal,
           globalStateModel,
           sessionModel,
           clubModel,
-          messageApi,
+          messageApi
         )}
       </StyledSubMenu>
     ))}

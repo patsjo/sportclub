@@ -3,10 +3,11 @@ import { Form, Input, Modal, Switch } from 'antd';
 import { observer } from 'mobx-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import styled from 'styled-components';
-import { useMobxStore } from '../../utils/mobxStore';
+import { styled } from 'styled-components';
+import { ILocalStorageLogin } from '../../models/sessionModel';
 import { PostJsonData } from '../../utils/api';
 import { errorRequiredField, hasErrors } from '../../utils/formHelper';
+import { useMobxStore } from '../../utils/mobxStore';
 import FormItem from '../formItems/FormItem';
 
 const StyledModalContent = styled.div``;
@@ -18,7 +19,7 @@ interface ILoginProps {
 const Login = observer(({ open, onClose }: ILoginProps) => {
   const { clubModel, sessionModel } = useMobxStore();
   const { t } = useTranslation();
-  const [form] = Form.useForm();
+  const [form] = Form.useForm<ILocalStorageLogin>();
   const [valid, setValid] = useState(false);
   const [loggingIn, setLoggingIn] = useState(false);
 
@@ -26,35 +27,42 @@ const Login = observer(({ open, onClose }: ILoginProps) => {
     setTimeout(() => {
       if (open) {
         // To disable submit button at the beginning.
-        form && form.resetFields();
-        hasErrors(form).then((notValid) => setValid(!notValid));
+        form?.resetFields();
+        hasErrors(form).then(notValid => setValid(!notValid));
       }
     }, 0);
-  }, [open]);
+  }, [form, open]);
 
-  const onLogin = useCallback((values) => {
-    setLoggingIn(true);
-    PostJsonData(
-      clubModel.loginUrl,
-      { username: values.username, password: values.password },
-      true,
-      { 'X-Requested-With': 'XMLHttpRequest' },
-      1
-    )
-      .then((json) => {
+  const onLogin = useCallback(
+    async (values: ILocalStorageLogin) => {
+      try {
+        if (!values.username || !values.password) return;
+        setLoggingIn(true);
+        const json = await PostJsonData<{
+          id: string;
+          name: string;
+          isAdmin: boolean;
+          eventorPersonId: number;
+        }>(
+          clubModel.loginUrl,
+          { username: values.username, password: values.password },
+          true,
+          { 'X-Requested-With': 'XMLHttpRequest' },
+          1
+        );
         sessionModel.setLogin(values.username, values.password, values.rememberLogin);
-        if (json == null) {
-          json = { id: undefined, name: values.username, isAdmin: false };
+        if (json) {
+          sessionModel.setSuccessfullyLogin(json.id, json.name, json.isAdmin, json.eventorPersonId);
+          setLoggingIn(false);
+          onClose();
         }
-        sessionModel.setSuccessfullyLogin(json.id, json.name, json.isAdmin, json.eventorPersonId);
-        setLoggingIn(false);
-        onClose();
-      })
-      .catch(() => {
+      } catch {
         sessionModel.setFailedLogin();
         setLoggingIn(false);
-      });
-  }, []);
+      }
+    },
+    [clubModel.loginUrl, onClose, sessionModel]
+  );
 
   return (
     <Modal
@@ -66,13 +74,13 @@ const Login = observer(({ open, onClose }: ILoginProps) => {
       okButtonProps={{ disabled: !valid, loading: loggingIn }}
       cancelText={t('common.Cancel')}
       cancelButtonProps={{ loading: loggingIn }}
+      style={{ top: 40 }}
       onOk={() => {
-        form.validateFields().then((values) => {
+        form.validateFields().then(values => {
           onLogin(values);
         });
       }}
       onCancel={onClose}
-      style={{ top: 40 }}
     >
       <StyledModalContent>
         <Form
@@ -82,9 +90,9 @@ const Login = observer(({ open, onClose }: ILoginProps) => {
           initialValues={{
             username: sessionModel.username,
             password: sessionModel.password,
-            rememberLogin: sessionModel.rememberLogin,
+            rememberLogin: sessionModel.rememberLogin
           }}
-          onValuesChange={() => hasErrors(form).then((notValid) => setValid(!notValid))}
+          onValuesChange={() => hasErrors(form).then(notValid => setValid(!notValid))}
         >
           <FormItem
             name="username"
@@ -92,8 +100,8 @@ const Login = observer(({ open, onClose }: ILoginProps) => {
             rules={[
               {
                 required: true,
-                message: errorRequiredField(t, 'common.Username'),
-              },
+                message: errorRequiredField(t, 'common.Username')
+              }
             ]}
           >
             <Input prefix={<UserOutlined style={{ color: 'rgba(0,0,0,.25)' }} />} />
@@ -104,8 +112,8 @@ const Login = observer(({ open, onClose }: ILoginProps) => {
             rules={[
               {
                 required: true,
-                message: errorRequiredField(t, 'common.Password'),
-              },
+                message: errorRequiredField(t, 'common.Password')
+              }
             ]}
           >
             <Input.Password prefix={<LockOutlined style={{ color: 'rgba(0,0,0,.25)' }} />} />

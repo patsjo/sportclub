@@ -1,41 +1,33 @@
 import { DatePicker, Form, message, Space, Spin } from 'antd';
 import dayjs from 'dayjs';
-import { TFunction } from 'i18next';
 import { observer } from 'mobx-react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import styled from 'styled-components';
-import { IMobxClubModel } from '../../models/mobxClubModel';
+import { IRaceClubsProps } from '../../models/resultModel';
 import { PickRequired } from '../../models/typescriptPartial';
 import { PostJsonData } from '../../utils/api';
 import { getTextColorBasedOnBackground } from '../../utils/colorHelper';
-import { dateFormat, errorRequiredField, FormSelect } from '../../utils/formHelper';
+import { dateFormat, errorRequiredField } from '../../utils/formHelper';
 import { useMobxStore } from '../../utils/mobxStore';
 import { IPrintTableColumn } from '../../utils/pdf';
-import { getInvoicePdf, getInvoiceZip, IFeesRecord, IInvoicePrintObject } from '../../utils/pdfInvoice';
+import {
+  generatePdfStatus,
+  getInvoicePdf,
+  getInvoiceZip,
+  IFeesRecord,
+  IInvoicePrintObject
+} from '../../utils/pdfInvoice';
 import {
   IFeeResponse,
   IIndividualViewResultResponse,
   IPrintSettings,
-  IPrintSettingsColumn,
+  IPrintSettingsColumn
 } from '../../utils/responseInterfaces';
 import FormItem from '../formItems/FormItem';
+import { FormSelect } from '../formItems/FormSelect';
 import { SpinnerDiv } from '../styled/styled';
 import TablePrintSettingButtons from '../tableSettings/TablePrintSettingButtons';
 import { CompetitorTable } from '../users/Competitors';
-
-export const generatePdfStatus = { abortLoading: false };
-
-const StyledRow = styled.div`
-  display: block;
-  white-space: nowrap;
-  width: 100%;
-`;
-const Col = styled.div`
-  display: inline-block;
-  margin-left: 5px;
-  vertical-align: bottom;
-`;
 
 interface IFeesTable extends PickRequired<IFeeResponse, 'originalFee' | 'lateFee' | 'feeToClub' | 'serviceFeeToClub'> {
   key: React.Key;
@@ -51,63 +43,26 @@ const feesSort = (a: IFeesTable, b: IFeesTable) =>
   `${a.isFamily ? a.lastName.substring(a.lastName.indexOf(' ') + 1) : a.lastName} ${a.firstName}`
     .toLowerCase()
     .localeCompare(
-      `${b.isFamily ? b.lastName.substring(b.lastName.indexOf(' ') + 1) : b.lastName} ${b.firstName}`.toLowerCase(),
+      `${b.isFamily ? b.lastName.substring(b.lastName.indexOf(' ') + 1) : b.lastName} ${b.firstName}`.toLowerCase()
     );
-
-const columns = (t: TFunction, clubModel: IMobxClubModel): IPrintTableColumn<IFeesTable>[] => [
-  {
-    title: `${t('results.Competitor')}/${t('users.FamilySelect')}`,
-    selected: true,
-    dataIndex: 'lastName',
-    key: 'lastName',
-    render: (_: string, record: IFeesTable): string => `${record.firstName} ${record.lastName}`,
-  },
-  {
-    title: t('results.OriginalFee'),
-    selected: true,
-    dataIndex: 'originalFee',
-    key: 'originalFee',
-  },
-  {
-    title: t('results.LateFee'),
-    selected: true,
-    dataIndex: 'lateFee',
-    key: 'lateFee',
-  },
-  {
-    title: t('results.FeeToClub'),
-    selected: true,
-    dataIndex: 'feeToClub',
-    key: 'feeToClub',
-  },
-  {
-    title: t('results.ServiceFeeToClub'),
-    selected: true,
-    dataIndex: 'serviceFeeToClub',
-    key: 'serviceFeeToClub',
-  },
-  {
-    title: t('results.TotalFeeToClub'),
-    selected: true,
-    dataIndex: 'totalFeeToClub',
-    key: 'totalFeeToClub',
-    render: (_text: string, record: IFeesTable) => (record.feeToClub + record.serviceFeeToClub).toString(),
-  },
-];
 
 const ResultsFees = observer(() => {
   const { t } = useTranslation();
   const { clubModel, sessionModel } = useMobxStore();
-  const [fees, setFees] = useState<IFeesTable[]>([]);
+  const resultsQueryUrl = useMemo(
+    () => clubModel.modules.find(module => module.name === 'Results')?.queryUrl,
+    [clubModel.modules]
+  );
+  const [feesResponse, setFeesResponse] = useState<IFeeResponse[]>();
   const [fee, setFee] = useState<IFeesTable>();
   const [toDate, setToDate] = useState<dayjs.Dayjs | null>(
-    dayjs(`${dayjs().add(-6, 'months').format('YYYY')}${clubModel.invoice.breakMonthDay}`, 'YYYYMMDD'),
+    dayjs(`${dayjs().add(-6, 'months').format('YYYY')}${clubModel.invoice.breakMonthDay}`, 'YYYYMMDD')
   );
   const [fromDate, setFromDate] = useState<dayjs.Dayjs | null>(
-    dayjs(toDate?.format('YYYY-MM-DD'))?.add(-1, 'years').add(1, 'days') ?? null,
+    dayjs(toDate?.format('YYYY-MM-DD'))?.add(-1, 'years').add(1, 'days') ?? null
   );
   const [dueDate, setDueDate] = useState<dayjs.Dayjs | null>(
-    dayjs(toDate?.format('YYYY-MM-DD'))?.add(clubModel.invoice.daysToDueDate, 'days') ?? null,
+    dayjs(toDate?.format('YYYY-MM-DD'))?.add(clubModel.invoice.daysToDueDate, 'days') ?? null
   );
   const [loading, setLoading] = useState(true);
   const [formId] = useState('resultsFeesForm' + Math.floor(Math.random() * 10000000000000000));
@@ -116,106 +71,147 @@ const ResultsFees = observer(() => {
   const [total, setTotal] = useState(0);
   const [spinnerTitle, setSpinnerTitle] = useState<string | null>(null);
   const [spinnerText, setSpinnerText] = useState<string | null>(null);
-  const familyTableKeys = useMemo(() => fees.filter((f) => f.isFamily).map((f) => f.key), [fees]);
-
-  useEffect(() => {
-    const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
-    if (!url) return;
-
-    PostJsonData(
-      url,
+  const columns: IPrintTableColumn<IFeesTable>[] = useMemo(
+    () => [
       {
-        iType: 'CLUBS',
+        title: `${t('results.Competitor')}/${t('users.FamilySelect')}`,
+        selected: true,
+        dataIndex: 'lastName',
+        key: 'lastName',
+        render: (_: string, record: IFeesTable): string => `${record.firstName} ${record.lastName}`
       },
-      true,
-      sessionModel.authorizationHeader,
-    )
-      .then((clubsJson) => {
-        clubModel.setRaceClubs(clubsJson);
-        loadFeeData(fromDate, toDate);
-      })
-      .catch((e) => {
-        message.error(e.message);
-      });
-  }, []);
+      {
+        title: t('results.OriginalFee'),
+        selected: true,
+        dataIndex: 'originalFee',
+        key: 'originalFee'
+      },
+      {
+        title: t('results.LateFee'),
+        selected: true,
+        dataIndex: 'lateFee',
+        key: 'lateFee'
+      },
+      {
+        title: t('results.FeeToClub'),
+        selected: true,
+        dataIndex: 'feeToClub',
+        key: 'feeToClub'
+      },
+      {
+        title: t('results.ServiceFeeToClub'),
+        selected: true,
+        dataIndex: 'serviceFeeToClub',
+        key: 'serviceFeeToClub'
+      },
+      {
+        title: t('results.TotalFeeToClub'),
+        selected: true,
+        dataIndex: 'totalFeeToClub',
+        key: 'totalFeeToClub',
+        render: (_text: string, record: IFeesTable) => (record.feeToClub + record.serviceFeeToClub).toString()
+      }
+    ],
+    [t]
+  );
+  const fees = useMemo(() => {
+    const competitors =
+      feesResponse?.map((c): IFeesTable => {
+        const competitor = clubModel.raceClubs?.selectedClub?.competitorById(c.competitorId);
+        return {
+          ...c,
+          key: `competitor${c.competitorId}`,
+          isFamily: false,
+          firstName: competitor?.firstName ?? '',
+          lastName: competitor?.lastName ?? '',
+          familyId: competitor?.familyId
+        };
+      }) ?? [];
 
-  const onAbortLoading = () => {
-    generatePdfStatus.abortLoading = true;
-  };
+    const families =
+      clubModel.raceClubs?.selectedClub?.families.map(
+        (f): IFeesTable => ({
+          key: `family${f.familyId}`,
+          familyId: f.familyId,
+          isFamily: true,
+          firstName: t('users.Family'),
+          lastName: f.familyName,
+          originalFee: competitors
+            ?.filter(c => c.familyId === f.familyId)
+            ?.reduce((prev, curr) => prev + curr.originalFee, 0),
+          lateFee: competitors?.filter(c => c.familyId === f.familyId)?.reduce((prev, curr) => prev + curr.lateFee, 0),
+          feeToClub: competitors
+            ?.filter(c => c.familyId === f.familyId)
+            ?.reduce((prev, curr) => prev + curr.feeToClub, 0),
+          serviceFeeToClub: competitors
+            ?.filter(c => c.familyId === f.familyId)
+            ?.reduce((prev, curr) => prev + curr.serviceFeeToClub, 0),
+          children: competitors?.filter(c => c.familyId === f.familyId).sort(feesSort)
+        })
+      ) ?? [];
+
+    return [...families, ...competitors.filter(c => !c.familyId)]?.sort(feesSort);
+  }, [feesResponse, clubModel.raceClubs, t]);
+  const familyTableKeys = useMemo(() => fees.filter(f => f.isFamily).map(f => f.key), [fees]);
 
   const loadFeeData = useCallback(
     (fromDate: dayjs.Dayjs | null, toDate: dayjs.Dayjs | null) => {
       setLoading(true);
 
-      const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
-      if (!url) return;
+      if (!resultsQueryUrl) return;
 
-      PostJsonData(
-        url,
+      PostJsonData<IFeeResponse[]>(
+        resultsQueryUrl,
         {
           iType: 'FEES',
           iFromDate: fromDate?.format('YYYY-MM-DD'),
-          iToDate: toDate?.format('YYYY-MM-DD'),
+          iToDate: toDate?.format('YYYY-MM-DD')
         },
         true,
-        sessionModel.authorizationHeader,
+        sessionModel.authorizationHeader
       )
-        .then((feesJson: IFeeResponse[]) => {
-          const competitors =
-            feesJson?.map((c): IFeesTable => {
-              const competitor = clubModel.raceClubs?.selectedClub?.competitorById(c.competitorId);
-              return {
-                ...c,
-                key: `competitor${c.competitorId}`,
-                isFamily: false,
-                firstName: competitor?.firstName ?? '',
-                lastName: competitor?.lastName ?? '',
-                familyId: competitor?.familyId,
-              };
-            }) ?? [];
-
-          const families =
-            clubModel.raceClubs?.selectedClub?.families.map(
-              (f): IFeesTable => ({
-                key: `family${f.familyId}`,
-                familyId: f.familyId,
-                isFamily: true,
-                firstName: t('users.Family'),
-                lastName: f.familyName,
-                originalFee: competitors
-                  ?.filter((c) => c.familyId === f.familyId)
-                  ?.reduce((prev, curr) => prev + curr.originalFee, 0),
-                lateFee: competitors
-                  ?.filter((c) => c.familyId === f.familyId)
-                  ?.reduce((prev, curr) => prev + curr.lateFee, 0),
-                feeToClub: competitors
-                  ?.filter((c) => c.familyId === f.familyId)
-                  ?.reduce((prev, curr) => prev + curr.feeToClub, 0),
-                serviceFeeToClub: competitors
-                  ?.filter((c) => c.familyId === f.familyId)
-                  ?.reduce((prev, curr) => prev + curr.serviceFeeToClub, 0),
-                children: competitors?.filter((c) => c.familyId === f.familyId).sort(feesSort),
-              }),
-            ) ?? [];
-
-          const familesAndCompetitors = [...families, ...competitors.filter((c) => !c.familyId)]?.sort(feesSort);
-          setFees(familesAndCompetitors);
+        .then(feesJson => {
+          setFeesResponse(feesJson);
           setLoading(false);
         })
-        .catch((e) => {
-          if (e && e.message) {
-            message.error(e.message);
-          }
-          setFees([]);
+        .catch(e => {
+          if (e?.message) message.error(e.message);
+          setFeesResponse(undefined);
           setLoading(false);
         });
     },
-    [clubModel, sessionModel],
+    [resultsQueryUrl, sessionModel.authorizationHeader]
   );
+
+  useEffect(() => {
+    if (!resultsQueryUrl) return;
+
+    PostJsonData<IRaceClubsProps>(
+      resultsQueryUrl,
+      {
+        iType: 'CLUBS'
+      },
+      true,
+      sessionModel.authorizationHeader
+    )
+      .then(clubsJson => {
+        if (clubsJson) {
+          clubModel.setRaceClubs(clubsJson);
+          loadFeeData(fromDate, toDate);
+        }
+      })
+      .catch(e => {
+        if (e?.message) message.error(e.message);
+      });
+  }, [resultsQueryUrl, fromDate, toDate, loadFeeData, sessionModel.authorizationHeader, clubModel]);
+
+  const onAbortLoading = useCallback(() => {
+    generatePdfStatus.abortLoading = true;
+  }, []);
 
   const getPrintObject = useCallback(
     async (fee: IFeesTable): Promise<IInvoicePrintObject> => {
-      const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
+      const url = clubModel.modules.find(module => module.name === 'Results')?.queryUrl;
       if (!url || !clubModel.raceClubs || !clubModel.corsProxy || !fromDate || !toDate) throw new Error();
 
       const invoiceMessage = t('invoice.invoiceMessage')
@@ -229,110 +225,107 @@ const ResultsFees = observer(() => {
         const competitor = competitors[index];
         setSpinnerText(`${competitor.firstName} ${competitor.lastName}`);
 
-        const result = (await PostJsonData(
+        const result = await PostJsonData<IIndividualViewResultResponse>(
           url,
           {
             iType: 'COMPETITOR',
             iFromDate: fromDate.format('YYYY-MM-DD'),
             iToDate: toDate.format('YYYY-MM-DD'),
-            iCompetitorId: competitor.competitorId,
+            iCompetitorId: competitor.competitorId
           },
           true,
-          sessionModel.authorizationHeader,
-        )) as IIndividualViewResultResponse;
-        await new Promise((resolve) => setTimeout(resolve, Math.floor(Math.random() * 200)));
+          sessionModel.authorizationHeader
+        );
+        await new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * 200)));
 
         const resultFees = [
-          ...result.results.map((r) => ({
+          ...(result?.results.map(r => ({
             name: r.name,
             raceDate: r.raceDate,
             feeToClub: r.feeToClub ?? 0,
             totalFee: (r.originalFee ?? 0) + (r.lateFee ?? 0),
             serviceFeeToClub: r.serviceFeeToClub,
-            serviceFeeDescription: r.serviceFeeDescription,
-          })),
-          ...result.teamResults.map((r) => ({
+            serviceFeeDescription: r.serviceFeeDescription
+          })) ?? []),
+          ...(result?.teamResults.map(r => ({
             name: r.name,
             raceDate: r.raceDate,
             feeToClub: 0,
             totalFee: 0,
             serviceFeeToClub: r.serviceFeeToClub,
-            serviceFeeDescription: r.serviceFeeDescription,
-          })),
+            serviceFeeDescription: r.serviceFeeDescription
+          })) ?? [])
         ];
 
         competitorsDetails.push({
           competitorId: competitor.competitorId!,
           description: t('invoice.invoiceCompetitorMessage')?.replaceAll(
             '{0}',
-            `${competitor.firstName} ${competitor.lastName}`,
+            `${competitor.firstName} ${competitor.lastName}`
           ),
-          numberOf: resultFees.filter((f) => f.totalFee !== 0 || f.feeToClub !== 0).reduce((prev) => prev + 1, 0),
+          numberOf: resultFees.filter(f => f.totalFee !== 0 || f.feeToClub !== 0).reduce(prev => prev + 1, 0),
           feeToClub: resultFees
-            .filter((f) => f.totalFee !== 0 || f.feeToClub !== 0)
+            .filter(f => f.totalFee !== 0 || f.feeToClub !== 0)
             .reduce((prev, next) => prev + next.feeToClub, 0),
           totalFee: resultFees
-            .filter((f) => f.totalFee !== 0 || f.feeToClub !== 0)
-            .reduce((prev, next) => prev + next.totalFee, 0),
+            .filter(f => f.totalFee !== 0 || f.feeToClub !== 0)
+            .reduce((prev, next) => prev + next.totalFee, 0)
         });
 
         resultFees
-          .filter((f) => f.serviceFeeToClub !== 0)
-          .forEach((f) =>
+          .filter(f => f.serviceFeeToClub !== 0)
+          .forEach(f =>
             servicesDetails.push({
               competitorId: competitor.competitorId!,
               description: `${f.raceDate}, ${f.name}, ${f.serviceFeeDescription} (${competitor.firstName} ${competitor.lastName})`,
               numberOf: 1,
               feeToClub: f.serviceFeeToClub,
-              totalFee: f.serviceFeeToClub,
-            }),
+              totalFee: f.serviceFeeToClub
+            })
           );
-        setProcessed((oldValue) => oldValue + 1);
+        setProcessed(oldValue => oldValue + 1);
         if (generatePdfStatus.abortLoading) throw new Error();
       }
 
       return { invoiceMessage, details: [...competitorsDetails, ...servicesDetails] };
     },
-    [t, clubModel, fromDate, toDate],
+    [clubModel.modules, clubModel.raceClubs, clubModel.corsProxy, fromDate, toDate, t, sessionModel.authorizationHeader]
   );
 
-  const onExcel = useCallback(
-    async (settings: IPrintSettings): Promise<void> => {
-      if (!fromDate || !toDate || !fees) return;
-      const header = `${t('invoice.invoiceNumber')};${t('invoice.message')};${t('results.FullName')};${t(
-        'results.OriginalFee',
-      )};${t('results.LateFee')};${t('results.FeeToClub')};${t('results.ServiceFeeToClub')};${t(
-        'results.TotalFeeToClub',
-      )}`;
-      const rows: string[] = [];
-      fees.forEach((f) => {
+  const onExcel = useCallback(async (): Promise<void> => {
+    if (!fromDate || !toDate || !fees) return;
+    const header = `${t('invoice.invoiceNumber')};${t('invoice.message')};${t('results.FullName')};${t(
+      'results.OriginalFee'
+    )};${t('results.LateFee')};${t('results.FeeToClub')};${t('results.ServiceFeeToClub')};${t(
+      'results.TotalFeeToClub'
+    )}`;
+    const rows: string[] = [];
+    fees.forEach(f => {
+      rows.push(
+        `${toDate.format('YYYY')}-TÄVL-AVG-${f.competitorId ?? f.children?.find(() => true)?.competitorId ?? 99999};${t(
+          'invoice.invoiceMessage'
+        )
+          ?.replaceAll('{0}', toDate?.format('YYYY') ?? '')
+          ?.replaceAll('{1}', `${f.firstName} ${f.lastName}`)};${
+          f.isFamily ? f.lastName : f.firstName + ' ' + f.lastName
+        };${f.originalFee};${f.lateFee};${f.feeToClub};${f.serviceFeeToClub};${f.feeToClub + f.serviceFeeToClub}`
+      );
+      f.children?.forEach(child => {
         rows.push(
-          `${toDate.format('YYYY')}-TÄVL-AVG-${
-            f.competitorId ?? f.children?.find(() => true)?.competitorId ?? 99999
-          };${t('invoice.invoiceMessage')
-            ?.replaceAll('{0}', toDate?.format('YYYY') ?? '')
-            ?.replaceAll('{1}', `${f.firstName} ${f.lastName}`)};${
-            f.isFamily ? f.lastName : f.firstName + ' ' + f.lastName
-          };${f.originalFee};${f.lateFee};${f.feeToClub};${f.serviceFeeToClub};${f.feeToClub + f.serviceFeeToClub}`,
+          `;;- ${child.firstName + ' ' + child.lastName};${child.originalFee};${child.lateFee};${child.feeToClub};${
+            child.serviceFeeToClub
+          };${child.feeToClub + child.serviceFeeToClub}`
         );
-        f.children?.forEach((child) => {
-          rows.push(
-            `;;- ${child.firstName + ' ' + child.lastName};${child.originalFee};${child.lateFee};${child.feeToClub};${
-              child.serviceFeeToClub
-            };${child.feeToClub + child.serviceFeeToClub}`,
-          );
-        });
       });
-      const csvBlob = new Blob([`${header}\r\n${rows.join('\r\n')}`], { type: 'text/plain' });
-      const link = document.createElement('a');
-      link.download = `${t('invoice.eventFeesSubtitle')
-        ?.replaceAll('{0}', fromDate?.format(dateFormat) ?? '')
-        ?.replaceAll('{1}', toDate?.format(dateFormat) ?? '')}.txt`;
-      link.href = URL.createObjectURL(csvBlob);
-      link.click();
-    },
-    [t, fromDate, toDate, fees],
-  );
+    });
+    const csvBlob = new Blob([`${header}\r\n${rows.join('\r\n')}`], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.download = `${t('invoice.eventFeesSubtitle')
+      ?.replaceAll('{0}', fromDate?.format(dateFormat) ?? '')
+      ?.replaceAll('{1}', toDate?.format(dateFormat) ?? '')}.txt`;
+    link.href = URL.createObjectURL(csvBlob);
+    link.click();
+  }, [t, fromDate, toDate, fees]);
 
   const onPrint = useCallback(
     async (settings: IPrintSettings): Promise<void> => {
@@ -358,28 +351,37 @@ const ResultsFees = observer(() => {
               ?.replaceAll('{1}', toDate?.format(dateFormat) ?? ''),
             startDate: fromDate,
             endDate: toDate,
-            dueDate: dueDate,
+            dueDate: dueDate
           },
           [printObject],
           settings.pdf,
           setProcessed,
-          setSpinnerText,
+          setSpinnerText
         );
-      } catch (e: any) {
-        if (e && e.message) {
-          message.error(e.message);
-        }
+      } catch (e) {
+        if (e && (e as { message: string }).message) message.error((e as { message: string }).message);
       }
       setTotal(0);
       setSpinnerTitle(null);
       setSpinnerText(null);
     },
-    [clubModel, getPrintObject, fee, fromDate, toDate, dueDate],
+    [
+      clubModel.corsProxy,
+      clubModel.logo.url,
+      clubModel.clubInfo,
+      clubModel.invoice,
+      fromDate,
+      toDate,
+      dueDate,
+      fee,
+      t,
+      getPrintObject
+    ]
   );
 
   const onPrintAll = useCallback(
     async (settings: IPrintSettings, allInOnePdf: boolean): Promise<void> => {
-      const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
+      const url = clubModel.modules.find(module => module.name === 'Results')?.queryUrl;
 
       if (!url || !clubModel.raceClubs || !clubModel.corsProxy || !fromDate || !toDate || !dueDate || !fees) return;
 
@@ -391,7 +393,7 @@ const ResultsFees = observer(() => {
       try {
         const printObjects: IInvoicePrintObject[] = [];
         setTotal(
-          fees.map((f) => (f.isFamily ? (f.children?.length ?? 1) : 1)).reduce((prev, next) => prev + next, 0) ?? 1,
+          fees.map(f => (f.isFamily ? (f.children?.length ?? 1) : 1)).reduce((prev, next) => prev + next, 0) ?? 1
         );
 
         for (const f of fees) {
@@ -417,12 +419,12 @@ const ResultsFees = observer(() => {
                 ?.replaceAll('{1}', toDate?.format(dateFormat) ?? ''),
               startDate: fromDate,
               endDate: toDate,
-              dueDate: dueDate,
+              dueDate: dueDate
             },
             printObjects,
             settings.pdf,
             setProcessed,
-            setSpinnerText,
+            setSpinnerText
           );
         } else {
           await getInvoiceZip(
@@ -436,24 +438,22 @@ const ResultsFees = observer(() => {
                 ?.replaceAll('{1}', toDate?.format(dateFormat) ?? ''),
               startDate: fromDate,
               endDate: toDate,
-              dueDate: dueDate,
+              dueDate: dueDate
             },
             printObjects,
             settings.pdf,
             setProcessed,
-            setSpinnerText,
+            setSpinnerText
           );
         }
-      } catch (e: any) {
-        if (e && e.message) {
-          message.error(e.message);
-        }
+      } catch (e) {
+        if (e && (e as { message: string }).message) message.error((e as { message: string }).message);
       }
       setTotal(0);
       setSpinnerTitle(null);
       setSpinnerText(null);
     },
-    [t, clubModel, sessionModel, fees, fromDate, toDate, dueDate, getPrintObject],
+    [t, clubModel, fees, fromDate, toDate, dueDate, getPrintObject]
   );
 
   const Spinner = (
@@ -469,9 +469,9 @@ const ResultsFees = observer(() => {
       id={formId}
       layout="vertical"
       initialValues={{
-        FromDate: fromDate,
-        ToDate: toDate,
-        DueDate: dueDate,
+        FromDate: fromDate?.format(dateFormat),
+        ToDate: toDate?.format(dateFormat),
+        DueDate: dueDate?.format(dateFormat)
       }}
     >
       <Space wrap>
@@ -481,19 +481,13 @@ const ResultsFees = observer(() => {
           rules={[
             {
               required: true,
-              type: 'object',
-              message: errorRequiredField(t, 'results.QueryStartDate'),
-            },
+              message: errorRequiredField(t, 'results.QueryStartDate')
+            }
           ]}
+          normalize={(value: dayjs.Dayjs) => (value ? value.format(dateFormat) : null)}
+          getValueProps={(value: string | undefined) => ({ value: value ? dayjs(value, dateFormat) : null })}
         >
-          <DatePicker
-            format={dateFormat}
-            allowClear={false}
-            onChange={(value) => {
-              setFromDate(value);
-              loadFeeData(value, toDate);
-            }}
-          />
+          <DatePicker format={dateFormat} allowClear={false} onChange={setFromDate} />
         </FormItem>
         <FormItem
           name="ToDate"
@@ -501,19 +495,13 @@ const ResultsFees = observer(() => {
           rules={[
             {
               required: true,
-              type: 'object',
-              message: errorRequiredField(t, 'results.QueryEndDate'),
-            },
+              message: errorRequiredField(t, 'results.QueryEndDate')
+            }
           ]}
+          normalize={(value: dayjs.Dayjs) => (value ? value.format(dateFormat) : null)}
+          getValueProps={(value: string | undefined) => ({ value: value ? dayjs(value, dateFormat) : null })}
         >
-          <DatePicker
-            format={dateFormat}
-            allowClear={false}
-            onChange={(value) => {
-              setToDate(value);
-              loadFeeData(fromDate, value);
-            }}
-          />
+          <DatePicker format={dateFormat} allowClear={false} onChange={setToDate} />
         </FormItem>
         <FormItem
           name="DueDate"
@@ -521,36 +509,37 @@ const ResultsFees = observer(() => {
           rules={[
             {
               required: true,
-              type: 'object',
-              message: errorRequiredField(t, 'invoice.dueDate'),
-            },
+              message: errorRequiredField(t, 'invoice.dueDate')
+            }
           ]}
+          normalize={(value: dayjs.Dayjs) => (value ? value.format(dateFormat) : null)}
+          getValueProps={(value: string | undefined) => ({ value: value ? dayjs(value, dateFormat) : null })}
         >
           <DatePicker format={dateFormat} allowClear={false} onChange={setDueDate} />
         </FormItem>
         <FormItem name="Competitor" label={`${t('results.Competitor')}/${t('users.FamilySelect')}`}>
           <FormSelect
             allowClear
+            showSearch
             disabled={loading}
             style={{ maxWidth: 600, minWidth: 200 }}
-            dropdownMatchSelectWidth={false}
+            popupMatchSelectWidth={false}
             options={
               loading || !fees
                 ? []
-                : (fees.map((fee) => ({
+                : (fees.map(fee => ({
                     code: JSON.stringify(fee),
-                    description: `${fee.firstName} ${fee.lastName}`,
+                    description: `${fee.firstName} ${fee.lastName}`
                   })) ?? [])
             }
-            showSearch
             optionFilterProp="children"
-            filterOption={(input, option) => option?.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-            onChange={(key) => setFee(JSON.parse(key))}
+            filterOption={(input, option) => option!.label!.toString().toLowerCase().indexOf(input.toLowerCase()) >= 0}
+            onChange={key => setFee(JSON.parse(key))}
           />
         </FormItem>
         <TablePrintSettingButtons
           localStorageName="resultFees"
-          columns={columns(t, clubModel)}
+          columns={columns}
           disablePrint={loading || !fee}
           disablePrintAll={loading}
           processed={processed}
@@ -568,11 +557,7 @@ const ResultsFees = observer(() => {
         <CompetitorTable
           familyBackgroundColor={clubBgColor}
           familyTextColor={clubTextColor}
-          columns={
-            columns(t, clubModel).filter((col) =>
-              columnsSetting.some((s) => col.key === s.key && s.selected),
-            ) as IPrintTableColumn<any>[]
-          }
+          columns={columns.filter(col => columnsSetting.some(s => col.key === s.key && s.selected))}
           dataSource={fees}
           size="middle"
           pagination={false}
@@ -582,9 +567,9 @@ const ResultsFees = observer(() => {
             expandedRowKeys: familyTableKeys,
             expandedRowClassName: () => 'table-row-familymember',
             rowExpandable: () => false,
-            showExpandColumn: false,
+            showExpandColumn: false
           }}
-          rowClassName={(record: any) => (record.isFamily ? 'table-row-club' : '')}
+          rowClassName={record => (record.isFamily ? 'table-row-club' : '')}
         />
       ) : (
         Spinner

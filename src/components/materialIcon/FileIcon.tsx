@@ -6,7 +6,7 @@ import {
   FileTextOutlined,
   FileUnknownOutlined,
   FileWordOutlined,
-  FileZipOutlined,
+  FileZipOutlined
 } from '@ant-design/icons';
 import React from 'react';
 

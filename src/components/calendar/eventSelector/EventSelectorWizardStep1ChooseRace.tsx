@@ -2,13 +2,13 @@ import { message, Spin } from 'antd';
 import { ColumnType } from 'antd/lib/table';
 import { TableRowSelection } from 'antd/lib/table/interface';
 import { observer } from 'mobx-react';
-import { IEventSelectorWizard } from '../../../models/eventSelectorWizardModel';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { IEventSelectorWizard } from '../../../models/eventSelectorWizardModel';
+import { PostJsonData } from '../../../utils/api';
 import { useMobxStore } from '../../../utils/mobxStore';
 import { ICalendarEvent } from '../../../utils/responseCalendarInterfaces';
 import { IEventorEvent, IEventorEventRace, IEventorEvents } from '../../../utils/responseEventorInterfaces';
-import { PostJsonData } from '../../../utils/api';
 import { SpinnerDiv, StyledTable } from '../../styled/styled';
 import organisationJson from './eventorOrganisations2020';
 
@@ -58,17 +58,22 @@ const EventSelectorWizardStep1ChooseRace = observer(
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
     useEffect(() => {
-      const url = clubModel.modules.find((module) => module.name === 'Calendar')?.queryUrl;
+      const url = clubModel.modules.find(module => module.name === 'Calendar')?.queryUrl;
       if (!url || !clubModel.eventor) return;
 
       const data = {
         iType: 'EVENTS',
         iFromDate: eventSelectorWizardModel.queryStartDate,
-        iToDate: eventSelectorWizardModel.queryEndDate,
+        iToDate: eventSelectorWizardModel.queryEndDate
       };
 
-      const alreadySavedEventsPromise = PostJsonData(url, data, true, sessionModel.authorizationHeader);
-      const eventsPromise = PostJsonData(
+      const alreadySavedEventsPromise = PostJsonData<ICalendarEvent[]>(
+        url,
+        data,
+        true,
+        sessionModel.authorizationHeader
+      );
+      const eventsPromise = PostJsonData<IEventorEvents>(
         clubModel.eventorCorsProxy,
         {
           csurl: encodeURIComponent(
@@ -78,32 +83,32 @@ const EventSelectorWizardStep1ChooseRace = observer(
               '&toDate=' +
               eventSelectorWizardModel.queryEndDate +
               '&includeAttributes=true&includeOrganisationElement=true'
-          ),
+          )
         },
         true
       );
 
       Promise.all([alreadySavedEventsPromise, eventsPromise])
-        .then(([alreadySavedEventsJson, eventsJson]: [ICalendarEvent[], IEventorEvents]) => {
+        .then(([alreadySavedEventsJson, eventsJson]) => {
           if (eventsJson == null || eventsJson.Event == null) {
             eventsJson = { Event: [] };
           } else if (!Array.isArray(eventsJson.Event)) {
             eventsJson.Event = [eventsJson.Event];
           }
           let calendarEventId = -1;
-          const events = flatten((eventsJson.Event as IEventorEvent[]).map((event) => event.EventRace))
-            .filter((eventRace) => eventRace.EventRaceId != null)
-            .filter((evt, i, list) => i === list.findIndex((listEvt) => evt.EventRaceId === listEvt.EventRaceId))
-            .map((eventRace) => {
+          const events = flatten((eventsJson.Event as IEventorEvent[]).map(event => event.EventRace))
+            .filter(eventRace => eventRace.EventRaceId != null)
+            .filter((evt, i, list) => i === list.findIndex(listEvt => evt.EventRaceId === listEvt.EventRaceId))
+            .map(eventRace => {
               const entry = {
-                Event: (eventsJson.Event as IEventorEvent[]).find((e) =>
+                Event: (eventsJson.Event as IEventorEvent[]).find(e =>
                   Array.isArray(e.EventRace)
-                    ? e.EventRace.map((er) => er.EventRaceId).includes(eventRace.EventRaceId)
+                    ? e.EventRace.map(er => er.EventRaceId).includes(eventRace.EventRaceId)
                     : e.EventRace.EventRaceId === eventRace.EventRaceId
-                ),
+                )
               };
-              const alreadySaved = alreadySavedEventsJson.find(
-                (saved) =>
+              const alreadySaved = alreadySavedEventsJson?.find(
+                saved =>
                   saved.eventorId.toString() === entry.Event?.EventId &&
                   saved.eventorRaceId.toString() === eventRace.EventRaceId
               );
@@ -111,9 +116,9 @@ const EventSelectorWizardStep1ChooseRace = observer(
                 ? (entry.Event.Organiser as { OrganisationId: string | string[] }).OrganisationId
                 : undefined;
               if (orgId && Array.isArray(orgId)) {
-                orgId = orgId.find((id) => true);
+                orgId = orgId.find(() => true);
               }
-              const org = orgId ? organisationJson.find((o) => o.id === orgId) : undefined;
+              const org = orgId ? organisationJson.find(o => o.id === orgId) : undefined;
               const organisationName = org ? org.name : '';
               const savedCalendarEventId = alreadySaved ? alreadySaved.calendarEventId : calendarEventId--;
               const longitude = eventRace.EventCenterPosition
@@ -132,7 +137,7 @@ const EventSelectorWizardStep1ChooseRace = observer(
                     ', ' +
                     (JSON.stringify(eventRace.Name) === JSON.stringify({}) || !eventRace.Name
                       ? ''
-                      : ', ' + eventRace.Name),
+                      : ', ' + eventRace.Name)
                 },
                 EventRaceId: eventRace.EventRaceId,
                 organisationName,
@@ -142,13 +147,13 @@ const EventSelectorWizardStep1ChooseRace = observer(
                 distanceKm:
                   latitude && longitude && clubModel.map?.center
                     ? distanceKm(clubModel.map?.center[1], clubModel.map?.center[0], latitude, longitude)
-                    : null,
+                    : null
               };
             })
             // EventStatusId: 10 Canceled
             // EventClassificationId: 0 = International, 1 = championchip, 2 = National, 3 = District, 4 = Nearby, 5 = Club, 6 = International
             .filter(
-              (event) =>
+              event =>
                 event.Event.EventStatusId !== '10' &&
                 event.Event.EventClassificationId &&
                 (event.calendarEventId > 0 ||
@@ -170,8 +175,8 @@ const EventSelectorWizardStep1ChooseRace = observer(
               a.Event.EventRace.RaceDate.Date > b.Event.EventRace.RaceDate.Date
                 ? 1
                 : a.Event.EventRace.RaceDate.Date < b.Event.EventRace.RaceDate.Date
-                ? -1
-                : 0
+                  ? -1
+                  : 0
             )
             .map(
               (event): IStateEvent => ({
@@ -187,35 +192,36 @@ const EventSelectorWizardStep1ChooseRace = observer(
                     : event.Event.EventRace.RaceDate.Clock.substr(0, 5),
                 longitude: event.longitude,
                 latitude: event.latitude,
-                distanceKm: event.distanceKm,
+                distanceKm: event.distanceKm
               })
             );
 
           setEvents(events);
-          setSelectedRowKeys(events.map((event) => event.calendarEventId).filter((id) => id > 0));
+          setSelectedRowKeys(events.map(event => event.calendarEventId).filter(id => id > 0));
           setLoaded(true);
-          eventSelectorWizardModel.setSelectedEvents(events.filter((event) => event.calendarEventId > 0));
+          eventSelectorWizardModel.setSelectedEvents(events.filter(event => event.calendarEventId > 0));
           onValidate(true);
         })
-        .catch((e) => {
-          message.error(e.message);
-          onFailed && onFailed();
+        .catch(e => {
+          if (e?.message) message.error(e.message);
+          onFailed?.();
         });
-    }, [eventSelectorWizardModel.queryStartDate, eventSelectorWizardModel.queryEndDate]);
-
-    const onRowClick = useCallback(
-      (key: React.Key) => {
-        const exists = selectedRowKeys.includes(key);
-        const newSelectedRowKeys = !exists ? [...selectedRowKeys, key] : selectedRowKeys.filter((k) => k !== key);
-
-        onSelectChange(newSelectedRowKeys);
-      },
-      [selectedRowKeys]
-    );
+    }, [
+      eventSelectorWizardModel.queryStartDate,
+      eventSelectorWizardModel.queryEndDate,
+      clubModel.modules,
+      clubModel.eventor,
+      clubModel.eventorCorsProxy,
+      clubModel.map?.center,
+      eventSelectorWizardModel,
+      sessionModel.authorizationHeader,
+      onValidate,
+      onFailed
+    ]);
 
     const onSelectChange = useCallback(
       (newSelectedRowKeys: React.Key[]) => {
-        const selected = events.filter((event) => newSelectedRowKeys.includes(event.calendarEventId));
+        const selected = events.filter(event => newSelectedRowKeys.includes(event.calendarEventId));
 
         eventSelectorWizardModel.setSelectedEvents(selected);
         setSelectedRowKeys(newSelectedRowKeys);
@@ -223,18 +229,28 @@ const EventSelectorWizardStep1ChooseRace = observer(
       [eventSelectorWizardModel, events]
     );
 
-    const rowSelection: TableRowSelection<IStateEvent> = {
+    const onRowClick = useCallback(
+      (key: React.Key) => {
+        const exists = selectedRowKeys.includes(key);
+        const newSelectedRowKeys = !exists ? [...selectedRowKeys, key] : selectedRowKeys.filter(k => k !== key);
+
+        onSelectChange(newSelectedRowKeys);
+      },
+      [onSelectChange, selectedRowKeys]
+    );
+
+    const rowSelection: TableRowSelection<IStateEvent & { key: number }> = {
       selectedRowKeys,
-      onChange: onSelectChange,
+      onChange: onSelectChange
     };
-    const columns: ColumnType<IStateEvent>[] = [
+    const columns: ColumnType<IStateEvent & { key: number }>[] = [
       {
         title: t('results.Date'),
         dataIndex: 'raceDate',
         key: 'raceDate',
         ellipsis: true,
         width: 100,
-        fixed: 'left',
+        fixed: 'left'
       },
       {
         title: t('results.Time'),
@@ -242,21 +258,21 @@ const EventSelectorWizardStep1ChooseRace = observer(
         key: 'raceTime',
         ellipsis: true,
         width: 80,
-        fixed: 'left',
+        fixed: 'left'
       },
       {
         title: t('results.Club'),
         dataIndex: 'organiserName',
         key: 'organiserName',
         ellipsis: true,
-        width: 200,
+        width: 200
       },
       {
         title: t('results.Name'),
         dataIndex: 'name',
         key: 'name',
         ellipsis: true,
-        width: 200,
+        width: 200
       },
       {
         title: t('results.DistanceKm'),
@@ -264,24 +280,24 @@ const EventSelectorWizardStep1ChooseRace = observer(
         key: 'distanceKm',
         ellipsis: true,
         width: 120,
-        fixed: 'right',
-      },
+        fixed: 'right'
+      }
     ];
 
     return loaded && visible ? (
-      <StyledTable
-        rowSelection={rowSelection as TableRowSelection<any>}
-        onRow={(record: ColumnType<IStateEvent>) => {
-          return {
-            onClick: () => onRowClick(record.key!),
-          };
-        }}
-        columns={columns as ColumnType<any>[]}
-        dataSource={events.map((event) => ({ ...event, key: event.calendarEventId }))}
+      <StyledTable<IStateEvent & { key: number }>
+        rowSelection={rowSelection}
+        columns={columns}
+        dataSource={events.map(event => ({ ...event, key: event.calendarEventId }))}
         pagination={{ pageSize: Math.trunc((height - 96) / 32), hideOnSinglePage: true, showSizeChanger: false }}
         scroll={{ x: true }}
         tableLayout="fixed"
         size="middle"
+        onRow={record => {
+          return {
+            onClick: () => onRowClick(record.key)
+          };
+        }}
       />
     ) : visible ? (
       <SpinnerDiv>

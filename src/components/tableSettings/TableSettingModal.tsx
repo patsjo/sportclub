@@ -1,11 +1,11 @@
 import { SettingOutlined } from '@ant-design/icons';
-import { InputNumber, Modal, Radio, Switch, Table, Tabs } from 'antd';
+import { InputNumber, Radio, Switch, Table, Tabs } from 'antd';
+import { HookAPI } from 'antd/lib/modal/useModal';
 import { ColumnsType } from 'antd/lib/table';
 import { TFunction } from 'i18next';
-import styled from 'styled-components';
+import { styled } from 'styled-components';
 import { IPrintSettings, IPrintSettingsColumn } from '../../utils/responseInterfaces';
 
-const { confirm } = Modal;
 const { TabPane } = Tabs;
 const Label = styled.div`
   margin-bottom: 2px;
@@ -35,12 +35,12 @@ export const getLocalStorage = (
     const tableDataString = localStorage.getItem(`${localStorageName}TableData`);
     if (tableDataString) {
       tableData = JSON.parse(tableDataString) as IPrintSettings;
-      tableData.table.columns = columns.map((col) => {
-        const storedValue = tableData?.table.columns.find((c) => c.key === col.key);
+      tableData.table.columns = columns.map(col => {
+        const storedValue = tableData?.table.columns.find(c => c.key === col.key);
         return storedValue ? storedValue : { key: col.key, title: col.title, selected: col.selected };
       });
-      tableData.pdf.columns = columns.map((col) => {
-        const storedValue = tableData?.pdf.columns.find((c) => c.key === col.key);
+      tableData.pdf.columns = columns.map(col => {
+        const storedValue = tableData?.pdf.columns.find(c => c.key === col.key);
         return storedValue ? storedValue : { key: col.key, title: col.title, selected: col.selected };
       });
     }
@@ -51,7 +51,7 @@ export const getLocalStorage = (
   if (!tableData || !tableData.table || !tableData.pdf) {
     tableData = {
       table: {
-        columns: columns.map((col) => ({ key: col.key, title: col.title, selected: col.selected })),
+        columns: columns.map(col => ({ key: col.key, title: col.title, selected: col.selected }))
       },
       pdf: {
         pageOrientation: 'portrait',
@@ -61,8 +61,8 @@ export const getLocalStorage = (
         columns:
           localStorageName === 'resultFees'
             ? []
-            : columns.map((col) => ({ key: col.key, title: col.title, selected: col.selected })),
-      },
+            : columns.map(col => ({ key: col.key, title: col.title, selected: col.selected }))
+      }
     };
   }
 
@@ -77,28 +77,29 @@ const selectColumns: ColumnsType<IPrintSettingsColumn> = [
   {
     dataIndex: 'selected',
     key: 'selected',
-    render: (value, record) => <Switch defaultChecked={value} onChange={(val) => (record.selected = val)} />,
+    render: (value, record) => <Switch defaultChecked={value} onChange={val => (record.selected = val)} />
   },
   {
     dataIndex: 'title',
-    key: 'title',
-  },
+    key: 'title'
+  }
 ];
 
 export const TableSettingModal = (
   t: TFunction,
+  modal: HookAPI,
   localStorageName: 'resultFees' | 'results',
   columns: IPrintSettingsColumn[]
 ): Promise<IPrintSettings> =>
   new Promise((resolve, reject) => {
     const settings = getLocalStorage(localStorageName, columns);
-    confirm({
+    modal.confirm({
       title: `${t('common.Table')}/${t('common.PDF')}`,
       style: { top: 40 },
       icon: <SettingOutlined />,
       content: (
         <Tabs defaultActiveKey="tableTab">
-          <TabPane tab={t('common.Table')} key="tableTab">
+          <TabPane key="tableTab" tab={t('common.Table')}>
             <Table
               showHeader={false}
               pagination={false}
@@ -107,11 +108,11 @@ export const TableSettingModal = (
               dataSource={settings.table.columns}
             />
           </TabPane>
-          <TabPane tab={t('common.PDF')} key="pdfTab">
+          <TabPane key="pdfTab" tab={t('common.PDF')}>
             <RadioGroup
               defaultValue={settings.pdf.pageOrientation}
               buttonStyle="solid"
-              onChange={(e) => (settings.pdf.pageOrientation = e.target.value)}
+              onChange={e => (settings.pdf.pageOrientation = e.target.value)}
             >
               <Radio.Button value="portrait">{t('common.Portrait')}</Radio.Button>
               <Radio.Button value="landscape">{t('common.Landscape')}</Radio.Button>
@@ -120,19 +121,20 @@ export const TableSettingModal = (
               defaultValue={settings.pdf.pageSize}
               style={{ marginLeft: 24 }}
               buttonStyle="solid"
-              onChange={(e) => (settings.pdf.pageSize = e.target.value)}
+              onChange={e => (settings.pdf.pageSize = e.target.value)}
             >
               <Radio.Button value="A3">A3</Radio.Button>
               <Radio.Button value="A4">A4</Radio.Button>
             </RadioGroup>
             <Label>{t('common.MarginsLabel')}</Label>
-            {[0, 1, 2, 3].map((index) => (
+            {[0, 1, 2, 3].map(index => (
               <StyledInputNumber
+                key={index}
                 min={5}
                 max={50}
                 step={5}
                 defaultValue={settings.pdf.pageMargins[index]}
-                onChange={(value) => value && (settings.pdf.pageMargins[index] = value as number)}
+                onChange={value => value && (settings.pdf.pageMargins[index] = value as number)}
               />
             ))}
             <Label />
@@ -156,6 +158,6 @@ export const TableSettingModal = (
       },
       onCancel() {
         reject();
-      },
+      }
     });
   });

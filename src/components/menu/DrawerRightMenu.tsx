@@ -1,9 +1,11 @@
-import { Button, Col, Drawer, Form, Menu, message, Row, Spin, Typography } from 'antd';
+import { Button, Col, Drawer, Form, Menu, message, Modal, Row, Spin, Typography } from 'antd';
 import { observer } from 'mobx-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
+import { styled } from 'styled-components';
 import { useMobxStore } from '../../utils/mobxStore';
+import { IFileUploadRequest, ISaveLinkRequest } from '../../utils/requestInterfaces';
+import { IFolderResponse } from '../../utils/responseInterfaces';
 import { FileEditorModal } from '../htmlEditor/FileEditorModal';
 import { FolderEditorModal } from '../htmlEditor/FolderEditorModal';
 import { DefaultMenuPath } from '../htmlEditor/HtmlEditor';
@@ -36,11 +38,12 @@ const StyledSubMenu = styled(Menu.SubMenu)`
 const DrawerRightMenu = observer(() => {
   const { t } = useTranslation();
   const { clubModel, globalStateModel, sessionModel } = useMobxStore();
-  const [htmEditorLinkform] = Form.useForm();
-  const [fileEditorForm] = Form.useForm();
-  const [folderEditorForm] = Form.useForm();
+  const [htmEditorLinkform] = Form.useForm<ISaveLinkRequest>();
+  const [fileEditorForm] = Form.useForm<IFileUploadRequest>();
+  const [folderEditorForm] = Form.useForm<IFolderResponse>();
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
+  const [modal, contextHolder2] = Modal.useModal();
 
   return (
     <Drawer
@@ -67,6 +70,7 @@ const DrawerRightMenu = observer(() => {
       onClose={() => globalStateModel.setRightMenuVisible(false)}
     >
       {contextHolder}
+      {contextHolder2}
       <StyledMenu mode="inline" onClick={() => globalStateModel.setRightMenuVisible(false)}>
         <MenuItem
           key={'menuItem#home0'}
@@ -79,7 +83,7 @@ const DrawerRightMenu = observer(() => {
         <LoginMenuItem />
         <Menu.Divider />
         {clubModel.modules
-          .filter((module) => module.name !== 'HTMLEditor')
+          .filter(module => module.name !== 'HTMLEditor')
           .map((module, index) =>
             module.hasSubMenus ? (
               <StyledSubMenu
@@ -100,8 +104,8 @@ const DrawerRightMenu = observer(() => {
                 <ModuleSubMenu module={module} />
               </StyledSubMenu>
             ) : (
-              <ModuleSubMenu module={module} />
-            ),
+              <ModuleSubMenu key={'subMenu#' + module.name + index} module={module} />
+            )
           )}
         {clubModel.map?.layers.length ? (
           <MenuItem
@@ -121,16 +125,18 @@ const DrawerRightMenu = observer(() => {
             '',
             htmEditorLinkform,
             fileEditorForm,
+            folderEditorForm,
             t,
+            modal,
             globalStateModel,
             sessionModel,
             clubModel,
-            messageApi,
+            messageApi
           )
         ) : (
           <Spin size="small" />
         )}
-        {clubModel.modules.some((module) => module.name === 'HTMLEditor') ? (
+        {clubModel.modules.some(module => module.name === 'HTMLEditor') ? (
           <>
             <MenuItem
               key={'menuItem#htmlEditor'}
@@ -148,15 +154,15 @@ const DrawerRightMenu = observer(() => {
               disabled={!sessionModel.loggedIn || !sessionModel.isAdmin}
               onClick={() => {
                 globalStateModel.setRightMenuVisible(false);
-                htmEditorLinkform &&
-                  htmEditorLinkform.setFieldsValue({
-                    iLinkID: -1,
-                    iMenuPath: DefaultMenuPath,
-                    iUrl: 'https://',
-                  });
+                htmEditorLinkform?.setFieldsValue({
+                  iLinkID: -1,
+                  iMenuPath: DefaultMenuPath,
+                  iUrl: 'https://'
+                });
 
                 HtmlEditorLinkModal(
                   t,
+                  modal,
                   -1,
                   DefaultMenuPath,
                   'https://',
@@ -164,17 +170,17 @@ const DrawerRightMenu = observer(() => {
                   globalStateModel,
                   sessionModel,
                   clubModel,
-                  messageApi,
+                  messageApi
                 )
                   .then()
-                  .catch((error) => {
+                  .catch(error => {
                     console.error(error);
                   });
               }}
             />
           </>
         ) : null}
-        {clubModel.modules.some((module) => module.name === 'Files') ? (
+        {clubModel.modules.some(module => module.name === 'Files') ? (
           <>
             <MenuItem
               key={'menuItem#uploadFile'}
@@ -183,9 +189,9 @@ const DrawerRightMenu = observer(() => {
               disabled={!sessionModel.loggedIn || !sessionModel.isAdmin}
               onClick={() => {
                 globalStateModel.setRightMenuVisible(false);
-                FileEditorModal(t, -1, fileEditorForm, globalStateModel, sessionModel, clubModel, messageApi)
+                FileEditorModal(t, modal, -1, fileEditorForm, globalStateModel, sessionModel, clubModel, messageApi)
                   .then()
-                  .catch((error) => {
+                  .catch(error => {
                     console.error(error);
                   });
               }}
@@ -197,9 +203,9 @@ const DrawerRightMenu = observer(() => {
               disabled={!sessionModel.loggedIn || !sessionModel.isAdmin}
               onClick={() => {
                 globalStateModel.setRightMenuVisible(false);
-                FolderEditorModal(t, -1, folderEditorForm, globalStateModel, sessionModel, clubModel, messageApi)
+                FolderEditorModal(t, modal, -1, folderEditorForm, globalStateModel, sessionModel, clubModel, messageApi)
                   .then()
-                  .catch((error) => {
+                  .catch(error => {
                     console.error(error);
                   });
               }}

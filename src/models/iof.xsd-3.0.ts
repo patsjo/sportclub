@@ -119,7 +119,7 @@ interface IClassCourseAssignment {
   CourseName?: string;
 }
 
-interface IClassListType extends IBaseMessageElement {
+export interface IClassListType extends IBaseMessageElement {
   Class?: IClass[];
 }
 
@@ -192,14 +192,20 @@ interface ICompetitor {
   Score?: IScore[];
 }
 
-interface ICompetitorListType extends IBaseMessageElement {
+export interface ICompetitorListType extends IBaseMessageElement {
   Competitor?: ICompetitor[];
 }
 
 /** Contact information for a person, organisation or other entity. */
 type IContact = string;
 
-type ContactTypeType = 'PhoneNumber' | 'MobilePhoneNumber' | 'FaxNumber' | 'EmailAddress' | 'WebAddress' | 'Other';
+export type ContactTypeType =
+  | 'PhoneNumber'
+  | 'MobilePhoneNumber'
+  | 'FaxNumber'
+  | 'EmailAddress'
+  | 'WebAddress'
+  | 'Other';
 
 /** Defines a control, without any relationship to a particular course. */
 interface IControl {
@@ -234,7 +240,7 @@ interface IControlAnswer {
 /** The unique identifier of the control card, i.e. card number. */
 type IControlCard = string;
 
-interface IControlCardListType extends IBaseMessageElement {
+export interface IControlCardListType extends IBaseMessageElement {
   /** The control cards. */
   ControlCard: IControlCard[];
   /** The owner of the control cards. */
@@ -303,7 +309,7 @@ type CourseControlSpecialInstructionType =
   | 'MandatoryCrossingPoint'
   | 'MandatoryOutOfBoundsAreaPassage';
 
-interface ICourseDataType extends IBaseMessageElement {
+export interface ICourseDataType extends IBaseMessageElement {
   /** The event that the course data belongs to. */
   Event: IEvent;
   /** The course data for each race; one element per race in the event. */
@@ -318,7 +324,7 @@ export interface IDateAndOptionalTime {
   Time?: string;
 }
 
-interface IEntryListType extends IBaseMessageElement {
+export interface IEntryListType extends IBaseMessageElement {
   /** The event that the entry list belongs to. */
   Event: IEvent;
   /** The individual competitors registered for the event. */
@@ -376,7 +382,7 @@ export type EventClassStatus = 'Normal' | 'Divided' | 'Joined' | 'Invalidated' |
 
 export type EventForm = 'Individual' | 'Team' | 'Relay';
 
-interface IEventListType extends IBaseMessageElement {
+export interface IEventListType extends IBaseMessageElement {
   Event?: IEvent[];
 }
 
@@ -384,7 +390,7 @@ export type EventStatus = 'Planned' | 'Applied' | 'Proposed' | 'Sanctioned' | 'C
 
 type IEventURL = string;
 
-type EventURLTypeType = 'Website' | 'StartList' | 'ResultList' | 'Other';
+export type EventURLTypeType = 'Website' | 'StartList' | 'ResultList' | 'Other';
 
 /** A fee that applies when entering a class at a race or ordering a service. */
 interface IFee {
@@ -517,7 +523,7 @@ interface IOrganisation {
   ShortName?: string;
 }
 
-interface IOrganisationListType extends IBaseMessageElement {
+export interface IOrganisationListType extends IBaseMessageElement {
   Organisation?: IOrganisation[];
 }
 
@@ -1008,7 +1014,7 @@ interface IServiceRequest {
   Service: IService;
 }
 
-interface IServiceRequestListType extends IBaseMessageElement {
+export interface IServiceRequestListType extends IBaseMessageElement {
   /** The event that the service requests are valid for. */
   Event: IEvent;
   /** Service requests made by organisations. */
@@ -1055,7 +1061,7 @@ interface ISplitTime {
 
 type SplitTimeStatusType = 'OK' | 'Missing' | 'Additional';
 
-interface IStartListType extends IBaseMessageElement {
+export interface IStartListType extends IBaseMessageElement {
   /** Start lists for the classes in the event. */
   ClassStart?: IClassStart[];
   /** The event that the start lists belong to. */
@@ -1200,9 +1206,9 @@ export interface ITeamMemberRaceResult {
 }
 
 type ITeamMemberRaceResultPositionType = number;
-type TeamMemberRaceResultPositionTypeTypeType = 'Leg' | 'Course';
+export type TeamMemberRaceResultPositionTypeTypeType = 'Leg' | 'Course';
 type ITeamMemberRaceResultTimeBehindType = number;
-type TeamMemberRaceResultTimeBehindTypeTypeType = 'Leg' | 'Course';
+export type TeamMemberRaceResultTimeBehindTypeTypeType = 'Leg' | 'Course';
 
 /** Start information for a team member in a race. */
 interface ITeamMemberRaceStart {

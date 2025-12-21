@@ -1,5 +1,5 @@
-import { TFunction } from 'i18next';
 import dayjs from 'dayjs';
+import { TFunction } from 'i18next';
 
 const GetDayOfWeek = (date: dayjs.Dayjs, t: TFunction): string => {
   const dayOfWeek = date.isoWeekday();
@@ -47,41 +47,41 @@ const GetHolidayName = (date: dayjs.Dayjs, t: TFunction): string | undefined => 
   const easterSunday = GetGaussEasterSunday(year);
 
   if (mmddStr === '1224') {
-    return 'Julafton';
+    return t('holidays.christmasEve');
   } else if (mmddStr === '1231') {
-    return 'Nyårsafton';
+    return t('holidays.newYearsEve');
   } else if (mmddStr === '0101') {
-    return 'Nyårsdagen';
+    return t('holidays.newYearsDay');
   } else if (mmddStr === '0106') {
-    return 'Trettondagen';
+    return t('holidays.epiphany');
   } else if (mmddStr === '0501') {
-    return 'Första maj';
+    return t('holidays.mayDay');
   } else if (mmddStr === '0606') {
-    return 'Nationaldagen';
+    return t('holidays.nationalDay');
   } else if (mmddStr === '1225') {
-    return 'Juldagen';
+    return t('holidays.christmasDay');
   } else if (mmddStr === '1226') {
-    return 'Annandag jul';
+    return t('holidays.boxingDay');
   } else if (mmddStr === '1031') {
-    return 'Halloween';
+    return t('holidays.halloween');
   } else if (mmddStr === '0214') {
-    return 'Alla hjärtans dag';
+    return t('holidays.valentinesDay');
   } else if (dayOfWeek === 5 && ['0619', '0620', '0621', '0622', '0623', '0624', '0625'].includes(mmddStr)) {
-    return 'Midsommarafton';
+    return t('holidays.midsummerEve');
   } else if (dayOfWeek === 6 && ['0620', '0621', '0622', '0623', '0624', '0625', '0626'].includes(mmddStr)) {
-    return 'Midsommardagen';
+    return t('holidays.midsummerDay');
   } else if (dayOfWeek === 6 && ['1031', '1101', '1102', '1103', '1104', '1105', '1106'].includes(mmddStr)) {
-    return 'Alla helgons dag';
+    return t('holidays.allSaintsDay');
   } else if (date.diff(easterSunday, 'days') === -2) {
-    return 'Långfredagen';
+    return t('holidays.goodFriday');
   } else if (date.diff(easterSunday, 'days') === -1) {
-    return 'Påskafton';
+    return t('holidays.easterEve');
   } else if (date.diff(easterSunday, 'days') === 0) {
-    return 'Påskdagen';
+    return t('holidays.easterSunday');
   } else if (date.diff(easterSunday, 'days') === 1) {
-    return 'Annandag påsk';
+    return t('holidays.easterMonday');
   } else if (date.diff(easterSunday, 'days') === 39) {
-    return 'Kristi Himmelsfärdsdag';
+    return t('holidays.ascensionDay');
   }
   return undefined;
 };
@@ -133,7 +133,7 @@ export const GetDates = (startDate: dayjs.Dayjs, numberOfDates: number, t: TFunc
       date: date,
       dayOfWeek: GetDayOfWeek(date, t),
       color: GetHolidayColor(date),
-      holidayName: GetHolidayName(date, t),
+      holidayName: GetHolidayName(date, t)
     });
   }
   return dates;

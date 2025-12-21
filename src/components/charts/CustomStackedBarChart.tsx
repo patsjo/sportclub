@@ -20,7 +20,7 @@ const CustomStackedBarChart = observer(
             top: 10,
             right: 10,
             left: 10,
-            bottom: 10,
+            bottom: 10
           }}
         >
           <CartesianGrid vertical={false} />
@@ -31,10 +31,11 @@ const CustomStackedBarChart = observer(
           {valueKeys
             .map((valueKey, idx) => ({ valueKey, idx }))
             .filter(({ valueKey }) =>
-              data.some((d) => typeof d[valueKey] === 'number' && !isNaN(d[valueKey]) && d[valueKey] > 0),
+              data.some(d => typeof d[valueKey] === 'number' && !isNaN(d[valueKey]) && d[valueKey] > 0)
             )
             .map(({ valueKey, idx }) => (
               <Bar
+                key={valueKey}
                 type="monotone"
                 dataKey={valueKey}
                 stackId={dataKey}
@@ -47,6 +48,6 @@ const CustomStackedBarChart = observer(
         </BarChart>
       </Col>
     );
-  },
+  }
 );
 export default CustomStackedBarChart;

@@ -1,12 +1,12 @@
-import { Col, Form, Input, InputNumber, Row, Select } from 'antd';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Col, Form, Input, InputNumber, Modal, Row, Select } from 'antd';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import styled from 'styled-components';
+import { styled } from 'styled-components';
 import { IMobxClubModel } from '../../models/mobxClubModel';
 import { IRaceResult, IRaceResultProps } from '../../models/resultModel';
 import { IRaceWizard } from '../../models/resultWizardModel';
 import { ISessionModel } from '../../models/sessionModel';
-import { FormSelect, INumberOption, errorRequiredField, hasErrors, timeFormat } from '../../utils/formHelper';
+import { INumberOption, errorRequiredField, hasErrors, timeFormat } from '../../utils/formHelper';
 import {
   AwardTypes,
   DifficultyTypes,
@@ -15,7 +15,7 @@ import {
   PaymentTypes,
   difficulties,
   failedReasonOptions,
-  failedReasons,
+  failedReasons
 } from '../../utils/resultConstants';
 import {
   GetAge,
@@ -23,20 +23,19 @@ import {
   GetClassClassificationId,
   GetClassLevel,
   GetClassShortName,
-  GetCompetitorFee,
+  GetCompetitorFee
 } from '../../utils/resultHelper';
 import FormItem from '../formItems/FormItem';
+import { FormSelect } from '../formItems/FormSelect';
 import InputTime, { stringToMilliSeconds } from '../formItems/InputTime';
 import { StyledIcon } from '../styled/styled';
 import { AddMapCompetitorConfirmModal } from './AddMapCompetitorConfirmModal';
-
-const { Option } = Select;
 
 interface IColorOptionContentProps {
   background: string;
 }
 const ColorOptionContent = styled.div<IColorOptionContentProps>`
-  background: ${(props) => props.background};
+  background: ${props => props.background};
   height: 18px;
   width: 30px;
   border: black 1px solid;
@@ -45,8 +44,15 @@ const ColorOptionContent = styled.div<IColorOptionContentProps>`
 
 export interface IExtendedRaceResult extends IRaceResultProps {
   isAwardTouched: boolean;
-  fee: number;
+  fee: number | null;
 }
+
+interface IRaceResultForm extends Omit<IExtendedRaceResult, 'competitorId'> {
+  competitorId: number | undefined;
+  totalFeeToClub: number;
+  eventClassificationId: EventClassificationIdTypes;
+}
+
 interface IEditResultIndividualProps {
   clubModel: IMobxClubModel;
   sessionModel: ISessionModel;
@@ -60,6 +66,8 @@ interface IEditResultIndividualProps {
   results: IRaceResult[];
   competitorsOptions: INumberOption[];
   autoUpdateResultWithSameClass: boolean;
+  onChange: (changes: Partial<IExtendedRaceResult>) => void;
+  onChangeAll: (changes: Partial<IExtendedRaceResult>) => void;
   onValidate: (valid: boolean) => void;
 }
 const EditResultIndividual = ({
@@ -75,94 +83,88 @@ const EditResultIndividual = ({
   results,
   competitorsOptions,
   autoUpdateResultWithSameClass,
-  onValidate,
+  onChange,
+  onChangeAll,
+  onValidate
 }: IEditResultIndividualProps) => {
   const { t } = useTranslation();
-  const formRef = useRef<any>(null);
+  const [form] = Form.useForm<IRaceResultForm>();
   const formId = useMemo(() => 'editResultIndividual' + Math.floor(Math.random() * 1000000000000000), []);
   eventClassificationId = result.deviantEventClassificationId
     ? (result.deviantEventClassificationId as EventClassificationIdTypes)
     : eventClassificationId;
   const [raceEventClassification, setRaceEventClassification] = useState(
-    clubModel.raceClubs?.eventClassifications.find((ec) => ec.eventClassificationId === eventClassificationId),
+    clubModel.raceClubs?.eventClassifications.find(ec => ec.eventClassificationId === eventClassificationId)
   );
   const competitor = useMemo(
     () => clubModel.raceClubs?.selectedClub?.competitorById(result.competitorId),
-    [clubModel.raceClubs?.selectedClub],
+    [clubModel.raceClubs?.selectedClub, result.competitorId]
   );
   const [failedReason, setFailedReason] = useState(result.failedReason);
   const [age, setAge] = useState(competitor ? GetAge(competitor.birthDay, raceDate) : null);
   const [isAwardTouched, setIsAwardTouched] = useState(result.isAwardTouched);
   const [classClassification, setClassClassification] = useState(
-    raceEventClassification?.classClassifications.find(
-      (cc) => cc.classClassificationId === result.classClassificationId,
-    ),
+    raceEventClassification?.classClassifications.find(cc => cc.classClassificationId === result.classClassificationId)
   );
   const { raceClubs } = clubModel;
-  const calculatedAward =
-    meetsAwardRequirements && raceEventClassification && raceClubs
-      ? GetAward(raceEventClassification, raceClubs.classLevels, result, age, isSprint)
-      : null;
+  const [modal, contextHolder] = Modal.useModal();
+  const calculatedAward = useMemo(
+    () =>
+      meetsAwardRequirements && raceEventClassification && raceClubs
+        ? GetAward(raceEventClassification, raceClubs.classLevels, result, age, isSprint)
+        : null,
+    [age, isSprint, meetsAwardRequirements, raceClubs, raceEventClassification, result]
+  );
   if (!isAwardTouched && result.award !== calculatedAward) {
     result.award = calculatedAward;
   }
+  const initialValues: IRaceResultForm = useMemo(
+    () => ({
+      ...result,
+      competitorId: !result.competitorId || result.competitorId === -1 ? undefined : result.competitorId,
+      missingTime: result.missingTime != null ? result.missingTime.substring(0, 8) : null,
+      totalFeeToClub: (result.feeToClub ?? 0) + (result.serviceFeeToClub ?? 0),
+      eventClassificationId: eventClassificationId
+    }),
+    [eventClassificationId, result]
+  );
 
   useEffect(() => {
     setTimeout(() => {
-      formRef.current && hasErrors(formRef.current).then((notValid: boolean) => onValidate(!notValid));
+      if (form) hasErrors(form).then((notValid: boolean) => onValidate(!notValid));
     }, 0);
-  }, [formRef.current]);
+  }, [onValidate, form]);
 
   return raceClubs?.selectedClub ? (
     <Form
+      form={form}
       id={formId}
-      ref={formRef}
       layout="vertical"
-      initialValues={{
-        iCompetitorId: !result.competitorId || result.competitorId === -1 ? undefined : result.competitorId,
-        iClassName: result.className,
-        iClassClassificationId: !result.classClassificationId ? undefined : result.classClassificationId.toString(),
-        iDifficulty: result.difficulty,
-        iLengthInMeter: result.lengthInMeter,
-        iFailedReason: result.failedReason,
-        iCompetitorTime: result.competitorTime,
-        iWinnerTime: result.winnerTime,
-        iSecondTime: result.secondTime,
-        iMissingTime: result.missingTime != null ? result.missingTime.substr(0, 8) : null,
-        iPosition: result.position,
-        iNofStartsInClass: result.nofStartsInClass,
-        iAward: result.award,
-        iOriginalFee: result.originalFee,
-        iLateFee: result.lateFee,
-        iFeeToClub: result.feeToClub,
-        iServiceFeeToClub: result.serviceFeeToClub,
-        iServiceFeeDescription: result.serviceFeeDescription,
-        iTotalFeeToClub: (result.feeToClub ?? 0) + (result.serviceFeeToClub ?? 0),
-        iEventClassificationId: eventClassificationId,
-        iDeviantEventClassificationId: result.deviantEventClassificationId,
-      }}
-      onValuesChange={() => hasErrors(formRef.current).then((notValid) => onValidate(!notValid))}
+      initialValues={initialValues}
+      onValuesChange={() => hasErrors(form).then(notValid => onValidate(!notValid))}
     >
       <Row gutter={8}>
         <Col span={18}>
           <FormItem
-            name="iCompetitorId"
+            name="competitorId"
             label={t('results.Competitor')}
             rules={[
               {
                 required: true,
-                message: errorRequiredField(t, 'results.Competitor'),
-              },
+                message: errorRequiredField(t, 'results.Competitor')
+              }
             ]}
           >
             <FormSelect
-              disabled={true}
               showSearch
+              disabled={true}
               optionFilterProp="children"
-              filterOption={(input, option) => option?.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+              filterOption={(input, option) =>
+                option!.label!.toString().toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
               options={competitorsOptions}
               onChange={(code: number) => {
-                result.competitorId = code == null ? -1 : code;
+                onChange({ competitorId: code == null ? -1 : code });
               }}
             />
           </FormItem>
@@ -171,9 +173,10 @@ const EditResultIndividual = ({
           <StyledIcon
             type="edit"
             onClick={() => {
-              raceClubs.selectedClub &&
+              if (raceClubs.selectedClub)
                 AddMapCompetitorConfirmModal(
                   t,
+                  modal,
                   result.competitorId,
                   undefined,
                   {
@@ -185,23 +188,23 @@ const EditResultIndividual = ({
                     iClubId: raceClubs.selectedClub.clubId,
                     iStartDate: '1930-01-01',
                     iEndDate: null,
-                    iEventorCompetitorId: null,
+                    iEventorCompetitorId: null
                   },
                   result.className,
                   clubModel,
-                  sessionModel,
+                  sessionModel
                 )
-                  .then((competitor) => {
-                    result.competitorId = competitor ? competitor.competitorId : -1;
-                    result.feeToClub = GetCompetitorFee(paymentModel, result, age, classClassification);
-                    formRef.current.setFieldsValue({
-                      iCompetitorId: result.competitorId == null ? undefined : result.competitorId,
-                      iFeeToClub: result.feeToClub,
-                    });
+                  .then(competitor => {
+                    const changes: Partial<IExtendedRaceResult> = {
+                      competitorId: competitor ? competitor.competitorId : -1,
+                      feeToClub: GetCompetitorFee(paymentModel, result, age, classClassification)
+                    };
+                    onChange(changes);
+                    form.setFieldsValue(changes);
                     setAge(competitor ? GetAge(competitor.birthDay, raceDate) : null);
-                    formRef.current.validateFields(['iCompetitorId', 'iFeeToClub'], { force: true });
+                    form.validateFields(['competitorId', 'feeToClub']);
                   })
-                  .catch((error) => {
+                  .catch(error => {
                     console.error(error);
                   });
             }}
@@ -211,76 +214,65 @@ const EditResultIndividual = ({
       <Row gutter={8}>
         <Col span={6}>
           <FormItem
-            name="iClassName"
+            name="className"
             label={t('results.Class')}
             rules={[
               {
                 required: true,
-                message: errorRequiredField(t, 'results.Class'),
-              },
+                message: errorRequiredField(t, 'results.Class')
+              }
             ]}
           >
             <Input
-              onChange={(e) => {
-                result.className = e.currentTarget.value;
+              onChange={e => {
+                const changes: Partial<IExtendedRaceResult> = { className: e.currentTarget.value };
                 const resultWithSameClass = results.find(
-                  (r) =>
-                    r.className === result.className &&
+                  r =>
+                    r.className === e.currentTarget.value &&
                     r.failedReason == null &&
                     r.resultId !== result.resultId &&
                     r.classClassificationId != null &&
-                    r.difficulty != null,
+                    r.difficulty != null
                 );
                 if (resultWithSameClass && autoUpdateResultWithSameClass) {
-                  result.classClassificationId = resultWithSameClass.classClassificationId;
-                  result.difficulty = resultWithSameClass.difficulty;
-                  result.lengthInMeter = resultWithSameClass.lengthInMeter;
-                  result.winnerTime = resultWithSameClass.winnerTime;
-                  result.secondTime = resultWithSameClass.secondTime;
-                  result.nofStartsInClass = resultWithSameClass.nofStartsInClass;
-                  result.originalFee = resultWithSameClass.originalFee;
-                  result.deviantEventClassificationId = resultWithSameClass.deviantEventClassificationId;
-                  formRef.current.setFieldsValue({
-                    iClassClassificationId:
-                      result.classClassificationId == null ? undefined : result.classClassificationId.toString(),
-                    iDifficulty: result.difficulty,
-                    iLengthInMeter: result.lengthInMeter,
-                    iWinnerTime: result.winnerTime,
-                    iSecondTime: result.secondTime,
-                    iNofStartsInClass: result.nofStartsInClass,
-                    iOriginalFee: result.originalFee,
-                    iDeviantEventClassificationId: result.deviantEventClassificationId,
+                  Object.assign(changes, {
+                    classClassificationId2: resultWithSameClass.classClassificationId,
+                    difficulty: resultWithSameClass.difficulty,
+                    lengthInMeter: resultWithSameClass.lengthInMeter,
+                    winnerTime: resultWithSameClass.winnerTime,
+                    secondTime: resultWithSameClass.secondTime,
+                    nofStartsInClass: resultWithSameClass.nofStartsInClass,
+                    originalFee: resultWithSameClass.originalFee,
+                    deviantEventClassificationId: resultWithSameClass.deviantEventClassificationId
                   });
-                  formRef.current.validateFields(
-                    [
-                      'iClassClassificationId',
-                      'iDifficulty',
-                      'iLengthInMeter',
-                      'iWinnerTime',
-                      'iSecondTime',
-                      'iNofStartsInClass',
-                      'iOriginalFee',
-                      'iDeviantEventClassificationId',
-                    ],
-                    { force: true },
-                  );
+                  onChange(changes);
+                  form.setFieldsValue(changes);
+                  form.validateFields([
+                    'classClassificationId',
+                    'difficulty',
+                    'lengthInMeter',
+                    'winnerTime',
+                    'secondTime',
+                    'nofStartsInClass',
+                    'originalFee',
+                    'deviantEventClassificationId'
+                  ]);
                 } else {
-                  const shortClassName = GetClassShortName(result.className);
+                  const shortClassName = GetClassShortName(e.currentTarget.value);
                   const classLevel = GetClassLevel(raceClubs.classLevels, shortClassName);
-                  result.classClassificationId = GetClassClassificationId(
-                    result.deviantEventClassificationId
-                      ? (result.deviantEventClassificationId as EventClassificationIdTypes)
-                      : eventClassificationId,
-                    classLevel,
-                    raceClubs.eventClassifications,
-                  );
-                  result.difficulty = classLevel ? classLevel.difficulty : null;
-                  formRef.current.setFieldsValue({
-                    iClassClassificationId:
-                      result.classClassificationId == null ? undefined : result.classClassificationId.toString(),
-                    iDifficulty: result.difficulty,
+                  Object.assign(changes, {
+                    classClassificationId: GetClassClassificationId(
+                      result.deviantEventClassificationId
+                        ? (result.deviantEventClassificationId as EventClassificationIdTypes)
+                        : eventClassificationId,
+                      classLevel,
+                      raceClubs.eventClassifications
+                    ),
+                    difficulty: classLevel ? classLevel.difficulty : null
                   });
-                  formRef.current.validateFields(['iClassClassificationId', 'iDifficulty'], { force: true });
+                  onChange(changes);
+                  form.setFieldsValue(changes);
+                  form.validateFields(['classClassificationId', 'difficulty']);
                 }
               }}
             />
@@ -288,13 +280,13 @@ const EditResultIndividual = ({
         </Col>
         <Col span={6}>
           <FormItem
-            name="iClassClassificationId"
+            name="classClassificationId"
             label={t('results.ClassClassification')}
             rules={[
               {
                 required: true,
-                message: errorRequiredField(t, 'results.ClassClassification'),
-              },
+                message: errorRequiredField(t, 'results.ClassClassification')
+              }
             ]}
           >
             <FormSelect
@@ -303,29 +295,29 @@ const EditResultIndividual = ({
                 raceClubs.classClassificationOptions(
                   result.deviantEventClassificationId
                     ? (result.deviantEventClassificationId as EventClassificationIdTypes)
-                    : eventClassificationId,
+                    : eventClassificationId
                 ) ?? []
               }
-              onChange={(code) => {
-                result.classClassificationId = !code ? undefined : parseInt(code);
+              onChange={code => {
+                const classClassificationId = !code ? undefined : parseInt(code);
                 const tempClassClassification = raceEventClassification?.classClassifications.find(
-                  (cc) => cc.classClassificationId === result.classClassificationId,
+                  cc => cc.classClassificationId === classClassificationId
                 );
-                result.feeToClub = GetCompetitorFee(paymentModel, result, age, tempClassClassification);
-                formRef.current.setFieldsValue({
-                  iFeeToClub: result.feeToClub,
-                });
+                const changes: Partial<IExtendedRaceResult> = {
+                  classClassificationId: classClassificationId,
+                  feeToClub: GetCompetitorFee(
+                    paymentModel,
+                    { ...result, classClassificationId },
+                    age,
+                    tempClassClassification
+                  )
+                };
+                onChange(changes);
+                form.setFieldsValue(changes);
                 setClassClassification(tempClassClassification);
-                formRef.current.validateFields(['iFeeToClub'], {
-                  force: true,
-                });
+                form.validateFields(['feeToClub']);
                 if (autoUpdateResultWithSameClass) {
-                  const resultsWithSameClass = results.filter(
-                    (r) => r.className === result.className && r.resultId !== result.resultId,
-                  );
-                  resultsWithSameClass.forEach((r) =>
-                    r.setNumberValueOrNull('classClassificationId', result.classClassificationId),
-                  );
+                  onChangeAll({ classClassificationId: classClassificationId });
                 }
               }}
             />
@@ -333,23 +325,57 @@ const EditResultIndividual = ({
         </Col>
         <Col span={6}>
           <FormItem
-            name="iDifficulty"
+            name="difficulty"
             label={t('results.Difficulty')}
             rules={[
               {
                 required: true,
-                message: errorRequiredField(t, 'results.Difficulty'),
-              },
+                message: errorRequiredField(t, 'results.Difficulty')
+              }
             ]}
           >
             <Select
               allowClear={true}
+              options={[
+                {
+                  value: difficulties.green,
+                  label: <ColorOptionContent background="green" />
+                },
+                {
+                  value: difficulties.white,
+                  label: <ColorOptionContent background="white" />
+                },
+                {
+                  value: difficulties.yellow,
+                  label: <ColorOptionContent background="yellow" />
+                },
+                {
+                  value: difficulties.orange,
+                  label: <ColorOptionContent background="orange" />
+                },
+                {
+                  value: difficulties.red,
+                  label: <ColorOptionContent background="red" />
+                },
+                {
+                  value: difficulties.purple,
+                  label: <ColorOptionContent background="purple" />
+                },
+                {
+                  value: difficulties.blue,
+                  label: <ColorOptionContent background="blue" />
+                },
+                {
+                  value: difficulties.black,
+                  label: <ColorOptionContent background="black" />
+                }
+              ]}
               onChange={(code: DifficultyTypes) => {
-                result.difficulty = code;
+                onChange({ difficulty: code });
                 const raceWinnerResult = raceWizardModel.raceWinnerResults.find(
-                  (wr) => wr.className === result.className,
+                  wr => wr.className === result.className
                 );
-                if (raceWinnerResult && result.difficulty) raceWinnerResult.setDifficulty(result.difficulty);
+                if (raceWinnerResult && code) raceWinnerResult.setDifficulty(code);
                 if (
                   !raceWinnerResult &&
                   result.className &&
@@ -360,54 +386,26 @@ const EditResultIndividual = ({
                     id: raceWizardModel.raceWinnerResults.length,
                     personName: 'Unknown',
                     className: result.className,
-                    difficulty: result.difficulty,
+                    difficulty: code,
                     lengthInMeter: result.lengthInMeter,
-                    winnerTime: result.winnerTime,
+                    winnerTime: result.winnerTime
                   });
                 if (autoUpdateResultWithSameClass) {
-                  const resultsWithSameClass = results.filter(
-                    (r) => r.className === result.className && r.resultId !== result.resultId,
-                  );
-                  resultsWithSameClass.forEach((r) => r.setDifficulty(result.difficulty as DifficultyTypes));
+                  onChangeAll({ difficulty: code });
                 }
               }}
-            >
-              <Option value={difficulties.green}>
-                <ColorOptionContent background="green" />
-              </Option>
-              <Option value={difficulties.white}>
-                <ColorOptionContent background="white" />
-              </Option>
-              <Option value={difficulties.yellow}>
-                <ColorOptionContent background="yellow" />
-              </Option>
-              <Option value={difficulties.orange}>
-                <ColorOptionContent background="orange" />
-              </Option>
-              <Option value={difficulties.red}>
-                <ColorOptionContent background="red" />
-              </Option>
-              <Option value={difficulties.purple}>
-                <ColorOptionContent background="purple" />
-              </Option>
-              <Option value={difficulties.blue}>
-                <ColorOptionContent background="blue" />
-              </Option>
-              <Option value={difficulties.black}>
-                <ColorOptionContent background="black" />
-              </Option>
-            </Select>
+            />
           </FormItem>
         </Col>
         <Col span={6}>
           <FormItem
-            name="iLengthInMeter"
+            name="lengthInMeter"
             label={t('results.LengthInMeter')}
             rules={[
               {
                 required: failedReason !== failedReasons.NotStarted,
-                message: errorRequiredField(t, 'results.LengthInMeter'),
-              },
+                message: errorRequiredField(t, 'results.LengthInMeter')
+              }
             ]}
           >
             <InputNumber
@@ -416,30 +414,22 @@ const EditResultIndividual = ({
               step={100}
               style={{ width: '100%' }}
               onChange={(value: number | null) => {
-                result.lengthInMeter = value;
+                onChange({ lengthInMeter: value });
                 const raceWinnerResult = raceWizardModel.raceWinnerResults.find(
-                  (wr) => wr.className === result.className,
+                  wr => wr.className === result.className
                 );
-                if (raceWinnerResult && result.lengthInMeter) raceWinnerResult.setLengthInMeter(result.lengthInMeter);
-                if (
-                  !raceWinnerResult &&
-                  result.className &&
-                  result.lengthInMeter &&
-                  result.winnerTime?.length === timeFormat.length
-                )
+                if (raceWinnerResult && value) raceWinnerResult.setLengthInMeter(value);
+                if (!raceWinnerResult && result.className && value && result.winnerTime?.length === timeFormat.length)
                   raceWizardModel.addRaceWinnerResult({
                     id: raceWizardModel.raceWinnerResults.length,
                     personName: 'Unknown',
                     className: result.className,
                     difficulty: result.difficulty,
-                    lengthInMeter: result.lengthInMeter,
-                    winnerTime: result.winnerTime,
+                    lengthInMeter: value,
+                    winnerTime: result.winnerTime
                   });
                 if (autoUpdateResultWithSameClass) {
-                  const resultsWithSameClass = results.filter(
-                    (r) => r.className === result.className && r.resultId !== result.resultId,
-                  );
-                  resultsWithSameClass.forEach((r) => r.setNumberValueOrNull('lengthInMeter', result.lengthInMeter));
+                  onChangeAll({ lengthInMeter: value });
                 }
               }}
             />
@@ -448,112 +438,96 @@ const EditResultIndividual = ({
       </Row>
       <Row gutter={8}>
         <Col span={6}>
-          <FormItem name="iFailedReason" label={t('results.FailedReason')}>
+          <FormItem name="failedReason" label={t('results.FailedReason')}>
             <FormSelect
               allowClear={true}
               options={failedReasonOptions(t)}
-              onChange={(code) => {
-                result.failedReason = code;
-                result.feeToClub = GetCompetitorFee(paymentModel, result, age, classClassification);
-                formRef.current.setFieldsValue({
-                  iFeeToClub: result.feeToClub,
-                });
+              onChange={code => {
+                const changes: Partial<IExtendedRaceResult> = {
+                  failedReason: code,
+                  feeToClub: GetCompetitorFee(paymentModel, { ...result, failedReason: code }, age, classClassification)
+                };
+                onChange(changes);
+                form.setFieldsValue(changes);
                 setFailedReason(code);
-                formRef.current.validateFields(
-                  [
-                    'iLengthInMeter',
-                    'iCompetitorTime',
-                    'iWinnerTime',
-                    'iSecondTime',
-                    'iPosition',
-                    'iNofStartsInClass',
-                    'iFeeToClub',
-                  ],
-                  {
-                    force: true,
-                  },
-                );
+                form.validateFields([
+                  'lengthInMeter',
+                  'competitorTime',
+                  'winnerTime',
+                  'secondTime',
+                  'position',
+                  'nofStartsInClass',
+                  'feeToClub'
+                ]);
               }}
             />
           </FormItem>
         </Col>
         <Col span={6}>
           <FormItem
-            name="iCompetitorTime"
+            name="competitorTime"
             label={t('results.Time')}
             rules={[
               {
                 required: !failedReason,
-                message: errorRequiredField(t, 'results.Time'),
-              },
+                message: errorRequiredField(t, 'results.Time')
+              }
             ]}
           >
             <InputTime
               format={timeFormat}
               allowClear={true}
               style={{ width: '100%' }}
-              onChange={(time) => {
-                result.competitorTime = time;
-                formRef.current.validateFields(['iWinnerTime'], { force: true });
+              onChange={time => {
+                onChange({ competitorTime: time });
+                form.validateFields(['winnerTime']);
               }}
             />
           </FormItem>
         </Col>
         <Col span={6}>
           <FormItem
-            name="iWinnerTime"
+            name="winnerTime"
             label={t('results.WinnerTime')}
             rules={[
               {
                 required: !failedReason,
-                message: errorRequiredField(t, 'results.WinnerTime'),
+                message: errorRequiredField(t, 'results.WinnerTime')
               },
               {
                 validator: (rule, value, callback) => {
-                  const competitorTime = stringToMilliSeconds(
-                    formRef.current.getFieldValue('iCompetitorTime'),
-                    timeFormat,
-                  );
+                  const competitorTime = stringToMilliSeconds(form.getFieldValue('competitorTime'), timeFormat);
                   const winnerTime = stringToMilliSeconds(value, timeFormat);
                   if (competitorTime > 0 && winnerTime > 0 && competitorTime < winnerTime) {
                     callback(t('results.WinnerTimeLessOrEqualThanTime') ?? undefined);
                   }
                   callback();
-                },
-              },
+                }
+              }
             ]}
           >
             <InputTime
               format={timeFormat}
               allowClear={true}
               style={{ width: '100%' }}
-              onChange={(time) => {
-                result.winnerTime = time;
+              onChange={time => {
+                onChange({ winnerTime: time });
                 const raceWinnerResult = raceWizardModel.raceWinnerResults.find(
-                  (wr) => wr.className === result.className,
+                  wr => wr.className === result.className
                 );
-                if (raceWinnerResult && result.winnerTime?.length === timeFormat.length)
-                  raceWinnerResult.setWinnerTime(result.winnerTime);
-                if (
-                  !raceWinnerResult &&
-                  result.className &&
-                  result.lengthInMeter &&
-                  result.winnerTime?.length === timeFormat.length
-                )
+                if (raceWinnerResult && time?.length === timeFormat.length) raceWinnerResult.setWinnerTime(time);
+                if (!raceWinnerResult && result.className && result.lengthInMeter && time?.length === timeFormat.length)
                   raceWizardModel.addRaceWinnerResult({
                     id: raceWizardModel.raceWinnerResults.length,
                     personName: 'Unknown',
                     className: result.className,
                     difficulty: result.difficulty,
                     lengthInMeter: result.lengthInMeter,
-                    winnerTime: result.winnerTime,
+                    winnerTime: time
                   });
-                formRef.current.validateFields(['iSecondTime'], { force: true });
+                form.validateFields(['secondTime']);
                 if (autoUpdateResultWithSameClass) {
-                  const resultsWithSameClass = results.filter(
-                    (r) => r.className === result.className && r.resultId !== result.resultId,
-                  );
-                  resultsWithSameClass.forEach((r) => r.setStringValueOrNull('winnerTime', result.winnerTime));
+                  onChangeAll({ winnerTime: time });
                 }
               }}
             />
@@ -561,32 +535,29 @@ const EditResultIndividual = ({
         </Col>
         <Col span={6}>
           <FormItem
-            name="iSecondTime"
+            name="secondTime"
             label={t('results.SecondTime')}
             rules={[
               {
                 validator: (rule, value, callback) => {
-                  const winnerTime = stringToMilliSeconds(formRef.current.getFieldValue('iWinnerTime'), timeFormat);
+                  const winnerTime = stringToMilliSeconds(form.getFieldValue('winnerTime'), timeFormat);
                   const secondTime = stringToMilliSeconds(value, timeFormat);
                   if (winnerTime > 0 && secondTime > 0 && secondTime < winnerTime) {
                     callback(t('results.SecondTimeGreaterOrEqualThanWinnerTime') ?? undefined);
                   }
                   callback();
-                },
-              },
+                }
+              }
             ]}
           >
             <InputTime
               format={timeFormat}
               allowClear={true}
               style={{ width: '100%' }}
-              onChange={(time) => {
-                result.secondTime = time;
+              onChange={time => {
+                onChange({ secondTime: time });
                 if (autoUpdateResultWithSameClass) {
-                  const resultsWithSameClass = results.filter(
-                    (r) => r.className === result.className && r.resultId !== result.resultId,
-                  );
-                  resultsWithSameClass.forEach((r) => r.setStringValueOrNull('secondTime', result.secondTime));
+                  onChangeAll({ secondTime: time });
                 }
               }}
             />
@@ -596,13 +567,13 @@ const EditResultIndividual = ({
       <Row gutter={8}>
         <Col span={6}>
           <FormItem
-            name="iPosition"
+            name="position"
             label={t('results.Position')}
             rules={[
               {
                 required: !failedReason,
-                message: errorRequiredField(t, 'results.Position'),
-              },
+                message: errorRequiredField(t, 'results.Position')
+              }
             ]}
           >
             <InputNumber
@@ -611,30 +582,30 @@ const EditResultIndividual = ({
               step={1}
               style={{ width: '100%' }}
               onChange={(value: number | null) => {
-                result.position = value;
-                formRef.current.validateFields(['iNofStartsInClass'], { force: true });
+                onChange({ position: value });
+                form.validateFields(['nofStartsInClass']);
               }}
             />
           </FormItem>
         </Col>
         <Col span={6}>
           <FormItem
-            name="iNofStartsInClass"
+            name="nofStartsInClass"
             label={t('results.NofStartsInClass')}
             rules={[
               {
                 required: !failedReason,
-                message: errorRequiredField(t, 'results.NofStartsInClass'),
+                message: errorRequiredField(t, 'results.NofStartsInClass')
               },
               {
                 validator: (rule, value, callback) => {
-                  const position = formRef.current.getFieldValue('iPosition');
+                  const position = form.getFieldValue('position');
                   if (position && value && value < position) {
                     callback(t('results.PositionGreaterThanStarts') ?? undefined);
                   }
                   callback();
-                },
-              },
+                }
+              }
             ]}
           >
             <InputNumber
@@ -643,40 +614,34 @@ const EditResultIndividual = ({
               step={1}
               style={{ width: '100%' }}
               onChange={(value: number | null) => {
-                result.nofStartsInClass = value;
+                onChange({ nofStartsInClass: value });
                 if (autoUpdateResultWithSameClass) {
-                  const resultsWithSameClass = results.filter(
-                    (r) => r.className === result.className && r.resultId !== result.resultId,
-                  );
-                  resultsWithSameClass.forEach((r) =>
-                    r.setNumberValueOrNull('nofStartsInClass', result.nofStartsInClass),
-                  );
+                  onChangeAll({ nofStartsInClass: value });
                 }
               }}
             />
           </FormItem>
         </Col>
         <Col span={6}>
-          <FormItem name="iAward" label={t('results.Award')}>
+          <FormItem name="award" label={t('results.Award')}>
             <Select
               allowClear={true}
+              options={calculatedAward ? [{ value: calculatedAward, lebel: calculatedAward }] : []}
               onChange={(code: AwardTypes) => {
-                result.award = code;
+                onChange({ award: code });
                 setIsAwardTouched(true);
               }}
-            >
-              {calculatedAward ? <Option value={calculatedAward}>{calculatedAward}</Option> : null}
-            </Select>
+            />
           </FormItem>
         </Col>
         <Col span={6}>
-          <FormItem name="iMissingTime" label={t('results.MissingTime')}>
+          <FormItem name="missingTime" label={t('results.MissingTime')}>
             <InputTime
               format={timeFormat}
               allowClear={true}
               style={{ width: '100%' }}
-              onChange={(time) => {
-                result.missingTime = time != null ? `${time}${ManuallyEditedMissingTimePostfix}` : null;
+              onChange={time => {
+                onChange({ missingTime: time != null ? `${time}${ManuallyEditedMissingTimePostfix}` : null });
               }}
             />
           </FormItem>
@@ -685,13 +650,13 @@ const EditResultIndividual = ({
       <Row gutter={8}>
         <Col span={6}>
           <FormItem
-            name="iOriginalFee"
+            name="originalFee"
             label={t('results.OriginalFee')}
             rules={[
               {
                 required: true,
-                message: errorRequiredField(t, 'results.OriginalFee'),
-              },
+                message: errorRequiredField(t, 'results.OriginalFee')
+              }
             ]}
           >
             <InputNumber
@@ -702,23 +667,18 @@ const EditResultIndividual = ({
               decimalSeparator=","
               style={{ width: '100%' }}
               onChange={(value: number | null) => {
-                result.originalFee = value;
-                result.feeToClub = GetCompetitorFee(paymentModel, result, age, classClassification);
-                formRef.current.setFieldsValue({
-                  iFeeToClub: result.feeToClub,
-                  iTotalFeeToClub: result.feeToClub + (result.serviceFeeToClub ?? 0),
+                const changes: Partial<IExtendedRaceResult> = {
+                  originalFee: value,
+                  feeToClub: GetCompetitorFee(paymentModel, { ...result, originalFee: value }, age, classClassification)
+                };
+                onChange(changes);
+                form.setFieldsValue({
+                  ...changes,
+                  totalFeeToClub: (changes.feeToClub ?? 0) + (result.serviceFeeToClub ?? 0)
                 });
-                formRef.current.validateFields(['iFeeToClub'], {
-                  force: true,
-                });
+                form.validateFields(['feeToClub']);
                 if (autoUpdateResultWithSameClass) {
-                  const resultsWithSameClass = results.filter(
-                    (r) => r.className === result.className && r.resultId !== result.resultId,
-                  );
-                  resultsWithSameClass.forEach((r) => {
-                    r.setNumberValueOrNull('originalFee', result.originalFee);
-                    r.setNumberValueOrNull('feeToClub', GetCompetitorFee(paymentModel, r, age, classClassification));
-                  });
+                  onChangeAll(changes);
                 }
               }}
             />
@@ -726,13 +686,13 @@ const EditResultIndividual = ({
         </Col>
         <Col span={6}>
           <FormItem
-            name="iLateFee"
+            name="lateFee"
             label={t('results.LateFee')}
             rules={[
               {
                 required: true,
-                message: errorRequiredField(t, 'results.LateFee'),
-              },
+                message: errorRequiredField(t, 'results.LateFee')
+              }
             ]}
           >
             <InputNumber
@@ -743,28 +703,29 @@ const EditResultIndividual = ({
               decimalSeparator=","
               style={{ width: '100%' }}
               onChange={(value: number | null) => {
-                result.lateFee = value;
-                result.feeToClub = GetCompetitorFee(paymentModel, result, age, classClassification);
-                formRef.current.setFieldsValue({
-                  iFeeToClub: result.feeToClub,
-                  iTotalFeeToClub: result.feeToClub + (result.serviceFeeToClub ?? 0),
+                const changes: Partial<IExtendedRaceResult> = {
+                  lateFee: value,
+                  feeToClub: GetCompetitorFee(paymentModel, { ...result, lateFee: value }, age, classClassification)
+                };
+                onChange(changes);
+                form.setFieldsValue({
+                  ...changes,
+                  totalFeeToClub: (changes.feeToClub ?? 0) + (result.serviceFeeToClub ?? 0)
                 });
-                formRef.current.validateFields(['iFeeToClub'], {
-                  force: true,
-                });
+                form.validateFields(['feeToClub']);
               }}
             />
           </FormItem>
         </Col>
         <Col span={6}>
           <FormItem
-            name="iFeeToClub"
+            name="feeToClub"
             label={t('results.FeeToClub')}
             rules={[
               {
                 required: true,
-                message: errorRequiredField(t, 'results.FeeToClub'),
-              },
+                message: errorRequiredField(t, 'results.FeeToClub')
+              }
             ]}
           >
             <InputNumber
@@ -775,9 +736,9 @@ const EditResultIndividual = ({
               decimalSeparator=","
               style={{ width: '100%' }}
               onChange={(value: number | null) => {
-                result.feeToClub = value;
-                formRef.current.setFieldsValue({
-                  iTotalFeeToClub: (result.feeToClub ?? 0) + (result.serviceFeeToClub ?? 0),
+                onChange({ feeToClub: value });
+                form.setFieldsValue({
+                  totalFeeToClub: (value ?? 0) + (result.serviceFeeToClub ?? 0)
                 });
               }}
             />
@@ -787,13 +748,13 @@ const EditResultIndividual = ({
       <Row gutter={8}>
         <Col span={6}>
           <FormItem
-            name="iServiceFeeToClub"
+            name="serviceFeeToClub"
             label={t('results.ServiceFeeToClub')}
             rules={[
               {
                 required: true,
-                message: errorRequiredField(t, 'results.ServiceFeeToClub'),
-              },
+                message: errorRequiredField(t, 'results.ServiceFeeToClub')
+              }
             ]}
           >
             <InputNumber
@@ -804,79 +765,68 @@ const EditResultIndividual = ({
               decimalSeparator=","
               style={{ width: '100%' }}
               onChange={(value: number | null) => {
-                result.serviceFeeToClub = value!;
-                formRef.current.setFieldsValue({
-                  iTotalFeeToClub: (result.feeToClub ?? 0) + (result.serviceFeeToClub ?? 0),
+                onChange({ serviceFeeToClub: value });
+                form.setFieldsValue({
+                  totalFeeToClub: (result.feeToClub ?? 0) + (value ?? 0)
                 });
               }}
             />
           </FormItem>
         </Col>
         <Col span={12}>
-          <FormItem name="iServiceFeeDescription" label={t('results.ServiceFeeDescription')}>
+          <FormItem name="serviceFeeDescription" label={t('results.ServiceFeeDescription')}>
             <Input
               style={{ width: '100%' }}
-              onChange={(e) => {
-                result.serviceFeeDescription = e.currentTarget.value;
-              }}
+              onChange={e => onChange({ serviceFeeDescription: e.currentTarget.value })}
             />
           </FormItem>
         </Col>
         <Col span={6}>
-          <FormItem name="iTotalFeeToClub" label={t('results.TotalFeeToClub')}>
+          <FormItem name="totalFeeToClub" label={t('results.TotalFeeToClub')}>
             <InputNumber disabled={true} precision={2} decimalSeparator="," style={{ width: '100%' }} />
           </FormItem>
         </Col>
       </Row>
       <Row gutter={8}>
         <Col span={12}>
-          <FormItem name="iEventClassificationId" label={t('results.EventClassification')}>
+          <FormItem name="eventClassificationId" label={t('results.EventClassification')}>
             <FormSelect disabled={true} options={raceClubs.eventClassificationOptions} />
           </FormItem>
         </Col>
         <Col span={12}>
-          <FormItem name="iDeviantEventClassificationId" label={t('results.DeviantEventClassification')}>
+          <FormItem name="deviantEventClassificationId" label={t('results.DeviantEventClassification')}>
             <FormSelect
               allowClear={true}
-              options={raceClubs.eventClassificationOptions.map((option) => ({
+              options={raceClubs.eventClassificationOptions.map(option => ({
                 ...option,
-                disabled: option.code === eventClassificationId,
+                disabled: option.code === eventClassificationId
               }))}
               onChange={(code?: EventClassificationIdTypes) => {
-                result.deviantEventClassificationId = code;
+                const changes: Partial<IExtendedRaceResult> = { deviantEventClassificationId: code };
                 const shortClassName = GetClassShortName(result.className);
                 const classLevel = GetClassLevel(raceClubs.classLevels, shortClassName);
-                result.classClassificationId = GetClassClassificationId(
+                changes.classClassificationId = GetClassClassificationId(
                   code ? (code as EventClassificationIdTypes) : eventClassificationId,
                   classLevel,
-                  raceClubs.eventClassifications,
+                  raceClubs.eventClassifications
                 );
                 const newEventClassificationId = code ? code : eventClassificationId;
                 const raceEventClassification = raceClubs.eventClassifications.find(
-                  (ec) => ec.eventClassificationId === newEventClassificationId,
+                  ec => ec.eventClassificationId === newEventClassificationId
                 );
-                formRef.current.setFieldsValue({
-                  iClassClassificationId:
-                    result.classClassificationId == null ? undefined : result.classClassificationId.toString(),
-                });
+                onChange(changes);
+                form.setFieldsValue(changes);
                 setRaceEventClassification(raceEventClassification);
-                formRef.current.validateFields(['iClassClassificationId'], { force: true });
+                form.validateFields(['classClassificationId']);
                 if (autoUpdateResultWithSameClass) {
-                  const resultsWithSameClass = results.filter(
-                    (r) => r.className === result.className && r.resultId !== result.resultId,
-                  );
-                  resultsWithSameClass.forEach((r) => {
-                    r.setDeviantEventClassificationId(
-                      result.deviantEventClassificationId as EventClassificationIdTypes | undefined,
-                    );
-                    r.setNumberValueOrNull('classClassificationId', result.classClassificationId);
-                  });
+                  onChangeAll({ classClassificationId: changes.classClassificationId });
                 }
               }}
             />
           </FormItem>
         </Col>
       </Row>
+      {contextHolder}
     </Form>
   ) : null;
 };

@@ -1,4 +1,3 @@
-import { IAnyLayer, IMapGroupLayer } from '../../models/mobxClubModel';
 import { defaults as defaultControls } from 'ol/control';
 import { Group as GroupLayer, Tile as TileLayer } from 'ol/layer';
 import BaseLayer from 'ol/layer/Base';
@@ -6,8 +5,10 @@ import Map from 'ol/Map';
 import { fromLonLat } from 'ol/proj';
 import { OSM, XYZ } from 'ol/source';
 import View from 'ol/View';
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
+import { IAnyLayer, IMapGroupLayer } from '../../models/mobxClubModel';
 import { useMobxStore } from '../../utils/mobxStore';
+
 const openStreetMapLayerId = 'OpenStreetMapLayer';
 
 export const mapProjection = 'EPSG:3857';
@@ -28,7 +29,7 @@ const getDefaultLayerVisible = (layers: IAnyLayer[], id: string): boolean | unde
 const getMapLayers = (layers: IAnyLayer[]): BaseLayer[] => {
   const mapLayers: BaseLayer[] = [];
 
-  layers.forEach((layer) => {
+  layers.forEach(layer => {
     const pMin = fromLonLat([layer.fullExtent.xmin, layer.fullExtent.ymin], mapProjection);
     const pMax = fromLonLat([layer.fullExtent.xmax, layer.fullExtent.ymax], mapProjection);
     if (layer.type === 'group') {
@@ -37,10 +38,10 @@ const getMapLayers = (layers: IAnyLayer[]): BaseLayer[] => {
           type: layer.type,
           id: layer.id,
           title: layer.title,
-          zoomExtent: [pMin[0], pMin[1], pMax[0], pMax[1]],
+          zoomExtent: [pMin[0], pMin[1], pMax[0], pMax[1]]
         },
         layers: getMapLayers(layer.layers),
-        extent: [pMin[0], pMin[1], pMax[0], pMax[1]],
+        extent: [pMin[0], pMin[1], pMax[0], pMax[1]]
       });
       mapLayers.push(groupLayer);
       //Layer don't work if visibility is set false on this layer instance (must by done in map)
@@ -62,14 +63,14 @@ const getMapLayers = (layers: IAnyLayer[]): BaseLayer[] => {
           type: layer.type,
           id: layer.id,
           title: layer.title,
-          zoomExtent: [zMin[0], zMin[1], zMax[0], zMax[1]],
+          zoomExtent: [zMin[0], zMin[1], zMax[0], zMax[1]]
         },
         source: new XYZ({
-          url: layer.urlTemplate,
+          url: layer.urlTemplate
         }),
         minZoom: layer.minZoomLevel,
         maxZoom: layer.maxZoomLevel,
-        extent: [pMin[0], pMin[1], pMax[0], pMax[1]],
+        extent: [pMin[0], pMin[1], pMax[0], pMax[1]]
       });
       mapLayers.push(orienteeringTileLayer);
       //Layer don't work if visibility is set false on this layer instance (must by done in map)
@@ -81,42 +82,36 @@ const getMapLayers = (layers: IAnyLayer[]): BaseLayer[] => {
 
 export const useOpenLayersMap = () => {
   const { clubModel } = useMobxStore();
-  const [init, setInit] = useState(true);
-  const [map, setMap] = useState<Map>();
-
-  useEffect(() => {
-    if (map || !init) return;
-    setInit(false);
-
+  const map = useMemo<Map>(() => {
     const openLayersMap = new Map({
       controls: defaultControls({ zoom: true, rotate: false, attribution: true }),
       target: undefined,
       layers: [
         new TileLayer({
-          source: new OSM({ maxZoom: clubModel.map?.maxZoomLevel }),
-        }),
+          source: new OSM({ maxZoom: clubModel.map?.maxZoomLevel })
+        })
       ],
       view: new View({
         projection: mapProjection,
         center: clubModel.map?.center,
         zoom: clubModel.map?.defaultZoomLevel,
         minZoom: clubModel.map?.minZoomLevel,
-        maxZoom: clubModel.map?.maxZoomLevel,
-      }),
+        maxZoom: clubModel.map?.maxZoomLevel
+      })
     });
 
-    const layers = getMapLayers(clubModel.map!.layers);
-    layers.forEach((layer) => openLayersMap.addLayer(layer));
+    const layers = getMapLayers(clubModel.map?.layers ?? []);
+    layers.forEach(layer => openLayersMap.addLayer(layer));
 
-    const allMapLayers = openLayersMap.getAllLayers()?.filter((l) => l.getProperties().id) ?? [];
+    const allMapLayers = openLayersMap.getAllLayers()?.filter(l => l.getProperties().id) ?? [];
 
-    allMapLayers.forEach((l) => {
-      const visible = getDefaultLayerVisible(clubModel.map!.layers, l.getProperties().id);
+    allMapLayers.forEach(l => {
+      const visible = getDefaultLayerVisible(clubModel.map?.layers ?? [], l.getProperties().id);
       if (visible !== undefined && !visible) l.setVisible(false);
     });
 
-    setMap(openLayersMap);
-  }, [map, init]);
+    return openLayersMap;
+  }, [clubModel.map]);
 
   return map;
 };

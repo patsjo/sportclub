@@ -1,32 +1,35 @@
 import { AreaChartOutlined, AuditOutlined } from '@ant-design/icons';
 import { message } from 'antd';
-import { observer } from 'mobx-react';
-import { IRaceClubsProps, IRaceCompetitor } from '../../../models/resultModel';
 import dayjs from 'dayjs';
+import { observer } from 'mobx-react';
 import React, { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { IRaceClubsProps, IRaceCompetitor } from '../../../models/resultModel';
 import { PostJsonData } from '../../../utils/api';
 import { useMobxStore } from '../../../utils/mobxStore';
 import MenuItem from '../MenuItem';
+
 const RenounceModal = lazy(() => import('../../results/RenounceModal'));
 
 const ResultsSubMenus = observer(() => {
   const { t } = useTranslation();
   const { clubModel, globalStateModel, sessionModel } = useMobxStore();
-  const resultsModule = React.useMemo(() => clubModel.modules.find((module) => module.name === 'Results'), []);
-  const [addOldResultsWizardModalIsOpen, setAddOldResultsWizardModalIsOpen] = useState(false);
+  const resultsModule = React.useMemo(
+    () => clubModel.modules.find(module => module.name === 'Results'),
+    [clubModel.modules]
+  );
   const [renounceModalIsOpen, setRenounceModalIsOpen] = useState(false);
   const [competitor, setCompetitor] = useState<IRaceCompetitor>();
   const [loadingCompetitor, setLoadingCompetitor] = useState(true);
   const navigate = useNavigate();
   const daysSinceRenounce = useMemo(
     () => (!competitor?.excludeTime ? 0 : dayjs().diff(dayjs(competitor.excludeTime), 'days')),
-    [competitor?.excludeTime],
+    [competitor?.excludeTime]
   );
 
   const onRegretRenounce = useCallback(() => {
-    const saveUrl = clubModel.modules.find((module) => module.name === 'Results')?.updateUrl;
+    const saveUrl = clubModel.modules.find(module => module.name === 'Results')?.updateUrl;
     if (!saveUrl) return;
 
     const oldCompetitor = competitor;
@@ -38,47 +41,49 @@ const ResultsSubMenus = observer(() => {
         iType: 'COMPETITOR_REGRET_RENOUNCE',
         iCompetitorId: oldCompetitor?.competitorId,
         username: sessionModel.username,
-        password: sessionModel.password,
+        password: sessionModel.password
       },
       true,
-      sessionModel.authorizationHeader,
+      sessionModel.authorizationHeader
     )
       .then(() => {
         oldCompetitor?.regretRenounce();
         setCompetitor(oldCompetitor);
       })
-      .catch((e) => {
-        message.error(e.message);
+      .catch(e => {
+        if (e?.message) message.error(e.message);
         setCompetitor(oldCompetitor);
       });
   }, [sessionModel, competitor, clubModel.modules]);
 
   useEffect(() => {
-    const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
+    const url = clubModel.modules.find(module => module.name === 'Results')?.queryUrl;
     if (!url || !sessionModel.loggedIn || !sessionModel.eventorPersonId) return;
 
     setLoadingCompetitor(true);
 
-    PostJsonData(
+    PostJsonData<IRaceClubsProps>(
       url,
       {
-        iType: 'CLUBS',
+        iType: 'CLUBS'
       },
       true,
-      sessionModel.authorizationHeader,
+      sessionModel.authorizationHeader
     )
-      .then((clubsJson: IRaceClubsProps) => {
-        clubModel.setRaceClubs(clubsJson);
-        if (clubModel.raceClubs?.selectedClub) {
-          setCompetitor(clubModel.raceClubs.selectedClub.competitorByEventorId(sessionModel.eventorPersonId!));
+      .then(clubsJson => {
+        if (clubsJson) {
+          clubModel.setRaceClubs(clubsJson);
+          if (clubModel.raceClubs?.selectedClub) {
+            setCompetitor(clubModel.raceClubs.selectedClub.competitorByEventorId(sessionModel.eventorPersonId!));
+          }
         }
         setLoadingCompetitor(false);
       })
-      .catch((e) => {
-        message.error(e.message);
+      .catch(e => {
+        if (e?.message) message.error(e.message);
         setLoadingCompetitor(false);
       });
-  }, [sessionModel.loggedIn]);
+  }, [clubModel, sessionModel.authorizationHeader, sessionModel.eventorPersonId, sessionModel.loggedIn]);
 
   return (
     <>
@@ -96,9 +101,9 @@ const ResultsSubMenus = observer(() => {
       ) : null}
       <MenuItem
         key={'menuItem#resultsStatistics'}
+        isSubMenu
         icon={<AreaChartOutlined style={{ verticalAlign: 'middle', fontSize: 18 }} />}
         name={t('results.Statistics')}
-        isSubMenu
         onClick={() => {
           globalStateModel.setRightMenuVisible(false);
           globalStateModel.setDashboard(navigate, '/results/statistics');
@@ -106,10 +111,10 @@ const ResultsSubMenus = observer(() => {
       />
       <MenuItem
         key={'menuItem#results'}
+        isSubMenu
         icon={'ResultsIcon'}
         name={t('results.Latest')}
         disabled={!sessionModel.loggedIn}
-        isSubMenu
         onClick={() => {
           globalStateModel.setRightMenuVisible(false);
           globalStateModel.setDashboard(navigate, '/results');
@@ -117,10 +122,10 @@ const ResultsSubMenus = observer(() => {
       />
       <MenuItem
         key={'menuItem#resultsIndividual'}
+        isSubMenu
         icon="user"
         name={t('results.Individual')}
         disabled={!sessionModel.loggedIn}
-        isSubMenu
         onClick={() => {
           globalStateModel.setRightMenuVisible(false);
           globalStateModel.setDashboard(navigate, '/results/individual');
@@ -128,10 +133,10 @@ const ResultsSubMenus = observer(() => {
       />
       <MenuItem
         key={'menuItem#resultsAdd'}
+        isSubMenu
         icon="plus"
         name={t('results.Add')}
         disabled={!resultsModule?.addUrl || !sessionModel.loggedIn || !sessionModel.isAdmin}
-        isSubMenu
         onClick={() => {
           globalStateModel.setRightMenuVisible(false);
           globalStateModel.setDashboard(navigate, '/results/import');
@@ -139,10 +144,10 @@ const ResultsSubMenus = observer(() => {
       />
       <MenuItem
         key={'menuItem#resultsInvoiceVerifier'}
+        isSubMenu
         icon={<AuditOutlined style={{ verticalAlign: 'middle', fontSize: 18 }} />}
         name={t('results.InvoiceVerifier')}
         disabled={!resultsModule?.addUrl || !sessionModel.loggedIn || !sessionModel.isAdmin}
-        isSubMenu
         onClick={() => {
           globalStateModel.setRightMenuVisible(false);
           globalStateModel.setDashboard(navigate, '/results/verifyinvoice');
@@ -150,10 +155,10 @@ const ResultsSubMenus = observer(() => {
       />
       <MenuItem
         key={'menuItem#resultsFees'}
+        isSubMenu
         icon="euro"
         name={t('results.Invoices')}
         disabled={!sessionModel.loggedIn}
-        isSubMenu
         onClick={() => {
           globalStateModel.setRightMenuVisible(false);
           globalStateModel.setDashboard(navigate, '/results/fees');
@@ -176,10 +181,10 @@ const ResultsSubMenus = observer(() => {
       (loadingCompetitor || (competitor && !competitor.excludeResults)) ? (
         <MenuItem
           key={'menuItem#resultsRenounce'}
+          isSubMenu
           icon={loadingCompetitor ? 'loading' : 'frown'}
           name={t('results.Renounce')}
           disabled={loadingCompetitor}
-          isSubMenu
           onClick={() => {
             globalStateModel.setRightMenuVisible(false);
             setTimeout(() => setRenounceModalIsOpen(true), 0);
@@ -189,10 +194,10 @@ const ResultsSubMenus = observer(() => {
       {sessionModel.loggedIn && sessionModel.eventorPersonId && competitor && competitor.excludeResults ? (
         <MenuItem
           key={'menuItem#resultsRegretRenounce'}
+          isSubMenu
           icon="smile"
           name={t('results.RegretRenounce')}
           disabled={daysSinceRenounce < 30}
-          isSubMenu
           onClick={() => {
             globalStateModel.setRightMenuVisible(false);
             setTimeout(() => onRegretRenounce(), 0);

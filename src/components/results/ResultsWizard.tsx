@@ -1,15 +1,14 @@
 import { LeftOutlined, PlusOutlined, RightOutlined } from '@ant-design/icons';
 import { Button, Modal, Popconfirm, Space, Spin, Steps, Switch, Typography, message } from 'antd';
 import { ModalFuncProps } from 'antd/lib/modal';
-import FullScreenWizard from '../styled/FullscreenWizard';
 import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
-import { IRaceClubsProps } from '../../models/resultModel';
-import { IRaceWizard, RaceWizard, getLocalStorage } from '../../models/resultWizardModel';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { MouseEventHandler, useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
+import { styled } from 'styled-components';
+import { IRaceClubsProps } from '../../models/resultModel';
+import { IRaceWizard, RaceWizard, getLocalStorage } from '../../models/resultWizardModel';
 import { PostJsonData } from '../../utils/api';
 import { useMobxStore } from '../../utils/mobxStore';
 import {
@@ -19,7 +18,7 @@ import {
   SportCodeTypes,
   difficulties,
   distances,
-  lightConditions,
+  lightConditions
 } from '../../utils/resultConstants';
 import {
   ConvertSecondsToTime,
@@ -27,10 +26,11 @@ import {
   GetPointRunTo1000,
   GetRaceOldPoint,
   GetRacePoint,
-  GetRanking,
+  GetRanking
 } from '../../utils/resultHelper';
 import { ResultWizardStoreProvider } from '../../utils/resultWizardStore';
 import { useSize } from '../../utils/useSize';
+import FullScreenWizard from '../styled/FullscreenWizard';
 import { SpinnerDiv, StyledIcon } from '../styled/styled';
 import { ConfirmOverwriteOrEdit } from './ConfirmOverwriteOrEditPromise';
 import EditResultIndividual, { IExtendedRaceResult } from './EditResultIndividual';
@@ -42,7 +42,6 @@ import ResultWizardStep2EditRace from './ResultsWizardStep2EditRace';
 import ResultWizardStep3Ranking from './ResultsWizardStep3Ranking';
 import { SelectEventorIdConfirmModal } from './SelectEventorIdConfirmModal';
 
-const { confirm } = Modal;
 const { Step } = Steps;
 const StyledFullWidth = styled.div`
   width: 100%;
@@ -64,9 +63,10 @@ const ResultsWizard = observer(() => {
   const [ctrlAltDown, setCtrlAltDown] = useState(false);
   const [autoUpdateResultWithSameClass, setAutoUpdateResultWithSameClass] = useState(true);
   const navigate = useNavigate();
+  const [modal, contextHolder] = Modal.useModal();
 
-  const next = useCallback(
-    (e) => {
+  const next: MouseEventHandler<HTMLElement> = useCallback(
+    e => {
       let nextStep = wizardStep + 1;
       if (nextStep === 1 && e.altKey && e.ctrlKey) {
         nextStep = -100;
@@ -79,7 +79,7 @@ const ResultsWizard = observer(() => {
         raceWizardModel.current.selectedEventId &&
         raceWizardModel.current.selectedEventId > 0
       ) {
-        ConfirmOverwriteOrEdit(t).then((overwrite: boolean) => {
+        ConfirmOverwriteOrEdit(t, modal).then((overwrite: boolean) => {
           raceWizardModel.current.setBooleanValue('overwrite', overwrite);
           setNextStepValid(false);
           setWizardStep(nextStep);
@@ -91,12 +91,7 @@ const ResultsWizard = observer(() => {
       setNextStepValid(false);
       setWizardStep(nextStep);
     },
-    [
-      wizardStep,
-      raceWizardModel.current.existInEventor,
-      raceWizardModel.current.overwrite,
-      raceWizardModel.current.selectedEventId,
-    ]
+    [wizardStep, t, modal]
   );
 
   const prev = useCallback(() => {
@@ -117,12 +112,7 @@ const ResultsWizard = observer(() => {
         (nextStep === 2 && raceWizardModel.current.raceEvent != null && raceWizardModel.current.raceEvent.valid)
     );
     setWizardStep(nextStep);
-  }, [
-    wizardStep,
-    raceWizardModel.current.existInEventor,
-    raceWizardModel.current.raceEvent,
-    raceWizardModel.current.selectedEventId,
-  ]);
+  }, [wizardStep]);
 
   const onValidate = useCallback((valid: boolean) => {
     setNextStepValid(valid);
@@ -130,159 +120,171 @@ const ResultsWizard = observer(() => {
 
   const onClose = useCallback(() => {
     globalStateModel.setDashboard(navigate, '/');
-  }, []);
+  }, [globalStateModel, navigate]);
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  const save = useCallback((shouldClose = true, onSuccess = () => {}) => {
-    const { raceEvent } = raceWizardModel.current;
-    const raceEventClassification = clubModel.raceClubs?.eventClassifications.find(
-      (ec) => ec.eventClassificationId === raceEvent?.eventClassificationId
-    );
-    const resultsModule = clubModel.modules.find((module) => module.name === 'Results');
-    const saveUrl = raceEvent?.eventId === -1 ? resultsModule?.addUrl : resultsModule?.updateUrl;
-
-    if (!saveUrl || !raceEvent) return;
-
-    setSaving(true);
-    raceEvent.results.forEach((result) => {
-      const eventClassification = !result.deviantEventClassificationId
-        ? raceEventClassification
-        : clubModel.raceClubs?.eventClassifications.find(
-            (ec) => ec.eventClassificationId === result.deviantEventClassificationId
-          );
-      const raceClassClassification = eventClassification?.classClassifications.find(
-        (cc) => cc.classClassificationId === result.classClassificationId
+  const save = useCallback(
+    (shouldClose = true, onSuccess = () => {}) => {
+      const { raceEvent } = raceWizardModel.current;
+      const raceEventClassification = clubModel.raceClubs?.eventClassifications.find(
+        ec => ec.eventClassificationId === raceEvent?.eventClassificationId
       );
+      const resultsModule = clubModel.modules.find(module => module.name === 'Results');
+      const saveUrl = raceEvent?.eventId === -1 ? resultsModule?.addUrl : resultsModule?.updateUrl;
 
-      result.setNumberValueOrNull(
-        'ranking',
-        GetRanking(
-          raceEvent.rankingBasetimePerKilometer!,
-          raceEvent.rankingBasepoint!,
-          result,
-          raceEvent.sportCode,
-          raceEvent.raceLightCondition ?? lightConditions.day
-        )
-      );
-      if (
-        result.missingTime &&
-        raceEvent.sportCode === 'OL' &&
-        raceEvent.raceDistance !== 'Sprint' &&
-        result.difficulty &&
-        [difficulties.black, difficulties.blue, difficulties.purple].includes(result.difficulty)
-      ) {
-        const speedRanking = GetRanking(
-          raceEvent.rankingBasetimePerKilometer!,
-          raceEvent.rankingBasepoint!,
-          {
-            ...result,
-            competitorTime: ConvertSecondsToTime(
-              ConvertTimeToSeconds(result.competitorTime) - ConvertTimeToSeconds(result.missingTime)
-            ),
-            difficulty: difficulties.black,
-          },
-          raceEvent.sportCode as SportCodeTypes,
-          raceEvent.raceLightCondition as LightConditionTypes
+      if (!saveUrl || !raceEvent) return;
+
+      setSaving(true);
+      raceEvent.results.forEach(result => {
+        const eventClassification = !result.deviantEventClassificationId
+          ? raceEventClassification
+          : clubModel.raceClubs?.eventClassifications.find(
+              ec => ec.eventClassificationId === result.deviantEventClassificationId
+            );
+        const raceClassClassification = eventClassification?.classClassifications.find(
+          cc => cc.classClassificationId === result.classClassificationId
         );
-        result.setNumberValueOrNull('speedRanking', speedRanking);
 
-        const technicalRanking =
-          result.ranking != null && speedRanking != null ? result.ranking - 0.9 * speedRanking : null;
-        result.setNumberValueOrNull('technicalRanking', technicalRanking);
-      } else {
-        result.setNumberValueOrNull('speedRanking', null);
-        result.setNumberValueOrNull('technicalRanking', null);
-      }
-      result.setNumberValueOrNull('points', GetRacePoint(eventClassification!, raceClassClassification!, result));
-      result.setNumberValueOrNull('pointsOld', GetRaceOldPoint(eventClassification!, raceClassClassification!, result));
-      result.setNumberValueOrNull(
-        'points1000',
-        GetPointRunTo1000(eventClassification!, raceClassClassification!, result)
-      );
-    });
-
-    raceEvent.teamResults.forEach((result) => {
-      const eventClassification = !result.deviantEventClassificationId
-        ? raceEventClassification
-        : clubModel.raceClubs?.eventClassifications.find(
-            (ec) => ec.eventClassificationId === result.deviantEventClassificationId
-          );
-      const raceClassClassification = eventClassification?.classClassifications.find(
-        (cc) => cc.classClassificationId === result.classClassificationId
-      );
-
-      result.setNumberValueOrNull(
-        'ranking',
-        GetRanking(
-          raceEvent.rankingBasetimePerKilometer!,
-          raceEvent.rankingBasepoint!,
-          result,
-          raceEvent.sportCode as SportCodeTypes,
-          raceEvent.raceLightCondition as LightConditionTypes
-        )
-      );
-      if (
-        result.missingTime &&
-        raceEvent.sportCode === 'OL' &&
-        raceEvent.raceDistance !== 'Sprint' &&
-        result.difficulty &&
-        [difficulties.black, difficulties.blue, difficulties.purple].includes(result.difficulty)
-      ) {
-        const speedRanking = GetRanking(
-          raceEvent.rankingBasetimePerKilometer!,
-          raceEvent.rankingBasepoint!,
-          {
-            ...result,
-            competitorTime: ConvertSecondsToTime(
-              ConvertTimeToSeconds(result.competitorTime) - ConvertTimeToSeconds(result.missingTime)
-            ),
-            difficulty: difficulties.black,
-          },
-          raceEvent.sportCode as SportCodeTypes,
-          raceEvent.raceLightCondition as LightConditionTypes
+        result.setNumberValueOrNull(
+          'ranking',
+          GetRanking(
+            raceEvent.rankingBasetimePerKilometer!,
+            raceEvent.rankingBasepoint!,
+            result,
+            raceEvent.sportCode,
+            raceEvent.raceLightCondition ?? lightConditions.day
+          )
         );
-        result.setNumberValueOrNull('speedRanking', speedRanking);
+        if (
+          result.missingTime &&
+          raceEvent.sportCode === 'OL' &&
+          raceEvent.raceDistance !== 'Sprint' &&
+          result.difficulty &&
+          [difficulties.black, difficulties.blue, difficulties.purple].includes(result.difficulty)
+        ) {
+          const speedRanking = GetRanking(
+            raceEvent.rankingBasetimePerKilometer!,
+            raceEvent.rankingBasepoint!,
+            {
+              ...result,
+              competitorTime: ConvertSecondsToTime(
+                ConvertTimeToSeconds(result.competitorTime) - ConvertTimeToSeconds(result.missingTime)
+              ),
+              difficulty: difficulties.black
+            },
+            raceEvent.sportCode as SportCodeTypes,
+            raceEvent.raceLightCondition as LightConditionTypes
+          );
+          result.setNumberValueOrNull('speedRanking', speedRanking);
 
-        const technicalRanking =
-          result.ranking != null && speedRanking != null ? result.ranking - 0.9 * speedRanking : null;
-        result.setNumberValueOrNull('technicalRanking', technicalRanking);
-      } else {
-        result.setNumberValueOrNull('speedRanking', null);
-        result.setNumberValueOrNull('technicalRanking', null);
-      }
-      result.setNumberValueOrNull(
-        'points1000',
-        GetPointRunTo1000(eventClassification!, raceClassClassification!, result)
-      );
-    });
-
-    const snapshot = toJS(raceEvent);
-
-    PostJsonData(
-      saveUrl,
-      {
-        ...snapshot,
-        iType: 'EVENT',
-        username: sessionModel.username,
-        password: sessionModel.password,
-      },
-      true,
-      sessionModel.authorizationHeader
-    )
-      .then(() => {
-        setSaving(false);
-        onSuccess();
-        shouldClose && onClose();
-      })
-      .catch((e) => {
-        message.error(e.message);
-        setSaving(false);
+          const technicalRanking =
+            result.ranking != null && speedRanking != null ? result.ranking - 0.9 * speedRanking : null;
+          result.setNumberValueOrNull('technicalRanking', technicalRanking);
+        } else {
+          result.setNumberValueOrNull('speedRanking', null);
+          result.setNumberValueOrNull('technicalRanking', null);
+        }
+        result.setNumberValueOrNull('points', GetRacePoint(eventClassification!, raceClassClassification!, result));
+        result.setNumberValueOrNull(
+          'pointsOld',
+          GetRaceOldPoint(eventClassification!, raceClassClassification!, result)
+        );
+        result.setNumberValueOrNull(
+          'points1000',
+          GetPointRunTo1000(eventClassification!, raceClassClassification!, result)
+        );
       });
-  }, []);
+
+      raceEvent.teamResults.forEach(result => {
+        const eventClassification = !result.deviantEventClassificationId
+          ? raceEventClassification
+          : clubModel.raceClubs?.eventClassifications.find(
+              ec => ec.eventClassificationId === result.deviantEventClassificationId
+            );
+        const raceClassClassification = eventClassification?.classClassifications.find(
+          cc => cc.classClassificationId === result.classClassificationId
+        );
+
+        result.setNumberValueOrNull(
+          'ranking',
+          GetRanking(
+            raceEvent.rankingBasetimePerKilometer!,
+            raceEvent.rankingBasepoint!,
+            result,
+            raceEvent.sportCode as SportCodeTypes,
+            raceEvent.raceLightCondition as LightConditionTypes
+          )
+        );
+        if (
+          result.missingTime &&
+          raceEvent.sportCode === 'OL' &&
+          raceEvent.raceDistance !== 'Sprint' &&
+          result.difficulty &&
+          [difficulties.black, difficulties.blue, difficulties.purple].includes(result.difficulty)
+        ) {
+          const speedRanking = GetRanking(
+            raceEvent.rankingBasetimePerKilometer!,
+            raceEvent.rankingBasepoint!,
+            {
+              ...result,
+              competitorTime: ConvertSecondsToTime(
+                ConvertTimeToSeconds(result.competitorTime) - ConvertTimeToSeconds(result.missingTime)
+              ),
+              difficulty: difficulties.black
+            },
+            raceEvent.sportCode as SportCodeTypes,
+            raceEvent.raceLightCondition as LightConditionTypes
+          );
+          result.setNumberValueOrNull('speedRanking', speedRanking);
+
+          const technicalRanking =
+            result.ranking != null && speedRanking != null ? result.ranking - 0.9 * speedRanking : null;
+          result.setNumberValueOrNull('technicalRanking', technicalRanking);
+        } else {
+          result.setNumberValueOrNull('speedRanking', null);
+          result.setNumberValueOrNull('technicalRanking', null);
+        }
+        result.setNumberValueOrNull(
+          'points1000',
+          GetPointRunTo1000(eventClassification!, raceClassClassification!, result)
+        );
+      });
+
+      const snapshot = toJS(raceEvent);
+
+      PostJsonData(
+        saveUrl,
+        {
+          ...snapshot,
+          iType: 'EVENT',
+          username: sessionModel.username,
+          password: sessionModel.password
+        },
+        true,
+        sessionModel.authorizationHeader
+      )
+        .then(() => {
+          setSaving(false);
+          onSuccess();
+          if (shouldClose) onClose();
+        })
+        .catch(e => {
+          if (e?.message) message.error(e.message);
+          setSaving(false);
+        });
+    },
+    [
+      clubModel.modules,
+      clubModel.raceClubs?.eventClassifications,
+      onClose,
+      sessionModel.authorizationHeader,
+      sessionModel.password,
+      sessionModel.username
+    ]
+  );
 
   const saveAndNextEvent = useCallback(() => {
     save(false, () => {
-      raceWizardModel.current.raceEvent?.eventorRaceId != null &&
+      if (raceWizardModel.current.raceEvent?.eventorRaceId != null)
         raceWizardModel.current.addImportedId(raceWizardModel.current.raceEvent?.eventorRaceId);
       raceWizardModel.current.setRaceEvent(null);
       raceWizardModel.current.setNumberValueOrNull('selectedEventId', null);
@@ -301,7 +303,7 @@ const ResultsWizard = observer(() => {
   }, []);
 
   const onKnownEventorId = useCallback(async () => {
-    const eventorId = await SelectEventorIdConfirmModal(t);
+    const eventorId = await SelectEventorIdConfirmModal(t, modal);
     if (eventorId == null) return;
     raceWizardModel.current.setBooleanValue('existInEventor', true);
     raceWizardModel.current.setNumberValueOrNull('selectedEventId', -1);
@@ -310,30 +312,32 @@ const ResultsWizard = observer(() => {
       raceWizardModel.current.selectedEventorId != null && raceWizardModel.current.selectedEventorRaceId != null
     );
     setWizardStep(1);
-  }, []);
+  }, [t, modal]);
 
   useEffect(() => {
-    const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
+    const url = clubModel.modules.find(module => module.name === 'Results')?.queryUrl;
     if (!url) return;
 
-    PostJsonData(
+    PostJsonData<IRaceClubsProps>(
       url,
       {
-        iType: 'CLUBS',
+        iType: 'CLUBS'
       },
       true,
       sessionModel.authorizationHeader
     )
-      .then((clubsJson: IRaceClubsProps) => {
-        clubModel.setRaceClubs(clubsJson);
-        setWizardStep(0);
+      .then(clubsJson => {
+        if (clubsJson) {
+          clubModel.setRaceClubs(clubsJson);
+          setWizardStep(0);
+        }
         setLoaded(true);
       })
-      .catch((e) => {
-        message.error(e.message);
-        onClose && onClose();
+      .catch(e => {
+        if (e?.message) message.error(e.message);
+        onClose?.();
       });
-  }, []);
+  }, [clubModel, onClose, sessionModel.authorizationHeader]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -361,7 +365,7 @@ const ResultsWizard = observer(() => {
           wizardStep === 2 ? (
             <Space>
               <Switch checked={autoUpdateResultWithSameClass} onChange={setAutoUpdateResultWithSameClass} />
-              <Typography.Text onClick={() => setAutoUpdateResultWithSameClass((oldValue) => !oldValue)}>
+              <Typography.Text onClick={() => setAutoUpdateResultWithSameClass(oldValue => !oldValue)}>
                 {t('results.AutoUpdateResultWithSameClass')}
               </Typography.Text>
             </Space>
@@ -392,22 +396,25 @@ const ResultsWizard = observer(() => {
                   competitorId: -1,
                   className: '',
                   fee: 0,
-                  isAwardTouched: false,
+                  isAwardTouched: false
                 };
+                const allResultObject: Partial<IExtendedRaceResult> = {};
                 const teamResultObject: IExtendedRaceTeamResult = {
                   teamResultId: -100000 - Math.floor(Math.random() * 100000000),
                   competitorId: -1,
                   className: '',
                   stage: -1,
                   stageText: '',
-                  totalStages: 1,
+                  totalStages: 1
                 };
+                const allTeamResultObject: Partial<IExtendedRaceTeamResult> = {};
                 let confirmModal: {
                   destroy: () => void;
                   update: (configUpdate: ModalFuncProps | ((prevConfig: ModalFuncProps) => ModalFuncProps)) => void;
                 };
+
                 // eslint-disable-next-line prefer-const
-                confirmModal = confirm({
+                confirmModal = modal.confirm({
                   width: 800,
                   icon: <StyledIcon type="plus" />,
                   title: t('results.AddCompetitor'),
@@ -430,11 +437,13 @@ const ResultsWizard = observer(() => {
                         results={raceWizardModel.current.raceEvent.results}
                         autoUpdateResultWithSameClass={autoUpdateResultWithSameClass}
                         competitorsOptions={clubModel.raceClubs.selectedClub?.competitorsOptions ?? []}
-                        onValidate={(valid) =>
+                        onChange={changes => Object.assign(resultObject, changes)}
+                        onChangeAll={changes => Object.assign(allResultObject, changes)}
+                        onValidate={valid =>
                           confirmModal.update({
                             okButtonProps: {
-                              disabled: !valid,
-                            },
+                              disabled: !valid
+                            }
                           })
                         }
                       />
@@ -451,28 +460,45 @@ const ResultsWizard = observer(() => {
                         results={raceWizardModel.current.raceEvent.teamResults}
                         autoUpdateResultWithSameClass={autoUpdateResultWithSameClass}
                         competitorsOptions={clubModel.raceClubs.selectedClub?.competitorsOptions ?? []}
-                        onValidate={(valid) =>
+                        onChange={changes => Object.assign(teamResultObject, changes)}
+                        onChangeAll={changes => Object.assign(allTeamResultObject, changes)}
+                        onValidate={valid =>
                           confirmModal.update({
                             okButtonProps: {
-                              disabled: !valid,
-                            },
+                              disabled: !valid
+                            }
                           })
                         }
                       />
                     ) : null,
                   okText: t('common.Save'),
                   okButtonProps: {
-                    disabled: true,
+                    disabled: true
                   },
                   cancelText: t('common.Cancel'),
                   onOk() {
                     if (raceWizardModel.current.raceEvent?.isRelay) {
                       raceWizardModel.current.raceEvent.addTeamResult(teamResultObject);
+                      if (Object.keys(allTeamResultObject).length > 0) {
+                        const resultsWithSameClass = raceWizardModel.current.raceEvent?.teamResults.filter(
+                          r =>
+                            r.className === teamResultObject.className &&
+                            r.stage === teamResultObject.stage &&
+                            r.teamResultId !== teamResultObject.teamResultId
+                        );
+                        resultsWithSameClass?.forEach(r => r.setValues(allTeamResultObject));
+                      }
                     } else {
                       raceWizardModel.current.raceEvent?.addResult(resultObject);
+                      if (Object.keys(allResultObject).length > 0) {
+                        const resultsWithSameClass = raceWizardModel.current.raceEvent?.results.filter(
+                          r => r.className === resultObject.className && r.resultId !== resultObject.resultId
+                        );
+                        resultsWithSameClass?.forEach(r => r.setValues(allResultObject));
+                      }
                     }
                     onValidate(!!raceWizardModel.current.raceEvent?.valid);
-                  },
+                  }
                 });
               }}
             >
@@ -481,34 +507,35 @@ const ResultsWizard = observer(() => {
             </Button>
           ) : null,
           wizardStep === 3 && raceWizardModel.current.existInEventor ? (
-            <Button disabled={!loaded || !nextStepValid} loading={saving} onClick={(e) => saveAndNextEvent()}>
+            <Button disabled={!loaded || !nextStepValid} loading={saving} onClick={saveAndNextEvent}>
               <LeftOutlined />
               {t('common.SaveAndNextEvent')}
             </Button>
           ) : null,
           wizardStep === 0 ? (
-            <Button onClick={(e) => onNoEventorConnection()}>
+            <Button onClick={onNoEventorConnection}>
               {t('results.AddWithoutEventor')}
               <RightOutlined />
             </Button>
           ) : null,
           wizardStep === 0 ? (
-            <Button onClick={(e) => onKnownEventorId()}>
+            <Button onClick={onKnownEventorId}>
               {t('results.KnownEventorId')}
               <RightOutlined />
             </Button>
           ) : null,
           <Button
+            key={wizardStep === 0 && ctrlAltDown ? 'recalculateButton' : wizardStep === 3 ? 'saveButton' : 'nextButton'}
             type="primary"
             disabled={!loaded || !nextStepValid}
             loading={saving}
-            onClick={(e) => (wizardStep === 3 ? save(true) : next(e))}
+            onClick={e => (wizardStep === 3 ? save(true) : next(e))}
           >
             {wizardStep === 0 && ctrlAltDown
               ? t('common.Recalculate')
               : wizardStep === 3
-              ? t('common.Save')
-              : t('common.Next')}
+                ? t('common.Save')
+                : t('common.Next')}
             {wizardStep === 3 ? null : <RightOutlined />}
           </Button>,
           wizardStep >= 2 ? (
@@ -524,8 +551,8 @@ const ResultsWizard = observer(() => {
             <Button loading={false} onClick={onClose}>
               {t('common.Cancel')}
             </Button>
-          ),
-        ].filter((component) => !!component)}
+          )
+        ].filter(component => !!component)}
         onContentOffsetHeight={setContentOffsetHeight}
       >
         <StyledModalContent>
@@ -541,8 +568,8 @@ const ResultsWizard = observer(() => {
           {wizardStep >= 1 && raceWizardModel.current.existInEventor ? (
             <ResultWizardStep1ChooseRace
               height={Math.max(128, contentOffsetHeight - (stepsHeight ?? 32))}
-              onValidate={onValidate}
               visible={wizardStep === 1}
+              onValidate={onValidate}
               onFailed={prev}
             />
           ) : null}
@@ -566,6 +593,7 @@ const ResultsWizard = observer(() => {
           ) : null}
         </StyledModalContent>
       </FullScreenWizard>
+      {contextHolder}
     </ResultWizardStoreProvider>
   );
 });

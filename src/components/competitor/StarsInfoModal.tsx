@@ -1,11 +1,9 @@
 import { StarOutlined } from '@ant-design/icons';
-import { Modal } from 'antd';
+import { HookAPI } from 'antd/lib/modal/useModal';
 import { TFunction } from 'i18next';
 import { GenderType } from '../../utils/resultConstants';
 import { StyledTable } from '../styled/styled';
 import FiveStars from './FiveStars';
-
-const { info } = Modal;
 
 const dataSource = (t: TFunction, gender: GenderType) => [
   {
@@ -17,7 +15,7 @@ const dataSource = (t: TFunction, gender: GenderType) => [
     star2: `Ranking < ${gender === 'MALE' ? '35,0' : '50,0'}`,
     star1: `Ranking < ${gender === 'MALE' ? '50,0' : '65,0'}`,
     star0: 'Övriga senaste året',
-    nodata: '-',
+    nodata: '-'
   },
   {
     key: '2',
@@ -28,7 +26,7 @@ const dataSource = (t: TFunction, gender: GenderType) => [
     star2: 'Mindre än 10,0 sämre på viktiga tävlingar',
     star1: 'Mindre än 20,0 sämre på viktiga tävlingar',
     star0: 'Mer än 20,0 sämre på viktiga tävlingar',
-    nodata: 'Saknar nivåskillnad senaste två åren',
+    nodata: 'Saknar nivåskillnad senaste två åren'
   },
   {
     key: '3',
@@ -39,7 +37,7 @@ const dataSource = (t: TFunction, gender: GenderType) => [
     star2: 'Medelavvikelse < 15,0 baserat på högsta nivå*',
     star1: 'Medelavvikelse < 20,0 baserat på högsta nivå*',
     star0: 'Medelavvikelse > 20,0 baserat på högsta nivå*',
-    nodata: 'Mindre än 5 tävlingar senaste två åren',
+    nodata: 'Mindre än 5 tävlingar senaste två åren'
   },
   {
     key: '4',
@@ -50,7 +48,7 @@ const dataSource = (t: TFunction, gender: GenderType) => [
     star2: `teknikranking < ${gender === 'MALE' ? '17,5' : '19,0'}`,
     star1: `teknikranking < ${gender === 'MALE' ? '25,0' : '26,5'}`,
     star0: 'Övriga',
-    nodata: 'Saknar sträcktider senaste två åren',
+    nodata: 'Saknar sträcktider senaste två åren'
   },
   {
     key: '5',
@@ -61,7 +59,7 @@ const dataSource = (t: TFunction, gender: GenderType) => [
     star2: `löphastighet < ${gender === 'MALE' ? '30,0' : '45,0'}`,
     star1: `löphastighet < ${gender === 'MALE' ? '45,0' : '60,0'}`,
     star0: 'Övriga',
-    nodata: 'Saknar sträcktider senaste två åren',
+    nodata: 'Saknar sträcktider senaste två åren'
   },
   {
     key: '6',
@@ -72,7 +70,7 @@ const dataSource = (t: TFunction, gender: GenderType) => [
     star2: 'Mindre än 15,0 sämre på stafetter',
     star1: 'Mindre än 25,0 sämre på stafetter',
     star0: 'Mer än 25,0 sämre på stafetter',
-    nodata: 'Saknar individuell/stafett senaste två åren',
+    nodata: 'Saknar individuell/stafett senaste två åren'
   },
   {
     key: '7',
@@ -83,7 +81,7 @@ const dataSource = (t: TFunction, gender: GenderType) => [
     star2: 'Mindre än 15,0 sämre på natt',
     star1: 'Mindre än 25,0 sämre på natt',
     star0: 'Mer än 25,0 sämre på natt',
-    nodata: 'Saknar dag/natt senaste två åren',
+    nodata: 'Saknar dag/natt senaste två åren'
   },
   {
     key: '8',
@@ -94,8 +92,8 @@ const dataSource = (t: TFunction, gender: GenderType) => [
     star2: 'Mindre än 8,0 sämre senaste månaden/två/tre',
     star1: 'Mindre än 15,0 sämre senaste månaden/två/tre',
     star0: 'Mer än 15,0 sämre senaste månaden/två/tre',
-    nodata: 'Saknar två tävlingar senaste månaden/två/tre eller saknar två äldre resultat senaste två åren',
-  },
+    nodata: 'Saknar två tävlingar senaste månaden/två/tre eller saknar två äldre resultat senaste två åren'
+  }
 ];
 
 const columns = [
@@ -104,54 +102,54 @@ const columns = [
     dataIndex: 'stars',
     key: 'stars',
     width: 150,
-    fixed: true,
+    fixed: true
   },
   {
     title: <FiveStars key="star5" stars={5} size={25} />,
     dataIndex: 'star5',
     key: 'star5',
-    width: 150,
+    width: 150
   },
   {
     title: <FiveStars key="star4" stars={4} size={25} />,
     dataIndex: 'star4',
     key: 'star4',
-    width: 150,
+    width: 150
   },
   {
     title: <FiveStars key="star3" stars={3} size={25} />,
     dataIndex: 'star3',
     key: 'star3',
-    width: 150,
+    width: 150
   },
   {
     title: <FiveStars key="star2" stars={2} size={25} />,
     dataIndex: 'star2',
     key: 'star2',
-    width: 150,
+    width: 150
   },
   {
     title: <FiveStars key="star1" stars={1} size={25} />,
     dataIndex: 'star1',
     key: 'star1',
-    width: 150,
+    width: 150
   },
   {
     title: <FiveStars key="star0" stars={0} size={25} />,
     dataIndex: 'star0',
     key: 'star0',
-    width: 150,
+    width: 150
   },
   {
     title: <FiveStars key="nodata" stars={-1} size={25} />,
     dataIndex: 'nodata',
     key: 'nodata',
-    width: 150,
-  },
+    width: 150
+  }
 ];
 
-export const StarsInfoModal = (t: TFunction, gender: GenderType) =>
-  info({
+export const StarsInfoModal = (t: TFunction, modal: HookAPI, gender: GenderType) =>
+  modal.info({
     title: `${t('competitor.Info')} - ${gender === 'MALE' ? t('results.Male') : t('results.FeMale')}`,
     icon: <StarOutlined />,
     style: { top: 20, minWidth: 800, maxWidth: 1350 },
@@ -174,5 +172,5 @@ export const StarsInfoModal = (t: TFunction, gender: GenderType) =>
           scroll={{ x: 0 }}
         />
       </div>
-    ),
+    )
   });

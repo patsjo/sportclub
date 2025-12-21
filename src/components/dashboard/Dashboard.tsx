@@ -20,7 +20,7 @@ const Dashboard = observer(() => {
   const eventorEntries = useEventorEntries(clubModel);
   const { loadMoreCallback, newsItems } = useNews(true);
   const bannerItems = useBanners();
-  const showSponsors = clubModel.sponsors ? clubModel.sponsors.some((s) => s.active) : false;
+  const showSponsors = clubModel.sponsors ? clubModel.sponsors.some(s => s.active) : false;
 
   return (
     <InfiniteScroll key="dashboard#InfiniteScroll#home" loadMore={loadMoreCallback}>
@@ -28,8 +28,8 @@ const Dashboard = observer(() => {
         {newsItems.slice(0, 2)}
         {bannerItems}
         <ChildContainer
-          preferredColumn="secondRightFixed"
           key="dashboard#weeklyCalendarContainer"
+          preferredColumn="secondRightFixed"
           paddingBottom={24}
           preferredHeight={360}
         >
@@ -37,16 +37,16 @@ const Dashboard = observer(() => {
         </ChildContainer>
         {clubModel.map?.center ? (
           <ChildContainer
-            preferredColumn="rightFixed"
             key="dashboard#homeMapContainer"
+            preferredColumn="rightFixed"
             paddingBottom={24}
             preferredHeight={400}
           >
             <OSMOrienteeringMap
               key="dashboard#homeMap"
+              useAllWidgets
               height="400px"
               width="100%"
-              useAllWidgets
               containerId="homeMap"
               onHighlightClick={(graphic: Feature<Point>) => {
                 const coordinates = toLonLat(graphic.getGeometry()!.getCoordinates(), mapProjection);
@@ -54,7 +54,7 @@ const Dashboard = observer(() => {
                 const latitude = coordinates[1];
                 const win = window.open(
                   `https://maps.google.com/maps?saddr=&daddr=N${latitude},E${longitude}`,
-                  '_blank',
+                  '_blank'
                 );
                 if (win) {
                   win.focus();
@@ -66,8 +66,8 @@ const Dashboard = observer(() => {
         {newsItems.slice(2, 5)}
         {clubModel.facebookUrl ? (
           <ChildContainer
-            preferredColumn="secondRightFixed"
             key="dashboard#facebookTimelineContainer"
+            preferredColumn="secondRightFixed"
             paddingBottom={24}
             preferredHeight={400}
           >

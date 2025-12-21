@@ -1,6 +1,6 @@
-import { IRaceWizard, RaceWizard } from '../models/resultWizardModel';
 import dayjs from 'dayjs';
 import React from 'react';
+import { IRaceWizard, RaceWizard } from '../models/resultWizardModel';
 import { payments } from './resultConstants';
 
 interface IResultWizardStore {
@@ -13,8 +13,8 @@ const ResultWizardStoreContext = React.createContext<IResultWizardStore>({
     queryEndDate: dayjs().format('YYYY-MM-DD'),
     paymentModel: payments.defaultFee0And100IfNotStarted,
     queryIncludeExisting: false,
-    existInEventor: true,
-  }),
+    existInEventor: true
+  })
 });
 
 interface IResultWizardStoreProvider {

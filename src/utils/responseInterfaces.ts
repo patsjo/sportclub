@@ -4,7 +4,7 @@ import {
   EventClassificationIdTypes,
   GenderType,
   LightConditionTypes,
-  SportCodeTypes,
+  SportCodeTypes
 } from './resultConstants';
 
 export interface IHtmlPageGroupResponse {

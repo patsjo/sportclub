@@ -1,5 +1,4 @@
-import React from 'react';
-import styled from 'styled-components';
+import { styled } from 'styled-components';
 import MaterialIcon, { MaterialIconsType } from '../materialIcon/MaterialIcon';
 
 interface IToolbarItemHolderProps {
@@ -39,7 +38,7 @@ interface IToolbarItemProps {
   disabled?: boolean;
 }
 const ToolbarItem = ({ icon, name, onClick, disabled }: IToolbarItemProps) => (
-  <ToolbarItemHolder onClick={onClick} disabled={disabled}>
+  <ToolbarItemHolder disabled={disabled} onClick={onClick}>
     <MaterialIcon icon={icon} fontSize={20} />
     <MaterialIconText>{name}</MaterialIconText>
   </ToolbarItemHolder>

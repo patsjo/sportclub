@@ -1,13 +1,13 @@
 import { Layout, message, Spin } from 'antd';
-import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, BrowserRouter as Router } from 'react-router-dom';
-import styled, { ThemeProvider } from 'styled-components';
+import { styled, ThemeProvider } from 'styled-components';
 import AppContent from './AppContent';
 import Toolbar from './components/toolbar/Toolbar';
 import clubJson from './models/clubs/okorion';
 import { GlobalStateModel } from './models/globalStateModel';
-import { MobxClubModel } from './models/mobxClubModel';
-import { getLocalStorage, ISessionModel, SessionModel } from './models/sessionModel';
+import { IThemeProps, MobxClubModel } from './models/mobxClubModel';
+import { getLocalStorage, SessionModel } from './models/sessionModel';
 import { PostJsonData } from './utils/api';
 import { MobxStoreProvider } from './utils/mobxStore';
 
@@ -31,11 +31,11 @@ const StickyHolder = styled.div<IStickyHolderProps>`
   z-index: 1000;
 `;
 
-const LayoutHeader = styled(Layout.Header)`
+const LayoutHeader = styled(Layout.Header)<{ theme: IThemeProps }>`
   &&& {
     line-height: unset;
-    color: ${(props) => props.theme.palette.primary.contrastText};
-    background-color: ${(props) => props.theme.palette.primary.main};
+    color: ${props => props.theme.palette.primary.contrastText};
+    background-color: ${props => props.theme.palette.primary.main};
     padding-left: 10px;
     padding-right: 10px;
     display: flex;
@@ -113,40 +113,40 @@ const App = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const scrollTop = useRef(0);
   const [scrollStickyPos, setScrollStickyPos] = useState(0);
-  const sessionModel = useRef<ISessionModel>(new SessionModel(getLocalStorage()));
-  const clubModel = useRef(new MobxClubModel(clubJson));
+  const sessionModel = useMemo(() => new SessionModel(getLocalStorage()), []);
+  const clubModel = useMemo(() => new MobxClubModel(clubJson), []);
   const logoHeight = 80;
-  const logoWidth = clubModel.current.logo.width * (80 / clubModel.current.logo.height);
-  const titleWidth = clubModel.current.titleLogo
-    ? clubModel.current.titleLogo.width * (24 / clubModel.current.titleLogo.height)
-    : 0;
-  const globalStateModel = useRef(
-    new GlobalStateModel({
-      news: {
-        newsItems: [],
-        limit: 10,
-        offset: 0,
-      },
-      graphics:
-        clubModel.current.map?.center && clubModel.current.logo
-          ? [
-              {
-                geometry: {
-                  type: 'point',
-                  longitude: clubModel.current.map?.center[0],
-                  latitude: clubModel.current.map?.center[1],
-                },
-                attributes: { name: clubModel.current.title, type: 'logo' },
-                symbol: {
-                  type: 'picture-marker',
-                  url: clubModel.current.logo.url,
-                  width: clubModel.current.logo.width,
-                  height: clubModel.current.logo.height,
-                },
-              },
-            ]
-          : [],
-    }),
+  const logoWidth = clubModel.logo.width * (80 / clubModel.logo.height);
+  const titleWidth = clubModel.titleLogo ? clubModel.titleLogo.width * (24 / clubModel.titleLogo.height) : 0;
+  const globalStateModel = useMemo(
+    () =>
+      new GlobalStateModel({
+        news: {
+          newsItems: [],
+          limit: 10,
+          offset: 0
+        },
+        graphics:
+          clubModel.map?.center && clubModel.logo
+            ? [
+                {
+                  geometry: {
+                    type: 'point',
+                    longitude: clubModel.map?.center[0],
+                    latitude: clubModel.map?.center[1]
+                  },
+                  attributes: { name: clubModel.title, type: 'logo' },
+                  symbol: {
+                    type: 'picture-marker',
+                    url: clubModel.logo.url,
+                    width: clubModel.logo.width,
+                    height: clubModel.logo.height
+                  }
+                }
+              ]
+            : []
+      }),
+    [clubModel.logo, clubModel.map?.center, clubModel.title]
   );
 
   const onScroll = useCallback(() => {
@@ -157,35 +157,35 @@ const App = () => {
     if (newScrollTop > oldScrollTop && newScrollTop > 56) {
       newStickyPos = -56;
     }
-    scrollStickyPos !== newStickyPos && setScrollStickyPos(newStickyPos);
+    if (scrollStickyPos !== newStickyPos) setScrollStickyPos(newStickyPos);
     scrollTop.current = newScrollTop;
   }, [scrollStickyPos]);
 
   useEffect(() => {
-    const htmlEditorModule = clubModel.current.modules.find((module) => module.name === 'HTMLEditor');
-    const filesModule = clubModel.current.modules.find((module) => module.name === 'Files');
+    const htmlEditorModule = clubModel.modules.find(module => module.name === 'HTMLEditor');
+    const filesModule = clubModel.modules.find(module => module.name === 'Files');
 
-    document.title = clubModel.current.title;
-    globalStateModel.current.fetchHtmlEditorMenu(htmlEditorModule, filesModule, sessionModel.current, messageApi);
+    document.title = clubModel.title;
+    globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, filesModule, sessionModel, messageApi);
     window.addEventListener('scroll', onScroll);
 
-    if (sessionModel.current.username && sessionModel.current.username.length > 0) {
-      PostJsonData(
-        clubModel.current.loginUrl,
+    if (sessionModel.username && sessionModel.username.length > 0) {
+      PostJsonData<{ id: string; name: string; isAdmin: boolean; eventorPersonId: number }>(
+        clubModel.loginUrl,
         {
-          username: sessionModel.current.username,
-          password: sessionModel.current.password,
+          username: sessionModel.username,
+          password: sessionModel.password
         },
         true,
         { 'X-Requested-With': 'XMLHttpRequest' },
-        1,
+        1
       )
-        .then((json) => {
+        .then(json => {
           if (json) {
-            sessionModel.current.setSuccessfullyLogin(json.id, json.name, json.isAdmin, json.eventorPersonId);
+            sessionModel.setSuccessfullyLogin(json.id, json.name, json.isAdmin, json.eventorPersonId);
           }
         })
-        .catch((error) => {
+        .catch(error => {
           console.error(error);
         });
     }
@@ -193,12 +193,12 @@ const App = () => {
     return () => {
       window.removeEventListener('scroll', onScroll);
     };
-  }, [onScroll]);
+  }, [clubModel.loginUrl, clubModel.modules, clubModel.title, globalStateModel, messageApi, onScroll, sessionModel]);
 
-  const Header = clubModel.current.titleLogo ? (
+  const Header = clubModel.titleLogo ? (
     <Link to="/">
       <StyledTitleLogo
-        src={clubModel.current.titleLogo.url}
+        src={clubModel.titleLogo.url}
         width={titleWidth}
         height={24}
         maxWidth={76 + logoWidth + titleWidth}
@@ -207,7 +207,7 @@ const App = () => {
   ) : (
     <Link to="/">
       <StyledHeader maxWidth={76 + logoWidth}>
-        <StyledEllipsis>{clubModel.current.title}</StyledEllipsis>
+        <StyledEllipsis>{clubModel.title}</StyledEllipsis>
       </StyledHeader>
     </Link>
   );
@@ -215,13 +215,13 @@ const App = () => {
   return (
     <MobxStoreProvider
       store={{
-        clubModel: clubModel.current,
-        sessionModel: sessionModel.current,
-        globalStateModel: globalStateModel.current,
+        clubModel: clubModel,
+        sessionModel: sessionModel,
+        globalStateModel: globalStateModel
       }}
     >
       {contextHolder}
-      <ThemeProvider theme={clubModel.current.theme}>
+      <ThemeProvider theme={clubModel.theme}>
         <Suspense
           fallback={
             <SpinnerDiv>
@@ -234,7 +234,7 @@ const App = () => {
               <StickyHolder top={scrollStickyPos}>
                 <LayoutHeader>
                   <Link to="/">
-                    <StyledLogo src={clubModel.current.logo.url} width={logoWidth} height={logoHeight} />
+                    <StyledLogo src={clubModel.logo.url} width={logoWidth} height={logoHeight} />
                   </Link>
                   {Header}
                   <Toolbar />

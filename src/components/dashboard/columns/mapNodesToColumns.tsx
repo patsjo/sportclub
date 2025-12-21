@@ -1,5 +1,5 @@
 import React from 'react';
-import styled from 'styled-components';
+import { styled } from 'styled-components';
 
 export interface IChildContainerProps {
   key: string | number;
@@ -17,7 +17,7 @@ export interface IChildColumn extends IChildContainerProps {
 export type IChildColumnElement = React.ReactElement<IChildColumn>;
 
 export const ChildContainer = styled.div<IChildContainerProps>`
-  padding-bottom: ${(props) => (props.paddingBottom !== undefined ? props.paddingBottom + 'px' : 'unset')};
+  padding-bottom: ${props => (props.paddingBottom !== undefined ? props.paddingBottom + 'px' : 'unset')};
   width: 100%;
 `;
 
@@ -41,7 +41,7 @@ const getColumn = (child: IChildColumn, columns: number, heights: number[], tota
     index = columns - 1;
   } else if (child.preferredColumn === 'secondRightFixed' && columns > 2) {
     index =
-      totalHeightPerColumn > 840 || heights[columns + child.preferredColumn] < 280
+      totalHeightPerColumn > 840 || heights[columns - 2] < 280
         ? columns - 2
         : heights.lastIndexOf(Math.min(...heights));
     if (index < 0) index = 0;
@@ -62,7 +62,7 @@ export const getDefaultChild = (reactChild: IChildColumnElement, columns: number
     preferredHeight: reactChild!.props.preferredHeight,
     reactChild: reactChild,
     column: 0,
-    height: reactChild.props.preferredHeight ?? 0,
+    height: reactChild.props.preferredHeight ?? 0
   };
   child.column = getColumn(child, columns, [...Array(columns)].fill(0), 0);
 
@@ -73,14 +73,14 @@ export const recalculateChildDistribution = (
   updatedChilds: IChildColumn[],
   childHeights: Record<string | number, number>,
   columns: number,
-  recalculateAll: boolean,
+  recalculateAll: boolean
 ) => {
   let aboveChildAlreadyCalculated = !recalculateAll;
   const heights = [...Array(columns)].fill(0);
   const newChildDistribution = [...Array(maxColumns)].map((): IChildColumn[] => []);
   const totalHeight = updatedChilds.reduce((a, b) => a + (b.key ? (childHeights[b.key] ?? b.height) : b.height), 0);
 
-  updatedChilds.forEach((child) => {
+  updatedChilds.forEach(child => {
     if (child.key != null) {
       const newChildHeight = childHeights[child.key];
       if (aboveChildAlreadyCalculated && newChildHeight && newChildHeight === child.height && child.column! < columns) {
@@ -98,7 +98,5 @@ export const recalculateChildDistribution = (
       newChildDistribution[child.column!].push(child);
     }
   });
-  console.log(heights);
-  console.log(updatedChilds.map((c) => ({ col: c.column, h: c.height })));
   return newChildDistribution;
 };

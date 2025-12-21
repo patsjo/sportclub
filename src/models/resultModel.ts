@@ -13,7 +13,7 @@ import {
   LightConditionTypes,
   PaymentTypes,
   SportCodeTypes,
-  distances,
+  distances
 } from '../utils/resultConstants';
 import { GetAge, GetAward } from '../utils/resultHelper';
 import { PickRequired } from './typescriptPartial';
@@ -36,11 +36,11 @@ class RaceFamily implements IRaceFamily {
   familyName = '';
 
   constructor(options: IRaceFamilyProps) {
-    options && Object.assign(this, options);
+    if (options) Object.assign(this, options);
     makeObservable(this, {
       familyId: observable,
       familyName: observable,
-      setValues: action.bound,
+      setValues: action.bound
     });
   }
 
@@ -85,7 +85,7 @@ class RaceCompetitor implements IRaceCompetitor {
   eventorCompetitorIds: number[] = [];
 
   constructor(options: PickRequired<IRaceCompetitorProps, 'competitorId'>) {
-    options && Object.assign(this, options);
+    if (options) Object.assign(this, options);
     makeObservable(this, {
       competitorId: observable,
       firstName: observable,
@@ -102,7 +102,7 @@ class RaceCompetitor implements IRaceCompetitor {
       renounce: action.bound,
       regretRenounce: action.bound,
       setValues: action.bound,
-      fullName: computed,
+      fullName: computed
     });
   }
 
@@ -112,7 +112,7 @@ class RaceCompetitor implements IRaceCompetitor {
         url,
         { iType: 'EVENTOR_COMPETITOR_ID', iCompetitorId: this.competitorId, iEventorCompetitorId: id },
         false,
-        authorizationHeader,
+        authorizationHeader
       );
       this.eventorCompetitorIds.push(parseInt(id));
     } catch (error) {
@@ -186,7 +186,7 @@ export interface IRaceClub extends Omit<IRaceClubProps, 'competitors' | 'familie
   addCompetitor: (
     url: string,
     competitor: INewCompetitorForm,
-    authorizationHeader: Record<string, string>,
+    authorizationHeader: Record<string, string>
   ) => Promise<number | undefined>;
   updateCompetitors: () => void;
   addFamily: (familyId: number, familyName: string) => void;
@@ -207,8 +207,8 @@ class RaceClub implements IRaceClubProps {
     if (options) {
       const { competitors, families, ...rest } = options;
       Object.assign(this, rest);
-      if (competitors) this.competitors = competitors.map((c) => new RaceCompetitor(c));
-      if (families) this.families = families.map((f) => new RaceFamily(f));
+      if (competitors) this.competitors = competitors.map(c => new RaceCompetitor(c));
+      if (families) this.families = families.map(f => new RaceFamily(f));
     }
 
     makeObservable(this, {
@@ -221,16 +221,19 @@ class RaceClub implements IRaceClubProps {
       updateCompetitors: action.bound,
       addFamily: action.bound,
       deleteFamily: action.bound,
-      competitorsOptions: computed,
+      competitorsOptions: computed
     });
   }
 
   async addCompetitor(url: string, competitor: INewCompetitorForm, authorizationHeader: Record<string, string>) {
     try {
-      const responseJson: IRaceCompetitorProps = await PostJsonData(url, competitor, false, authorizationHeader);
-      this.competitors = [...this.competitors, new RaceCompetitor(responseJson)];
-      return responseJson.competitorId;
-    } catch (error) {
+      const responseJson = await PostJsonData<IRaceCompetitorProps>(url, competitor, false, authorizationHeader);
+      if (responseJson) {
+        this.competitors = [...this.competitors, new RaceCompetitor(responseJson)];
+        return responseJson.competitorId;
+      }
+      return undefined;
+    } catch {
       return undefined;
     }
   }
@@ -246,20 +249,20 @@ class RaceClub implements IRaceClubProps {
   async deleteFamily(url: string, familyId: number, authorizationHeader: Record<string, string>) {
     try {
       await PostJsonData(url, { familyId }, false, authorizationHeader);
-      this.competitors.filter((c) => c.familyId === familyId).forEach((c) => c.setValues({ familyId: null }));
-      this.families = this.families.filter((f) => f.familyId !== familyId);
+      this.competitors.filter(c => c.familyId === familyId).forEach(c => c.setValues({ familyId: null }));
+      this.families = this.families.filter(f => f.familyId !== familyId);
       return;
-    } catch (error) {
+    } catch {
       return;
     }
   }
 
   competitorById(id: number): IRaceCompetitor | undefined {
-    return this.competitors.find((competitor) => competitor.competitorId === id);
+    return this.competitors.find(competitor => competitor.competitorId === id);
   }
 
   competitorByEventorId(id: number): IRaceCompetitor | undefined {
-    return this.competitors.find((competitor) => competitor.eventorCompetitorIds.includes(id));
+    return this.competitors.find(competitor => competitor.eventorCompetitorIds.includes(id));
   }
 
   get competitorsOptions() {
@@ -272,13 +275,13 @@ class RaceClub implements IRaceClubProps {
             : -1
           : a.lastName.toLowerCase() > b.lastName.toLowerCase()
             ? 1
-            : -1,
+            : -1
       )
       .map(
         (competitor): INumberOption => ({
           code: competitor.competitorId,
-          description: `${competitor.fullName} (${competitor.birthDay})`,
-        }),
+          description: `${competitor.fullName} (${competitor.birthDay})`
+        })
       );
   }
 }
@@ -297,7 +300,7 @@ export interface IRaceClubs extends Omit<IRaceClubsProps, 'clubs'> {
   setSelectedClubByEventorId: (code: number) => void;
   classClassification: (
     eventClassificationId: EventClassificationIdTypes,
-    classClassificationId: number,
+    classClassificationId: number
   ) => string | null;
   classClassificationOptions: (eventClassificationId: EventClassificationIdTypes) => IOption[];
   eventClassificationOptions: IOption[];
@@ -316,7 +319,7 @@ export class RaceClubs implements IRaceClubs {
     if (options) {
       const { clubs, ...rest } = options;
       Object.assign(this, rest);
-      if (clubs) this.clubs = clubs.map((c) => new RaceClub(c));
+      if (clubs) this.clubs = clubs.map(c => new RaceClub(c));
     }
 
     makeObservable(this, {
@@ -329,60 +332,60 @@ export class RaceClubs implements IRaceClubs {
       setSelectedClubByEventorId: action.bound,
       eventClassificationOptions: computed,
       clubOptions: computed,
-      sportOptions: computed,
+      sportOptions: computed
     });
   }
 
   setSelectedClub(code: number) {
-    this.selectedClub = this.clubs.find((c) => c.clubId === code);
+    this.selectedClub = this.clubs.find(c => c.clubId === code);
   }
 
   setSelectedClubByEventorId(code: number) {
-    this.selectedClub = this.clubs.find((c) => c.eventorOrganisationId === code);
+    this.selectedClub = this.clubs.find(c => c.eventorOrganisationId === code);
   }
 
   classClassification(eventClassificationId: EventClassificationIdTypes, classClassificationId: number) {
     const eventClassification = this.eventClassifications.find(
-      (ec) => ec.eventClassificationId === eventClassificationId,
+      ec => ec.eventClassificationId === eventClassificationId
     );
     const classClassification = eventClassification?.classClassifications.find(
-      (cc) => cc.classClassificationId === classClassificationId,
+      cc => cc.classClassificationId === classClassificationId
     );
     return classClassification ? classClassification.description : null;
   }
 
   classClassificationOptions(eventClassificationId: EventClassificationIdTypes) {
     const eventClassification = this.eventClassifications.find(
-      (ec) => ec.eventClassificationId === eventClassificationId,
+      ec => ec.eventClassificationId === eventClassificationId
     );
     return (
       eventClassification?.classClassifications.map(
         (cc): IOption => ({
           code: cc.classClassificationId.toString(),
-          description: cc.description,
-        }),
+          description: cc.description
+        })
       ) ?? []
     );
   }
 
   get eventClassificationOptions() {
-    return this.eventClassifications.map((ec) => ({
+    return this.eventClassifications.map(ec => ({
       code: ec.eventClassificationId,
-      description: ec.description,
+      description: ec.description
     }));
   }
 
   get clubOptions() {
-    return this.clubs.map((club) => ({
-      code: club.clubId.toString(),
-      description: club.name,
+    return this.clubs.map(club => ({
+      code: club.clubId,
+      description: club.name
     }));
   }
 
   get sportOptions() {
-    return this.sports.map((sport) => ({
+    return this.sports.map(sport => ({
       code: sport.sportCode,
-      description: sport.description,
+      description: sport.description
     }));
   }
 }
@@ -390,7 +393,7 @@ export class RaceClubs implements IRaceClubs {
 export interface IRaceTeamResultProps {
   teamResultId: number;
   className: string;
-  deviantEventClassificationId?: string | null;
+  deviantEventClassificationId?: EventClassificationIdTypes | null;
   classClassificationId?: number | null;
   difficulty?: DifficultyTypes | null;
   teamName?: string | null;
@@ -441,7 +444,7 @@ export interface IRaceTeamResult extends IRaceTeamResultProps {
       | 'totalTimeBehind'
       | 'missingTime'
       | 'serviceFeeDescription',
-    value?: string | null,
+    value?: string | null
   ) => void;
   setNumberValue: (key: 'competitorId' | 'stage' | 'totalStages' | 'serviceFeeToClub', value: number) => void;
   setNumberValueOrNull: (
@@ -458,7 +461,7 @@ export interface IRaceTeamResult extends IRaceTeamResultProps {
       | 'ranking'
       | 'speedRanking'
       | 'technicalRanking',
-    value?: number | null,
+    value?: number | null
   ) => void;
   valid: boolean;
 }
@@ -498,7 +501,7 @@ class RaceTeamResult implements IRaceTeamResult {
   serviceFeeDescription?: string | null;
 
   constructor(options: PickRequired<IRaceTeamResultProps, 'teamResultId' | 'className'>) {
-    options && Object.assign(this, options);
+    if (options) Object.assign(this, options);
     makeObservable(this, {
       teamResultId: observable,
       className: observable,
@@ -541,7 +544,7 @@ class RaceTeamResult implements IRaceTeamResult {
       setStringValueOrNull: action.bound,
       setNumberValue: action.bound,
       setNumberValueOrNull: action.bound,
-      valid: computed,
+      valid: computed
     });
   }
 
@@ -584,7 +587,7 @@ class RaceTeamResult implements IRaceTeamResult {
       | 'totalTimeBehind'
       | 'missingTime'
       | 'serviceFeeDescription',
-    value?: string | null,
+    value?: string | null
   ) {
     this[key] = value != null ? value : null;
   }
@@ -607,7 +610,7 @@ class RaceTeamResult implements IRaceTeamResult {
       | 'ranking'
       | 'speedRanking'
       | 'technicalRanking',
-    value?: number | null,
+    value?: number | null
   ) {
     this[key] = value != null ? value : null;
   }
@@ -646,7 +649,7 @@ export interface IRaceResultMultiDayProps {
   totalNofStartsInClass?: number | null;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface IRaceResultMultiDay extends IRaceResultMultiDayProps {}
 
 class RaceResultMultiDay implements IRaceResultMultiDay {
@@ -662,7 +665,7 @@ class RaceResultMultiDay implements IRaceResultMultiDay {
   totalNofStartsInClass?: number | null;
 
   constructor(options: PickRequired<IRaceResultMultiDayProps, 'multiDayResultId'>) {
-    options && Object.assign(this, options);
+    if (options) Object.assign(this, options);
     makeObservable(this, {
       multiDayResultId: observable,
       stage: observable,
@@ -673,7 +676,7 @@ class RaceResultMultiDay implements IRaceResultMultiDay {
       totalWinnerTime: observable,
       totalSecondTime: observable,
       totalPosition: observable,
-      totalNofStartsInClass: observable,
+      totalNofStartsInClass: observable
     });
   }
 }
@@ -726,7 +729,7 @@ export interface IRaceResult extends Omit<IRaceResultProps, 'resultMultiDay'> {
   setStringValue: (key: 'className', value: string) => void;
   setStringValueOrNull: (
     key: 'competitorTime' | 'winnerTime' | 'secondTime' | 'missingTime' | 'serviceFeeDescription',
-    value?: string | null,
+    value?: string | null
   ) => void;
   setNumberValue: (key: 'competitorId' | 'serviceFeeToClub', value: number) => void;
   setNumberValueOrNull: (
@@ -744,7 +747,7 @@ export interface IRaceResult extends Omit<IRaceResultProps, 'resultMultiDay'> {
       | 'ranking'
       | 'speedRanking'
       | 'technicalRanking',
-    value?: number | null,
+    value?: number | null
   ) => void;
   setIsAwardTouched: (raceClubs: IRaceClubs, raceEvent: IRaceEventBasic) => void;
   setCalculatedAward: (value: AwardTypes | null) => void;
@@ -827,7 +830,7 @@ class RaceResult implements IRaceResult {
       setNumberValueOrNull: action.bound,
       setIsAwardTouched: action.bound,
       setCalculatedAward: action.bound,
-      valid: computed,
+      valid: computed
     });
   }
 
@@ -858,7 +861,7 @@ class RaceResult implements IRaceResult {
 
   setStringValueOrNull(
     key: 'competitorTime' | 'winnerTime' | 'secondTime' | 'missingTime' | 'serviceFeeDescription',
-    value?: string | null,
+    value?: string | null
   ) {
     this[key] = value != null ? value : null;
   }
@@ -882,14 +885,14 @@ class RaceResult implements IRaceResult {
       | 'ranking'
       | 'speedRanking'
       | 'technicalRanking',
-    value?: number | null,
+    value?: number | null
   ) {
     this[key] = value != null ? value : null;
   }
 
   setIsAwardTouched(raceClubs: IRaceClubs, raceEvent: IRaceEventBasic) {
     const raceEventClassification = raceClubs.eventClassifications?.find(
-      (ec) => ec.eventClassificationId === raceEvent.eventClassificationId,
+      ec => ec.eventClassificationId === raceEvent.eventClassificationId
     );
     const competitor = raceClubs.selectedClub?.competitorById(this.competitorId);
     const age = competitor && GetAge(competitor.birthDay, raceEvent.raceDate);
@@ -900,7 +903,7 @@ class RaceResult implements IRaceResult {
             raceClubs.classLevels,
             this,
             age !== undefined ? age : null,
-            raceEvent.raceDistance === distances.sprint,
+            raceEvent.raceDistance === distances.sprint
           )
         : null;
     this.isAwardTouched = this.isAwardTouched || !((!calculatedAward && !this.award) || calculatedAward === this.award);
@@ -931,14 +934,17 @@ class RaceResult implements IRaceResult {
   }
 }
 
-export interface IRaceEventProps {
-  eventId: number;
-  eventorId?: number | null;
-  eventorRaceId?: number | null;
+export interface IRaceEventBasicProps {
   name?: string | null;
   organiserName?: string | null;
   raceDate?: string | null;
   raceTime?: string | null;
+}
+
+export interface IRaceEventProps extends IRaceEventBasicProps {
+  eventId: number;
+  eventorId?: number | null;
+  eventorRaceId?: number | null;
   sportCode: SportCodeTypes;
   isRelay: boolean;
   eventClassificationId: EventClassificationIdTypes;
@@ -966,12 +972,12 @@ export interface IRaceEvent extends Omit<IRaceEventProps, 'results' | 'teamResul
   setSportCode: (value: SportCodeTypes) => void;
   setStringValueOrNull: (
     key: 'name' | 'organiserName' | 'raceDate' | 'raceTime' | 'rankingBasetimePerKilometer' | 'rankingBaseDescription',
-    value?: string | null,
+    value?: string | null
   ) => void;
   setBooleanValue: (key: 'isRelay' | 'meetsAwardRequirements' | 'invoiceVerified', value: boolean) => void;
   setNumberValueOrNull: (
     key: 'eventorId' | 'eventorRaceId' | 'rankingBasepoint' | 'longitude' | 'latitude',
-    value?: number | null,
+    value?: number | null
   ) => void;
   addResult: (result: IRaceResultProps) => void;
   removeResult: (result: IRaceResultProps) => void;
@@ -1009,8 +1015,8 @@ export class RaceEvent implements IRaceEvent {
     if (options) {
       const { results, teamResults, ...rest } = options;
       Object.assign(this, rest);
-      if (results) this.results = results.map((r) => new RaceResult(r));
-      if (teamResults) this.teamResults = teamResults.map((r) => new RaceTeamResult(r));
+      if (results) this.results = results.map(r => new RaceResult(r));
+      if (teamResults) this.teamResults = teamResults.map(r => new RaceTeamResult(r));
     }
 
     makeObservable(this, {
@@ -1049,7 +1055,7 @@ export class RaceEvent implements IRaceEvent {
       addTeamResult: action.bound,
       removeTeamResult: action.bound,
       valid: computed,
-      validRanking: computed,
+      validRanking: computed
     });
   }
 
@@ -1075,7 +1081,7 @@ export class RaceEvent implements IRaceEvent {
 
   setStringValueOrNull(
     key: 'name' | 'organiserName' | 'raceDate' | 'raceTime' | 'rankingBasetimePerKilometer' | 'rankingBaseDescription',
-    value?: string | null,
+    value?: string | null
   ) {
     this[key] = value != null ? value : null;
   }
@@ -1086,7 +1092,7 @@ export class RaceEvent implements IRaceEvent {
 
   setNumberValueOrNull(
     key: 'eventorId' | 'eventorRaceId' | 'rankingBasepoint' | 'longitude' | 'latitude',
-    value?: number | null,
+    value?: number | null
   ) {
     this[key] = value != null ? value : null;
   }
@@ -1096,7 +1102,7 @@ export class RaceEvent implements IRaceEvent {
   }
 
   removeResult(result: IRaceResultProps) {
-    this.results = [...this.results.filter((item) => item.resultId !== result.resultId)];
+    this.results = [...this.results.filter(item => item.resultId !== result.resultId)];
   }
 
   addTeamResult(result: IRaceTeamResultProps) {
@@ -1104,7 +1110,7 @@ export class RaceEvent implements IRaceEvent {
   }
 
   removeTeamResult(result: IRaceTeamResultProps) {
-    this.teamResults = [...this.teamResults.filter((item) => item.teamResultId !== result.teamResultId)];
+    this.teamResults = [...this.teamResults.filter(item => item.teamResultId !== result.teamResultId)];
   }
 
   get valid() {
@@ -1118,8 +1124,8 @@ export class RaceEvent implements IRaceEvent {
       this.raceLightCondition != null &&
       this.raceDistance != null &&
       (this.results.length > 0 || this.teamResults.length > 0) &&
-      !this.results.some((result) => !result.valid) &&
-      !this.teamResults.some((result) => !result.valid)
+      !this.results.some(result => !result.valid) &&
+      !this.teamResults.some(result => !result.valid)
     );
   }
 
@@ -1134,8 +1140,8 @@ export class RaceEvent implements IRaceEvent {
       this.raceLightCondition != null &&
       this.raceDistance != null &&
       (this.results.length > 0 || this.teamResults.length > 0) &&
-      !this.results.some((result) => !result.valid) &&
-      !this.teamResults.some((result) => !result.valid) &&
+      !this.results.some(result => !result.valid) &&
+      !this.teamResults.some(result => !result.valid) &&
       (this.sportCode === 'INOL' ||
         this.sportCode === 'PREO' ||
         (this.rankingBasetimePerKilometer != null &&

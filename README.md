@@ -96,7 +96,7 @@ and the following seetings:
 6. Change "src/App.tsx" to import your config instead. (import clubJson from './models/clubs/...';)
 7. npm install
 8. npm run build (or "npm run start" to just start it locally)
-9. Copy "index.html" and "static" folder from the "build" folder to your public html root folder.
+9. Copy "index.html" and "static" folder from the "dist" folder to your public html root folder.
 10. Done!!
 
 ## Make tiled open streetmap images from Ocad

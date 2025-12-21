@@ -10,7 +10,7 @@ import {
   IRaceResult,
   IRaceResultProps,
   IRaceTeamResult,
-  IRaceTeamResultProps,
+  IRaceTeamResultProps
 } from '../models/resultModel';
 import { timeFormat } from './formHelper';
 import {
@@ -18,7 +18,7 @@ import {
   IEventorPersonResult,
   IEventorSplitTime,
   IEventorTeamMemberResult,
-  IEventorTeamResult,
+  IEventorTeamResult
 } from './responseEventorInterfaces';
 import {
   AwardTypes,
@@ -31,8 +31,9 @@ import {
   distances,
   failedReasons,
   lightConditions,
-  payments,
+  payments
 } from './resultConstants';
+
 const minMissingPercentageQuota = 0.04;
 const minMissingTimeSeconds = 4;
 
@@ -82,7 +83,7 @@ export const ConvertTimeToSeconds = (timeString: string | null | undefined): num
     const mm = dayjsTime.get('minute');
     const ss = dayjsTime.get('second');
     return hh * 3600 + mm * 60 + ss;
-  } catch (e) {
+  } catch {
     return 0;
   }
 };
@@ -101,7 +102,7 @@ const ConvertTimeWithFractionsToSeconds = (timeString: string | null): number =>
     const ss = dayjsTime.get('second');
     const SSS = dayjsTime.get('millisecond');
     return hh * 3600 + mm * 60 + ss + SSS / 1000;
-  } catch (e) {
+  } catch {
     return 0;
   }
 };
@@ -121,7 +122,7 @@ export const ConvertSecondsWithFractionsToTime = (timeInSeconds?: number): strin
   const minutes = Math.floor((timeInSeconds - hours * 3600) / 60);
   const seconds = Math.floor(timeInSeconds - hours * 3600 - minutes * 60);
   const milliseconds = Math.floor(1000 * (timeInSeconds - hours * 3600 - minutes * 60 - seconds));
-  const time = dayjs(`${hours}:${minutes}:${seconds}`, 'HH:mm:ss');
+  const time = dayjs(`${hours}:${minutes}:${seconds}.${milliseconds}`, 'HH:mm:ss.SSS');
   return time.format('HH:mm:ss.SSS');
 };
 
@@ -175,36 +176,36 @@ export const GetFees = (entryFees: IEventorEntryFee[], entryFeeIds: string[], co
     return fees;
   }
   const competitorEntryFees = entryFees.filter(
-    (fee) =>
+    fee =>
       entryFeeIds.includes(fee.EntryFeeId) &&
       (!fee.FromDateOfBirth || dayjs(competitorBirthday, 'yyyy-mm-dd').isSameOrAfter(fee.FromDateOfBirth.Date)) &&
-      (!fee.ToDateOfBirth || dayjs(competitorBirthday, 'yyyy-mm-dd').isSameOrBefore(fee.ToDateOfBirth.Date)),
+      (!fee.ToDateOfBirth || dayjs(competitorBirthday, 'yyyy-mm-dd').isSameOrBefore(fee.ToDateOfBirth.Date))
   );
   if (competitorEntryFees == null || competitorEntryFees.length === 0) {
     return fees;
   }
   const firstValidToDate = competitorEntryFees
-    .map((fee) => (fee.ValidToDate ? `${fee.ValidToDate.Date} ${fee.ValidToDate.Clock}` : ''))
-    .filter((dateTime) => dateTime !== '')
+    .map(fee => (fee.ValidToDate ? `${fee.ValidToDate.Date} ${fee.ValidToDate.Clock}` : ''))
+    .filter(dateTime => dateTime !== '')
     .sort()
     .find(() => true);
   const originalFees =
     competitorEntryFees.length <= 1
       ? competitorEntryFees
       : competitorEntryFees.filter(
-          (fee) =>
+          fee =>
             (!fee.ValidFromDate || (fee.ValidToDate && fee.ValidToDate.Date === firstValidToDate)) &&
-            (fee['@attributes'].valueOperator ?? 'fixed') === 'fixed',
+            (fee['@attributes'].valueOperator ?? 'fixed') === 'fixed'
         );
   const lateFees = competitorEntryFees.filter(
-    (fee) =>
-      !originalFees.map((oFee) => oFee.EntryFeeId).includes(fee.EntryFeeId) &&
-      (fee['@attributes'].valueOperator ?? 'fixed') === 'fixed',
+    fee =>
+      !originalFees.map(oFee => oFee.EntryFeeId).includes(fee.EntryFeeId) &&
+      (fee['@attributes'].valueOperator ?? 'fixed') === 'fixed'
   );
-  const extraPercentage = competitorEntryFees.find((fee) => fee['@attributes'].valueOperator === 'percent');
+  const extraPercentage = competitorEntryFees.find(fee => fee['@attributes'].valueOperator === 'percent');
 
-  fees.originalFee = originalFees.map((fee) => parseInt(fee.Amount)).reduce((a, b) => a + b, 0);
-  fees.lateFee = lateFees.map((fee) => parseInt(fee.Amount)).reduce((a, b) => a + b, 0);
+  fees.originalFee = originalFees.map(fee => parseInt(fee.Amount)).reduce((a, b) => a + b, 0);
+  fees.lateFee = lateFees.map(fee => parseInt(fee.Amount)).reduce((a, b) => a + b, 0);
   if (extraPercentage != null) {
     fees.lateFee += (fees.originalFee * parseInt(extraPercentage.Amount)) / 100;
   }
@@ -246,7 +247,7 @@ export const GetSecondsWithFractionsPerKiloMeter = (timeString: string, length: 
 export const GetRacePoint = (
   raceEventClassification: IRaceEventClassificationProps,
   raceClassClassification: IRaceClassClassificationProps,
-  result: IRaceResultProps,
+  result: IRaceResultProps
 ): number | null => {
   const basePoint =
     raceEventClassification.basePoint -
@@ -282,7 +283,7 @@ export const GetRacePoint = (
 export const GetRaceOldPoint = (
   raceEventClassification: IRaceEventClassificationProps,
   raceClassClassification: IRaceClassClassificationProps,
-  result: IRaceResultProps,
+  result: IRaceResultProps
 ): number | null => {
   if (
     result.failedReason ||
@@ -302,7 +303,7 @@ export const GetRaceOldPoint = (
     raceEventClassification.oldPositionBasePoint -
       (result.position > 1 ? 5 : 0) -
       (result.position > 2 ? result.position : 0),
-    0,
+    0
   );
   const nofStartsPoint = Math.min(Math.round((result.nofStartsInClass - 1) / 5), 30);
   const competitorTime = ConvertTimeToSeconds(result.competitorTime);
@@ -320,7 +321,7 @@ export const GetRaceOldPoint = (
 export const GetPointRunTo1000 = (
   raceEventClassification: IRaceEventClassificationProps,
   raceClassClassification: IRaceClassClassificationProps,
-  result: IRaceResultProps | IRaceTeamResultProps,
+  result: IRaceResultProps | IRaceTeamResultProps
 ): number | null => {
   const basePoint = raceEventClassification.base1000Point - raceClassClassification.decreaseBase1000Point;
 
@@ -349,15 +350,15 @@ export const GetPointRunTo1000 = (
 export const GetClassLevel = (classLevels: IRaceClassLevelProps[], classShortName: string | null) => {
   if (!classShortName) return undefined;
   let classLevel = classLevels
-    .filter((cl) => classShortName.indexOf(cl.classShortName) >= 0)
+    .filter(cl => classShortName.indexOf(cl.classShortName) >= 0)
     .sort((a, b) => (a.classShortName.length < b.classShortName.length ? 1 : -1))
     .find(() => true);
 
-  const difficulty = difficultiesArray.find((d) => classShortName.toLowerCase().indexOf(d.toLowerCase()) >= 0);
+  const difficulty = difficultiesArray.find(d => classShortName.toLowerCase().indexOf(d.toLowerCase()) >= 0);
 
   if (!classLevel && difficulty) {
     classLevel = classLevels
-      .filter((cl) => cl.classTypeShortName === 'Ö' && cl.difficulty === difficulty)
+      .filter(cl => cl.classTypeShortName === 'Ö' && cl.difficulty === difficulty)
       .find(() => true);
   }
 
@@ -367,7 +368,7 @@ export const GetClassLevel = (classLevels: IRaceClassLevelProps[], classShortNam
 export const ResetClassClassifications = (
   raceEvent: IRaceEvent,
   eventClassifications: IRaceEventClassificationProps[] | null | undefined,
-  classLevels: IRaceClassLevelProps[],
+  classLevels: IRaceClassLevelProps[]
 ) => {
   let results: IRaceResult[] | IRaceTeamResult[] = [];
   if (raceEvent.results && raceEvent.results.length > 0) {
@@ -375,13 +376,12 @@ export const ResetClassClassifications = (
   } else if (raceEvent.teamResults && raceEvent.teamResults.length > 0) {
     results = raceEvent.teamResults;
   }
-  results.forEach((result) => {
+  results.forEach(result => {
     const classLevel = GetClassLevel(classLevels, result.className);
     const classClassificationId = GetClassClassificationId(
-      result.deviantEventClassificationId ??
-        (raceEvent.eventClassificationId as EventClassificationIdTypes | null | undefined),
+      result.deviantEventClassificationId ?? raceEvent.eventClassificationId,
       classLevel,
-      eventClassifications,
+      eventClassifications
     );
     result.setNumberValueOrNull('classClassificationId', classClassificationId);
   });
@@ -391,7 +391,7 @@ export const GetCompetitorFee = (
   paymentModel: PaymentTypes,
   result: IRaceResultProps,
   age: number | null,
-  classClassification: IRaceClassClassificationProps | undefined,
+  classClassification: IRaceClassClassificationProps | undefined
 ): number => {
   if (result.originalFee == null || result.lateFee == null) {
     return 0;
@@ -425,19 +425,19 @@ export const GetCompetitorFee = (
 export const CalculateCompetitorsFee = (
   raceEvent: IRaceEvent,
   selectedClub: IRaceClub,
-  eventClassifications: IRaceEventClassificationProps[],
+  eventClassifications: IRaceEventClassificationProps[]
 ) => {
   if (raceEvent.results && raceEvent.results.length > 0) {
-    raceEvent.results.forEach((result) => {
+    raceEvent.results.forEach(result => {
       const competitor = selectedClub.competitorById(result.competitorId);
       const age = competitor && raceEvent.raceDate ? GetAge(competitor.birthDay, raceEvent.raceDate) : null;
       const classClassification = eventClassifications
-        .find((ec) => ec.eventClassificationId === raceEvent.eventClassificationId)
-        ?.classClassifications?.find((cc) => cc.classClassificationId === result.classClassificationId);
+        .find(ec => ec.eventClassificationId === raceEvent.eventClassificationId)
+        ?.classClassifications?.find(cc => cc.classClassificationId === result.classClassificationId);
 
       result.setNumberValueOrNull(
         'feeToClub',
-        GetCompetitorFee(raceEvent.paymentModel as PaymentTypes, result, age, classClassification),
+        GetCompetitorFee(raceEvent.paymentModel as PaymentTypes, result, age, classClassification)
       );
     });
   }
@@ -483,24 +483,24 @@ export const GetClassShortName = (className?: string | null): string | null => {
 export const GetClassClassificationId = (
   eventClassificationId: EventClassificationIdTypes | null | undefined,
   classLevel: IRaceClassLevelProps | null | undefined,
-  eventClassifications: IRaceEventClassificationProps[] | null | undefined,
+  eventClassifications: IRaceEventClassificationProps[] | null | undefined
 ): number | null => {
   if (!eventClassificationId || !classLevel || !eventClassifications) {
     return null;
   }
-  const eventClassification = eventClassifications.find((ec) => ec.eventClassificationId === eventClassificationId);
+  const eventClassification = eventClassifications.find(ec => ec.eventClassificationId === eventClassificationId);
   if (!eventClassification) {
     return null;
   }
   const classClassification = eventClassification.classClassifications
-    ?.map((cc) => ({
+    ?.map(cc => ({
       ...cc,
       accuracy:
         (cc.classTypeShortName && cc.classTypeShortName === classLevel.classTypeShortName ? 1 : 0) +
         (!cc.ageUpperLimit || cc.ageUpperLimit >= classLevel.age ? 1 : 0) +
-        (!cc.ageLowerLimit || cc.ageLowerLimit <= classLevel.age ? 1 : 0),
+        (!cc.ageLowerLimit || cc.ageLowerLimit <= classLevel.age ? 1 : 0)
     }))
-    ?.filter((cc) => cc.accuracy >= 2)
+    ?.filter(cc => cc.accuracy >= 2)
     .sort((a, b) => b.accuracy - a.accuracy)
     .find(() => true);
   if (!classClassification) {
@@ -514,7 +514,7 @@ export const GetAward = (
   classLevels: IRaceClassLevelProps[],
   result: IRaceResultProps,
   competitorAge: number | null,
-  isSprint: boolean,
+  isSprint: boolean
 ): AwardTypes | null => {
   if (
     result.failedReason === failedReasons.NotStarted ||
@@ -525,7 +525,7 @@ export const GetAward = (
   }
 
   const classClassification = raceEventClassification.classClassifications?.find(
-    (cc) => cc.classClassificationId === result.classClassificationId,
+    cc => cc.classClassificationId === result.classClassificationId
   );
   const shortClassName = GetClassShortName(result.className);
   let classLevel = GetClassLevel(classLevels, shortClassName);
@@ -542,7 +542,7 @@ export const GetAward = (
       age: age ?? competitorAge ?? 21,
       classShortName: result.className,
       classTypeShortName: classClassification.classTypeShortName ? classClassification.classTypeShortName : 'T',
-      difficulty: classLevel?.difficulty ?? result.difficulty ?? difficulties.black,
+      difficulty: classLevel?.difficulty ?? result.difficulty ?? difficulties.black
     };
   }
 
@@ -551,7 +551,7 @@ export const GetAward = (
       age: competitorAge ?? 21,
       classShortName: result.className,
       classTypeShortName: 'T',
-      difficulty: result.difficulty ?? difficulties.black,
+      difficulty: result.difficulty ?? difficulties.black
     };
   }
 
@@ -692,10 +692,10 @@ export const GetAward = (
 
 export const CalculateAllAwards = (raceClubs: IRaceClubs, raceEvent: IRaceEvent) => {
   const raceEventClassification = raceClubs.eventClassifications.find(
-    (ec) => ec.eventClassificationId === raceEvent.eventClassificationId,
+    ec => ec.eventClassificationId === raceEvent.eventClassificationId
   );
   if (raceEventClassification)
-    raceEvent.results?.forEach((result) => {
+    raceEvent.results?.forEach(result => {
       const competitor = raceClubs.selectedClub?.competitorById(result.competitorId);
       const age = competitor && raceEvent.raceDate ? GetAge(competitor.birthDay, raceEvent.raceDate) : 21;
 
@@ -706,19 +706,19 @@ export const CalculateAllAwards = (raceClubs: IRaceClubs, raceEvent: IRaceEvent)
               raceClubs.classLevels,
               result,
               age,
-              raceEvent.raceDistance === distances.sprint,
+              raceEvent.raceDistance === distances.sprint
             )
-          : null,
+          : null
       );
     });
 };
 
 export const CalculateAllClassClassificationId = (raceClubs: IRaceClubs, raceEvent: IRaceEvent) => {
   const raceEventClassification = raceClubs.eventClassifications.find(
-    (ec) => ec.eventClassificationId === raceEvent.eventClassificationId,
+    ec => ec.eventClassificationId === raceEvent.eventClassificationId
   );
   if (raceEventClassification)
-    raceEvent.results?.forEach((result) => {
+    raceEvent.results?.forEach(result => {
       const shortClassName = GetClassShortName(result.className);
       const classLevel = GetClassLevel(raceClubs.classLevels, shortClassName);
       result.setValues({
@@ -727,8 +727,8 @@ export const CalculateAllClassClassificationId = (raceClubs: IRaceClubs, raceEve
             ? (result.deviantEventClassificationId as EventClassificationIdTypes)
             : raceEventClassification.eventClassificationId,
           classLevel,
-          raceClubs.eventClassifications,
-        ),
+          raceClubs.eventClassifications
+        )
       });
     });
 };
@@ -738,7 +738,7 @@ export const GetRanking = (
   rankingBasepoint: number,
   result: IRaceResultProps | IRaceTeamResultProps,
   sportCode: SportCodeTypes,
-  raceLightCondition: LightConditionTypes,
+  raceLightCondition: LightConditionTypes
 ): number | null => {
   if (
     sportCode === 'INOL' ||
@@ -799,14 +799,14 @@ export const GetRanking = (
       baseLengthInMeter *= lengthFactor;
     }
   } else if (sportCode === 'SKIO') {
-    const length430 = 4500000 / ConvertTimeToSeconds('00:04:30');
-    if (baseLengthInMeter < length430) {
-      baseLengthInMeter = length430;
+    const length315 = 4500000 / ConvertTimeToSeconds('00:03:15');
+    if (baseLengthInMeter < length315) {
+      baseLengthInMeter = length315;
     }
   } else if (sportCode === 'MTBO') {
-    const length430 = 4500000 / ConvertTimeToSeconds('00:04:30');
-    if (baseLengthInMeter < length430) {
-      baseLengthInMeter = length430;
+    const length230 = 4500000 / ConvertTimeToSeconds('00:02:30');
+    if (baseLengthInMeter < length230) {
+      baseLengthInMeter = length230;
     }
   }
   return (secondsPerMeter * baseLengthInMeter - 4500) / 60;
@@ -828,45 +828,43 @@ interface ISplitTimes {
 }
 
 const GetBestSplitTimes = (
-  splitTimes: ISplitTimes[],
+  splitTimes: ISplitTimes[]
 ): { bestSplitTimes: ISplitTime[]; secondBestSplitTimes: ISplitTime[] } => {
   let bestSplitTimes: ISplitTime[] = [];
   let secondBestSplitTimes: ISplitTime[] = [];
   if (splitTimes && Array.isArray(splitTimes) && splitTimes.length >= 3) {
     const allSplitTimes = splitTimes.reduce((a: ISplitTime[], b: ISplitTimes) => a.concat(b.splitTimes), []);
     const uniqueSplitTimes = allSplitTimes
-      .map((st) => st.controlCode)
+      .map(st => st.controlCode)
       .filter((value, index, self) => self.indexOf(value) === index);
-    bestSplitTimes = uniqueSplitTimes.map((controlCode) => ({
+    bestSplitTimes = uniqueSplitTimes.map(controlCode => ({
       controlCode: controlCode,
-      time: Math.min(...allSplitTimes.filter((ast) => ast.controlCode === controlCode).map((ast) => ast.time)),
-      nofTimes: allSplitTimes.filter((ast) => ast.controlCode === controlCode).length,
+      time: Math.min(...allSplitTimes.filter(ast => ast.controlCode === controlCode).map(ast => ast.time)),
+      nofTimes: allSplitTimes.filter(ast => ast.controlCode === controlCode).length
     }));
-    secondBestSplitTimes = uniqueSplitTimes.map((controlCode) => {
-      const firstTime = Math.min(
-        ...allSplitTimes.filter((ast) => ast.controlCode === controlCode).map((ast) => ast.time),
-      );
+    secondBestSplitTimes = uniqueSplitTimes.map(controlCode => {
+      const firstTime = Math.min(...allSplitTimes.filter(ast => ast.controlCode === controlCode).map(ast => ast.time));
       const secondTime = allSplitTimes
-        .filter((ast) => ast.controlCode === controlCode)
-        .map((ast) => ast.time)
+        .filter(ast => ast.controlCode === controlCode)
+        .map(ast => ast.time)
         .sort((a, b) => a - b)[1];
       return {
         controlCode: controlCode,
         time: secondTime,
-        diffQuota: secondTime / firstTime,
+        diffQuota: secondTime / firstTime
       };
     });
 
     if (secondBestSplitTimes.length >= 4) {
       const avgDiffQuota =
         [...secondBestSplitTimes]
-          .map((pst) => (pst.diffQuota !== undefined ? pst.diffQuota : 0))
+          .map(pst => (pst.diffQuota !== undefined ? pst.diffQuota : 0))
           .sort((a, b) => a - b)
           .slice(0, secondBestSplitTimes.length - 2)
           .reduce((a, b) => a + b, 0) /
         (secondBestSplitTimes.length - 2);
       const avgDiffQuotaLimit = 1.01 * avgDiffQuota;
-      secondBestSplitTimes.forEach((st) => {
+      secondBestSplitTimes.forEach(st => {
         if (st.diffQuota !== undefined && st.diffQuota > avgDiffQuotaLimit) {
           st.time = Math.round((st.time * avgDiffQuotaLimit) / st.diffQuota);
         }
@@ -878,17 +876,17 @@ const GetBestSplitTimes = (
 };
 
 export const GetSplitTimes = (
-  personResults: IEventorPersonResult[],
+  personResults: IEventorPersonResult[]
 ): { splitTimes: ISplitTimes[]; bestSplitTimes: ISplitTime[]; secondBestSplitTimes: ISplitTime[] } => {
   const splitTimes: ISplitTimes[] = personResults
-    .filter((pr) => {
+    .filter(pr => {
       const didNotStart = pr.Result?.CompetitorStatus['@attributes'].value === 'DidNotStart';
       const misPunch = pr.Result?.CompetitorStatus['@attributes'].value === 'MisPunch';
       const ok = pr.Result?.CompetitorStatus['@attributes'].value === 'OK';
       const hasSplitTimes =
         pr.Result?.SplitTime &&
         Array.isArray(pr.Result.SplitTime) &&
-        pr.Result.SplitTime.filter((st) => st.Time).length > 0;
+        pr.Result.SplitTime.filter(st => st.Time).length > 0;
       return ok && !didNotStart && !misPunch && pr.Person?.PersonId && hasSplitTimes;
     })
     .map(
@@ -898,57 +896,57 @@ export const GetSplitTimes = (
           ? pr.Result.SplitTime
           : ([] as IEventorSplitTime[])
         )
-          .filter((st) => st.Time)
+          .filter(st => st.Time)
           .map((st): { controlCode: string; sequence: number; time: number } => ({
             controlCode: st.ControlCode,
             sequence: parseInt(st['@attributes'].sequence),
-            time: ConvertTimeToSeconds(st.Time),
+            time: ConvertTimeToSeconds(st.Time)
           }))
           .filter((st, i, stArray) => i === 0 || st.controlCode !== stArray[i - 1].controlCode)
           .map(
             (st, i, stArray): ISplitTime => ({
               controlCode: `${i === 0 ? 'S' : stArray[i - 1].controlCode}-${st.controlCode}`,
               controlOrder: st.sequence,
-              time: i === 0 ? st.time : st.time - stArray[i - 1].time,
-            }),
+              time: i === 0 ? st.time : st.time - stArray[i - 1].time
+            })
           )
-          .sort((a, b) => (a.controlCode > b.controlCode ? 1 : b.controlCode > a.controlCode ? -1 : 0)),
-      }),
+          .sort((a, b) => (a.controlCode > b.controlCode ? 1 : b.controlCode > a.controlCode ? -1 : 0))
+      })
     );
   return { splitTimes, ...GetBestSplitTimes(splitTimes) };
 };
 
 export const GetIOFSplitTimes = (
-  personResults: (Omit<IPersonResult, 'Result'> & { Result?: IPersonRaceResult })[],
+  personResults: (Omit<IPersonResult, 'Result'> & { Result?: IPersonRaceResult })[]
 ): { splitTimes: ISplitTimes[]; bestSplitTimes: ISplitTime[]; secondBestSplitTimes: ISplitTime[] } => {
   const splitTimes: ISplitTimes[] = personResults
-    .filter((pr) => {
+    .filter(pr => {
       const didNotStart = pr.Result?.Status === 'DidNotStart';
       const misPunch = pr.Result?.Status === 'MissingPunch';
       const ok = pr.Result?.Status === 'OK';
-      const hasSplitTimes = Array.isArray(pr.Result?.SplitTime) && pr.Result?.SplitTime.filter((st) => st.Time).length;
+      const hasSplitTimes = Array.isArray(pr.Result?.SplitTime) && pr.Result?.SplitTime.filter(st => st.Time).length;
       return ok && !didNotStart && !misPunch && pr.Person?.Id?.length && hasSplitTimes;
     })
     .map(
       (pr): ISplitTimes => ({
         personId: pr.Person.Id!.find(() => true) ?? '',
         splitTimes: (pr.Result?.SplitTime && Array.isArray(pr.Result?.SplitTime) ? pr.Result.SplitTime : [])
-          .filter((st) => st.Time)
+          .filter(st => st.Time)
           .map((st, idx): { controlCode: string; sequence: number; time: number } => ({
             controlCode: st.ControlCode,
             sequence: idx + 1,
-            time: st.Time ?? 0,
+            time: st.Time ?? 0
           }))
           .filter((st, i, stArray) => i === 0 || st.controlCode !== stArray[i - 1].controlCode)
           .map(
             (st, i, stArray): ISplitTime => ({
               controlCode: `${i === 0 ? 'S' : stArray[i - 1].controlCode}-${st.controlCode}`,
               controlOrder: st.sequence,
-              time: i === 0 ? st.time : st.time - stArray[i - 1].time,
-            }),
+              time: i === 0 ? st.time : st.time - stArray[i - 1].time
+            })
           )
-          .sort((a, b) => (a.controlCode > b.controlCode ? 1 : b.controlCode > a.controlCode ? -1 : 0)),
-      }),
+          .sort((a, b) => (a.controlCode > b.controlCode ? 1 : b.controlCode > a.controlCode ? -1 : 0))
+      })
     );
   return { splitTimes, ...GetBestSplitTimes(splitTimes) };
 };
@@ -962,39 +960,39 @@ interface IRelaySplitTime {
 export const GetRelaySplitTimes = (teamResults: IEventorTeamResult[]): IRelaySplitTime[] => {
   const allTeamMemberResult = teamResults.reduce(
     (a, b) => a.concat(b.TeamMemberResult),
-    [] as IEventorTeamMemberResult[],
+    [] as IEventorTeamMemberResult[]
   );
   const allLegsSplitTimes: IRelaySplitTime[] = allTeamMemberResult
-    .map((r) => r.Leg)
+    .map(r => r.Leg)
     .filter((value, index, self) => self.indexOf(value) === index)
-    .map((leg) => ({ leg: leg, splitTimes: [], bestSplitTimes: [], secondBestSplitTimes: [] }));
+    .map(leg => ({ leg: leg, splitTimes: [], bestSplitTimes: [], secondBestSplitTimes: [] }));
 
-  allLegsSplitTimes.forEach((legSplitTimes) => {
+  allLegsSplitTimes.forEach(legSplitTimes => {
     legSplitTimes.splitTimes = allTeamMemberResult
-      .filter((pr) => pr.Leg === legSplitTimes.leg)
-      .filter((pr) => {
+      .filter(pr => pr.Leg === legSplitTimes.leg)
+      .filter(pr => {
         const didNotStart = pr.CompetitorStatus['@attributes'].value === 'DidNotStart';
         const misPunch = pr.CompetitorStatus['@attributes'].value === 'MisPunch';
         const ok = pr.CompetitorStatus['@attributes'].value === 'OK';
         const hasSplitTimes =
-          pr.SplitTime && Array.isArray(pr.SplitTime) && pr.SplitTime.filter((st) => st.Time).length > 0;
+          pr.SplitTime && Array.isArray(pr.SplitTime) && pr.SplitTime.filter(st => st.Time).length > 0;
         return ok && !didNotStart && !misPunch && pr.Person?.PersonId && hasSplitTimes;
       })
-      .map((pr) => ({
+      .map(pr => ({
         personId: pr.Person.PersonId,
         splitTimes: (pr.SplitTime as IEventorSplitTime[])
-          .filter((st) => st.Time)
-          .map((st) => ({
+          .filter(st => st.Time)
+          .map(st => ({
             controlCode: st.ControlCode,
             sequence: st['@attributes'].sequence,
-            time: ConvertTimeToSeconds(st.Time),
+            time: ConvertTimeToSeconds(st.Time)
           }))
           .map((st, i, stArray) => ({
             controlCode: `${i === 0 ? 'S' : stArray[i - 1].controlCode}-${st.controlCode}`,
             controlOrder: parseInt(st.sequence),
-            time: i === 0 ? st.time : st.time - stArray[i - 1].time,
+            time: i === 0 ? st.time : st.time - stArray[i - 1].time
           }))
-          .sort((a, b) => (a.controlCode > b.controlCode ? 1 : b.controlCode > a.controlCode ? -1 : 0)),
+          .sort((a, b) => (a.controlCode > b.controlCode ? 1 : b.controlCode > a.controlCode ? -1 : 0))
       }));
 
     const { bestSplitTimes, secondBestSplitTimes } = GetBestSplitTimes(legSplitTimes.splitTimes);
@@ -1007,45 +1005,45 @@ export const GetRelaySplitTimes = (teamResults: IEventorTeamResult[]): IRelaySpl
 export const GetIOFRelaySplitTimes = (
   teamResults: {
     TeamMemberResult: (Omit<ITeamMemberResult, 'Result'> & { Result?: ITeamMemberRaceResult })[] | undefined;
-  }[],
+  }[]
 ): IRelaySplitTime[] => {
   const allTeamMemberResult = teamResults
-    .filter((tr) => tr.TeamMemberResult)
+    .filter(tr => tr.TeamMemberResult)
     .reduce(
       (a, b) => a.concat(b.TeamMemberResult!),
-      [] as (Omit<ITeamMemberResult, 'Result'> & { Result?: ITeamMemberRaceResult })[],
+      [] as (Omit<ITeamMemberResult, 'Result'> & { Result?: ITeamMemberRaceResult })[]
     );
   const allLegsSplitTimes: IRelaySplitTime[] = allTeamMemberResult
-    .filter((r) => r.Result?.Leg != null)
-    .map((r) => r.Result!.Leg!.toString())
+    .filter(r => r.Result?.Leg != null)
+    .map(r => r.Result!.Leg!.toString())
     .filter((value, index, self) => self.indexOf(value) === index)
-    .map((leg) => ({ leg: leg, splitTimes: [], bestSplitTimes: [], secondBestSplitTimes: [] }));
+    .map(leg => ({ leg: leg, splitTimes: [], bestSplitTimes: [], secondBestSplitTimes: [] }));
 
-  allLegsSplitTimes.forEach((legSplitTimes) => {
+  allLegsSplitTimes.forEach(legSplitTimes => {
     legSplitTimes.splitTimes = allTeamMemberResult
-      .filter((pr) => pr.Result?.Leg?.toString() === legSplitTimes.leg)
-      .filter((pr) => {
+      .filter(pr => pr.Result?.Leg?.toString() === legSplitTimes.leg)
+      .filter(pr => {
         const didNotStart = pr.Result?.Status === 'DidNotStart';
         const misPunch = pr.Result?.Status === 'MissingPunch';
         const ok = pr.Result?.Status === 'OK';
-        const hasSplitTimes = pr.Result?.SplitTime && pr.Result.SplitTime.filter((st) => st.Time).length > 0;
+        const hasSplitTimes = pr.Result?.SplitTime && pr.Result.SplitTime.filter(st => st.Time).length > 0;
         return ok && !didNotStart && !misPunch && pr.Person?.Id?.length && hasSplitTimes;
       })
-      .map((pr) => ({
+      .map(pr => ({
         personId: pr.Person!.Id!.find(() => true) ?? '',
         splitTimes: pr
-          .Result!.SplitTime!.filter((st) => st.Time)
+          .Result!.SplitTime!.filter(st => st.Time)
           .map((st, idx) => ({
             controlCode: st.ControlCode,
             sequence: idx + 1,
-            time: st.Time!,
+            time: st.Time!
           }))
           .map((st, i, stArray) => ({
             controlCode: `${i === 0 ? 'S' : stArray[i - 1].controlCode}-${st.controlCode}`,
             controlOrder: st.sequence,
-            time: i === 0 ? st.time : st.time - stArray[i - 1].time,
+            time: i === 0 ? st.time : st.time - stArray[i - 1].time
           }))
-          .sort((a, b) => (a.controlCode > b.controlCode ? 1 : b.controlCode > a.controlCode ? -1 : 0)),
+          .sort((a, b) => (a.controlCode > b.controlCode ? 1 : b.controlCode > a.controlCode ? -1 : 0))
       }));
 
     const { bestSplitTimes, secondBestSplitTimes } = GetBestSplitTimes(legSplitTimes.splitTimes);
@@ -1059,20 +1057,20 @@ export const GetMissingTime = (
   personId: string | number,
   splitTimes: ISplitTimes[],
   bestSplitTimes: ISplitTime[],
-  secondBestSplitTimes: ISplitTime[],
+  secondBestSplitTimes: ISplitTime[]
 ): string | null => {
   let totalMissingTimeSeconds = 0;
 
   if (bestSplitTimes.length >= 4) {
-    let personSplitTimes = splitTimes.find((st) => st.personId === personId)?.splitTimes;
+    let personSplitTimes = splitTimes.find(st => st.personId === personId)?.splitTimes;
 
     if (!personSplitTimes || !Array.isArray(personSplitTimes)) {
       return null;
     }
 
-    personSplitTimes.forEach((pst) => {
-      pst.bestSplitTime = bestSplitTimes.find((bst) => bst.controlCode === pst.controlCode);
-      pst.secondBestSplitTime = secondBestSplitTimes.find((bst) => bst.controlCode === pst.controlCode);
+    personSplitTimes.forEach(pst => {
+      pst.bestSplitTime = bestSplitTimes.find(bst => bst.controlCode === pst.controlCode);
+      pst.secondBestSplitTime = secondBestSplitTimes.find(bst => bst.controlCode === pst.controlCode);
       if (
         pst.bestSplitTime &&
         pst.secondBestSplitTime &&
@@ -1085,17 +1083,17 @@ export const GetMissingTime = (
             : (pst.time - pst.bestSplitTime.time) / pst.bestSplitTime.time;
       }
     });
-    personSplitTimes = personSplitTimes.filter((pst) => pst.diffQuota !== undefined);
+    personSplitTimes = personSplitTimes.filter(pst => pst.diffQuota !== undefined);
     let countTop25Percentage = Math.round(personSplitTimes.length / 4);
-    const shortTimeLimit = personSplitTimes.map((ast) => ast.bestSplitTime?.time as number).sort((a, b) => a - b)[
+    const shortTimeLimit = personSplitTimes.map(ast => ast.bestSplitTime?.time as number).sort((a, b) => a - b)[
       countTop25Percentage
     ];
     const personSplitTimesWithoutTheShortest = personSplitTimes.filter(
-      (pst) =>
+      pst =>
         pst.bestSplitTime &&
         pst.bestSplitTime.time >= shortTimeLimit &&
         pst.bestSplitTime.nofTimes &&
-        pst.bestSplitTime.nofTimes >= Math.round(splitTimes.length / 2),
+        pst.bestSplitTime.nofTimes >= Math.round(splitTimes.length / 2)
     );
     countTop25Percentage = Math.round(personSplitTimesWithoutTheShortest.length / 4);
 
@@ -1107,12 +1105,11 @@ export const GetMissingTime = (
       .sort((a, b) => a.diffQuota! - b.diffQuota!)
       .slice(0, countTop25Percentage + 2);
     let baseLineM =
-      top25PercentageSplitTimes.map((pst) => pst.diffQuota!).reduce((a, b) => a + b, 0) / (countTop25Percentage + 2);
+      top25PercentageSplitTimes.map(pst => pst.diffQuota!).reduce((a, b) => a + b, 0) / (countTop25Percentage + 2);
     top25PercentageSplitTimes = top25PercentageSplitTimes
       .sort((a, b) => Math.abs(a.diffQuota! - baseLineM) - Math.abs(b.diffQuota! - baseLineM))
       .slice(0, countTop25Percentage);
-    baseLineM =
-      top25PercentageSplitTimes.map((pst) => pst.diffQuota!).reduce((a, b) => a + b, 0) / countTop25Percentage;
+    baseLineM = top25PercentageSplitTimes.map(pst => pst.diffQuota!).reduce((a, b) => a + b, 0) / countTop25Percentage;
     let baseLineK = 0.0;
 
     if (personSplitTimesWithoutTheShortest.length >= 6) {
@@ -1129,25 +1126,25 @@ export const GetMissingTime = (
 
       baseLineK =
         ((t3.diffQuota! + t4.diffQuota!) / 2 - (t1.diffQuota! + t2.diffQuota!) / 2) /
-        (Math.max(...secondHalfSplitTimes.map((st) => st.controlOrder!)) -
-          Math.min(...firstHalfSplitTimes.map((st) => st.controlOrder!)));
+        (Math.max(...secondHalfSplitTimes.map(st => st.controlOrder!)) -
+          Math.min(...firstHalfSplitTimes.map(st => st.controlOrder!)));
       const t1Diff = t1.diffQuota! - (baseLineM + baseLineK * t1.controlOrder!);
       const t2Diff = t2.diffQuota! - (baseLineM + baseLineK * t2.controlOrder!);
       const t3Diff = t3.diffQuota! - (baseLineM + baseLineK * t3.controlOrder!);
       const t4Diff = t4.diffQuota! - (baseLineM + baseLineK * t4.controlOrder!);
       const top25PercentageDiff = top25PercentageSplitTimes
-        .map((st) => st.diffQuota! - (baseLineM + baseLineK * st.controlOrder!))
+        .map(st => st.diffQuota! - (baseLineM + baseLineK * st.controlOrder!))
         .reduce((a, b) => a + b, 0);
       baseLineM += (t1Diff + t2Diff + t3Diff + t4Diff + top25PercentageDiff) / (4 + countTop25Percentage);
     }
 
-    personSplitTimes.forEach((pst, i) => {
+    personSplitTimes.forEach(pst => {
       const top25TimeSecondsBehind =
         pst.bestSplitTime && pst.secondBestSplitTime
           ? Math.trunc(
               pst.time -
                 (pst.time === pst.bestSplitTime.time ? pst.secondBestSplitTime.time : pst.bestSplitTime.time) *
-                  (1.0 + baseLineM + baseLineK * pst.controlOrder!),
+                  (1.0 + baseLineM + baseLineK * pst.controlOrder!)
             )
           : 0;
 

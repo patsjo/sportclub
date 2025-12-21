@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react';
-import { ISponsorProps } from '../../models/mobxClubModel';
 import React from 'react';
-import styled from 'styled-components';
+import { styled } from 'styled-components';
+import { ISponsorProps } from '../../models/mobxClubModel';
 import { useMobxStore } from '../../utils/mobxStore';
 import Columns from '../dashboard/columns/Columns';
 
@@ -21,7 +21,7 @@ const SponsorImage = styled.img`
 const AllSponsors = observer(() => {
   const { clubModel } = useMobxStore();
   const sponsors = React.useMemo<ISponsorProps[] | undefined>(
-    () => (clubModel.sponsors ? clubModel.sponsors.filter((s) => s.active) : undefined),
+    () => (clubModel.sponsors ? clubModel.sponsors.filter(s => s.active) : undefined),
     [clubModel.sponsors]
   );
 

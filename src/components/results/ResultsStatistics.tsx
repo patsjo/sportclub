@@ -1,13 +1,13 @@
 import { message, Spin } from 'antd';
+import { observer } from 'mobx-react';
+import React, { useRef, useState } from 'react';
+import { styled } from 'styled-components';
+import { PostJsonData } from '../../utils/api';
+import { useMobxStore } from '../../utils/mobxStore';
+import { useSize } from '../../utils/useSize';
 import { ICustomChart } from '../charts/ChartInterface';
 import CustomLineChart from '../charts/CustomLineChart';
 import CustomStackedBarChart from '../charts/CustomStackedBarChart';
-import { observer } from 'mobx-react';
-import React, { useRef, useState } from 'react';
-import styled from 'styled-components';
-import { useMobxStore } from '../../utils/mobxStore';
-import { useSize } from '../../utils/useSize';
-import { PostJsonData } from '../../utils/api';
 import { SpinnerDiv } from '../styled/styled';
 
 const Row = styled.div`
@@ -23,33 +23,33 @@ const ResultsStatistics = observer(() => {
   const [loading, setLoading] = useState(true);
 
   React.useEffect(() => {
-    const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
+    const url = clubModel.modules.find(module => module.name === 'Results')?.queryUrl;
     if (!url) return;
 
-    PostJsonData(
+    PostJsonData<ICustomChart[]>(
       url,
       {
-        iType: 'STATISTICS',
+        iType: 'STATISTICS'
       },
       true
     )
-      .then((statistics: ICustomChart[]) => {
+      .then(statistics => {
         setChartData(
-          statistics.filter(
-            (chart) => chart.data.length && chart.data.some((d) => chart.valueKeys.some((valueKey) => !!d[valueKey]))
-          )
+          statistics?.filter(
+            chart => chart.data.length && chart.data.some(d => chart.valueKeys.some(valueKey => !!d[valueKey]))
+          ) ?? []
         );
         setLoading(false);
       })
-      .catch((e) => {
-        message.error(e.message);
+      .catch(e => {
+        if (e?.message) message.error(e.message);
       });
-  }, []);
+  }, [clubModel.modules]);
 
   return (
     <Row ref={ref}>
       {!loading ? (
-        chartData.map((chart) =>
+        chartData.map(chart =>
           chart.typeOfChart === 'line' ? (
             <CustomLineChart
               key={chart.title}

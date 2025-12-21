@@ -3,10 +3,10 @@ import { Avatar, Button, message, Skeleton } from 'antd';
 import { observer } from 'mobx-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import styled from 'styled-components';
+import { styled } from 'styled-components';
+import { PostJsonData } from '../../utils/api';
 import { useMobxStore } from '../../utils/mobxStore';
 import { ICompetitor, ICompetitorInfo } from '../../utils/responseCompetitorInterfaces';
-import { PostJsonData } from '../../utils/api';
 import CompetitorPresentationModal from './CompetitorPresentationModal';
 
 const StyledAvatar = styled(Avatar)`
@@ -94,7 +94,7 @@ const StyledAchievements = styled.div<{ canEdit: boolean }>`
 
   @media screen and (min-width: 800px) {
     float: right;
-    padding-right: ${(props) => (props.canEdit ? 42 : 6)}px;
+    padding-right: ${props => (props.canEdit ? 42 : 6)}px;
     padding-top: 4px;
     &&& > ul {
       padding-inline-start: 15px;
@@ -126,26 +126,24 @@ const CompetitorTitle = observer(({ competitor }: ICompetitorTitleProps) => {
   const canEdit = sessionModel.isAdmin || sessionModel.name === competitor.name;
 
   useEffect(() => {
-    const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
+    const url = clubModel.modules.find(module => module.name === 'Results')?.queryUrl;
     if (!url) return;
 
-    PostJsonData(
+    PostJsonData<ICompetitorInfo>(
       url,
       {
         iType: 'COMPETITOR_INFO',
-        iCompetitorId: competitor.competitorId,
+        iCompetitorId: competitor.competitorId
       },
       true,
       sessionModel.authorizationHeader
     )
       .then(setCompetitorInfo)
-      .catch((e) => {
-        if (e && e.message) {
-          message.error(e.message);
-        }
+      .catch(e => {
+        if (e?.message) message.error(e.message);
         setCompetitorInfo(undefined);
       });
-  }, []);
+  }, [clubModel.modules, competitor.competitorId, sessionModel.authorizationHeader]);
 
   return (
     <div>

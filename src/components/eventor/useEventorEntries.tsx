@@ -1,18 +1,18 @@
 import { Spin } from 'antd';
-import { IChildContainerProps } from '../../components/dashboard/columns/mapNodesToColumns';
-import { IMobxClubModel } from '../../models/mobxClubModel';
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import styled from 'styled-components';
+import { styled } from 'styled-components';
+import { IChildContainerProps } from '../../components/dashboard/columns/mapNodesToColumns';
+import { IMobxClubModel } from '../../models/mobxClubModel';
+import { PostJsonData } from '../../utils/api';
 import {
   IEventorEntries,
   IEventorEntry,
   IEventorEvent,
   IEventorEventRace,
-  IEventorEvents,
+  IEventorEvents
 } from '../../utils/responseEventorInterfaces';
 import { IEventViewResultResponse } from '../../utils/responseInterfaces';
-import { PostJsonData } from '../../utils/api';
 import EventRace, { IEventDashboardObject } from './EventRace';
 
 const SpinnerDiv = styled.div<IChildContainerProps>`
@@ -23,7 +23,7 @@ const SpinnerDiv = styled.div<IChildContainerProps>`
 const flatten = (list: (IEventorEventRace[] | IEventorEventRace)[]): IEventorEventRace[] =>
   list.reduce(
     (a: IEventorEventRace[], b) => a.concat(Array.isArray(b) ? flatten(b) : (b as IEventorEventRace)),
-    [] as IEventorEventRace[],
+    [] as IEventorEventRace[]
   );
 
 const useEventorEntries = (clubModel: IMobxClubModel) => {
@@ -48,17 +48,17 @@ const useEventorEntries = (clubModel: IMobxClubModel) => {
     const fromDate = prevWeek.toISOString().substr(0, 10);
     const toDate = nextWeek.toISOString().substr(0, 10);
     const toOringenDate = nextMonths.toISOString().substr(0, 10);
-    const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
+    const url = clubModel.modules.find(module => module.name === 'Results')?.queryUrl;
     if (!url) return;
 
     const queryData = {
       iType: 'EVENTS',
       iEventorOrganisationId: clubModel.eventor?.organisationId,
       iFromDate: prevMonth.toISOString().substr(0, 10),
-      iToDate: toDate,
+      iToDate: toDate
     };
-    const alreadySavedEventsPromise = PostJsonData(url, queryData, true);
-    const entriesPromise = PostJsonData(
+    const alreadySavedEventsPromise = PostJsonData<IEventViewResultResponse[]>(url, queryData, true);
+    const entriesPromise = PostJsonData<IEventorEntries>(
       clubModel.eventorCorsProxy,
       {
         csurl: encodeURIComponent(
@@ -69,13 +69,13 @@ const useEventorEntries = (clubModel: IMobxClubModel) => {
             fromDate +
             '&toEventDate=' +
             toDate +
-            '&includeEntryFees=true&includePersonElement=true&includeOrganisationElement=true&includeEventElement=true',
+            '&includeEntryFees=true&includePersonElement=true&includeOrganisationElement=true&includeEventElement=true'
         ),
-        cache: true,
+        cache: true
       },
-      false,
+      false
     );
-    const oringenEventsPromise = PostJsonData(
+    const oringenEventsPromise = PostJsonData<IEventorEvents>(
       clubModel.eventorCorsProxy,
       {
         csurl: encodeURIComponent(
@@ -86,18 +86,14 @@ const useEventorEntries = (clubModel: IMobxClubModel) => {
             fromDate +
             '&toDate=' +
             toOringenDate +
-            '&includeAttributes=true',
+            '&includeAttributes=true'
         ),
-        cache: true,
+        cache: true
       },
-      false,
+      false
     );
     Promise.all([alreadySavedEventsPromise, entriesPromise, oringenEventsPromise]).then(
-      ([alreadySavedEventsJson, entriesJson, oringenEventsJson]: [
-        IEventViewResultResponse[],
-        IEventorEntries,
-        IEventorEvents,
-      ]) => {
+      ([alreadySavedEventsJson, entriesJson, oringenEventsJson]) => {
         if (entriesJson == null || entriesJson.Entry == null) {
           entriesJson = { Entry: [] };
         } else if (!Array.isArray(entriesJson.Entry)) {
@@ -108,30 +104,30 @@ const useEventorEntries = (clubModel: IMobxClubModel) => {
         } else if (!Array.isArray(oringenEventsJson.Event)) {
           oringenEventsJson.Event = [oringenEventsJson.Event];
         }
-        (entriesJson.Entry as IEventorEntry[]).forEach((entry) => {
+        (entriesJson.Entry as IEventorEntry[]).forEach(entry => {
           if (Array.isArray(entry.Event.EventRace)) {
-            entry.EventRaceId = entry.Event.EventRace.map((eventRace) => eventRace.EventRaceId).find(() => true)!;
+            entry.EventRaceId = entry.Event.EventRace.map(eventRace => eventRace.EventRaceId).find(() => true)!;
           } else {
             entry.EventRaceId = entry.Event.EventRace.EventRaceId;
           }
         });
         let events: IEventDashboardObject[] = [
-          ...flatten((entriesJson.Entry as IEventorEntry[]).map((entry) => entry.Event.EventRace)),
-          ...flatten((oringenEventsJson.Event as IEventorEvent[]).map((event) => event.EventRace)),
+          ...flatten((entriesJson.Entry as IEventorEntry[]).map(entry => entry.Event.EventRace)),
+          ...flatten((oringenEventsJson.Event as IEventorEvent[]).map(event => event.EventRace))
         ]
-          .filter((eventRace) => eventRace.EventRaceId != null)
-          .filter((evt, i, list) => i === list.findIndex((listEvt) => evt.EventRaceId === listEvt.EventRaceId))
-          .map((eventRace) => {
-            let event = (entriesJson.Entry as IEventorEntry[]).find((e) =>
+          .filter(eventRace => eventRace.EventRaceId != null)
+          .filter((evt, i, list) => i === list.findIndex(listEvt => evt.EventRaceId === listEvt.EventRaceId))
+          .map(eventRace => {
+            let event = (entriesJson.Entry as IEventorEntry[]).find(e =>
               Array.isArray(e.EventRaceId)
                 ? e.EventRaceId.includes(eventRace.EventRaceId)
-                : e.EventRaceId === eventRace.EventRaceId,
+                : e.EventRaceId === eventRace.EventRaceId
             )?.Event;
             if (!event) {
-              event = (oringenEventsJson.Event as IEventorEvent[]).find((e) =>
+              event = (oringenEventsJson.Event as IEventorEvent[]).find(e =>
                 Array.isArray(e.EventRace)
-                  ? e.EventRace.map((er) => er.EventRaceId).includes(eventRace.EventRaceId)
-                  : e.EventRace.EventRaceId === eventRace.EventRaceId,
+                  ? e.EventRace.map(er => er.EventRaceId).includes(eventRace.EventRaceId)
+                  : e.EventRace.EventRaceId === eventRace.EventRaceId
               )!;
             }
 
@@ -143,25 +139,25 @@ const useEventorEntries = (clubModel: IMobxClubModel) => {
                   event?.Name +
                   (JSON.stringify(eventRace.Name) === JSON.stringify({}) || !eventRace.Name
                     ? ''
-                    : ', ' + eventRace.Name),
+                    : ', ' + eventRace.Name)
               },
               EventRaceId: eventRace.EventRaceId,
               Competitors: (entriesJson.Entry as IEventorEntry[])
                 .filter(
-                  (entry) =>
+                  entry =>
                     entry.Competitor != null &&
                     entry.Competitor.Person != null &&
                     (Array.isArray(entry.EventRaceId)
                       ? entry.EventRaceId.includes(eventRace.EventRaceId)
-                      : entry.EventRaceId === eventRace.EventRaceId),
+                      : entry.EventRaceId === eventRace.EventRaceId)
                 )
-                .map((entry) => {
+                .map(entry => {
                   return {
                     ...entry.Competitor,
                     EntryId: entry.EntryId,
-                    EntryClass: entry.EntryClass,
+                    EntryClass: entry.EntryClass
                   };
-                }),
+                })
             };
           })
           // EventStatusId:
@@ -176,10 +172,10 @@ const useEventorEntries = (clubModel: IMobxClubModel) => {
           // 9 Completed
           // 10 Canceled
           // 11 Reported
-          .filter((event) => ['5', '6', '7', '8', '9', '11'].includes(event.Event.EventStatusId))
-          .map((event) => {
-            const savedEvent = alreadySavedEventsJson.find(
-              (saved) => '' + saved.eventorRaceId === '' + event.EventRaceId,
+          .filter(event => ['5', '6', '7', '8', '9', '11'].includes(event.Event.EventStatusId))
+          .map(event => {
+            const savedEvent = alreadySavedEventsJson?.find(
+              saved => '' + saved.eventorRaceId === '' + event.EventRaceId
             );
             return savedEvent
               ? {
@@ -189,7 +185,7 @@ const useEventorEntries = (clubModel: IMobxClubModel) => {
                   date: savedEvent.date,
                   name: savedEvent.name,
                   statusId: 9,
-                  Competitors: [],
+                  Competitors: []
                 }
               : {
                   eventorId: event.Event.EventId,
@@ -197,39 +193,39 @@ const useEventorEntries = (clubModel: IMobxClubModel) => {
                   date: event.Event.EventRace.RaceDate.Date,
                   name: event.Event.Name,
                   statusId: parseInt(event.Event.EventStatusId),
-                  Competitors: event.Competitors,
+                  Competitors: event.Competitors
                 };
           });
-        let savedEvents = alreadySavedEventsJson.filter(
-          (savedEvent) => !events.some((event) => event.eventId === savedEvent.eventId),
-        );
+        let savedEvents =
+          alreadySavedEventsJson?.filter(savedEvent => !events.some(event => event.eventId === savedEvent.eventId)) ??
+          [];
         const eventsToShow: IEventDashboardObject[] = savedEvents
-          .filter((savedEvent) => fromDate <= savedEvent.date && savedEvent.date <= toDate)
-          .map((savedEvent) => ({
+          .filter(savedEvent => fromDate <= savedEvent.date && savedEvent.date <= toDate)
+          .map(savedEvent => ({
             eventId: savedEvent.eventId,
             eventorId: savedEvent.eventorId?.toString() ?? '',
             eventorRaceId: savedEvent.eventorRaceId?.toString() ?? '',
             date: savedEvent.date,
             name: savedEvent.name,
             statusId: 9,
-            Competitors: [],
+            Competitors: []
           }));
         events = [...events, ...eventsToShow];
         savedEvents = savedEvents.filter(
-          (savedEvent) => !eventsToShow.some((event) => event.eventId === savedEvent.eventId),
+          savedEvent => !eventsToShow.some(event => event.eventId === savedEvent.eventId)
         );
         if (events.length < 5) {
           const olderEvents: IEventDashboardObject[] = savedEvents
             .sort((a, b) => (a.date > b.date ? -1 : a.date < b.date ? 1 : 0))
             .slice(0, 5 - events.length)
-            .map((savedEvent) => ({
+            .map(savedEvent => ({
               eventId: savedEvent.eventId,
               eventorId: savedEvent.eventorId?.toString() ?? '',
               eventorRaceId: savedEvent.eventorRaceId?.toString() ?? '',
               date: savedEvent.date,
               name: savedEvent.name,
               statusId: 9,
-              Competitors: [],
+              Competitors: []
             }));
           events = [...events, ...olderEvents];
         }
@@ -241,12 +237,20 @@ const useEventorEntries = (clubModel: IMobxClubModel) => {
           setLoaded(false);
           setEvents([]);
         };
-      },
+      }
     );
-  }, [location.pathname]);
+  }, [
+    clubModel.eventor?.entriesUrl,
+    clubModel.eventor?.eventsUrl,
+    clubModel.eventor?.oRingenOrganisationId,
+    clubModel.eventor?.organisationId,
+    clubModel.eventorCorsProxy,
+    clubModel.modules,
+    location.pathname
+  ]);
 
   return loaded ? (
-    events.map((event) => (
+    events.map(event => (
       <EventRace
         key={`entryObject#${event.eventId || event.eventorRaceId}`}
         preferredColumn="50%rightFixed"

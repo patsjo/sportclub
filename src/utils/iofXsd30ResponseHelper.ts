@@ -1,5 +1,5 @@
-import { IDateAndOptionalTime, IResultListType } from '../models/iof.xsd-3.0';
 import dayjs from 'dayjs';
+import { IDateAndOptionalTime, IResultListType } from '../models/iof.xsd-3.0';
 
 const arrayAttributesNodes = [
   'Address',
@@ -86,7 +86,7 @@ const arrayAttributesNodes = [
   'TeamMemberResult',
   'TeamStart',
   'TeamResult',
-  'URL',
+  'URL'
 ];
 
 const numberAttributesNodes = [
@@ -134,7 +134,7 @@ const numberAttributesNodes = [
   'TimeBehind',
   'timeResolution',
   'x',
-  'y',
+  'y'
 ];
 
 const datetimeAttributesNodes = [
@@ -147,32 +147,37 @@ const datetimeAttributesNodes = [
   'StartTime',
   'ToDateOfBirth',
   'ValidFromTime',
-  'ValidToTime',
+  'ValidToTime'
 ];
 
 // interface = IDateAndOptionalTime
 const datetimeObjectAttributesNodes = ['EndTime', 'StartTime'];
 
-const correctPhpResponseArray = (json: Record<string, any>, key: string, node: string): void => {
-  if (!Array.isArray(json[key]) && arrayAttributesNodes.some((n) => node.endsWith(`/${n}`))) {
+const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
+
+const correctPhpResponseArray = (json: Record<string, unknown>, key: string, node: string): void => {
+  if (!Array.isArray(json[key]) && arrayAttributesNodes.some(n => node.endsWith(`/${n}`))) {
     if (!json[key]) json[key] = [];
     else json[key] = [json[key]];
   }
 };
 
-const correctPhpResponseTypes = (value: any, node: string): any => {
+const correctPhpResponseTypes = (value: unknown, node: string): unknown => {
   const valuePrototype = Object.prototype.toString.call(value);
-  if (valuePrototype === '[object String]' && numberAttributesNodes.some((n) => node.endsWith(`/${n}`))) {
-    if (value.length > 0 && value.indexOf('.') >= 0 && !isNaN(value)) return parseFloat(value);
-    else if (value.length > 0 && !isNaN(value)) return parseInt(value);
+  if (valuePrototype === '[object String]' && numberAttributesNodes.some(n => node.endsWith(`/${n}`))) {
+    const strValue = value as unknown as string;
+    if (strValue.length > 0 && strValue.indexOf('.') >= 0 && !isNaN(Number(strValue))) return parseFloat(strValue);
+    else if (strValue.length > 0 && !isNaN(Number(strValue))) return parseInt(strValue);
     else return undefined;
-  } else if (valuePrototype === '[object String]' && datetimeAttributesNodes.some((n) => node.endsWith(`/${n}`))) {
-    return value ? dayjs(value) : undefined;
+  } else if (valuePrototype === '[object String]' && datetimeAttributesNodes.some(n => node.endsWith(`/${n}`))) {
+    const strValue = value as unknown as string;
+    return value ? dayjs(strValue) : undefined;
   } else if (
     valuePrototype === '[object Object]' &&
-    datetimeObjectAttributesNodes.some((n) => node.endsWith(`/${n}`))
+    datetimeObjectAttributesNodes.some(n => node.endsWith(`/${n}`)) &&
+    isObject(value)
   ) {
-    const datetimeObject = value as IDateAndOptionalTime;
+    const datetimeObject = value as unknown as IDateAndOptionalTime;
     if (datetimeObject.Date && datetimeObject.Time) {
       const dayjsObject = dayjs(`${datetimeObject.Date}T${datetimeObject.Time}`).local();
 
@@ -184,10 +189,10 @@ const correctPhpResponseTypes = (value: any, node: string): any => {
   return value;
 };
 
-const correctPhpEventorProxyResponse = (json: Record<string, any> | undefined, parent = ''): void => {
+const correctPhpEventorProxyResponse = (json: Record<string, unknown> | undefined, parent = ''): void => {
   if (!json || Object.prototype.toString.call(json) !== '[object Object]') return;
 
-  Object.keys(json).forEach((key) => {
+  Object.keys(json).forEach(key => {
     const node = `${parent}/${key}`;
 
     correctPhpResponseArray(json, key, `/${node}`);
@@ -198,25 +203,26 @@ const correctPhpEventorProxyResponse = (json: Record<string, any> | undefined, p
         : Object.prototype.toString.call(json[key]);
 
     if (Array.isArray(json[key]) && json[key].length > 0 && valuePrototype === '[object Object]')
-      json[key].forEach((item: any) => correctPhpEventorProxyResponse(item, node));
+      json[key].forEach(item => correctPhpEventorProxyResponse(item, node));
     else if (Array.isArray(json[key]) && json[key].length > 0 && valuePrototype === '[object String]')
-      json[key] = json[key].map((item: any) => correctPhpResponseTypes(item, `/${node}`));
+      json[key] = json[key].map(item => correctPhpResponseTypes(item, `/${node}`));
     else if (
       valuePrototype === '[object String]' ||
-      (valuePrototype === '[object Object]' && datetimeObjectAttributesNodes.some((n) => node.endsWith(`/${n}`)))
+      (valuePrototype === '[object Object]' && datetimeObjectAttributesNodes.some(n => node.endsWith(`/${n}`)))
     )
       json[key] = correctPhpResponseTypes(json[key], `/${node}`);
-    else if (valuePrototype === '[object Object]') correctPhpEventorProxyResponse(json[key], node);
+    else if (valuePrototype === '[object Object]' && isObject(json[key]))
+      correctPhpEventorProxyResponse(json[key], node);
   });
 };
 
-export const correctPhpEventorProxyXmlResponseForResult = (json: Record<string, any> | undefined): IResultListType => {
+export const correctPhpEventorProxyXmlResponseForResult = (json: IResultListType | undefined): IResultListType => {
   if (!json || !json['@attributes'] || !json['@attributes'].iofVersion)
     throw new Error('Response is not a IOF XML, parsed to a json by proxy.');
 
   if (json['@attributes'].iofVersion !== '3.0') throw new Error('Only version 3.0 of IOF XML is supported.');
 
-  correctPhpEventorProxyResponse(json);
+  correctPhpEventorProxyResponse(json as unknown as Record<string, unknown>);
 
-  return json as unknown as IResultListType;
+  return json;
 };

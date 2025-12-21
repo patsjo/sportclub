@@ -1,25 +1,19 @@
 import { GlobalOutlined } from '@ant-design/icons';
 import { Button, Col, DatePicker, Form, Input, InputNumber, message, Modal, Row, Switch } from 'antd';
-import InputTime from '../../formItems/InputTime';
-import { observer } from 'mobx-react';
 import dayjs from 'dayjs';
+import { observer } from 'mobx-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import styled from 'styled-components';
-import { PostJsonData } from '../../../utils/api';
-import { useMobxStore } from '../../../utils/mobxStore';
-import { ICalendarActivity, ICalendarDomains } from '../../../utils/responseCalendarInterfaces';
+import { styled } from 'styled-components';
 import { v4 as uuidv4 } from 'uuid';
-import {
-  dateFormat,
-  errorRequiredField,
-  FormSelect,
-  hasErrors,
-  shortTimeFormat,
-  timeFormat,
-  weekFormat,
-} from '../../../utils/formHelper';
+import { PostJsonData } from '../../../utils/api';
+import { dateFormat, errorRequiredField, hasErrors, shortTimeFormat, weekFormat } from '../../../utils/formHelper';
+import { useMobxStore } from '../../../utils/mobxStore';
+import { ICalendarActivityRequest } from '../../../utils/requestCalendarInterfaces';
+import { ICalendarActivity, ICalendarDomains } from '../../../utils/responseCalendarInterfaces';
 import FormItem from '../../formItems/FormItem';
+import { FormSelect } from '../../formItems/FormSelect';
+import InputTime from '../../formItems/InputTime';
 import { GetPositionModal } from '../../map/GetPositionModal';
 
 const { RangePicker } = DatePicker;
@@ -49,6 +43,14 @@ const MapButton = styled(Button)`
   }
 `;
 
+interface ICalendarActivityForm extends Omit<
+  ICalendarActivityRequest,
+  'iActivityDay' | 'iFirstRepeatingDate' | 'iLastRepeatingDate'
+> {
+  iActivityDay: string;
+  iRepeatingDates: string[];
+}
+
 interface ICalendarEditProps {
   title: string;
   calendarObject: ICalendarActivity;
@@ -60,82 +62,83 @@ interface ICalendarEditProps {
 const CalendarEdit = observer(({ title, calendarObject, domains, open, onClose, onChange }: ICalendarEditProps) => {
   const { t } = useTranslation();
   const { clubModel, globalStateModel, sessionModel } = useMobxStore();
-  const [form] = Form.useForm();
+  const [form] = Form.useForm<ICalendarActivityForm>();
   const [valid, setValid] = useState(false);
   const [saving, setSaving] = useState(false);
   const [isRepeating, setIsRepeating] = useState(calendarObject.repeatingGid != null);
   const [repeatingDisabled] = useState(calendarObject.repeatingGid != null);
   const [repeatingModifiedDisabled] = useState(calendarObject.repeatingGid == null || calendarObject.repeatingModified);
   const formId = 'calendarEditForm' + Math.floor(Math.random() * 10000000000000000);
+  const [modal, contextHolder] = Modal.useModal();
 
   useEffect(() => {
     setTimeout(() => {
       if (open) {
         // To disable submit button at the beginning.
-        form && form.resetFields();
-        hasErrors(form).then((notValid) => setValid(!notValid));
+        form?.resetFields();
+        hasErrors(form).then(notValid => setValid(!notValid));
       }
     }, 0);
-  }, [open]);
+  }, [form, open]);
 
   useEffect(() => {
-    hasErrors(form).then((notValid) => setValid(!notValid));
-  }, [isRepeating]);
+    hasErrors(form).then(notValid => setValid(!notValid));
+  }, [form, isRepeating]);
 
   const onSave = useCallback(
-    (values) => {
-      const calendarModule = clubModel.modules.find((module) => module.name === 'Calendar');
-      const saveUrl = values.iActivityID === 0 ? calendarModule?.addUrl : calendarModule?.updateUrl;
+    async (formValues: ICalendarActivityForm) => {
+      try {
+        const calendarModule = clubModel.modules.find(module => module.name === 'Calendar');
+        const saveUrl = formValues.iActivityID === 0 ? calendarModule?.addUrl : calendarModule?.updateUrl;
 
-      if (!saveUrl) return;
-      setSaving(true);
-      values.iActivityDay =
-        values.iActivityDay && typeof values.iActivityDay.format === 'function'
-          ? values.iActivityDay.format(dateFormat)
-          : values.iActivityDay;
-      values.iActivityTime =
-        values.iActivityTime && typeof values.iActivityTime.format === 'function'
-          ? values.iActivityTime.format(timeFormat)
-          : values.iActivityTime;
-      values.iIsRepeating = isRepeating;
-      values.iRepeatingModified = !!values.iRepeatingModified;
+        if (!saveUrl) return;
+        setSaving(true);
+        const values: ICalendarActivityRequest = {
+          ...formValues,
+          iActivityDay: formValues.iActivityDay,
+          iActivityTime: formValues.iActivityTime,
+          iIsRepeating: isRepeating,
+          iRepeatingModified: !!formValues.iRepeatingModified
+        };
 
-      if (isRepeating && Array.isArray(values.iRepeatingDates) && values.iRepeatingDates.length === 2) {
-        values.iFirstRepeatingDate =
-          values.iRepeatingDates[0] && typeof values.iRepeatingDates[0].format === 'function'
-            ? values.iRepeatingDates[0].format(dateFormat)
-            : values.iRepeatingDates[0];
-        values.iLastRepeatingDate =
-          values.iRepeatingDates[1] && typeof values.iRepeatingDates[1].format === 'function'
-            ? values.iRepeatingDates[1].format(dateFormat)
-            : values.iRepeatingDates[1];
-      } else {
-        values.iFirstRepeatingDate = null;
-        values.iLastRepeatingDate = null;
+        if (isRepeating && Array.isArray(formValues.iRepeatingDates) && formValues.iRepeatingDates.length === 2) {
+          values.iFirstRepeatingDate = formValues.iRepeatingDates[0];
+          values.iLastRepeatingDate = formValues.iRepeatingDates[1];
+        } else {
+          values.iFirstRepeatingDate = null;
+          values.iLastRepeatingDate = null;
+        }
+
+        const calendarObjectResponse = await PostJsonData<ICalendarActivity>(
+          saveUrl,
+          {
+            ...values,
+            iType: 'ACTIVITY',
+            username: sessionModel.username,
+            password: sessionModel.password
+          },
+          true,
+          sessionModel.authorizationHeader
+        );
+        setSaving(false);
+        if (calendarObjectResponse) {
+          onChange?.(calendarObjectResponse);
+          onClose?.();
+        }
+      } catch (e) {
+        if (e && (e as { message: string }).message) message.error((e as { message: string }).message);
+        setSaving(false);
       }
-      values.iRepeatingDates = null;
-      PostJsonData(
-        saveUrl,
-        {
-          ...values,
-          iType: 'ACTIVITY',
-          username: sessionModel.username,
-          password: sessionModel.password,
-        },
-        true,
-        sessionModel.authorizationHeader,
-      )
-        .then((calendarObjectResponse: ICalendarActivity) => {
-          onChange && onChange(calendarObjectResponse);
-          setSaving(false);
-          onClose && onClose();
-        })
-        .catch((e) => {
-          message.error(e.message);
-          setSaving(false);
-        });
     },
-    [isRepeating],
+    [
+      clubModel.modules,
+      isRepeating,
+      onChange,
+      onClose,
+      sessionModel.authorizationHeader,
+      sessionModel.password,
+      sessionModel.username
+    ]
   );
 
   const onChooseMapPosition = useCallback(() => {
@@ -147,18 +150,19 @@ const CalendarEdit = observer(({ title, calendarObject, domains, open, onClose, 
     const exists = longitude && latitude;
     GetPositionModal(
       t,
+      modal,
       exists ? longitude : clubLongitude,
       exists ? latitude : clubLatitude,
       exists,
       globalStateModel,
       sessionModel,
-      clubModel,
-    ).then((selectedPosition) => {
+      clubModel
+    ).then(selectedPosition => {
       if (selectedPosition) {
         setFieldsValue({ iLongitude: selectedPosition.longitude, iLatitude: selectedPosition.latitude });
       }
     });
-  }, []);
+  }, [clubModel, form, globalStateModel, sessionModel, t, modal]);
 
   return (
     <StyledModal
@@ -173,7 +177,7 @@ const CalendarEdit = observer(({ title, calendarObject, domains, open, onClose, 
       style={{ top: 40 }}
       width={1000}
       onOk={() => {
-        form.validateFields().then((values) => {
+        form.validateFields().then(values => {
           onSave(values);
         });
       }}
@@ -189,7 +193,7 @@ const CalendarEdit = observer(({ title, calendarObject, domains, open, onClose, 
             iActivityTypeID: calendarObject.activityTypeId,
             iGroupID: calendarObject.groupId,
             iHeader: calendarObject.header,
-            iActivityDay: dayjs(calendarObject.date, dateFormat),
+            iActivityDay: calendarObject.date,
             iActivityTime: calendarObject.time,
             iActivityDurationMinutes: calendarObject.activityDurationMinutes,
             iPlace: calendarObject.place,
@@ -204,12 +208,9 @@ const CalendarEdit = observer(({ title, calendarObject, domains, open, onClose, 
             iRepeatingDates:
               !calendarObject.firstRepeatingDate || !calendarObject.lastRepeatingDate
                 ? null
-                : [
-                    dayjs(calendarObject.firstRepeatingDate, dateFormat),
-                    dayjs(calendarObject.lastRepeatingDate, dateFormat),
-                  ],
+                : [calendarObject.firstRepeatingDate, calendarObject.lastRepeatingDate]
           }}
-          onValuesChange={() => hasErrors(form).then((notValid) => setValid(!notValid))}
+          onValuesChange={() => hasErrors(form).then(notValid => setValid(!notValid))}
         >
           <FormItem name="iActivityID">
             <Input type="hidden" />
@@ -222,8 +223,8 @@ const CalendarEdit = observer(({ title, calendarObject, domains, open, onClose, 
                 rules={[
                   {
                     required: true,
-                    message: errorRequiredField(t, 'calendar.ActivityType'),
-                  },
+                    message: errorRequiredField(t, 'calendar.ActivityType')
+                  }
                 ]}
               >
                 <FormSelect style={{ minWidth: 174 }} options={domains.activityTypes} />
@@ -236,8 +237,8 @@ const CalendarEdit = observer(({ title, calendarObject, domains, open, onClose, 
                 rules={[
                   {
                     required: true,
-                    message: errorRequiredField(t, 'calendar.Group'),
-                  },
+                    message: errorRequiredField(t, 'calendar.Group')
+                  }
                 ]}
               >
                 <FormSelect style={{ minWidth: 174 }} options={domains.groups} />
@@ -250,8 +251,8 @@ const CalendarEdit = observer(({ title, calendarObject, domains, open, onClose, 
             rules={[
               {
                 required: true,
-                message: errorRequiredField(t, 'calendar.Header'),
-              },
+                message: errorRequiredField(t, 'calendar.Header')
+              }
             ]}
           >
             <Input maxLength={32} />
@@ -264,10 +265,11 @@ const CalendarEdit = observer(({ title, calendarObject, domains, open, onClose, 
                 rules={[
                   {
                     required: true,
-                    type: 'object',
-                    message: errorRequiredField(t, 'calendar.ActivityDay'),
-                  },
+                    message: errorRequiredField(t, 'calendar.ActivityDay')
+                  }
                 ]}
+                normalize={(value: dayjs.Dayjs) => (value ? value.format(dateFormat) : null)}
+                getValueProps={(value: string | undefined) => ({ value: value ? dayjs(value, dateFormat) : null })}
               >
                 <DatePicker disabled={repeatingDisabled} format={dateFormat} style={{ width: '100%' }} />
               </FormItem>
@@ -287,10 +289,10 @@ const CalendarEdit = observer(({ title, calendarObject, domains, open, onClose, 
           <FormItem name="iIsRepeating" label={t('calendar.IsRepeating')} valuePropName="checked">
             <Switch
               disabled={repeatingDisabled}
-              onChange={(checked) => {
+              onChange={checked => {
                 const guid = checked ? uuidv4() : null;
                 form.setFieldsValue({
-                  iRepeatingGid: guid,
+                  iRepeatingGid: guid
                 });
                 setIsRepeating(checked);
               }}
@@ -306,27 +308,19 @@ const CalendarEdit = observer(({ title, calendarObject, domains, open, onClose, 
                     {
                       required: isRepeating,
                       type: 'array',
-                      message: errorRequiredField(t, 'calendar.RepeatingDates'),
-                    },
+                      message: errorRequiredField(t, 'calendar.RepeatingDates')
+                    }
                   ]}
+                  normalize={(values: dayjs.Dayjs[] | null) =>
+                    Array.isArray(values) && values.length === 2
+                      ? [values[0]?.format(dateFormat), values[1]?.format(dateFormat)]
+                      : null
+                  }
+                  getValueProps={(values: string[] | undefined) => ({
+                    value: values?.length === 2 ? [dayjs(values[0], dateFormat), dayjs(values[1], dateFormat)] : null
+                  })}
                 >
-                  <RangePicker
-                    picker="week"
-                    format={weekFormat}
-                    allowClear={true}
-                    style={{ width: '100%' }}
-                    onChange={(dates) => {
-                      if (Array.isArray(dates) && dates.length === 2) {
-                        form.setFieldsValue({
-                          iRepeatingDates: [dates[0]?.isoWeekday(1), dates[1]?.isoWeekday(7)],
-                        });
-                      } else {
-                        form.setFieldsValue({
-                          iRepeatingDates: null,
-                        });
-                      }
-                    }}
-                  />
+                  <RangePicker picker="week" format={weekFormat} allowClear={true} style={{ width: '100%' }} />
                 </FormItem>
               </Col>
               <Col span={8}>
@@ -368,17 +362,18 @@ const CalendarEdit = observer(({ title, calendarObject, domains, open, onClose, 
             rules={[
               {
                 required: true,
-                message: errorRequiredField(t, 'calendar.Responsible'),
-              },
+                message: errorRequiredField(t, 'calendar.Responsible')
+              }
             ]}
           >
             <FormSelect
               style={{ minWidth: 174 }}
-              options={domains.users.filter((user) => sessionModel.isAdmin || user.code.toString() === sessionModel.id)}
+              options={domains.users.filter(user => sessionModel.isAdmin || user.code.toString() === sessionModel.id)}
             />
           </FormItem>
         </Form>
       </StyledModalContent>
+      {contextHolder}
     </StyledModal>
   );
 });

@@ -1,7 +1,7 @@
 import { Spin } from 'antd';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import styled from 'styled-components';
+import { styled } from 'styled-components';
 
 const StyledDiv = styled.div`
   position: absolute;
@@ -20,8 +20,8 @@ const StyledOuterDiv = styled.div<{ loaded: boolean }>`
   opacity: 0.8;
   z-index: 100;
   animation: fade 1s ease-in-out forwards;
-  pointer-events: ${(props) => (props.loaded ? 'none' : 'auto')};
-  animation-play-state: ${(props) => (props.loaded ? 'running' : 'paused')};
+  pointer-events: ${props => (props.loaded ? 'none' : 'auto')};
+  animation-play-state: ${props => (props.loaded ? 'running' : 'paused')};
   background-color: white;
   @keyframes fade {
     from {

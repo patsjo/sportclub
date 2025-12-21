@@ -1,9 +1,9 @@
 import { TFunction } from 'i18next';
 import { Control } from 'ol/control';
 import { getWidth } from 'ol/extent';
-import Feature, { FeatureLike } from 'ol/Feature';
+import Feature from 'ol/Feature';
 import Geolocation from 'ol/Geolocation';
-import { Geometry, Point, Polygon } from 'ol/geom';
+import { Point, Polygon } from 'ol/geom';
 import { Vector as VectorLayer } from 'ol/layer';
 import Map from 'ol/Map';
 import * as proj from 'ol/proj';
@@ -64,7 +64,7 @@ export class TrackingControl extends Control {
     element.appendChild(button);
 
     super({
-      element: element,
+      element: element
     });
 
     this.map = options.map;
@@ -83,8 +83,8 @@ export class TrackingControl extends Control {
       this.geolocation = new Geolocation({
         projection: this.view.getProjection(),
         trackingOptions: {
-          enableHighAccuracy: true,
-        },
+          enableHighAccuracy: true
+        }
       });
       this.positions = [];
       this.accuracyFeature = new Feature();
@@ -94,7 +94,7 @@ export class TrackingControl extends Control {
             let minX: number | undefined;
             let maxX: number | undefined;
             let minY: number | undefined;
-            (coordinates[0] as number[][]).forEach((coord) => {
+            (coordinates[0] as number[][]).forEach(coord => {
               minX = minX ? Math.min(minX, coord[0]) : coord[0];
               maxX = maxX ? Math.max(maxX, coord[0]) : coord[0];
               minY = minY ? Math.min(minY, coord[1]) : coord[1];
@@ -119,8 +119,8 @@ export class TrackingControl extends Control {
             ctx.arc(x, y, radius, 0, 2 * Math.PI, true);
             ctx.strokeStyle = 'rgba(224,48,32,0.75)';
             ctx.stroke();
-          },
-        }),
+          }
+        })
       );
 
       this.positionFeature = new Feature();
@@ -128,14 +128,14 @@ export class TrackingControl extends Control {
         new Style({
           image: new IconStyle({
             size: [31, 31],
-            img: trackingCanvas,
-          }),
-        }),
+            img: trackingCanvas
+          })
+        })
       );
       this.positionLayer = new VectorLayer({
         source: new VectorSource({
-          features: [this.accuracyFeature, this.positionFeature],
-        }),
+          features: [this.accuracyFeature, this.positionFeature]
+        })
       });
       this.map.addLayer(this.positionLayer);
       this.oldPositionsLayer = new VectorLayer({
@@ -143,17 +143,17 @@ export class TrackingControl extends Control {
           image: new CircleStyle({
             radius: 4,
             fill: new FillStyle({
-              color: 'rgba(224,48,32, 0.6)',
+              color: 'rgba(224,48,32, 0.6)'
             }),
             stroke: new StrokeStyle({
               color: 'rgba(255, 255, 255, 0.6)',
-              width: 2,
-            }),
-          }),
+              width: 2
+            })
+          })
         }),
         source: new VectorSource({
-          features: [],
-        }),
+          features: []
+        })
       });
       this.map.addLayer(this.oldPositionsLayer);
       this.onGeoLocationChange();
@@ -167,19 +167,19 @@ export class TrackingControl extends Control {
       this.geolocation.un('change', this.onGeoLocationChange);
       this.view.animate({
         rotation: 0,
-        duration: 500,
+        duration: 500
       });
       this.map.render();
       this.geolocation = undefined;
       this.positions = [];
       this.latestPosition = undefined;
-      this.positionLayer && this.map.removeLayer(this.positionLayer);
+      if (this.positionLayer) this.map.removeLayer(this.positionLayer);
       this.positionLayer = undefined;
-      this.oldPositionsLayer && this.map.removeLayer(this.oldPositionsLayer);
+      if (this.oldPositionsLayer) this.map.removeLayer(this.oldPositionsLayer);
       this.oldPositionsLayer = undefined;
       this.positionFeature = undefined;
       this.accuracyFeature = undefined;
-      this.intervalId && clearInterval(this.intervalId);
+      if (this.intervalId) clearInterval(this.intervalId);
     }
   }
 
@@ -189,7 +189,6 @@ export class TrackingControl extends Control {
     let speed = this.geolocation.getSpeed() || 0;
     if (speed < 0.3) speed = 0;
     const heading = speed === 0 ? 0 : this.geolocation.getHeading() || 0;
-    const m = Date.now();
 
     this.accuracy = this.geolocation.getAccuracy() ?? 500;
     this.positionFeature.setGeometry(position ? new Point(position) : undefined);
@@ -222,14 +221,14 @@ export class TrackingControl extends Control {
       center[0] - extentSizeHalf,
       center[1] - extentSizeHalf,
       center[0] + extentSizeHalf,
-      center[1] + extentSizeHalf,
+      center[1] + extentSizeHalf
     ];
     const resolution = Math.max(this.view.getResolutionForExtent(extent), this.view.getMinResolution());
     this.view.animate({
       center,
       resolution,
       rotation: speed === 0 ? undefined : this.accuracy <= maxAccuracy * 2.5 ? -heading : 0,
-      duration: 500,
+      duration: 500
     });
     this.map.render();
   }
@@ -252,20 +251,20 @@ export class TrackingControl extends Control {
 
     const coordsOutsideAccuracy: number[][] = [];
 
-    this.positions.forEach((pos) => {
+    this.positions.forEach(pos => {
       if (pos && this.latestPosition) {
         const dist = wgs84Sphere.getDistance(
           proj.transform(this.latestPosition, mapProjection, 'EPSG:4326'),
-          proj.transform(pos, mapProjection, 'EPSG:4326'),
+          proj.transform(pos, mapProjection, 'EPSG:4326')
         );
         if (dist > Math.max(0.15 * this.accuracy, 0.75 * maxAccuracy)) coordsOutsideAccuracy.push(pos);
       }
     });
     const features = coordsOutsideAccuracy.map(
-      (coord) =>
+      coord =>
         new Feature<Point>({
-          geometry: new Point(coord),
-        }),
+          geometry: new Point(coord)
+        })
     );
     this.oldPositionsLayer?.getSource()?.clear();
     this.oldPositionsLayer?.getSource()?.addFeatures(features);
@@ -277,7 +276,7 @@ export class TrackingControl extends Control {
 
     return [
       position[0] - (Math.sin(rotation) * height * resolution * 1) / 8,
-      position[1] + (Math.cos(rotation) * height * resolution * 1) / 8,
+      position[1] + (Math.cos(rotation) * height * resolution * 1) / 8
     ];
   }
 }

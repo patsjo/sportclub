@@ -1,36 +1,36 @@
-import { Form, InputNumber, Modal } from 'antd';
+import { Form, InputNumber } from 'antd';
 import { ModalFuncProps } from 'antd/lib/modal';
+import { HookAPI } from 'antd/lib/modal/useModal';
 import { TFunction } from 'i18next';
 import FormItem from '../formItems/FormItem';
 
-const { confirm } = Modal;
-
-export const SelectEventorIdConfirmModal = (t: TFunction): Promise<number | undefined> =>
-  new Promise((resolve) => {
+export const SelectEventorIdConfirmModal = (t: TFunction, modal: HookAPI): Promise<number | undefined> =>
+  new Promise(resolve => {
     let confirmObject: number | undefined;
     let confirmModal: {
       destroy: () => void;
       update: (configUpdate: ModalFuncProps | ((prevConfig: ModalFuncProps) => ModalFuncProps)) => void;
     };
+
     // eslint-disable-next-line prefer-const
-    confirmModal = confirm({
+    confirmModal = modal.confirm({
       title: t('results.KnownEventorId'),
       content: (
         <Form
           id={'selectEventorId' + Math.floor(Math.random() * 1000000000000000)}
           layout="vertical"
           initialValues={{
-            iEventorId: undefined,
+            iEventorId: undefined
           }}
         >
           <FormItem name="iEventorId" label="Event Id">
             <InputNumber
-              onChange={(value) => {
+              onChange={value => {
                 confirmObject = (value ?? undefined) as number | undefined;
                 confirmModal.update({
                   okButtonProps: {
-                    disabled: confirmObject == null,
-                  },
+                    disabled: confirmObject == null
+                  }
                 });
               }}
             />
@@ -39,7 +39,7 @@ export const SelectEventorIdConfirmModal = (t: TFunction): Promise<number | unde
       ),
       okText: t('common.Next'),
       okButtonProps: {
-        disabled: true,
+        disabled: true
       },
       cancelText: t('common.Cancel'),
       onOk() {
@@ -47,6 +47,6 @@ export const SelectEventorIdConfirmModal = (t: TFunction): Promise<number | unde
       },
       onCancel() {
         resolve(undefined);
-      },
+      }
     });
   });

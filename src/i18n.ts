@@ -25,7 +25,7 @@ i18next
 
       // cache user language on
       caches: ['localStorage'],
-      excludeCacheFor: ['cimode'],
+      excludeCacheFor: ['cimode']
     },
     resources: {
       en: {
@@ -64,7 +64,7 @@ i18next
             MarginsLabel: 'Margins [left, top, right, bottom]:',
             Skip: 'Skip',
             Unauthorized: 'Unauthorized',
-            NotANumber: 'Not a number',
+            NotANumber: 'Not a number'
           },
           calendar: {
             Calendar: 'Calendar',
@@ -105,7 +105,7 @@ i18next
             DurationMinutes: 'Duration [minutes]',
             IsRepeating: 'Is repeating',
             RepeatingDates: 'Repeating weeks',
-            RepeatingModified: 'Change only this',
+            RepeatingModified: 'Change only this'
           },
           error: {
             Missing: 'MISSING',
@@ -113,7 +113,27 @@ i18next
             FileSizeTooLarge: 'File is larger than {0} MB',
             RequiredField: 'Please input your',
             WarningIncludeAll: 'No filter on',
-            MissingMapPosition: 'Missing map position',
+            MissingMapPosition: 'Missing map position'
+          },
+          holidays: {
+            christmasEve: 'Christmas Eve',
+            newYearsEve: "New Year's Eve",
+            newYearsDay: "New Year's Day",
+            epiphany: 'Epiphany',
+            mayDay: 'May Day',
+            nationalDay: 'National Day of Sweden',
+            christmasDay: 'Christmas Day',
+            boxingDay: 'Boxing Day',
+            halloween: 'Halloween',
+            valentinesDay: "Valentine's Day",
+            midsummerEve: 'Midsummer Eve',
+            midsummerDay: 'Midsummer Day',
+            allSaintsDay: "All Saints' Day",
+            goodFriday: 'Good Friday',
+            easterEve: 'Holy Saturday',
+            easterSunday: 'Easter Sunday',
+            easterMonday: 'Easter Monday',
+            ascensionDay: 'Ascension Day'
           },
           invoice: {
             invoiceTitle: 'Invoice',
@@ -136,7 +156,7 @@ i18next
             taxFee: 'Tax kr',
             total: 'TOTAL',
             message: 'Message',
-            generatePdf: 'Generate PDF',
+            generatePdf: 'Generate PDF'
           },
           map: {
             Map: 'map',
@@ -148,7 +168,7 @@ i18next
             ClickForDirection: 'Click for direction',
             GoToFullExtent: 'Zoom to layer',
             Speed: 'Speed',
-            GPSAccuracy: 'GPS accuracy',
+            GPSAccuracy: 'GPS accuracy'
           },
           modules: {
             Home: 'Home',
@@ -161,7 +181,7 @@ i18next
             Results: 'Results',
             Users: 'Club members',
             Photo: 'Photo',
-            HtmlEditor: 'Make new page',
+            HtmlEditor: 'Make new page'
           },
           news: {
             Add: 'Add',
@@ -174,7 +194,7 @@ i18next
             LongTimeNews: 'News (prioritized)',
             Introduction: 'Introduction text',
             Text: 'Text',
-            UpdateModificationDate: 'Update modification date',
+            UpdateModificationDate: 'Update modification date'
           },
           users: {
             Users: 'Login/Authority',
@@ -194,7 +214,7 @@ i18next
             WorkPhoneNo: 'Work phone',
             Council: 'Council',
             Responsibility: 'Responsibility',
-            Groups: 'Groups',
+            Groups: 'Groups'
           },
           competitor: {
             Info: 'Rules behind the stars',
@@ -211,7 +231,7 @@ i18next
             StarsStability: 'Stability',
             StarsNight: 'Night compared to day',
             StarsShape: 'Current shape compared to normal shape',
-            Edit: 'Edit competitor achievements',
+            Edit: 'Edit competitor achievements'
           },
           results: {
             Leg: 'Leg',
@@ -354,12 +374,12 @@ i18next
             loadCompetitor: 'Loading single competitors result, {0}, from eventor',
             loadCompetitors: 'Loading competitors from eventor',
             loadOringenEvents: 'Loading O-ringen events from eventor',
-            calculateResults: 'Calculate results',
+            calculateResults: 'Calculate results'
           },
           eventor: {
             Participant: 'Participant',
             Startlist: 'Startlist',
-            Result: 'Result',
+            Result: 'Result'
           },
           htmlEditor: {
             MenuLink: 'Create meny link',
@@ -370,7 +390,7 @@ i18next
             NoUrlError: 'This should not be a url. Should be like "/path1/path2/item"',
             DoubleSlashError: 'Double "//" not allowed. Should be like "/path1/path2/item"',
             FormatError: 'Must start with a "/", and can\'t end with a "/". Should be like "/path1/path2/item"',
-            MenuLinkHelpText: 'Remove, by empty one of the mandatory fields above',
+            MenuLinkHelpText: 'Remove, by empty one of the mandatory fields above'
           },
           files: {
             AddFolder: 'Add folder',
@@ -385,7 +405,7 @@ i18next
             PostStory: 'Poststory',
             NeedPassword: 'Need password',
             AllowedGroup: 'Allowed group',
-            FileIsRequired: 'File is required',
+            FileIsRequired: 'File is required'
           },
           chart: {
             startsPerYear: 'Starts per year',
@@ -426,9 +446,9 @@ i18next
             silver: 'Silver',
             bronze: 'Bronze',
             top10: 'Top 10',
-            top30: 'Top 30',
-          },
-        },
+            top30: 'Top 30'
+          }
+        }
       },
       sv: {
         translation: {
@@ -466,7 +486,7 @@ i18next
             MarginsLabel: 'Marginaler [vänster, överkant, höger, nederkant]:',
             Skip: 'Hoppa över',
             Unauthorized: 'Ej behörig',
-            NotANumber: 'Ett icke numeriskt värde',
+            NotANumber: 'Ett icke numeriskt värde'
           },
           calendar: {
             Calendar: 'Kalender',
@@ -507,7 +527,7 @@ i18next
             DurationMinutes: 'Varar i [minuter]',
             IsRepeating: 'Återkommande',
             RepeatingDates: 'Återkommande veckor',
-            RepeatingModified: 'Ändra endast denna',
+            RepeatingModified: 'Ändra endast denna'
           },
           error: {
             Missing: 'SAKNAS',
@@ -515,7 +535,27 @@ i18next
             FileSizeTooLarge: 'Filen är större än {0} MB',
             RequiredField: 'Vänligen ange',
             WarningIncludeAll: 'Ingen filtrering på',
-            MissingMapPosition: 'Saknar geografisk position',
+            MissingMapPosition: 'Saknar geografisk position'
+          },
+          holidays: {
+            christmasEve: 'Julafton',
+            newYearsEve: 'Nyårsafton',
+            newYearsDay: 'Nyårsdagen',
+            epiphany: 'Trettondagen',
+            mayDay: 'Första maj',
+            nationalDay: 'Nationaldagen',
+            christmasDay: 'Juldagen',
+            boxingDay: 'Annandag jul',
+            halloween: 'Halloween',
+            valentinesDay: 'Alla hjärtans dag',
+            midsummerEve: 'Midsommarafton',
+            midsummerDay: 'Midsommardagen',
+            allSaintsDay: 'Alla helgons dag',
+            goodFriday: 'Långfredagen',
+            easterEve: 'Påskafton',
+            easterSunday: 'Påskdagen',
+            easterMonday: 'Annandag påsk',
+            ascensionDay: 'Kristi Himmelsfärdsdag'
           },
           invoice: {
             invoiceTitle: 'Faktura',
@@ -538,7 +578,7 @@ i18next
             taxFee: 'Moms kr',
             total: 'TOTALT',
             message: 'Meddelande',
-            generatePdf: 'Skapar PDF',
+            generatePdf: 'Skapar PDF'
           },
           map: {
             Map: 'karta',
@@ -550,7 +590,7 @@ i18next
             ClickForDirection: 'Klicka för vägbeskrivning',
             GoToFullExtent: 'Zooma till lager',
             Speed: 'Hastighet',
-            GPSAccuracy: 'GPS noggrannhet',
+            GPSAccuracy: 'GPS noggrannhet'
           },
           modules: {
             Home: 'Startsida',
@@ -563,7 +603,7 @@ i18next
             Results: 'Resultat',
             Users: 'Klubbmedlemmar',
             Photo: 'Foto',
-            HtmlEditor: 'Skapa ny sida',
+            HtmlEditor: 'Skapa ny sida'
           },
           news: {
             Add: 'Lägg till',
@@ -576,7 +616,7 @@ i18next
             LongTimeNews: 'Nyheter (prioriterad)',
             Introduction: 'Inledande text',
             Text: 'Brödtext',
-            UpdateModificationDate: 'Uppdatera senaste ändringsdatum',
+            UpdateModificationDate: 'Uppdatera senaste ändringsdatum'
           },
           users: {
             Users: 'Login/Behörighet',
@@ -596,7 +636,7 @@ i18next
             WorkPhoneNo: 'Arbete',
             Council: 'Styrelse',
             Responsibility: 'Ansvarsområde',
-            Groups: 'Grupper',
+            Groups: 'Grupper'
           },
           competitor: {
             Info: 'Regelverk bakom stjärnorna',
@@ -613,7 +653,7 @@ i18next
             StarsStability: 'Stabilitet',
             StarsNight: 'Natt i jämförelse med dag',
             StarsShape: 'Nuvarande form jämfört med förut',
-            Edit: 'Redigera löparmeriter',
+            Edit: 'Redigera löparmeriter'
           },
           results: {
             Leg: 'Str',
@@ -757,12 +797,12 @@ i18next
             loadCompetitor: 'Laddar enskild löpares resultat, {0}, från eventor',
             loadCompetitors: 'Hämtar alla löpare from eventor',
             loadOringenEvents: 'Laddar O-ringen tävlingar från eventor',
-            calculateResults: 'Beräknar resultat',
+            calculateResults: 'Beräknar resultat'
           },
           eventor: {
             Participant: 'Anmäld',
             Startlist: 'Startlista',
-            Result: 'Resultat',
+            Result: 'Resultat'
           },
           htmlEditor: {
             MenuLink: 'Skapa menylänk',
@@ -773,7 +813,7 @@ i18next
             NoUrlError: 'Ska inte vara en URL. Skriv på formatet "/mapp1/mapp2/namn"',
             DoubleSlashError: 'Dubbla "//" ej tillåtet. Skriv på formatet "/mapp1/mapp2/namn"',
             FormatError: 'Måste börja med "/", men får inte sluta med "/". Skriv på formatet "/mapp1/mapp2/namn"',
-            MenuLinkHelpText: 'Ta bort, genom att radera ett av de obligatoriska fälten ovan',
+            MenuLinkHelpText: 'Ta bort, genom att radera ett av de obligatoriska fälten ovan'
           },
           files: {
             AddFolder: 'Lägg till mapp',
@@ -788,7 +828,7 @@ i18next
             PostStory: 'Beskrivning efter',
             NeedPassword: 'Kräver lösenord',
             AllowedGroup: 'Gruppbehörighet',
-            FileIsRequired: 'Fil saknas',
+            FileIsRequired: 'Fil saknas'
           },
           chart: {
             startsPerYear: 'Antal starter per år',
@@ -829,11 +869,11 @@ i18next
             silver: 'Silver',
             bronze: 'Brons',
             top10: 'Top 10',
-            top30: 'Top 30',
-          },
-        },
-      },
-    },
+            top30: 'Top 30'
+          }
+        }
+      }
+    }
   });
 
 document.documentElement.lang = i18next.language;

@@ -1,7 +1,8 @@
 import { observer } from 'mobx-react';
 import { lazy } from 'react';
 import { Route, Routes } from 'react-router-dom';
-import styled from 'styled-components';
+import { styled } from 'styled-components';
+
 const Dashboard = lazy(() => import('./components/dashboard/Dashboard'));
 const Maps = lazy(() => import('./components/map/Maps'));
 const News = lazy(() => import('./components/news/News'));

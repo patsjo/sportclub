@@ -1,5 +1,5 @@
 import useResizeObserver from '@react-hook/resize-observer';
-import { useLayoutEffect, useMemo, useState } from 'react';
+import { RefObject, useLayoutEffect, useMemo, useState } from 'react';
 
 type TypeOfSize = 'client' | 'offset';
 interface ISize {
@@ -10,7 +10,7 @@ interface ISize {
 const defaultSize: ISize = { height: undefined, width: undefined };
 
 export const useSize = (
-  target: React.RefObject<HTMLDivElement>,
+  target: RefObject<HTMLDivElement>,
   observe?: ('width' | 'height')[],
   typeOfSize: TypeOfSize = 'client'
 ) => {
@@ -22,6 +22,7 @@ export const useSize = (
     if (target.current) {
       switch (typeOfSize) {
         case 'client':
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           setSize({ height: target.current.clientHeight, width: target.current.clientWidth });
           break;
         case 'offset':
@@ -29,9 +30,9 @@ export const useSize = (
           break;
       }
     }
-  }, [target]);
+  }, [target, typeOfSize]);
 
-  useResizeObserver(target, (entry) => {
+  useResizeObserver(target, () => {
     if (target.current) {
       switch (typeOfSize) {
         case 'client':

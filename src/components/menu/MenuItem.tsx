@@ -1,6 +1,6 @@
 import { Menu } from 'antd';
 import React from 'react';
-import styled from 'styled-components';
+import { styled } from 'styled-components';
 import MaterialIcon, { MaterialIconsType } from '../materialIcon/MaterialIcon';
 
 interface IMenuItemProps {
@@ -44,15 +44,15 @@ const StyledMenuItem = ({
   onClick,
   isSubMenu = false,
   level = 1,
-  disabled = false,
+  disabled = false
 }: IStyledMenuItem) => (
   <MenuItem
-    className={`ant-menu-item${disabled ? ' ant-menu-item-disabled' : ''}`}
-    onClick={onClick}
     key={key}
+    className={`ant-menu-item${disabled ? ' ant-menu-item-disabled' : ''}`}
     isSubMenu={isSubMenu}
     level={level}
     disabled={disabled}
+    onClick={onClick}
   >
     <MaterialIcon icon={icon} fontSize={18} marginRight={10} />
     <MenuText>{name}</MenuText>

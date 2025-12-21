@@ -8,7 +8,8 @@ import {
   Margins,
   PageOrientation,
   PageSize,
-  TDocumentDefinitions,
+  TableCell,
+  TDocumentDefinitions
 } from 'pdfmake/interfaces';
 
 pdfMake.vfs = pdfFonts.vfs;
@@ -43,32 +44,35 @@ export interface IPrintObject<RecordType> {
 export const getLogo = (corsProxy: string, logoUrl: string): Promise<string | null> =>
   new Promise((resolve, reject) => {
     fetch(corsProxy ? `${corsProxy}${encodeURIComponent(logoUrl)}&noJsonConvert=true` : logoUrl)
-      .then((response) => response.blob())
-      .then((blob) => {
+      .then(response => response.blob())
+      .then(blob => {
         const reader = new FileReader();
         reader.onerror = reject;
-        reader.onload = (e) => resolve(e.target ? (e.target.result as string | null) : null);
+        reader.onload = e => resolve(e.target ? (e.target.result as string | null) : null);
         reader.readAsDataURL(blob);
       });
   });
 
-const getTableContent = (table: IPrintTable<any>): ContentTable => {
+const getTableContent = <T extends object>(table: IPrintTable<T>): ContentTable => {
   const contentDefinition: ContentTable = {
     style: 'tableStyle',
     table: {
       headerRows: 1,
-      body: [],
+      body: []
     },
-    layout: 'compactHorizontalLines',
+    layout: 'compactHorizontalLines'
   };
-  contentDefinition.table.body.push(table.columns.map((col) => ({ text: col.title, style: 'tableHeader' })));
-  table.dataSource.forEach((record) => {
+  contentDefinition.table.body.push(table.columns.map(col => ({ text: col.title, style: 'tableHeader' })));
+  table.dataSource.forEach(record => {
     contentDefinition.table.body.push(
       table.columns.map((col, index) => {
-        let value: any = null;
-        if (col.key) value = record[col.key];
+        let value: TableCell = '';
+        if (col.key) value = record[col.key as keyof T] as TableCell;
         if (col.render) {
-          value = col.render(value, record, index);
+          const renderValue = col.render(value, record, index) ?? '';
+          if (renderValue === false) value = 'false';
+          else if (renderValue === true) value = 'true';
+          else value = renderValue as TableCell;
         }
         return value;
       })
@@ -78,10 +82,10 @@ const getTableContent = (table: IPrintTable<any>): ContentTable => {
   return contentDefinition;
 };
 
-const getPdfDocDefinition = (
+const getPdfDocDefinition = <T extends object>(
   logo: string | null,
   title: string,
-  printObjects: IPrintObject<any>[],
+  printObjects: IPrintObject<T>[],
   pdfSettings: IPdfSettings
 ): TDocumentDefinitions => {
   const docDefinition: TDocumentDefinitions = {
@@ -89,7 +93,7 @@ const getPdfDocDefinition = (
       title: title,
       author: 'GIK-programmet 4.0',
       subject: title,
-      keywords: title,
+      keywords: title
     },
     pageSize: pdfSettings.pageSize,
     pageOrientation: pdfSettings.pageOrientation,
@@ -100,20 +104,20 @@ const getPdfDocDefinition = (
       header: {
         fontSize: 18,
         bold: true,
-        margin: [0, 0, 0, 10],
+        margin: [0, 0, 0, 10]
       },
       tableStyle: {
-        margin: [0, 5, 0, 5],
+        margin: [0, 5, 0, 5]
       },
       tableHeader: {
         bold: true,
         fontSize: 10,
-        color: 'black',
-      },
+        color: 'black'
+      }
     },
     defaultStyle: {
-      fontSize: 10,
-    },
+      fontSize: 10
+    }
   };
   printObjects.forEach((printObject, index: number) => {
     const content: ContentColumns = {
@@ -125,14 +129,14 @@ const getPdfDocDefinition = (
               alignment: 'left',
               stack: [
                 { text: printObject.header, style: 'header' },
-                ...printObject.inputs.map((input) => `${input.label}: ${input.value}`),
-              ],
+                ...printObject.inputs.map(input => `${input.label}: ${input.value}`)
+              ]
             },
             {
               width: 'auto',
               alignment: 'right',
-              stack: [{ image: logo, fit: [40, 45] }],
-            },
+              stack: [{ image: logo, fit: [40, 45] }]
+            }
           ]
         : [
             {
@@ -140,47 +144,47 @@ const getPdfDocDefinition = (
               alignment: 'left',
               stack: [
                 { text: printObject.header, style: 'header' },
-                ...printObject.inputs.map((input) => `${input.label}: ${input.value}`),
-              ],
-            },
-          ],
+                ...printObject.inputs.map(input => `${input.label}: ${input.value}`)
+              ]
+            }
+          ]
     };
     if (!Array.isArray(docDefinition.content)) throw new Error('Implemetation error');
     docDefinition.content.push(content);
-    printObject.tables.forEach((table) => {
-      Array.isArray(docDefinition.content) && docDefinition.content.push(getTableContent(table));
+    printObject.tables.forEach(table => {
+      if (Array.isArray(docDefinition.content)) docDefinition.content.push(getTableContent(table));
     });
   });
   pdfMake.tableLayouts = {
     compactHorizontalLines: {
-      hLineWidth: function (i, node) {
+      hLineWidth: (i, node) => {
         if (i === 0 || i === node.table.body.length) {
           return 0;
         }
         return i === node.table.headerRows ? 2 : 1;
       },
-      vLineWidth: function (i) {
+      vLineWidth: () => {
         return 0;
       },
-      hLineColor: function (i) {
+      hLineColor: i => {
         return i === 1 ? 'black' : '#aaa';
       },
-      paddingLeft: function (i) {
+      paddingLeft: i => {
         return i === 0 ? 0 : 3;
       },
-      paddingRight: function (i, node) {
+      paddingRight: (i, node) => {
         return Array.isArray(node.table.widths) && i === node.table.widths.length - 1 ? 0 : 3;
-      },
-    },
+      }
+    }
   };
   return docDefinition;
 };
 
-export const getPdf = async (
+export const getPdf = async <T extends object>(
   proxyurl: string,
   logoUrl: string,
   title: string,
-  printObjects: IPrintObject<any>[],
+  printObjects: IPrintObject<T>[],
   pdfSettings: IPdfSettings
 ): Promise<void> => {
   const logo = await getLogo(proxyurl, logoUrl);
@@ -190,18 +194,18 @@ export const getPdf = async (
 };
 
 export const getBase64 = (pdfDocument: pdfMake.TCreatedPdf): Promise<string> => {
-  return new Promise((resolve) => {
-    pdfDocument.getBase64((data) => {
+  return new Promise(resolve => {
+    pdfDocument.getBase64(data => {
       resolve(data);
     });
   });
 };
 
-export const getZip = async (
+export const getZip = async <T extends object>(
   proxyurl: string,
   logoUrl: string,
   title: string,
-  printObjects: IPrintObject<any>[],
+  printObjects: IPrintObject<T>[],
   pdfSettings: IPdfSettings
 ): Promise<void> => {
   const logo = await getLogo(proxyurl, logoUrl);

@@ -1,20 +1,20 @@
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import { Button, Spin, Steps, message } from 'antd';
-import FullScreenWizard from '../../styled/FullscreenWizard';
 import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
-import { IRaceClubsProps } from '../../../models/resultModel';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
-import { useMobxStore } from '../../../utils/mobxStore';
-import { useSize } from '../../../utils/useSize';
+import { styled } from 'styled-components';
 import {
   EventSelectorWizard as EventSelectorWizardModel,
-  getLocalStorage,
+  getLocalStorage
 } from '../../../models/eventSelectorWizardModel';
+import { IRaceClubsProps } from '../../../models/resultModel';
 import { PostJsonData } from '../../../utils/api';
+import { useMobxStore } from '../../../utils/mobxStore';
+import { useSize } from '../../../utils/useSize';
+import FullScreenWizard from '../../styled/FullscreenWizard';
 import { SpinnerDiv } from '../../styled/styled';
 import EventSelectorWizardStep0Input from './EventSelectorWizardStep0Input';
 import EventSelectorWizardStep1ChooseRace from './EventSelectorWizardStep1ChooseRace';
@@ -39,26 +39,26 @@ const EventSelectorWizard = observer(() => {
   const eventSelectorWizardModel = useMemo(() => new EventSelectorWizardModel(getLocalStorage()), []);
   const navigate = useNavigate();
 
-  const next = () => {
-    setWizardStep((prevStep) => prevStep + 1);
+  const next = useCallback(() => {
+    setWizardStep(prevStep => prevStep + 1);
     setNextStepValid(false);
-  };
+  }, []);
 
-  const prev = () => {
-    setWizardStep((prevStep) => prevStep - 1);
+  const prev = useCallback(() => {
+    setWizardStep(prevStep => prevStep - 1);
     setNextStepValid(true);
-  };
+  }, []);
 
-  const onValidate = (valid: boolean) => {
+  const onValidate = useCallback((valid: boolean) => {
     setNextStepValid(valid);
-  };
+  }, []);
 
   const onClose = useCallback(() => {
     globalStateModel.setDashboard(navigate, '/');
-  }, []);
+  }, [globalStateModel, navigate]);
 
   const save = useCallback(() => {
-    const calendarModule = clubModel.modules.find((module) => module.name === 'Calendar');
+    const calendarModule = clubModel.modules.find(module => module.name === 'Calendar');
     const saveUrl = calendarModule?.addUrl;
     if (!saveUrl) return;
 
@@ -68,7 +68,7 @@ const EventSelectorWizard = observer(() => {
     const data = {
       queryStartDate: snapshot.queryStartDate,
       queryEndDate: snapshot.queryEndDate,
-      events: snapshot.selectedEvents,
+      events: snapshot.selectedEvents
     };
 
     PostJsonData(
@@ -77,7 +77,7 @@ const EventSelectorWizard = observer(() => {
         ...data,
         iType: 'EVENTS',
         username: sessionModel.username,
-        password: sessionModel.password,
+        password: sessionModel.password
       },
       true,
       sessionModel.authorizationHeader
@@ -85,33 +85,42 @@ const EventSelectorWizard = observer(() => {
       .then(() => {
         onClose();
       })
-      .catch((e) => {
-        message.error(e.message);
+      .catch(e => {
+        if (e?.message) message.error(e.message);
         setSaving(false);
       });
-  }, [sessionModel, clubModel]);
+  }, [
+    clubModel.modules,
+    eventSelectorWizardModel,
+    sessionModel.username,
+    sessionModel.password,
+    sessionModel.authorizationHeader,
+    onClose
+  ]);
 
   useEffect(() => {
     if (loaded) return;
-    const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
+    const url = clubModel.modules.find(module => module.name === 'Results')?.queryUrl;
     if (!url) return;
 
-    PostJsonData(
+    PostJsonData<IRaceClubsProps>(
       url,
       {
-        iType: 'CLUBS',
+        iType: 'CLUBS'
       },
       true,
       sessionModel.authorizationHeader
     )
-      .then((clubsJson: IRaceClubsProps) => {
-        clubModel.setRaceClubs(clubsJson);
-        setWizardStep(0);
-        setLoaded(true);
+      .then(clubsJson => {
+        if (clubsJson) {
+          clubModel.setRaceClubs(clubsJson);
+          setWizardStep(0);
+          setLoaded(true);
+        }
       })
-      .catch((e) => {
-        message.error(e.message);
-        onClose && onClose();
+      .catch(e => {
+        if (e?.message) message.error(e.message);
+        onClose?.();
       });
   }, [clubModel, sessionModel, onClose, loaded]);
 
@@ -119,22 +128,23 @@ const EventSelectorWizard = observer(() => {
     <FullScreenWizard
       title={t('calendar.EventSelector')}
       footer={[
-        <Button disabled={wizardStep < 1} onClick={() => prev()}>
+        <Button key="prevButton" disabled={wizardStep < 1} onClick={prev}>
           <LeftOutlined />
           {t('common.Previous')}
         </Button>,
         <Button
+          key={wizardStep === 1 ? 'saveButton' : 'nextButton'}
           disabled={!loaded || !nextStepValid}
           loading={saving}
-          onClick={() => (wizardStep === 1 ? save() : next())}
+          onClick={wizardStep === 1 ? save : next}
         >
           {wizardStep === 1 ? t('common.Save') : t('common.Next')}
           {wizardStep === 1 ? null : <RightOutlined />}
         </Button>,
-        <Button onClick={onClose} loading={false}>
+        <Button key="cancelButton" loading={false} onClick={onClose}>
           {t('common.Cancel')}
-        </Button>,
-      ].filter((component) => !!component)}
+        </Button>
+      ].filter(component => !!component)}
       onContentOffsetHeight={setContentOffsetHeight}
     >
       <StyledModalContent>
@@ -154,9 +164,9 @@ const EventSelectorWizard = observer(() => {
           <EventSelectorWizardStep1ChooseRace
             height={Math.max(128, contentOffsetHeight - (stepsHeight ?? 32))}
             eventSelectorWizardModel={eventSelectorWizardModel}
-            onValidate={onValidate}
             visible={wizardStep === 1}
-            onFailed={() => prev()}
+            onValidate={onValidate}
+            onFailed={prev}
           />
         ) : null}
         {!loaded ? (

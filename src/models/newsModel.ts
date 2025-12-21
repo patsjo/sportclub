@@ -40,7 +40,7 @@ export class NewsItem implements INewsItem {
   modifiedBy = '';
 
   constructor(options: INewsItemProps) {
-    options && Object.assign(this, options);
+    if (options) Object.assign(this, options);
     makeObservable(this, {
       id: observable,
       newsTypeId: observable,
@@ -57,7 +57,7 @@ export class NewsItem implements INewsItem {
       imageWidth: observable,
       modificationDate: observable,
       modifiedBy: observable,
-      setValues: action.bound,
+      setValues: action.bound
     });
   }
 
@@ -89,7 +89,7 @@ export class NewsModel implements INewsModel {
     if (options) {
       const { newsItems, ...rest } = options;
       Object.assign(this, rest);
-      if (newsItems) this.newsItems = newsItems.map((n) => new NewsItem(n));
+      if (newsItems) this.newsItems = newsItems.map(n => new NewsItem(n));
     }
 
     makeObservable(this, {
@@ -99,7 +99,7 @@ export class NewsModel implements INewsModel {
       reset: action.bound,
       addNewsItemToTop: action.bound,
       addNewsItemsToBottom: action.bound,
-      removeNewsItem: action.bound,
+      removeNewsItem: action.bound
     });
   }
 
@@ -114,13 +114,13 @@ export class NewsModel implements INewsModel {
 
   addNewsItemsToBottom(newsitems: INewsItemProps[]) {
     const addItems = newsitems
-      .filter((newsItem) => !this.newsItems.some((item) => item.id === newsItem.id))
-      .map((item) => new NewsItem(item));
+      .filter(newsItem => !this.newsItems.some(item => item.id === newsItem.id))
+      .map(item => new NewsItem(item));
     this.newsItems = [...this.newsItems, ...addItems];
     this.offset = this.offset + newsitems.length;
   }
 
   removeNewsItem(newsItem: INewsItemProps) {
-    this.newsItems = this.newsItems.filter((item) => item.id !== newsItem.id);
+    this.newsItems = this.newsItems.filter(item => item.id !== newsItem.id);
   }
 }

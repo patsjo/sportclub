@@ -1,10 +1,10 @@
 import { observer } from 'mobx-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import styled from 'styled-components';
+import { styled } from 'styled-components';
+import { PostJsonData } from '../../../utils/api';
 import { useMobxStore } from '../../../utils/mobxStore';
 import { ICalendarActivity, ICalendarDomains } from '../../../utils/responseCalendarInterfaces';
-import { PostJsonData } from '../../../utils/api';
 import FadeOutItem from '../../fadeOutItem/FadeOutItem';
 import CalendarEdit from './CalendarEdit';
 
@@ -57,7 +57,10 @@ interface ICalendarItemProps {
 const CalendarItem = observer(({ calendarObject, domains, children }: ICalendarItemProps) => {
   const { clubModel, sessionModel } = useMobxStore();
   const { t } = useTranslation();
-  const calendarModule = React.useMemo(() => clubModel.modules.find((module) => module.name === 'Calendar'), []);
+  const calendarModule = React.useMemo(
+    () => clubModel.modules.find(module => module.name === 'Calendar'),
+    [clubModel.modules]
+  );
 
   return calendarModule ? (
     <FadeOutItem
@@ -79,11 +82,10 @@ const CalendarItem = observer(({ calendarObject, domains, children }: ICalendarI
             {calendarObject.time ? `, ${calendarObject.time}` : ''}
           </CalendarTime>
           <CalendarText>{`${t('calendar.ActivityType')}: ${
-            domains.activityTypes.find((activityType) => activityType.code === calendarObject.activityTypeId)
-              ?.description
+            domains.activityTypes.find(activityType => activityType.code === calendarObject.activityTypeId)?.description
           }`}</CalendarText>
           <CalendarText>{`${t('calendar.Group')}: ${
-            domains.groups.find((group) => group.code === calendarObject.groupId)?.description
+            domains.groups.find(group => group.code === calendarObject.groupId)?.description
           }`}</CalendarText>
           {calendarObject.place ? (
             <CalendarText>{`${t('calendar.Place')}: ${calendarObject.place}`}</CalendarText>
@@ -100,7 +102,7 @@ const CalendarItem = observer(({ calendarObject, domains, children }: ICalendarI
             ) : null}
           </CalendarText>
           <CalendarBy>
-            {domains.users.find((user) => user.code === calendarObject.responsibleUserId)?.description}
+            {domains.users.find(user => user.code === calendarObject.responsibleUserId)?.description}
           </CalendarBy>
         </ContentHolder>
       }
@@ -118,16 +120,13 @@ const CalendarItem = observer(({ calendarObject, domains, children }: ICalendarI
                 {
                   iActivityID: calendarObject.activityId,
                   username: sessionModel.username,
-                  password: sessionModel.password,
+                  password: sessionModel.password
                 },
                 true,
-                sessionModel.authorizationHeader,
+                sessionModel.authorizationHeader
               )
           : undefined
       }
-      onDelete={() => {
-        true;
-      }}
       deleteAllPromise={
         (sessionModel.isAdmin || calendarObject.responsibleUserId?.toString() === sessionModel.id) &&
         calendarObject.repeatingGid != null
@@ -138,16 +137,13 @@ const CalendarItem = observer(({ calendarObject, domains, children }: ICalendarI
                   iActivityID: calendarObject.activityId,
                   iRepeatingGid: calendarObject.repeatingGid,
                   username: sessionModel.username,
-                  password: sessionModel.password,
+                  password: sessionModel.password
                 },
                 true,
-                sessionModel.authorizationHeader,
+                sessionModel.authorizationHeader
               )
           : undefined
       }
-      onDeleteAll={() => {
-        true;
-      }}
     />
   ) : null;
 });

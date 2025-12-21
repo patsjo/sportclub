@@ -27,13 +27,13 @@ class League implements ILeagueProps {
   pointsLeagueAgeLimit = 0;
 
   constructor(options?: Partial<ILeagueProps>) {
-    options && Object.assign(this, options);
+    if (options) Object.assign(this, options);
     makeObservable(this, {
       rankingLeagueAgeLimit: observable,
       rankingRelayLeagueAgeLimit: observable,
       points1000LeagueAgeLimit: observable,
       pointsLeagueAgeLimit: observable,
-      grandSlamAgeLimit: computed,
+      grandSlamAgeLimit: computed
     });
   }
 
@@ -42,7 +42,7 @@ class League implements ILeagueProps {
       this.rankingLeagueAgeLimit,
       this.rankingRelayLeagueAgeLimit,
       this.points1000LeagueAgeLimit,
-      this.pointsLeagueAgeLimit,
+      this.pointsLeagueAgeLimit
     );
   }
 }
@@ -142,7 +142,7 @@ class Module implements IModule {
       updateUrl: observable,
       queryUrl: observable,
       league: observable,
-      hasSubMenus: computed,
+      hasSubMenus: computed
     });
   }
 
@@ -203,7 +203,7 @@ class Eventor implements IEventorProps {
   oRingenOrganisationId = 611;
 
   constructor(options?: Partial<IEventorProps>) {
-    options && Object.assign(this, options);
+    if (options) Object.assign(this, options);
   }
 }
 
@@ -238,7 +238,7 @@ class MapTileLayer implements IMapTileLayerProps {
     xmin: 0,
     ymin: 0,
     xmax: 0,
-    ymax: 0,
+    ymax: 0
   };
   zoomExtent?: IExtentProps;
 
@@ -253,7 +253,7 @@ class MapTileLayer implements IMapTileLayerProps {
       minZoomLevel: observable,
       maxZoomLevel: observable,
       fullExtent: observable,
-      zoomExtent: observable,
+      zoomExtent: observable
     });
   }
 }
@@ -283,10 +283,10 @@ class MapGroupLayer implements IMapGroupLayer {
       const { layers, ...rest } = options;
       Object.assign(this, rest);
       if (layers)
-        this.layers = layers.map((l) =>
+        this.layers = layers.map(l =>
           l.type === 'base-tile'
             ? new MapTileLayer(l as IMapTileLayerProps)
-            : new MapGroupLayer(l as IMapGroupLayerProps),
+            : new MapGroupLayer(l as IMapGroupLayerProps)
         );
     }
 
@@ -295,7 +295,7 @@ class MapGroupLayer implements IMapGroupLayer {
       title: observable,
       visible: observable,
       layers: observable,
-      fullExtent: computed,
+      fullExtent: computed
     });
   }
 
@@ -304,9 +304,9 @@ class MapGroupLayer implements IMapGroupLayer {
       xmin: 99999999999999,
       ymin: 99999999999999,
       xmax: -99999999999999,
-      ymax: -99999999999999,
+      ymax: -99999999999999
     };
-    this.layers.forEach((layer) => {
+    this.layers.forEach(layer => {
       if (extent.xmin > layer.fullExtent.xmin) extent.xmin = layer.fullExtent.xmin;
       if (extent.ymin > layer.fullExtent.ymin) extent.ymin = layer.fullExtent.ymin;
       if (extent.xmax < layer.fullExtent.xmax) extent.xmax = layer.fullExtent.xmax;
@@ -327,7 +327,7 @@ interface IMapProps {
   layers: IAnyLayerProps[];
 }
 
-interface IMap extends Omit<IMapProps, 'layers' | 'defaultZoomLevel' | 'minZoomLevel' | 'maxZoomLevel'> {
+interface IMapModel extends Omit<IMapProps, 'layers' | 'defaultZoomLevel' | 'minZoomLevel' | 'maxZoomLevel'> {
   layers: IAnyLayer[];
   fullExtent: IExtentProps;
   defaultZoomLevel: number;
@@ -336,7 +336,7 @@ interface IMap extends Omit<IMapProps, 'layers' | 'defaultZoomLevel' | 'minZoomL
   getLayerFullExtent: (id: string) => IExtentProps | undefined;
 }
 
-class Map implements IMap {
+class MapModel implements IMapModel {
   center: number[] = [0, 0];
   defaultZoomLevel = 0;
   minZoomLevel = 2;
@@ -348,10 +348,10 @@ class Map implements IMap {
       const { layers, ...rest } = options;
       Object.assign(this, rest);
       if (layers)
-        this.layers = layers.map((l) =>
+        this.layers = layers.map(l =>
           l.type === 'base-tile'
             ? new MapTileLayer(l as IMapTileLayerProps)
-            : new MapGroupLayer(l as IMapGroupLayerProps),
+            : new MapGroupLayer(l as IMapGroupLayerProps)
         );
     }
 
@@ -361,12 +361,12 @@ class Map implements IMap {
       minZoomLevel: observable,
       maxZoomLevel: observable,
       layers: observable,
-      fullExtent: computed,
+      fullExtent: computed
     });
   }
 
   getLayerFullExtent(id: string): IExtentProps | undefined {
-    return this.layers.find((l) => l.id === id)?.fullExtent;
+    return this.layers.find(l => l.id === id)?.fullExtent;
   }
 
   get fullExtent(): IExtentProps {
@@ -374,9 +374,9 @@ class Map implements IMap {
       xmin: 99999999999999,
       ymin: 99999999999999,
       xmax: -99999999999999,
-      ymax: -99999999999999,
+      ymax: -99999999999999
     };
-    this.layers.forEach((layer) => {
+    this.layers.forEach(layer => {
       if (extent.xmin > layer.fullExtent.xmin) extent.xmin = layer.fullExtent.xmin;
       if (extent.ymin > layer.fullExtent.ymin) extent.ymin = layer.fullExtent.ymin;
       if (extent.xmax < layer.fullExtent.xmax) extent.xmax = layer.fullExtent.xmax;
@@ -411,7 +411,7 @@ export interface IMobxClubModelProps {
 }
 
 export interface IMobxClubModel extends Omit<IMobxClubModelProps, 'map' | 'modules' | 'raceClubs' | 'eventor'> {
-  map?: IMap;
+  map?: IMapModel;
   modules: IModule[];
   raceClubs?: IRaceClubs;
   eventor?: Eventor;
@@ -422,7 +422,7 @@ export interface IMobxClubModel extends Omit<IMobxClubModelProps, 'map' | 'modul
 export class MobxClubModel implements IMobxClubModel {
   title = 'sportclub';
   titleLogo?: ILogoProps;
-  map?: IMap;
+  map?: IMapModel;
   defaultLanguage: 'sv' | 'en' = 'sv';
   logo: ILogoProps;
   attachmentUrl = '/showfile.php?iFileID=';
@@ -449,14 +449,14 @@ export class MobxClubModel implements IMobxClubModel {
     this.logo = logo;
     this.theme = theme;
     this.clubInfo = clubInfo;
-    if (map) this.map = new Map(map);
-    if (modules) this.modules = modules.map((m) => new Module(m));
+    if (map) this.map = new MapModel(map);
+    if (modules) this.modules = modules.map(m => new Module(m));
     if (raceClubs) this.raceClubs = new RaceClubs(raceClubs);
     if (eventor) this.eventor = new Eventor(eventor);
     this.invoice = {
       breakMonthDay: '0101',
       daysToDueDate: 31,
-      ...invoice,
+      ...invoice
     };
 
     if (options?.theme?.typography.useNextVariants === undefined) this.theme.typography.useNextVariants = true;
@@ -483,16 +483,16 @@ export class MobxClubModel implements IMobxClubModel {
       facebookUrl: observable,
       invoice: observable,
       clubInfo: observable,
-      setRaceClubs: action.bound,
+      setRaceClubs: action.bound
     });
   }
 
   setRaceClubs(raceClubs: IRaceClubsProps) {
     this.raceClubs = new RaceClubs(raceClubs);
-    this.eventor?.organisationId && this.raceClubs.setSelectedClubByEventorId(this.eventor.organisationId);
+    if (this.eventor?.organisationId) this.raceClubs.setSelectedClubByEventorId(this.eventor.organisationId);
   }
 
   module(name: ModuleNameTypes) {
-    return this.modules.find((module) => module.name === name);
+    return this.modules.find(module => module.name === name);
   }
 }

@@ -1,10 +1,10 @@
 import { Spin } from 'antd';
-import { IChildContainerProps } from '../dashboard/columns/mapNodesToColumns';
-import { observer } from 'mobx-react';
 import dayjs from 'dayjs';
+import { observer } from 'mobx-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import styled from 'styled-components';
+import { styled } from 'styled-components';
+import { PostJsonData } from '../../utils/api';
 import { useMobxStore } from '../../utils/mobxStore';
 import {
   IEventorClassPersonStart,
@@ -12,12 +12,12 @@ import {
   IEventorCompetitor,
   IEventorEventClasses,
   IEventorResults,
-  IEventorStarts,
+  IEventorStarts
 } from '../../utils/responseEventorInterfaces';
 import { IClubViewResultResponse } from '../../utils/responseInterfaces';
 import { failedReasons } from '../../utils/resultConstants';
-import { PostJsonData } from '../../utils/api';
 import { FormatTime, TimeDiff } from '../../utils/resultHelper';
+import { IChildContainerProps } from '../dashboard/columns/mapNodesToColumns';
 import FadeOutItem from '../fadeOutItem/FadeOutItem';
 
 const ContentHolder = styled.div``;
@@ -54,7 +54,7 @@ interface IStyledTableRowProps {
   isTeam?: boolean;
 }
 const StyledTableRow = styled.tr<IStyledTableRowProps>`
-  font-weight: ${(props) => (props.isTeam ? 'bold' : 'unset')};
+  font-weight: ${props => (props.isTeam ? 'bold' : 'unset')};
 `;
 const StyledTableBody = styled.tbody``;
 const StyledTableDataName = styled.td`
@@ -120,16 +120,19 @@ const EventRace = observer(({ header, date, eventObject, ref }: IEventRaceProps)
   const [competitors, setCompetitors] = useState<IEventDashboardCompetitor[]>([]);
   const [showStart, setShowStart] = useState(false);
   const [showResult, setShowResult] = useState(false);
-  const eventorModule = React.useMemo(() => clubModel.modules.find((module) => module.name === 'Eventor'), []);
+  const eventorModule = React.useMemo(
+    () => clubModel.modules.find(module => module.name === 'Eventor'),
+    [clubModel.modules]
+  );
 
   const loadFromClubResult = useCallback(() => {
-    const url = clubModel.modules.find((module) => module.name === 'Results')?.queryUrl;
+    const url = clubModel.modules.find(module => module.name === 'Results')?.queryUrl;
 
-    PostJsonData(url, { iType: 'EVENT', iEventId: eventObject.eventId }, true)
-      .then((editResultJson: IClubViewResultResponse) => {
-        if (editResultJson.results && editResultJson.results.length > 0) {
+    PostJsonData<IClubViewResultResponse>(url, { iType: 'EVENT', iEventId: eventObject.eventId }, true)
+      .then(editResultJson => {
+        if (editResultJson?.results && editResultJson.results.length > 0) {
           const competitors = editResultJson.results
-            .filter((result) => !result.failedReason)
+            .filter(result => !result.failedReason)
             .sort((a, b) => (a.position! > b.position! ? 1 : a.position! < b.position! ? -1 : 0))
             .map(
               (result): IEventDashboardCompetitor => ({
@@ -146,20 +149,19 @@ const EventRace = observer(({ header, date, eventObject, ref }: IEventRaceProps)
                       ? result.secondTime
                       : result.winnerTime,
                     result.competitorTime,
-                    true,
-                  ),
-                },
-              }),
+                    true
+                  )
+                }
+              })
             );
 
           setCompetitors(competitors);
           setShowResult(true);
-        } else if (editResultJson.teamResults && editResultJson.teamResults.length > 0) {
+        } else if (editResultJson?.teamResults && editResultJson.teamResults.length > 0) {
           const competitors = editResultJson.teamResults
             .filter(
-              (result) =>
-                result.failedReason !== failedReasons.NotStarted &&
-                result.teamFailedReason !== failedReasons.NotStarted,
+              result =>
+                result.failedReason !== failedReasons.NotStarted && result.teamFailedReason !== failedReasons.NotStarted
             )
             .sort((a, b) =>
               (a.teamFailedReason ?? failedReasons.Finished) === failedReasons.Finished &&
@@ -178,7 +180,7 @@ const EventRace = observer(({ header, date, eventObject, ref }: IEventRaceProps)
                           ? 1
                           : (a.stage ?? 0) < (b.stage ?? 0)
                             ? -1
-                            : 0,
+                            : 0
             )
             .map((result): IEventDashboardCompetitor[] => [
               {
@@ -201,8 +203,8 @@ const EventRace = observer(({ header, date, eventObject, ref }: IEventRaceProps)
                   timeDiff:
                     (result.teamFailedReason ?? failedReasons.Finished) === failedReasons.Finished
                       ? FormatTime(result.totalTimeBehind)!
-                      : '',
-                },
+                      : ''
+                }
               },
               {
                 key: `eventResultID#${eventObject.eventId}-${result.teamResultId}`,
@@ -226,14 +228,14 @@ const EventRace = observer(({ header, date, eventObject, ref }: IEventRaceProps)
                             ? result.secondTime
                             : result.winnerTime,
                           result.competitorTime,
-                          true,
+                          true
                         )
-                      : '',
-                },
-              },
+                      : ''
+                }
+              }
             ])
             .reduce((a: IEventDashboardCompetitor[], b) => [...a, ...b], [] as IEventDashboardCompetitor[])
-            .filter((value, index, self) => self.findIndex((v) => v.key === value.key) === index);
+            .filter((value, index, self) => self.findIndex(v => v.key === value.key) === index);
 
           setCompetitors(competitors);
           setShowResult(true);
@@ -244,7 +246,7 @@ const EventRace = observer(({ header, date, eventObject, ref }: IEventRaceProps)
         setLoaded(true);
       })
       .catch(() => setLoaded(true));
-  }, []);
+  }, [clubModel.modules, eventObject.eventId, t]);
 
   const loadFromEventor = useCallback(() => {
     if (!clubModel.eventor?.classesUrl || !clubModel.eventor?.startUrl || !clubModel.eventor.organisationId) return;
@@ -261,19 +263,19 @@ const EventRace = observer(({ header, date, eventObject, ref }: IEventRaceProps)
     // 9 Completed
     // 10 Canceled
     // 11 Reported
-    const classPromise = PostJsonData(
+    const classPromise = PostJsonData<IEventorEventClasses>(
       clubModel.eventorCorsProxy,
       {
         csurl: encodeURIComponent(
-          clubModel.eventor.classesUrl + '?eventId=' + eventObject.eventorId + '&includeEntryFees=true',
+          clubModel.eventor.classesUrl + '?eventId=' + eventObject.eventorId + '&includeEntryFees=true'
         ),
-        cache: true,
+        cache: true
       },
-      false,
+      false
     );
     const startPromise =
       eventObject.statusId < 8
-        ? PostJsonData(
+        ? PostJsonData<IEventorStarts>(
             clubModel.eventorCorsProxy,
             {
               csurl: encodeURIComponent(
@@ -281,16 +283,16 @@ const EventRace = observer(({ header, date, eventObject, ref }: IEventRaceProps)
                   '?eventId=' +
                   eventObject.eventorId +
                   '&organisationIds=' +
-                  clubModel.eventor.organisationId,
+                  clubModel.eventor.organisationId
               ),
-              cache: true,
+              cache: true
             },
-            false,
+            false
           )
-        : new Promise((resolve) => resolve(undefined));
+        : (new Promise(resolve => resolve(undefined)) as Promise<IEventorStarts | undefined>);
     const resultPromise =
       eventObject.statusId >= 8 && eventObject.statusId !== 10
-        ? PostJsonData(
+        ? PostJsonData<IEventorResults>(
             clubModel.eventorCorsProxy,
             {
               csurl: encodeURIComponent(
@@ -299,32 +301,32 @@ const EventRace = observer(({ header, date, eventObject, ref }: IEventRaceProps)
                   eventObject.eventorId +
                   '&organisationIds=' +
                   clubModel.eventor.organisationId +
-                  '&top=0&includeSplitTimes=true',
+                  '&top=0&includeSplitTimes=true'
               ),
-              cache: true,
+              cache: true
             },
-            false,
+            false
           )
-        : new Promise((resolve) => resolve(undefined));
+        : (new Promise(resolve => resolve(undefined)) as Promise<IEventorResults | undefined>);
 
     Promise.all([classPromise, startPromise, resultPromise])
-      .then(([classJson, startJson, resultJson]: [IEventorEventClasses, IEventorStarts, IEventorResults]) => {
+      .then(([classJson, startJson, resultJson]) => {
         let raceCompetitors: IEventDashboardCompetitor[] = [];
 
         if (startJson != null && startJson.ClassStart != null) {
           const ClassStarts = Array.isArray(startJson.ClassStart) ? startJson.ClassStart : [startJson.ClassStart];
-          ClassStarts.forEach((classStart) => {
+          ClassStarts.forEach(classStart => {
             let className = '';
             let numberOfEntries: number | undefined = undefined;
             if (classJson != null) {
               const currentClass = Array.isArray(classJson.EventClass)
-                ? classJson.EventClass.find((evtClass) => evtClass.EventClassId === classStart.EventClassId)
+                ? classJson.EventClass.find(evtClass => evtClass.EventClassId === classStart.EventClassId)
                 : classJson.EventClass;
               if (currentClass?.ClassShortName) className = currentClass.ClassShortName;
 
               if (Array.isArray(currentClass?.ClassRaceInfo)) {
                 const classRaceInfo = currentClass?.ClassRaceInfo.find(
-                  (raceInfo) => raceInfo.EventRaceId === eventObject.eventorRaceId,
+                  raceInfo => raceInfo.EventRaceId === eventObject.eventorRaceId
                 );
                 numberOfEntries =
                   classRaceInfo != null ? parseInt(classRaceInfo['@attributes'].noOfEntries) : undefined;
@@ -336,11 +338,11 @@ const EventRace = observer(({ header, date, eventObject, ref }: IEventRaceProps)
             if (classStart.PersonStart != null) {
               const personStarts: IEventorClassPersonStart[] = Array.isArray(classStart.PersonStart)
                 ? classStart.PersonStart.filter(
-                    (personStart) =>
-                      personStart.RaceStart == null || personStart.RaceStart.EventRaceId === eventObject.eventorRaceId,
+                    personStart =>
+                      personStart.RaceStart == null || personStart.RaceStart.EventRaceId === eventObject.eventorRaceId
                   )
                 : [classStart.PersonStart];
-              personStarts.forEach((personStart, i) => {
+              personStarts.forEach(personStart => {
                 const start = personStart.RaceStart != undefined ? personStart.RaceStart.Start : personStart.Start;
                 raceCompetitors.push({
                   key: `eventorStartID#${eventObject.eventorId}-${start?.StartId || start?.BibNumber}`,
@@ -349,8 +351,8 @@ const EventRace = observer(({ header, date, eventObject, ref }: IEventRaceProps)
                   lastName: personStart.Person.PersonName.Family,
                   start: {
                     numberOfEntries: numberOfEntries,
-                    time: start?.StartTime?.Clock ?? '',
-                  },
+                    time: start?.StartTime?.Clock ?? ''
+                  }
                 });
               });
             }
@@ -359,7 +361,7 @@ const EventRace = observer(({ header, date, eventObject, ref }: IEventRaceProps)
                 ? classStart.TeamStart
                 : [classStart.TeamStart];
               let startTime = '';
-              teamStarts.forEach((teamStart, i) => {
+              teamStarts.forEach(teamStart => {
                 raceCompetitors.push({
                   key: `eventorTeamStartID#${eventObject.eventorId}-${teamStart?.BibNumber}`,
                   className: className,
@@ -367,34 +369,34 @@ const EventRace = observer(({ header, date, eventObject, ref }: IEventRaceProps)
                   lastName: '',
                   start: {
                     numberOfEntries: numberOfEntries,
-                    time: teamStart?.StartTime?.Clock ?? startTime,
-                  },
+                    time: teamStart?.StartTime?.Clock ?? startTime
+                  }
                 });
-                !startTime && (startTime = teamStart?.StartTime?.Clock ?? '');
+                if (!startTime) startTime = teamStart?.StartTime?.Clock ?? '';
               });
             }
           });
           raceCompetitors = raceCompetitors.sort((a, b) =>
-            a.start!.time! > b.start!.time! ? 1 : a.start!.time! < b.start!.time! ? -1 : 0,
+            a.start!.time! > b.start!.time! ? 1 : a.start!.time! < b.start!.time! ? -1 : 0
           );
         }
         if (resultJson != null && resultJson.ClassResult != null) {
           const ClassResults = Array.isArray(resultJson.ClassResult)
             ? resultJson.ClassResult
             : [resultJson.ClassResult];
-          ClassResults.forEach((classResult) => {
+          ClassResults.forEach(classResult => {
             let className = '';
             let numberOfStarts: number | undefined = undefined;
             if (classJson != null) {
               const currentClass = Array.isArray(classJson.EventClass)
-                ? classJson.EventClass.find((evtClass) => evtClass.EventClassId === classResult.EventClass.EventClassId)
+                ? classJson.EventClass.find(evtClass => evtClass.EventClassId === classResult.EventClass.EventClassId)
                 : classJson.EventClass;
 
               if (currentClass?.ClassShortName) className = currentClass.ClassShortName;
 
               if (Array.isArray(currentClass?.ClassRaceInfo)) {
                 const classRaceInfo = currentClass?.ClassRaceInfo.find(
-                  (raceInfo) => raceInfo.EventRaceId === eventObject.eventorRaceId,
+                  raceInfo => raceInfo.EventRaceId === eventObject.eventorRaceId
                 );
                 numberOfStarts = classRaceInfo != null ? parseInt(classRaceInfo['@attributes'].noOfStarts) : undefined;
               } else if (currentClass !== undefined && currentClass['@attributes'].noOfStarts !== undefined) {
@@ -405,15 +407,15 @@ const EventRace = observer(({ header, date, eventObject, ref }: IEventRaceProps)
             if (classResult.PersonResult != null) {
               const personResults = Array.isArray(classResult.PersonResult)
                 ? classResult.PersonResult.filter(
-                    (personResult) =>
+                    personResult =>
                       personResult.RaceResult == null ||
-                      personResult.RaceResult.EventRaceId === eventObject.eventorRaceId,
+                      personResult.RaceResult.EventRaceId === eventObject.eventorRaceId
                   )
                 : classResult.PersonResult.RaceResult == null ||
                     classResult.PersonResult.RaceResult.EventRaceId === eventObject.eventorRaceId
                   ? [classResult.PersonResult]
                   : [];
-              personResults.forEach((personResult, i) => {
+              personResults.forEach(personResult => {
                 const result = personResult.RaceResult != null ? personResult.RaceResult.Result : personResult.Result;
                 if (result?.CompetitorStatus['@attributes'].value === 'OK') {
                   raceCompetitors.push({
@@ -425,8 +427,8 @@ const EventRace = observer(({ header, date, eventObject, ref }: IEventRaceProps)
                       position: parseInt(result?.ResultPosition ?? '0'),
                       numberOfStarts: numberOfStarts,
                       time: result?.Time ?? '',
-                      timeDiff: result?.ResultPosition === '1' ? '' : (result?.TimeDiff ?? ''),
-                    },
+                      timeDiff: result?.ResultPosition === '1' ? '' : (result?.TimeDiff ?? '')
+                    }
                   });
                 }
               });
@@ -447,7 +449,7 @@ const EventRace = observer(({ header, date, eventObject, ref }: IEventRaceProps)
             // }
           });
           raceCompetitors = raceCompetitors.sort((a, b) =>
-            a.result!.position! > b.result!.position! ? 1 : a.result!.position! < b.result!.position! ? -1 : 0,
+            a.result!.position! > b.result!.position! ? 1 : a.result!.position! < b.result!.position! ? -1 : 0
           );
         }
 
@@ -458,7 +460,17 @@ const EventRace = observer(({ header, date, eventObject, ref }: IEventRaceProps)
         setLoaded(true);
       })
       .catch(() => setLoaded(true));
-  }, []);
+  }, [
+    clubModel.eventor?.classesUrl,
+    clubModel.eventor?.organisationId,
+    clubModel.eventor?.resultUrl,
+    clubModel.eventor?.startUrl,
+    clubModel.eventorCorsProxy,
+    date,
+    eventObject.eventorId,
+    eventObject.eventorRaceId,
+    eventObject.statusId
+  ]);
 
   useEffect(() => {
     if (eventObject.eventId != null && !showResult) {
@@ -466,13 +478,13 @@ const EventRace = observer(({ header, date, eventObject, ref }: IEventRaceProps)
     } else if (!showResult) {
       loadFromEventor();
     }
-  }, [showResult]);
+  }, [eventObject.eventId, loadFromClubResult, loadFromEventor, showResult]);
 
   const EventItem =
     loaded && showStart ? (
       <StyledTable>
         <StyledTableBody>
-          {competitors.map((competitor) => (
+          {competitors.map(competitor => (
             <StyledTableRow key={competitor.key}>
               <StyledTableDataName>{competitor.firstName + ' ' + competitor.lastName}</StyledTableDataName>
               <StyledTableDataClass>
@@ -487,7 +499,7 @@ const EventRace = observer(({ header, date, eventObject, ref }: IEventRaceProps)
     ) : loaded && showResult ? (
       <StyledTable>
         <StyledTableBody>
-          {competitors.map((competitor) => (
+          {competitors.map(competitor => (
             <StyledTableRow key={competitor.key} isTeam={competitor.isTeam}>
               <StyledTableDataName>
                 {(competitor.result?.position ? competitor.result?.position + '. ' : '') +

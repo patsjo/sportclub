@@ -1,15 +1,15 @@
 import { message } from 'antd';
-import { MaterialIconsType } from '../../materialIcon/MaterialIcon';
-import { observer } from 'mobx-react';
 import dayjs from 'dayjs';
+import { observer } from 'mobx-react';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { useMobxStore } from '../../../utils/mobxStore';
-import { ICalendarActivity, ICalendarDomains } from '../../../utils/responseCalendarInterfaces';
 import { PostJsonData } from '../../../utils/api';
 import { dateFormat } from '../../../utils/formHelper';
+import { useMobxStore } from '../../../utils/mobxStore';
+import { ICalendarActivity, ICalendarDomains } from '../../../utils/responseCalendarInterfaces';
 import CalendarEdit from '../../calendar/item/CalendarEdit';
+import { MaterialIconsType } from '../../materialIcon/MaterialIcon';
 import MenuItem from '../MenuItem';
 
 const moduleName = 'Calendar';
@@ -28,36 +28,42 @@ const defaultCalendarObject = (userId: string | undefined): ICalendarActivity =>
   repeatingGid: null,
   repeatingModified: false,
   longitude: null,
-  latitude: null,
+  latitude: null
 });
 
 const CalendarSubMenus = observer(() => {
   const { t } = useTranslation();
   const { clubModel, globalStateModel, sessionModel } = useMobxStore();
-  const calendarModule = React.useMemo(() => clubModel.modules.find((module) => module.name === 'Calendar'), []);
-  const resultsModule = React.useMemo(() => clubModel.modules.find((module) => module.name === 'Results'), []);
+  const calendarModule = React.useMemo(
+    () => clubModel.modules.find(module => module.name === 'Calendar'),
+    [clubModel.modules]
+  );
+  const resultsModule = React.useMemo(
+    () => clubModel.modules.find(module => module.name === 'Results'),
+    [clubModel.modules]
+  );
   const [addCalendarModalIsOpen, setAddCalendarModalIsOpen] = useState(false);
   const [domains, setDomains] = useState<ICalendarDomains>();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const url = clubModel.modules.find((module) => module.name === 'Calendar')?.queryUrl;
+    const url = clubModel.modules.find(module => module.name === 'Calendar')?.queryUrl;
     if (!url) return;
 
-    PostJsonData(
+    PostJsonData<ICalendarDomains>(
       url,
       {
-        iType: 'DOMAINS',
+        iType: 'DOMAINS'
       },
-      true,
+      true
     )
-      .then((domainsJson: ICalendarDomains) => {
+      .then(domainsJson => {
         setDomains(domainsJson);
       })
-      .catch((e) => {
-        message.error(e.message);
+      .catch(e => {
+        if (e?.message) message.error(e.message);
       });
-  }, []);
+  }, [clubModel.modules]);
 
   return (
     <>
@@ -72,26 +78,26 @@ const CalendarSubMenus = observer(() => {
       ) : null}
       <MenuItem
         key={'menuItem#calendar'}
+        isSubMenu
         icon={(moduleName + 'Icon') as MaterialIconsType}
         name={t('calendar.Calendar')}
         disabled={false}
-        isSubMenu
         onClick={() => {
           globalStateModel.setDashboard(
             navigate,
             '/calendar',
             dayjs().startOf('month').format(dateFormat),
             dayjs().endOf('month').format(dateFormat),
-            1,
+            1
           );
         }}
       />
       <MenuItem
         key={'menuItem#calendarAdd'}
+        isSubMenu
         icon="plus"
         name={t('calendar.Add')}
         disabled={!calendarModule?.addUrl || !sessionModel.loggedIn || !domains}
-        isSubMenu
         onClick={() => {
           globalStateModel.setRightMenuVisible(false);
           setTimeout(() => setAddCalendarModalIsOpen(true), 0);
@@ -99,12 +105,12 @@ const CalendarSubMenus = observer(() => {
       />
       <MenuItem
         key={'menuItem#calendarEventSelector'}
+        isSubMenu
         icon="star"
         name={t('calendar.EventSelector')}
         disabled={
           !calendarModule?.addUrl || !resultsModule?.queryUrl || !sessionModel.loggedIn || !sessionModel.isAdmin
         }
-        isSubMenu
         onClick={() => {
           globalStateModel.setRightMenuVisible(false);
           globalStateModel.setDashboard(navigate, '/calendar/eventselector');

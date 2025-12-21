@@ -1,25 +1,24 @@
-import { Modal } from 'antd';
 import { ModalFuncProps } from 'antd/lib/modal';
+import { HookAPI } from 'antd/lib/modal/useModal';
 import { TFunction } from 'i18next';
+import { toLonLat } from 'ol/proj';
+import { Icon, Style } from 'ol/style';
 import { IGlobalStateModel } from '../../models/globalStateModel';
 import { IMobxClubModel } from '../../models/mobxClubModel';
 import { ISessionModel } from '../../models/sessionModel';
-import { toLonLat } from 'ol/proj';
-import { Icon, Style } from 'ol/style';
 import { MobxStoreProvider } from '../../utils/mobxStore';
 import OSMOrienteeringMap, { OrienteeringSymbol } from './OSMOrienteeringMap';
 import { mapProjection } from './useOpenLayersMap';
 
-const { confirm } = Modal;
-
 export const GetPositionModal = (
   t: TFunction,
+  modal: HookAPI,
   longitude: number,
   latitude: number,
   exists: boolean,
   globalStateModel: IGlobalStateModel,
   sessionModel: ISessionModel,
-  clubModel: IMobxClubModel,
+  clubModel: IMobxClubModel
 ): Promise<{ longitude: number; latitude: number } | null> =>
   new Promise((resolve, reject) => {
     const mapCenter = [longitude, latitude];
@@ -28,8 +27,9 @@ export const GetPositionModal = (
       destroy: () => void;
       update: (configUpdate: ModalFuncProps | ((prevConfig: ModalFuncProps) => ModalFuncProps)) => void;
     };
+
     // eslint-disable-next-line prefer-const
-    confirmModal = confirm({
+    confirmModal = modal.confirm({
       title: t('map.SelectPosition'),
       style: { top: 40 },
       width: 500,
@@ -39,7 +39,7 @@ export const GetPositionModal = (
             store={{
               clubModel: clubModel,
               sessionModel: sessionModel,
-              globalStateModel: globalStateModel,
+              globalStateModel: globalStateModel
             }}
           >
             <OSMOrienteeringMap
@@ -58,17 +58,17 @@ export const GetPositionModal = (
                     image: new Icon({
                       src: OrienteeringSymbol.url,
                       scale: 15 / OrienteeringSymbol.width,
-                      size: [OrienteeringSymbol.width, OrienteeringSymbol.height],
-                    }),
-                  }),
+                      size: [OrienteeringSymbol.width, OrienteeringSymbol.height]
+                    })
+                  })
                 );
                 selectedPosition = { longitude: coordinates[0], latitude: coordinates[1] };
                 graphicLayer.getSource()?.clear();
                 graphicLayer.getSource()?.addFeature(graphic);
                 confirmModal.update({
                   okButtonProps: {
-                    disabled: false,
-                  },
+                    disabled: false
+                  }
                 });
               }}
             />
@@ -77,7 +77,7 @@ export const GetPositionModal = (
       ),
       okText: t('common.Save'),
       okButtonProps: {
-        disabled: !exists,
+        disabled: !exists
       },
       cancelText: t('common.Cancel'),
       onOk() {
@@ -85,6 +85,6 @@ export const GetPositionModal = (
       },
       onCancel() {
         reject();
-      },
+      }
     });
   });

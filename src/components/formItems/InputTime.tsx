@@ -137,7 +137,6 @@ const milliSecondsToString = (value: number, format: ValidTimeTypes): string | u
       return `${isNegativeStr}${mString}:${sString}`;
     case 'mm:ss.SSS':
       return `${isNegativeStr}${mString}:${sString}.${msString}`;
-      break;
     default:
   }
   return undefined;
@@ -156,12 +155,12 @@ const increaseInputValue = (
   const leastValue = !allowNegativeTime
     ? 0
     : format === 'HH:mm:ss'
-    ? -86399000
-    : format === 'HH:mm'
-    ? -86340000
-    : format === 'mm:ss'
-    ? -5999000
-    : -5999900;
+      ? -86399000
+      : format === 'HH:mm'
+        ? -86340000
+        : format === 'mm:ss'
+          ? -5999000
+          : -5999900;
   const greatestValue =
     format === 'HH:mm:ss' ? 86399000 : format === 'HH:mm' ? 86340000 : format === 'mm:ss' ? 5999000 : 5999900;
   const isNegativeAdd = value.substr(0, 1) === '-' ? 1 : 0;
@@ -210,16 +209,19 @@ const InputTime = ({ format, disabled, allowClear, allowNegativeTime, style, val
   const placeholder = useMemo(() => `Ex: ${format.replace(/([A-Z]|[a-z])/g, '0')}`, [format]);
   const [innerValue, setInnerValue] = useState(valueToInnerValue(value, format));
 
-  const onInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const values = formatInputValue(e.target.value, format, allowNegativeTime);
-    setInnerValue(values.innerValue ? values.innerValue : undefined);
-  }, []);
+  const onInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const values = formatInputValue(e.target.value, format, allowNegativeTime);
+      setInnerValue(values.innerValue ? values.innerValue : undefined);
+    },
+    [allowNegativeTime, format]
+  );
 
   const onBlur = useCallback(() => {
     const values = formatInputValue(innerValue, format, allowNegativeTime);
-    onChange && onChange(values.value);
+    onChange?.(values.value);
     setInnerValue(valueToInnerValue(values.value, format));
-  }, [innerValue]);
+  }, [allowNegativeTime, format, innerValue, onChange]);
 
   const onKeyPress = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -229,7 +231,7 @@ const InputTime = ({ format, disabled, allowClear, allowNegativeTime, style, val
         setInnerValue(valueToInnerValue(values.value, format));
       }
     },
-    [innerValue]
+    [allowNegativeTime, format, innerValue]
   );
 
   const onKeyDown = useCallback(
@@ -276,12 +278,12 @@ const InputTime = ({ format, disabled, allowClear, allowNegativeTime, style, val
         }
       }
     },
-    [innerValue]
+    [allowNegativeTime, format, innerValue]
   );
 
   useEffect(() => {
     setInnerValue(valueToInnerValue(value, format));
-  }, [value]);
+  }, [format, value]);
 
   return (
     <Input

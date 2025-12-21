@@ -1,23 +1,24 @@
 import { LinkOutlined } from '@ant-design/icons';
-import { Form, Input, Modal, Select, Switch } from 'antd';
+import { Form, Input, Select, Switch } from 'antd';
 import { FormInstance } from 'antd/lib/form';
+import { MessageInstance } from 'antd/lib/message/interface';
 import { ModalFuncProps } from 'antd/lib/modal';
+import { HookAPI } from 'antd/lib/modal/useModal';
 import { TFunction } from 'i18next';
+import { styled } from 'styled-components';
 import { IGlobalStateModel } from '../../models/globalStateModel';
 import { IMobxClubModel } from '../../models/mobxClubModel';
 import { ISessionModel } from '../../models/sessionModel';
-import styled from 'styled-components';
-import { PostJsonData } from '../../utils/api';
-import { errorRequiredField, hasErrors, IFile, maxByteSize } from '../../utils/formHelper';
-import FormItem from '../formItems/FormItem';
 import { ICouncilModel, IGroupModel, IUserModel } from '../../models/userModel';
-import { IFileResponse, IFolderResponse } from '../../utils/responseInterfaces';
-import UploadDragger from '../formItems/UploadDragger';
+import { PostJsonData } from '../../utils/api';
 import { fileAsBase64, getFileType } from '../../utils/fileHelper';
-import { MessageInstance } from 'antd/lib/message/interface';
+import { errorRequiredField, hasErrors, maxByteSize } from '../../utils/formHelper';
+import { IFileUploadRequest } from '../../utils/requestInterfaces';
+import { IFileResponse, IFolderResponse } from '../../utils/responseInterfaces';
+import FormItem from '../formItems/FormItem';
+import UploadDragger from '../formItems/UploadDragger';
 
 const { TextArea } = Input;
-const { confirm } = Modal;
 declare type ConfigUpdate = ModalFuncProps | ((prevConfig: ModalFuncProps) => ModalFuncProps);
 
 const HelpText = styled.div`
@@ -27,53 +28,51 @@ const HelpText = styled.div`
 
 export const FileEditorModal = async (
   t: TFunction,
+  modal: HookAPI,
   fileId: number,
-  form: FormInstance<
-    IFileResponse & { files: IFile[]; fileData?: string | null; mimeType?: string | null; fileSize?: number }
-  >,
+  form: FormInstance<IFileUploadRequest>,
   globalStateModel: IGlobalStateModel,
   sessionModel: ISessionModel,
   clubModel: IMobxClubModel,
-  messageApi: MessageInstance,
+  messageApi: MessageInstance
 ): Promise<IFileResponse | null | undefined> => {
   const formId = 'fileEditorForm' + Math.floor(Math.random() * 1000000000000000);
-  const filesModule = clubModel.modules.find((module) => module.name === 'Files');
-  const usersModule = clubModel.modules.find((module) => module.name === 'Users');
+  const filesModule = clubModel.modules.find(module => module.name === 'Files');
+  const usersModule = clubModel.modules.find(module => module.name === 'Users');
   if (!filesModule?.queryUrl || !usersModule?.queryUrl) {
     return;
   }
-  const usersJson = (await PostJsonData(
+  const usersJson = await PostJsonData<{ users: IUserModel[]; groups: IGroupModel[]; councils: ICouncilModel[] }>(
     usersModule?.queryUrl,
     { username: sessionModel.username, password: sessionModel.password },
     true,
-    sessionModel.authorizationHeader,
-  )) as { users: IUserModel[]; groups: IGroupModel[]; councils: ICouncilModel[] };
-  const foldersJson = (await PostJsonData(
+    sessionModel.authorizationHeader
+  );
+  const foldersJson = await PostJsonData<IFolderResponse[]>(
     filesModule?.queryUrl,
     { iType: 'FOLDERS', username: sessionModel.username, password: sessionModel.password },
     true,
-    sessionModel.authorizationHeader,
-  )) as IFolderResponse[];
+    sessionModel.authorizationHeader
+  );
   if (fileId >= 0) {
-    const fileJson = (await PostJsonData(
+    const fileJson = await PostJsonData<IFileResponse>(
       filesModule?.queryUrl,
       { iType: 'FILE', fileId: fileId, username: sessionModel.username, password: sessionModel.password },
       true,
-      sessionModel.authorizationHeader,
-    )) as IFileResponse;
-    form && form.setFieldsValue({ ...fileJson, files: [] });
+      sessionModel.authorizationHeader
+    );
+    form?.setFieldsValue({ ...fileJson, files: [] });
   } else {
-    form &&
-      form.setFieldsValue({
-        fileId: -1,
-        fileName: null,
-        folderId: undefined,
-        story: null,
-        needPassword: false,
-        allowedGroupId: 0,
-        orderField: 0,
-        files: [],
-      });
+    form?.setFieldsValue({
+      fileId: -1,
+      fileName: null,
+      folderId: undefined,
+      story: null,
+      needPassword: false,
+      allowedGroupId: 0,
+      orderField: 0,
+      files: []
+    });
   }
   return await new Promise((resolve, reject) => {
     let confirmModal: {
@@ -82,7 +81,7 @@ export const FileEditorModal = async (
     };
 
     // eslint-disable-next-line prefer-const
-    confirmModal = confirm({
+    confirmModal = modal.confirm({
       title: fileId < 0 ? t('files.UploadFile') : t('files.EditFile'),
       icon: <LinkOutlined />,
       content: (
@@ -98,19 +97,18 @@ export const FileEditorModal = async (
             needPassword: false,
             allowedGroupId: 0,
             orderField: null,
-            files: [],
+            files: []
           }}
-          onValuesChange={async (changedValues: Partial<IFileResponse & { files: IFile[] }>) =>
-            hasErrors(form).then((notValid) =>
-              confirmModal.update({
-                okButtonProps: {
-                  danger: notValid && fileId > 0,
-                  disabled: fileId > 0 ? false : notValid,
-                },
-                okText: notValid && fileId > 0 ? t('common.Delete') : t('common.Save'),
-              }),
-            )
-          }
+          onValuesChange={async () => {
+            const notValid = await hasErrors(form);
+            confirmModal.update({
+              okButtonProps: {
+                danger: notValid && fileId > 0,
+                disabled: fileId > 0 ? false : notValid
+              },
+              okText: notValid && fileId > 0 ? t('common.Delete') : t('common.Save')
+            });
+          }}
         >
           <FormItem name="fileId">
             <Input type="hidden" />
@@ -121,11 +119,11 @@ export const FileEditorModal = async (
             rules={[
               {
                 required: true,
-                message: errorRequiredField(t, 'files.Folder'),
-              },
+                message: errorRequiredField(t, 'files.Folder')
+              }
             ]}
           >
-            <Select options={foldersJson.map((folder) => ({ value: folder.folderId, label: folder.menuPath }))} />
+            <Select options={foldersJson?.map(folder => ({ value: folder.folderId, label: folder.menuPath }))} />
           </FormItem>
           <FormItem
             name="fileName"
@@ -133,8 +131,8 @@ export const FileEditorModal = async (
             rules={[
               {
                 required: true,
-                message: errorRequiredField(t, 'files.FileName'),
-              },
+                message: errorRequiredField(t, 'files.FileName')
+              }
             ]}
           >
             <Input />
@@ -147,10 +145,12 @@ export const FileEditorModal = async (
           </FormItem>
           <FormItem name="allowedGroupId" label={t('files.AllowedGroup')}>
             <Select
-              options={[{ groupId: 0, description: `[${t('common.All')}]` }, ...usersJson.groups].map((group) => ({
-                value: group.groupId,
-                label: group.description,
-              }))}
+              options={[{ groupId: 0, description: `[${t('common.All')}]` }, ...(usersJson?.groups ?? [])].map(
+                group => ({
+                  value: group.groupId,
+                  label: group.description
+                })
+              )}
             />
           </FormItem>
           <FormItem name="orderField">
@@ -163,14 +163,14 @@ export const FileEditorModal = async (
                 fieldName="files"
                 maxByteSize={maxByteSize}
                 multiple={false}
-                onChange={async (files) => {
+                onChange={async files => {
                   if (files?.length && files[0].originFileObj) {
                     const fileData = await fileAsBase64(files[0].originFileObj);
                     form.setFieldsValue({
                       fileData,
                       mimeType: getFileType(files[0]),
                       fileSize: files[0].size,
-                      fileName: files[0].name,
+                      fileName: files[0].name
                     });
                   } else {
                     form.setFieldsValue({ fileData: null, mimeType: undefined, fileSize: undefined, fileName: null });
@@ -188,8 +188,8 @@ export const FileEditorModal = async (
                 rules={[
                   {
                     required: true,
-                    message: t('files.FileIsRequired') ?? undefined,
-                  },
+                    message: t('files.FileIsRequired') ?? undefined
+                  }
                 ]}
               >
                 <Input type="hidden" />
@@ -202,20 +202,20 @@ export const FileEditorModal = async (
       ),
       okText: t('common.Save'),
       okButtonProps: {
-        disabled: true,
+        disabled: true
       },
       cancelText: t('common.Cancel'),
       onOk() {
-        hasErrors(form).then((notValid) => {
-          const htmlEditorModule = clubModel.modules.find((module) => module.name === 'HTMLEditor');
-          const filesModule = clubModel.modules.find((module) => module.name === 'Files');
+        hasErrors(form).then(notValid => {
+          const htmlEditorModule = clubModel.modules.find(module => module.name === 'HTMLEditor');
+          const filesModule = clubModel.modules.find(module => module.name === 'Files');
           const deleteUrl = filesModule?.deleteUrl;
           const saveUrl = fileId < 0 ? filesModule?.addUrl : filesModule?.updateUrl;
 
           confirmModal.update({
             okButtonProps: {
-              loading: true,
-            },
+              loading: true
+            }
           });
 
           if (notValid && fileId > 0) {
@@ -225,26 +225,26 @@ export const FileEditorModal = async (
                 iType: 'FILE',
                 fileId: fileId,
                 username: sessionModel.username,
-                password: sessionModel.password,
+                password: sessionModel.password
               },
               true,
-              sessionModel.authorizationHeader,
+              sessionModel.authorizationHeader
             )
               .then(() => {
                 globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, filesModule, sessionModel, messageApi);
                 resolve(null);
               })
-              .catch((e) => {
-                messageApi.error(e.message);
+              .catch(e => {
+                if (e?.message) messageApi.error(e.message);
                 confirmModal.update({
                   okButtonProps: {
-                    loading: false,
-                  },
+                    loading: false
+                  }
                 });
               });
           } else {
-            form.validateFields().then((values) => {
-              PostJsonData(
+            form.validateFields().then(values => {
+              PostJsonData<IFileResponse>(
                 saveUrl,
                 {
                   iType: 'FILE',
@@ -259,21 +259,21 @@ export const FileEditorModal = async (
                   mimeType: values.mimeType,
                   orderField: values.orderField,
                   username: sessionModel.username,
-                  password: sessionModel.password,
+                  password: sessionModel.password
                 },
                 true,
-                sessionModel.authorizationHeader,
+                sessionModel.authorizationHeader
               )
-                .then((fileResponse: IFileResponse) => {
+                .then(fileResponse => {
                   globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, filesModule, sessionModel, messageApi);
                   resolve(fileResponse);
                 })
-                .catch((e) => {
-                  messageApi.error(e.message);
+                .catch(e => {
+                  if (e?.message) messageApi.error(e.message);
                   confirmModal.update({
                     okButtonProps: {
-                      loading: false,
-                    },
+                      loading: false
+                    }
                   });
                 });
             });
@@ -282,7 +282,7 @@ export const FileEditorModal = async (
       },
       onCancel() {
         reject();
-      },
+      }
     });
   });
 };

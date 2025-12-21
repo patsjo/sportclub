@@ -2,7 +2,7 @@ import { DownOutlined, FileTextOutlined, FileZipOutlined, PrinterOutlined, Setti
 import { Button, Dropdown, Menu, Modal, Progress, Spin } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import styled from 'styled-components';
+import { styled } from 'styled-components';
 import { IPrintSettings, IPrintSettingsColumn } from '../../utils/responseInterfaces';
 import { SpinnerDiv } from '../styled/styled';
 import { TableSettingModal, getLocalStorage } from './TableSettingModal';
@@ -41,15 +41,16 @@ const TablePrintSettingButtons = ({
   onExcel,
   onPrint,
   onPrintAll,
-  onTableColumns,
+  onTableColumns
 }: ITablePrintSettingButtonsProps) => {
   const { t } = useTranslation();
   const [settings, setSettings] = useState<IPrintSettings>(getLocalStorage(localStorageName, columns));
   const [loading, setLoading] = useState(false);
+  const [modal, contextHolder] = Modal.useModal();
 
   useEffect(() => {
     onTableColumns(settings.table.columns);
-  }, [settings]);
+  }, [onTableColumns, settings]);
 
   const onCancel = () => {
     setLoading(false);
@@ -63,7 +64,7 @@ const TablePrintSettingButtons = ({
         icon={<PrinterOutlined />}
         onClick={() => {
           setLoading(true);
-          onPrintAll &&
+          if (onPrintAll)
             onPrintAll(settings, true)
               .then(() => setLoading(false))
               .catch(() => setLoading(false));
@@ -76,7 +77,7 @@ const TablePrintSettingButtons = ({
         icon={<FileZipOutlined />}
         onClick={() => {
           setLoading(true);
-          onPrintAll &&
+          if (onPrintAll)
             onPrintAll(settings, false)
               .then(() => setLoading(false))
               .catch(() => setLoading(false));
@@ -107,7 +108,7 @@ const TablePrintSettingButtons = ({
         loading={loading}
         onClick={() => {
           setLoading(true);
-          onExcel &&
+          if (onExcel)
             onExcel(settings)
               .then(() => setLoading(false))
               .catch(() => setLoading(false));
@@ -127,7 +128,7 @@ const TablePrintSettingButtons = ({
       <Button
         icon={<SettingOutlined />}
         onClick={() =>
-          TableSettingModal(t, localStorageName, columns).then((value) => {
+          TableSettingModal(t, modal, localStorageName, columns).then(value => {
             setSettings(value);
           })
         }
@@ -135,13 +136,13 @@ const TablePrintSettingButtons = ({
       <Modal
         title={spinnerTitle}
         open={loading && total > 0}
-        onCancel={onCancel}
         maskClosable={false}
         footer={[
           <Button key="cancel" onClick={onCancel}>
             {t('common.Cancel')}
-          </Button>,
+          </Button>
         ]}
+        onCancel={onCancel}
       >
         {total > 0 ? (
           <SpinnerDiv>
@@ -151,6 +152,7 @@ const TablePrintSettingButtons = ({
           </SpinnerDiv>
         ) : null}
       </Modal>
+      {contextHolder}
     </ButtonsContainer>
   );
 };

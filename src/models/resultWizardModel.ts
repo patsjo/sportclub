@@ -1,5 +1,5 @@
-import { action, computed, makeObservable, observable } from 'mobx';
 import dayjs from 'dayjs';
+import { action, computed, makeObservable, observable } from 'mobx';
 import { IOption } from '../utils/formHelper';
 import { DifficultyTypes, PaymentModelTypes, difficulties, payments } from '../utils/resultConstants';
 import { ConvertSecondsWithFractionsToTime, GetSecondsWithFractionsPerKiloMeter } from '../utils/resultHelper';
@@ -11,7 +11,7 @@ export interface ILocalStorageRaceWizard {
 
 const setLocalStorage = (raceWizard: IRaceWizardProps) => {
   const obj: ILocalStorageRaceWizard = {
-    paymentModel: raceWizard.paymentModel,
+    paymentModel: raceWizard.paymentModel
   };
 
   localStorage.setItem('raceWizard', JSON.stringify(obj));
@@ -36,7 +36,7 @@ export const getLocalStorage = (): IRaceWizardProps => {
         queryForCompetitorWithNoClub: false,
         selectedIsRelay: false,
         raceWinnerResults: [],
-        importedIds: [],
+        importedIds: []
       };
     }
 
@@ -45,9 +45,9 @@ export const getLocalStorage = (): IRaceWizardProps => {
       queryStartDate: startDate,
       queryEndDate: endDate,
       queryIncludeExisting: false,
-      existInEventor: true,
+      existInEventor: true
     };
-  } catch (error) {
+  } catch {
     return {
       queryStartDate: startDate,
       queryEndDate: endDate,
@@ -60,7 +60,7 @@ export const getLocalStorage = (): IRaceWizardProps => {
       queryForCompetitorWithNoClub: false,
       selectedIsRelay: false,
       raceWinnerResults: [],
-      importedIds: [],
+      importedIds: []
     };
   }
 };
@@ -93,7 +93,7 @@ class WinnerResult implements IWinnerResult {
   timePerKilometer?: string;
 
   constructor(options: IWinnerResultProps) {
-    options && Object.assign(this, options);
+    if (options) Object.assign(this, options);
     makeObservable(this, {
       id: observable,
       personName: observable,
@@ -105,7 +105,7 @@ class WinnerResult implements IWinnerResult {
       timePerKilometer: observable,
       setLengthInMeter: action.bound,
       setDifficulty: action.bound,
-      setWinnerTime: action.bound,
+      setWinnerTime: action.bound
     });
   }
 
@@ -136,7 +136,7 @@ class WinnerResult implements IWinnerResult {
   }
 }
 
-interface IRaceWizardProps {
+export interface IRaceWizardProps {
   queryStartDate: string;
   queryEndDate: string;
   queryIncludeExisting: boolean;
@@ -168,12 +168,12 @@ export interface IRaceWizard extends Omit<IRaceWizardProps, 'raceEvent' | 'raceW
       | 'queryForEventWithNoEntry'
       | 'queryForCompetitorWithNoClub'
       | 'selectedIsRelay',
-    value: boolean,
+    value: boolean
   ) => void;
   setNumberValue: (key: 'paymentModel', value: PaymentModelTypes) => void;
   setNumberValueOrNull: (
     key: 'selectedEventId' | 'selectedEventorId' | 'selectedEventorRaceId',
-    value?: number | null,
+    value?: number | null
   ) => void;
   setRaceEvent: (value: IRaceEventProps | null) => void;
   setRaceWinnerResults: (values: IWinnerResultProps[]) => void;
@@ -201,7 +201,7 @@ export class RaceWizard implements IRaceWizard {
   importedIds: number[] = [];
 
   constructor(options: Partial<IRaceWizardProps>) {
-    options && Object.assign(this, options);
+    if (options) Object.assign(this, options);
     makeObservable(this, {
       queryStartDate: observable,
       queryEndDate: observable,
@@ -226,7 +226,7 @@ export class RaceWizard implements IRaceWizard {
       setRaceWinnerResults: action.bound,
       addRaceWinnerResult: action.bound,
       addImportedId: action.bound,
-      raceWinnerResultOptions: computed,
+      raceWinnerResultOptions: computed
     });
   }
 
@@ -244,7 +244,7 @@ export class RaceWizard implements IRaceWizard {
       | 'queryForEventWithNoEntry'
       | 'queryForCompetitorWithNoClub'
       | 'selectedIsRelay',
-    value: boolean,
+    value: boolean
   ) {
     this[key] = value;
     setLocalStorage(this);
@@ -266,13 +266,13 @@ export class RaceWizard implements IRaceWizard {
   }
 
   setRaceWinnerResults(values: IWinnerResultProps[]) {
-    this.raceWinnerResults = values.map((value) => new WinnerResult(value));
+    this.raceWinnerResults = values.map(value => new WinnerResult(value));
     setLocalStorage(this);
   }
 
   addRaceWinnerResult(value: Omit<IWinnerResultProps, 'secondsPerKilometer' | 'timePerKilometer'>) {
     const newWinnerResult = new WinnerResult(value);
-    value.lengthInMeter && value.winnerTime && newWinnerResult.setWinnerTime(value.winnerTime);
+    if (value.lengthInMeter && value.winnerTime) newWinnerResult.setWinnerTime(value.winnerTime);
     this.raceWinnerResults = [...this.raceWinnerResults, newWinnerResult];
   }
 
@@ -283,7 +283,7 @@ export class RaceWizard implements IRaceWizard {
   get raceWinnerResultOptions() {
     return this.raceWinnerResults
       .filter(
-        (wr) => wr.difficulty && [difficulties.purple, difficulties.blue, difficulties.black].includes(wr.difficulty),
+        wr => wr.difficulty && [difficulties.purple, difficulties.blue, difficulties.black].includes(wr.difficulty)
       )
       .sort((a, b) => {
         if (a.difficulty === difficulties.black && b.difficulty !== difficulties.black) {
@@ -297,9 +297,9 @@ export class RaceWizard implements IRaceWizard {
         }
         return 1;
       })
-      .map((wr) => ({
+      .map(wr => ({
         code: JSON.stringify(wr),
-        description: `${wr.timePerKilometer}, ${wr.className}, ${wr.personName}`,
+        description: `${wr.timePerKilometer}, ${wr.className}, ${wr.personName}`
       }));
   }
 }

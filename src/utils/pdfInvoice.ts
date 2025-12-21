@@ -1,12 +1,13 @@
-import JSZip from 'jszip';
-import { getBase64, getLogo, IPdfSettings } from './pdf';
-import pdfMake from 'pdfmake/build/pdfmake';
-import { IClubInfoProps, IInvoiceProps } from '../models/mobxClubModel';
-import { Column, Content, ContentColumns, TDocumentDefinitions } from 'pdfmake/interfaces';
-import i18next from 'i18next';
 import dayjs, { Dayjs } from 'dayjs';
+import i18next from 'i18next';
+import JSZip from 'jszip';
+import pdfMake from 'pdfmake/build/pdfmake';
+import { Column, Content, TDocumentDefinitions } from 'pdfmake/interfaces';
+import { IClubInfoProps, IInvoiceProps } from '../models/mobxClubModel';
 import { dateFormat } from './formHelper';
-import { generatePdfStatus } from '../components/results/ResultsFees';
+import { getBase64, getLogo, IPdfSettings } from './pdf';
+
+export const generatePdfStatus = { abortLoading: false };
 
 export interface IInvoiceMetadata extends IInvoiceProps {
   title: string;
@@ -26,7 +27,7 @@ export interface IFeesRecord {
 const feeFormat = (fee: number) =>
   new Intl.NumberFormat('sv-SE', {
     minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    maximumFractionDigits: 2
   })
     .format(fee)
     .replace(/\u00A0/g, ' ');
@@ -47,19 +48,19 @@ interface ISwishProps {
 }
 
 const getSwishLogo = (info: ISwishProps): Promise<string | null> =>
-  new Promise((resolve) => {
+  new Promise(resolve => {
     fetch(postSwishUrl, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
-      body: JSON.stringify(info),
+      body: JSON.stringify(info)
     })
-      .then((response) => response.blob())
-      .then((blob) => {
+      .then(response => response.blob())
+      .then(blob => {
         const reader = new FileReader();
         reader.onerror = () => resolve(null);
-        reader.onload = (e) => resolve(e.target ? (e.target.result as string | null) : null);
+        reader.onload = e => resolve(e.target ? (e.target.result as string | null) : null);
         reader.readAsDataURL(blob);
       })
       .catch(() => resolve(null));
@@ -74,7 +75,7 @@ const getInvoiceSwishLogo = async (amount: number, message: string, swishNumber:
     color: true,
     message: { value: message.substring(0, 50), editable: false },
     payee: swishNumber.replaceAll(' ', '').replaceAll('-', ''),
-    size: 600,
+    size: 600
   });
 };
 
@@ -86,14 +87,14 @@ const getPdfDocDefinition = async (
   printObjects: IInvoicePrintObject[],
   pdfSettings: IPdfSettings,
   setProcessed: (value: React.SetStateAction<number>) => void,
-  setSpinnerText: (value: string | null) => void,
+  setSpinnerText: (value: string | null) => void
 ): Promise<TDocumentDefinitions> => {
   const docDefinition: TDocumentDefinitions = {
     info: {
       title: invoiceMetaData.title,
       author: 'GIK-programmet 4.0',
       subject: invoiceMetaData.title,
-      keywords: invoiceMetaData.title,
+      keywords: invoiceMetaData.title
     },
     pageSize: pdfSettings.pageSize,
     pageOrientation: pdfSettings.pageOrientation,
@@ -104,45 +105,45 @@ const getPdfDocDefinition = async (
       header: {
         fontSize: 18,
         bold: true,
-        margin: [0, 0, 0, 0],
+        margin: [0, 0, 0, 0]
       },
       subHeader: {
         fontSize: 14,
         bold: true,
-        margin: [0, 0, 0, 10],
+        margin: [0, 0, 0, 10]
       },
       normal11: {
         fontSize: 11,
-        bold: true,
+        bold: true
       },
       bold: {
         fontSize: 11,
-        bold: true,
+        bold: true
       },
       marginBottom: {
-        margin: [0, 0, 0, 10],
+        margin: [0, 0, 0, 10]
       },
       marginRight: {
-        margin: [0, 0, 10, 0],
+        margin: [0, 0, 10, 0]
       },
       tableStyle: {
-        margin: [0, 0, 0, 5],
-      },
+        margin: [0, 0, 0, 5]
+      }
     },
     defaultStyle: {
-      fontSize: 10,
-    },
+      fontSize: 10
+    }
   };
   for (let index = 0; index < printObjects.length; index++) {
     const printObject = printObjects[index];
     setSpinnerText(`${printObject.invoiceMessage}.pdf`);
-    const totalFeeToClub = printObject.details.map((detail) => detail.feeToClub).reduce((prev, curr) => prev + curr, 0);
+    const totalFeeToClub = printObject.details.map(detail => detail.feeToClub).reduce((prev, curr) => prev + curr, 0);
     const taxFee = (totalFeeToClub * (invoiceMetaData.taxPercentage ?? 0)) / 100;
     const excludingTax = totalFeeToClub - taxFee;
     const swishLogo = await getInvoiceSwishLogo(
       totalFeeToClub,
       printObject.invoiceMessage,
-      invoiceMetaData.swishNumber,
+      invoiceMetaData.swishNumber
     );
     const headerData: Column = {
       width: '*',
@@ -161,16 +162,16 @@ const getPdfDocDefinition = async (
                 { text: `${i18next.t('invoice.invoiceDate')}: `, style: 'bold' },
                 {
                   text: `${i18next.t('invoice.invoiceNumber')}: `,
-                  style: 'bold',
+                  style: 'bold'
                 },
                 {
                   text: `${i18next.t('invoice.dueDate')}: `,
-                  style: 'bold',
+                  style: 'bold'
                 },
                 `${i18next.t('invoice.paymentMethods')}: `,
                 `${i18next.t('invoice.organizationNumber')}: `,
-                `${i18next.t('invoice.address')}: `,
-              ],
+                `${i18next.t('invoice.address')}: `
+              ]
             },
             {
               alignment: 'left',
@@ -181,26 +182,26 @@ const getPdfDocDefinition = async (
                   text: `${invoiceMetaData.endDate.format('YYYY')}-TÄVL-AVG-${
                     printObject.details.find(() => true)?.competitorId ?? 99999
                   }`,
-                  style: 'bold',
+                  style: 'bold'
                 },
                 {
                   text: invoiceMetaData.dueDate.format(dateFormat),
-                  style: 'bold',
+                  style: 'bold'
                 },
                 [invoiceMetaData.accountType, invoiceMetaData.swishNumber ? 'Swish' : undefined]
-                  .filter((method) => method != null)
+                  .filter(method => method != null)
                   .join(', '),
                 clubInfo.organisationNumber,
                 clubInfo.name,
                 clubInfo.address1,
                 clubInfo.address2 ?? null,
                 clubInfo.zip,
-                clubInfo.city,
-              ].filter((stack) => stack != null) as Content[],
-            },
-          ],
-        },
-      ],
+                clubInfo.city
+              ].filter(stack => stack != null) as Content[]
+            }
+          ]
+        }
+      ]
     };
     if (!Array.isArray(docDefinition.content)) throw new Error('Implemetation error');
     docDefinition.content.push({
@@ -211,10 +212,10 @@ const getPdfDocDefinition = async (
             {
               width: 'auto',
               alignment: 'right',
-              stack: [{ image: logo, fit: [80, 80] }],
-            },
+              stack: [{ image: logo, fit: [80, 80] }]
+            }
           ]
-        : [headerData],
+        : [headerData]
     });
     docDefinition.content.push({
       style: 'tableStyle',
@@ -228,33 +229,33 @@ const getPdfDocDefinition = async (
                 {
                   width: '52%',
                   alignment: 'left',
-                  text: i18next.t('invoice.desription') ?? '',
+                  text: i18next.t('invoice.desription') ?? ''
                 },
                 {
                   width: '12%',
                   alignment: 'right',
-                  text: i18next.t('invoice.numberOf') ?? '',
+                  text: i18next.t('invoice.numberOf') ?? ''
                 },
                 {
                   width: '12%',
                   alignment: 'right',
-                  text: i18next.t('invoice.totalFee') ?? '',
+                  text: i18next.t('invoice.totalFee') ?? ''
                 },
                 {
                   width: '12%',
                   alignment: 'right',
-                  text: i18next.t('invoice.clubDiscount') ?? '',
+                  text: i18next.t('invoice.clubDiscount') ?? ''
                 },
                 {
                   width: '12%',
                   alignment: 'right',
-                  text: i18next.t('invoice.sum') ?? '',
-                },
-              ],
-            },
-          ],
-        ],
-      },
+                  text: i18next.t('invoice.sum') ?? ''
+                }
+              ]
+            }
+          ]
+        ]
+      }
     });
     docDefinition.content.push({
       style: 'tableStyle',
@@ -262,36 +263,36 @@ const getPdfDocDefinition = async (
       table: {
         widths: ['100%'],
         body: [
-          ...printObject.details.map((detail) => [
+          ...printObject.details.map((detail): Content[] => [
             {
               columns: [
                 {
                   width: '52%',
                   alignment: 'left',
-                  text: detail.description ?? '',
+                  text: detail.description ?? ''
                 },
                 {
                   width: '12%',
                   alignment: 'right',
-                  text: detail.numberOf.toString(),
+                  text: detail.numberOf.toString()
                 },
                 {
                   width: '12%',
                   alignment: 'right',
-                  text: feeFormat(detail.totalFee),
+                  text: feeFormat(detail.totalFee)
                 },
                 {
                   width: '12%',
                   alignment: 'right',
-                  text: feeFormat(detail.totalFee - detail.feeToClub),
+                  text: feeFormat(detail.totalFee - detail.feeToClub)
                 },
                 {
                   width: '12%',
                   alignment: 'right',
-                  text: feeFormat(detail.feeToClub),
-                },
-              ],
-            },
+                  text: feeFormat(detail.feeToClub)
+                }
+              ]
+            }
           ]),
           [
             {
@@ -299,39 +300,36 @@ const getPdfDocDefinition = async (
                 {
                   width: '35%',
                   alignment: 'left',
-                  text: '',
+                  text: ''
                 },
                 {
                   width: '15%',
                   alignment: 'left',
-                  stack: [
-                    i18next.t('invoice.excludingTax') ?? '',
-                    { text: feeFormat(excludingTax), style: 'normal11' },
-                  ],
+                  stack: [i18next.t('invoice.excludingTax') ?? '', { text: feeFormat(excludingTax), style: 'normal11' }]
                 },
                 {
                   width: '15%',
                   alignment: 'left',
                   stack: [
                     i18next.t('invoice.taxPercentage') ?? '',
-                    { text: invoiceMetaData.taxPercentage?.toString() ?? '0', style: 'normal11' },
-                  ],
+                    { text: invoiceMetaData.taxPercentage?.toString() ?? '0', style: 'normal11' }
+                  ]
                 },
                 {
                   width: '15%',
                   alignment: 'left',
-                  stack: [i18next.t('invoice.taxFee') ?? '', { text: feeFormat(taxFee), style: 'normal11' }],
+                  stack: [i18next.t('invoice.taxFee') ?? '', { text: feeFormat(taxFee), style: 'normal11' }]
                 },
                 {
                   width: '20%',
                   alignment: 'right',
                   stack: [
                     { text: i18next.t('invoice.total') ?? '', style: 'bold' },
-                    { text: feeFormat(totalFeeToClub), style: 'bold' },
-                  ],
-                },
-              ],
-            },
+                    { text: feeFormat(totalFeeToClub), style: 'bold' }
+                  ]
+                }
+              ]
+            }
           ],
           [
             {
@@ -342,37 +340,37 @@ const getPdfDocDefinition = async (
                   stack: [
                     {
                       text: `${i18next.t('invoice.message')}: ${printObject.invoiceMessage}`,
-                      style: 'bold',
+                      style: 'bold'
                     },
                     invoiceMetaData.accountType
                       ? {
                           text: `${invoiceMetaData.accountType}: ${invoiceMetaData.account}`,
-                          style: 'bold',
+                          style: 'bold'
                         }
                       : null,
                     invoiceMetaData.swishNumber
                       ? {
                           text: `Swish: ${invoiceMetaData.swishNumber}`,
-                          style: 'bold',
+                          style: 'bold'
                         }
-                      : null,
-                  ].filter((stack) => stack != null),
+                      : null
+                  ].filter(stack => stack != null)
                 },
                 {
                   width: 'auto',
                   alignment: 'right',
                   stack: [swishLogo ? { image: swishLogo, fit: [80, 80] } : null].filter(
-                    (stack) => stack != null,
-                  ) as Content[],
-                },
-              ],
-            },
-          ],
-        ],
-      },
+                    stack => stack != null
+                  ) as Content[]
+                }
+              ]
+            }
+          ]
+        ]
+      }
     });
     if (generatePdfStatus.abortLoading) throw new Error();
-    setProcessed((oldValue) => oldValue + 1);
+    setProcessed(oldValue => oldValue + 1);
   }
   pdfMake.tableLayouts = {
     borderLayout: {
@@ -391,8 +389,8 @@ const getPdfDocDefinition = async (
       paddingLeft: () => 3,
       paddingRight: () => 3,
       paddingTop: () => 3,
-      paddingBottom: () => 3,
-    },
+      paddingBottom: () => 3
+    }
   };
   return docDefinition;
 };
@@ -405,7 +403,7 @@ export const getInvoicePdf = async (
   printObjects: IInvoicePrintObject[],
   pdfSettings: IPdfSettings,
   setProcessed: (value: React.SetStateAction<number>) => void,
-  setSpinnerText: (value: string | null) => void,
+  setSpinnerText: (value: string | null) => void
 ): Promise<void> => {
   const logo = await getLogo(proxyurl, logoUrl);
   const docDefinition = await getPdfDocDefinition(
@@ -416,7 +414,7 @@ export const getInvoicePdf = async (
     printObjects,
     pdfSettings,
     setProcessed,
-    setSpinnerText,
+    setSpinnerText
   );
 
   if (generatePdfStatus.abortLoading) throw new Error();
@@ -430,7 +428,7 @@ export const getInvoicePdf = async (
           : printObjects.length === 1
             ? printObjects[0].invoiceMessage
             : 'No data'
-      }.pdf`,
+      }.pdf`
     );
 };
 
@@ -442,7 +440,7 @@ export const getInvoiceZip = async (
   printObjects: IInvoicePrintObject[],
   pdfSettings: IPdfSettings,
   setProcessed: (value: React.SetStateAction<number>) => void,
-  setSpinnerText: (value: string | null) => void,
+  setSpinnerText: (value: string | null) => void
 ): Promise<void> => {
   const logo = await getLogo(proxyurl, logoUrl);
   const zip = new JSZip();
@@ -456,7 +454,7 @@ export const getInvoiceZip = async (
       [printObject],
       pdfSettings,
       setProcessed,
-      setSpinnerText,
+      setSpinnerText
     );
     const data = await getBase64(pdfMake.createPdf(docDefinition));
     zip.file(`${printObject.invoiceMessage}.pdf`, data, { base64: true });

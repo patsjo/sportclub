@@ -1,9 +1,9 @@
 import { DeleteTwoTone, EditTwoTone, PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import { Table, Tag } from 'antd';
+import type { TableProps } from 'antd/lib/table';
 import { TFunction } from 'i18next';
 import { MouseEventHandler } from 'react';
-import styled from 'styled-components';
-import type { TableProps } from 'antd/es/table';
+import { styled } from 'styled-components';
 
 const StyledDeleteTwoTone = styled(DeleteTwoTone)`
   &&& {
@@ -74,11 +74,7 @@ export interface IStyledTableProps<RecordType> extends TableProps<RecordType> {
   minWidth?: number;
 }
 
-const StyledTableComponent = <RecordType extends object>(props: IStyledTableProps<RecordType>) => {
-  return <Table {...props} />;
-};
-
-export const StyledTable = styled(StyledTableComponent)`
+export const StyledTable = styled(Table)<{ minWidth?: number }>`
   .table-row-red,
   .table-row-red:hover,
   .table-row-red:hover > td,
@@ -109,4 +105,4 @@ export const StyledTable = styled(StyledTableComponent)`
   &&& .ant-table-cell-ellipsis {
     max-width: 250px;
   }
-`;
+` as <T extends object>(props: IStyledTableProps<T>) => JSX.Element;

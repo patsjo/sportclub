@@ -1,6 +1,5 @@
 import { observer } from 'mobx-react';
-import { IGraphic } from '../../models/graphic';
-import { IExtentProps } from '../../models/mobxClubModel';
+import { MapBrowserEvent } from 'ol';
 import Feature from 'ol/Feature';
 import { Control, FullScreen, ZoomToExtent } from 'ol/control';
 import { Options } from 'ol/control/ZoomToExtent';
@@ -15,9 +14,12 @@ import { Vector as VectorSource } from 'ol/source';
 import * as wgs84Sphere from 'ol/sphere';
 import { Fill, Icon, Stroke, Style } from 'ol/style';
 import CircleStyle from 'ol/style/Circle';
+import { getUid } from 'ol/util';
 import React, { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import styled from 'styled-components';
+import { styled } from 'styled-components';
+import { IGraphic } from '../../models/graphic';
+import { IExtentProps } from '../../models/mobxClubModel';
 import { useMobxStore } from '../../utils/mobxStore';
 import LayerList from './LayerList';
 import { LayerListControl } from './LayerListControl';
@@ -40,8 +42,8 @@ interface IMapDivProps {
   width: string;
 }
 const MapDiv = styled.div<IMapDivProps>`
-  height: ${(props) => props.height};
-  width: ${(props) => props.width};
+  height: ${props => props.height};
+  width: ${props => props.width};
   position: relative;
 `;
 const MapContainerDiv = styled.div`
@@ -106,7 +108,7 @@ const DirectionSymbol = {
   width: 40,
   height: 40,
   xoffset: -5,
-  yoffset: -5,
+  yoffset: -5
 };
 
 const highlightStyle = new Style({
@@ -114,23 +116,23 @@ const highlightStyle = new Style({
     radius: 25,
     stroke: new Stroke({
       color: 'rgba(255, 190, 32, 0.6)',
-      width: 8,
-    }),
-  }),
+      width: 8
+    })
+  })
 });
 
 export const OrienteeringSymbol = {
   type: 'picture-marker',
   url: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH5AEYFRQg5uEz8gAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAABBUlEQVQ4y62UQarCMBBA34Ru1UN4CE8ggrpRUMRNBRW8gCcTBBe6EPFKttVO/qL+yue32qQGQmASHm8mmUgElm+NVosAgMEAej2wHmwRSFPYbsHaJ7DTgc0GVN1hUQTTKTweIPIEWvuaLjBVWCzgcMjDgXe9kgT6fbhc/oSNV81UYbX6B/MzVIVuF67Xwm3jZJYkEIalsOqGItk6GsHp9PaoqQS73WAy+Qj7DPw1C0PY7Sol8z7lOIbxGI7HyqU2pWbWwnrtBCs3TNOstwvemZuhCNzvsFx6wYoNh0M4n7070uRmcQzzeS3Yy1AVZjPY72v/sRKBzW+17mg2CWi3M9g3oI0GP97CWNsUQOxvAAAAAElFTkSuQmCC',
   width: 20,
-  height: 20,
+  height: 20
 };
 
 const getExtent = (graphics: IGraphic[] | undefined) => {
   if (!graphics?.length) return undefined;
   const extent = buffer(
     new GeometryCollection(
-      graphics.map((graphic) => {
+      graphics.map(graphic => {
         const coordinate =
           graphic.geometry.type === 'circle'
             ? fromLonLat(graphic.geometry.center!, mapProjection)
@@ -138,9 +140,9 @@ const getExtent = (graphics: IGraphic[] | undefined) => {
         const radius = graphic.geometry.type === 'circle' ? graphic.geometry.radius : 500;
         const polygon = fromCircle(new Circle(coordinate, getMapLength(coordinate, radius)));
         return polygon;
-      }),
+      })
     ).getExtent(),
-    1.2,
+    1.2
   );
   const size = getSize(extent);
   return buffer(extent, Math.min(...size) * 0.2);
@@ -151,7 +153,7 @@ const getMapLength = (point: number[], units: number) =>
     ? (units * units) /
       wgs84Sphere.getDistance(
         proj.transform(point, mapProjection, 'EPSG:4326'),
-        proj.transform([point[0] + units, point[1]], mapProjection, 'EPSG:4326'),
+        proj.transform([point[0] + units, point[1]], mapProjection, 'EPSG:4326')
       )
     : 0;
 
@@ -179,7 +181,7 @@ const OSMOrienteeringMap = observer(
     useDefaultGraphicsAsHome = false,
     mapCenter,
     onClick,
-    onHighlightClick = undefined,
+    onHighlightClick = undefined
   }: IOSMOrienteeringMapProps) => {
     const { globalStateModel, clubModel } = useMobxStore();
     const { t } = useTranslation();
@@ -197,64 +199,67 @@ const OSMOrienteeringMap = observer(
     const [highlightText, setHighlightText] = useState<string>();
 
     const onMapClick = useCallback(
-      (event: any, newGraphicsLayer: VectorLayer) => {
+      (event: MapBrowserEvent<KeyboardEvent | WheelEvent | PointerEvent>, newGraphicsLayer: VectorLayer) => {
         const highlighted: Feature<Point>[] = [];
         map!.forEachFeatureAtPixel(
           event.pixel,
-          (feature) => {
+          feature => {
             highlighted.push(feature as Feature<Point>);
             return undefined;
           },
           {
-            layerFilter: (layer) => layer === newGraphicsLayer,
-          },
+            layerFilter: layer => layer === newGraphicsLayer
+          }
         );
 
-        onClick &&
-          onClick(
-            newGraphicsLayer,
-            new Feature<Point>({
-              geometry: new Point(event.coordinate),
-              symbol: OrienteeringSymbol,
-            }),
-          );
-        const highLightedDirections = highlighted.filter((g: any) => g.getProperties().attributes?.direction);
+        onClick?.(
+          newGraphicsLayer,
+          new Feature<Point>({
+            geometry: new Point(event.coordinate),
+            symbol: OrienteeringSymbol
+          })
+        );
+        const highLightedDirections = highlighted.filter(g => g.getProperties().attributes?.direction);
         if (highLightedDirections.length > 0 && onHighlightClick !== undefined) {
           onHighlightClick(highLightedDirections[0]);
         }
       },
-      [map, onClick, onHighlightClick],
+      [map, onClick, onHighlightClick]
     );
 
     const onMapPointerMove = useCallback(
-      (event: any, newGraphicsLayer: VectorLayer, highlightLayer: VectorLayer) => {
+      (
+        event: MapBrowserEvent<KeyboardEvent | WheelEvent | PointerEvent>,
+        newGraphicsLayer: VectorLayer,
+        highlightLayer: VectorLayer
+      ) => {
         const highlighted: (RenderFeature | Feature<Geometry>)[] = [];
         map!.forEachFeatureAtPixel(
           event.pixel,
-          (feature) => {
+          feature => {
             highlighted.push(feature);
             return undefined;
           },
           {
-            layerFilter: (layer) => layer === newGraphicsLayer,
-          },
+            layerFilter: layer => layer === newGraphicsLayer
+          }
         );
 
         let text: string | undefined = undefined;
 
         if (highlighted.length) {
           text = highlighted
-            .filter((g) => !g.getProperties().attributes.direction)
-            .map((g) => g.getProperties().attributes)
-            .map((a) => `${a.time ? a.time : ''} ${a.name}`)
+            .filter(g => !g.getProperties().attributes.direction)
+            .map(g => g.getProperties().attributes)
+            .map(a => `${a.time ? a.time : ''} ${a.name}`)
             .join('<br/>');
-          const directionText = highlighted.some((g: any) => g.getProperties().attributes.direction)
+          const directionText = highlighted.some(g => g.getProperties().attributes.direction)
             ? t('map.ClickForDirection')
             : '';
           text = `${text}${
             text && text.length && directionText && directionText.length ? '<br/>' : ''
           }${directionText}`;
-          const highlightedUids = highlighted.map((g: any) => g.uid);
+          const highlightedUids = highlighted.map(g => getUid(g));
           const existingFeature = highlightLayer
             ?.getSource()
             ?.getFeatures()
@@ -282,7 +287,7 @@ const OSMOrienteeringMap = observer(
 
         setHighlightText(text);
       },
-      [map, t],
+      [map, t]
     );
 
     React.useEffect(() => {
@@ -296,11 +301,10 @@ const OSMOrienteeringMap = observer(
           const xyMax = fromLonLat([defaultExtent.xmax, defaultExtent.ymax], mapProjection);
           extent = [...xyMin, ...xyMax];
           const size = extent && getSize(extent);
-          extent &&
-            size &&
+          if (extent && size)
             map.getView().fit(buffer(extent, Math.min(...size) * 0.2), {
               maxZoom: 16,
-              duration: 800,
+              duration: 800
             });
         } else if (clubModel.map?.center) {
           map.getView().setCenter(fromLonLat(clubModel.map.center, mapProjection));
@@ -313,14 +317,13 @@ const OSMOrienteeringMap = observer(
             center[0] - extentHalfWidth,
             center[1] - extentHalfWidth,
             center[0] + extentHalfWidth,
-            center[1] + extentHalfWidth,
+            center[1] + extentHalfWidth
           ];
           const size = extent && getSize(extent);
-          extent &&
-            size &&
+          if (extent && size)
             map.getView().fit(buffer(extent, Math.min(...size) * 0.2), {
               maxZoom: 16,
-              duration: 800,
+              duration: 800
             });
         }
         const homeIconContainer = document.createElement('span');
@@ -328,7 +331,7 @@ const OSMOrienteeringMap = observer(
           '<svg viewBox="64 64 896 896" focusable="false" data-icon="home" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M946.5 505L560.1 118.8l-25.9-25.9a31.5 31.5 0 00-44.4 0L77.5 505a63.9 63.9 0 00-18.8 46c.4 35.2 29.7 63.3 64.9 63.3h42.5V940h691.8V614.3h43.4c17.1 0 33.2-6.7 45.3-18.8a63.6 63.6 0 0018.7-45.3c0-17-6.7-33.1-18.8-45.2zM568 868H456V664h112v204zm217.9-325.7V868H632V640c0-22.1-17.9-40-40-40H432c-22.1 0-40 17.9-40 40v228H238.1V542.3h-96l370-369.7 23.1 23.1L882 542.3h-96.1z"></path></svg>';
         homeExtent.current = new HomeExtent({
           extent: extent,
-          label: homeIconContainer,
+          label: homeIconContainer
         });
         map.addControl(homeExtent.current);
 
@@ -340,43 +343,56 @@ const OSMOrienteeringMap = observer(
 
         const newGraphicsLayer = new VectorLayer({
           source: new VectorSource({
-            wrapX: false,
-          }),
+            wrapX: false
+          })
         });
         const highlightLayer = new VectorLayer({
           source: new VectorSource(),
-          style: highlightStyle,
+          style: highlightStyle
         });
 
         map.addLayer(newGraphicsLayer);
         map.addLayer(highlightLayer);
 
         if (onClick || onHighlightClick) {
-          map.on('click', (event: any) => onMapClick(event, newGraphicsLayer));
+          map.on('click', event => onMapClick(event, newGraphicsLayer));
         }
         if (onHighlightClick) {
           mapinfoControl.current = new Control({
-            element: mapInfoRef.current,
+            element: mapInfoRef.current
           });
           map.addControl(mapinfoControl.current);
-          map.on('pointermove', (event: any) => onMapPointerMove(event, newGraphicsLayer, highlightLayer));
+          map.on('pointermove', event => onMapPointerMove(event, newGraphicsLayer, highlightLayer));
         }
 
         setGraphicsLayer(newGraphicsLayer);
       }
-    }, [map, clubModel, loaded]);
+    }, [
+      map,
+      clubModel,
+      loaded,
+      defaultExtent,
+      mapCenter,
+      useAllWidgets,
+      onClick,
+      onHighlightClick,
+      containerId,
+      t,
+      onMapClick,
+      onMapPointerMove
+    ]);
 
     React.useEffect(() => {
       const zoomGraphics = defaultGraphics?.filter(
-        (graphic) =>
+        graphic =>
           graphic.geometry.type !== 'point' ||
           graphic.geometry.longitude !== clubModel.map!.center[0] ||
-          graphic.geometry.latitude !== clubModel.map!.center[1],
+          graphic.geometry.latitude !== clubModel.map!.center[1]
       );
       if (useDefaultGraphicsAsHome && homeExtent.current && graphicsLayer && zoomGraphics?.length) {
         homeExtent.current.setExtent(getExtent(zoomGraphics) ?? null);
       }
-    }, [useDefaultGraphicsAsHome, graphicsLayer, defaultGraphics]);
+    }, [useDefaultGraphicsAsHome, graphicsLayer, defaultGraphics, clubModel.map]);
 
     React.useEffect(() => {
       if (mapInfoRef.current) {
@@ -385,13 +401,13 @@ const OSMOrienteeringMap = observer(
         if (text && text.length) {
           const mapInfoTextDiv = document.getElementById(`${containerId}#orienteeringMapInfoText`);
 
-          mapInfoTextDiv && (mapInfoTextDiv.innerHTML = text);
-          mapInfoRef.current && (mapInfoRef.current.style.display = 'block');
+          if (mapInfoTextDiv) mapInfoTextDiv.innerHTML = text;
+          if (mapInfoRef.current) mapInfoRef.current.style.display = 'block';
         } else {
-          mapInfoRef.current && (mapInfoRef.current.style.display = 'none');
+          if (mapInfoRef.current) mapInfoRef.current.style.display = 'none';
         }
       }
-    }, [trackingText, highlightText]);
+    }, [trackingText, highlightText, containerId]);
 
     React.useEffect(() => {
       if (map && graphicsLayer) {
@@ -399,21 +415,21 @@ const OSMOrienteeringMap = observer(
           if (!map || !graphicsLayer || !graphics) return;
           graphicsLayer.getSource()?.clear();
           graphicsLayer.getSource()?.addFeatures(
-            graphics.map((graphic) => {
+            graphics.map(graphic => {
               const feature =
                 graphic.geometry.type === 'circle'
                   ? new Feature<Circle>({
                       geometry: new Circle(
                         fromLonLat(graphic.geometry.center!, mapProjection),
-                        getMapLength(fromLonLat(graphic.geometry.center!, mapProjection), graphic.geometry.radius),
+                        getMapLength(fromLonLat(graphic.geometry.center!, mapProjection), graphic.geometry.radius)
                       ),
-                      attributes: graphic.attributes,
+                      attributes: graphic.attributes
                     })
                   : new Feature<Point>({
                       geometry: new Point(
-                        fromLonLat([graphic.geometry.longitude, graphic.geometry.latitude], mapProjection),
+                        fromLonLat([graphic.geometry.longitude, graphic.geometry.latitude], mapProjection)
                       ),
-                      attributes: graphic.attributes,
+                      attributes: graphic.attributes
                     });
 
               feature.setStyle(
@@ -423,12 +439,12 @@ const OSMOrienteeringMap = observer(
                         return feature.get('modifyGeometry') || feature.getGeometry();
                       },
                       fill: new Fill({
-                        color: graphic.symbol.color,
+                        color: graphic.symbol.color
                       }),
                       stroke: new Stroke({
                         color: graphic.symbol.outline.color,
-                        width: graphic.symbol.outline.width,
-                      }),
+                        width: graphic.symbol.outline.width
+                      })
                     })
                   : graphic.geometry.type === 'circle' && graphic.symbol && graphic.symbol.type === 'gradient-fill'
                     ? new Style({
@@ -451,17 +467,17 @@ const OSMOrienteeringMap = observer(
                           const gradient = ctx.createRadialGradient(x, y, innerRadius, x, y, outerRadius);
                           gradient.addColorStop(
                             0,
-                            `rgba(${graphic.symbol.color![0]},${graphic.symbol.color![1]},${graphic.symbol.color![2]},0)`,
+                            `rgba(${graphic.symbol.color![0]},${graphic.symbol.color![1]},${graphic.symbol.color![2]},0)`
                           );
                           gradient.addColorStop(
                             0.6,
-                            `rgba(${graphic.symbol.color![0]},${graphic.symbol.color![1]},${graphic.symbol.color![2]},0)`,
+                            `rgba(${graphic.symbol.color![0]},${graphic.symbol.color![1]},${graphic.symbol.color![2]},0)`
                           );
                           gradient.addColorStop(
                             1,
                             `rgba(${graphic.symbol.color![0]},${graphic.symbol.color![1]},${graphic.symbol.color![2]},${
                               graphic.symbol.color![3]
-                            })`,
+                            })`
                           );
                           ctx.beginPath();
                           ctx.arc(x, y, radius, 0, 2 * Math.PI, true);
@@ -474,7 +490,7 @@ const OSMOrienteeringMap = observer(
                             graphic.symbol.outline.color![1]
                           },${graphic.symbol.outline.color![2]},${graphic.symbol.outline.color![3]})`;
                           ctx.stroke();
-                        },
+                        }
                       })
                     : graphic.geometry.type === 'point'
                       ? new Style({
@@ -483,32 +499,32 @@ const OSMOrienteeringMap = observer(
                               ? new Icon({
                                   src: graphic.symbol.url,
                                   scale: 25 / graphic.symbol.width,
-                                  size: [graphic.symbol.width, graphic.symbol.height],
+                                  size: [graphic.symbol.width, graphic.symbol.height]
                                 })
                               : new Icon({
                                   src: OrienteeringSymbol.url,
                                   scale: 15 / OrienteeringSymbol.width,
-                                  size: [OrienteeringSymbol.width, OrienteeringSymbol.height],
-                                }),
+                                  size: [OrienteeringSymbol.width, OrienteeringSymbol.height]
+                                })
                         })
-                      : undefined,
+                      : undefined
               );
 
               return feature;
-            }),
+            })
           );
           if (onHighlightClick !== undefined) {
             graphicsLayer.getSource()?.addFeatures(
               graphics
-                .filter((graphic) => graphic.geometry.type === 'point')
-                .map((graphic) => {
+                .filter(graphic => graphic.geometry.type === 'point')
+                .map(graphic => {
                   const feature = new Feature<Point>({
                     geometry: new Point(
                       graphic.geometry.type === 'point'
                         ? fromLonLat([graphic.geometry.longitude, graphic.geometry.latitude], mapProjection)
-                        : [0, 0],
+                        : [0, 0]
                     ),
-                    attributes: { direction: true },
+                    attributes: { direction: true }
                   });
                   feature.setStyle(
                     new Style({
@@ -518,19 +534,19 @@ const OSMOrienteeringMap = observer(
                         anchorYUnits: 'pixels',
                         src: DirectionSymbol.url,
                         scale: 15 / DirectionSymbol.width,
-                        size: [DirectionSymbol.width, DirectionSymbol.height],
-                      }),
-                    }),
+                        size: [DirectionSymbol.width, DirectionSymbol.height]
+                      })
+                    })
                   );
                   return feature;
-                }),
+                })
             );
           }
           const graphicsExists = graphics.some(
-            (graphic) =>
+            graphic =>
               graphic.geometry.type !== 'point' ||
               graphic.geometry.longitude !== clubModel.map!.center[0] ||
-              graphic.geometry.latitude !== clubModel.map!.center[1],
+              graphic.geometry.latitude !== clubModel.map!.center[1]
           );
           if (clubModel.map?.center && !mapCenter && !defaultExtent && !graphicsExists) {
             map.getView().setCenter(fromLonLat(clubModel.map.center, mapProjection));
@@ -538,11 +554,10 @@ const OSMOrienteeringMap = observer(
           } else if (graphicsExists) {
             const geometriesExtent = graphicsLayer.getSource()?.getExtent();
             const size = geometriesExtent && getSize(geometriesExtent);
-            geometriesExtent &&
-              size &&
+            if (geometriesExtent && size)
               map.getView().fit(buffer(geometriesExtent, Math.min(...size) * 0.2), {
                 maxZoom: 16,
-                duration: 800,
+                duration: 800
               });
           }
         };
@@ -559,7 +574,16 @@ const OSMOrienteeringMap = observer(
           };
         }
       }
-    }, [map, graphicsLayer, defaultGraphics, clubModel.map]);
+    }, [
+      map,
+      graphicsLayer,
+      defaultGraphics,
+      clubModel.map,
+      globalStateModel,
+      onHighlightClick,
+      mapCenter,
+      defaultExtent
+    ]);
 
     return (
       <MapDiv key="map" height={height} width={width}>
@@ -571,7 +595,7 @@ const OSMOrienteeringMap = observer(
         <LayerList map={map} visible={layerListVisible} />
       </MapDiv>
     );
-  },
+  }
 );
 
 export default OSMOrienteeringMap;

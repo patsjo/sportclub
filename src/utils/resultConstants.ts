@@ -21,7 +21,7 @@ export const difficulties: Record<string, DifficultyTypes> = {
   red: 'Röd',
   purple: 'Lila',
   blue: 'Blå',
-  black: 'Svart',
+  black: 'Svart'
 };
 
 export const difficultiesArray: DifficultyTypes[] = ['Grön', 'Vit', 'Gul', 'Orange', 'Röd', 'Lila', 'Blå', 'Svart'];
@@ -30,25 +30,25 @@ export const failedReasons: Record<string, FailedReasonTypes> = {
   NotStarted: 'EJ START',
   NotFinished: 'UTGÅTT',
   Finished: 'FULLFÖ',
-  Approved: 'GODK',
+  Approved: 'GODK'
 };
 
 export const failedReasonOptions = (t: TFunction): IOption[] => [
   { code: failedReasons.NotStarted, description: t('results.NotStarted') },
   { code: failedReasons.NotFinished, description: t('results.NotFinished') },
-  { code: failedReasons.Finished, description: t('results.Finished') },
+  { code: failedReasons.Finished, description: t('results.Finished') }
 ];
 
 export type GenderType = 'MALE' | 'FEMALE';
 
 export const genders: Record<string, GenderType> = {
   FeMale: 'FEMALE',
-  Male: 'MALE',
+  Male: 'MALE'
 };
 
 export const genderOptions = (t: TFunction): IOption[] => [
   { code: genders.FeMale, description: t('results.FeMale') },
-  { code: genders.Male, description: t('results.Male') },
+  { code: genders.Male, description: t('results.Male') }
 ];
 
 export type PaymentModelTypes = 0 | 1 | 2 | 3 | 4;
@@ -58,7 +58,7 @@ export const payments: Record<string, PaymentModelTypes> = {
   defaultFee0And100IfNotFinished: 1,
   defaultFee50And100IfNotFinished: 2,
   defaultFeePaidByCompetitor: 3,
-  defaultFee50And100IfNotStarted: 4,
+  defaultFee50And100IfNotStarted: 4
 };
 
 export const paymentOptions = (t: TFunction): IOption[] => [
@@ -66,33 +66,33 @@ export const paymentOptions = (t: TFunction): IOption[] => [
   { code: payments.defaultFee0And100IfNotFinished, description: t('results.DefaultFee0And100IfNotFinished') },
   { code: payments.defaultFee50And100IfNotStarted, description: t('results.DefaultFee50And100IfNotStarted') },
   { code: payments.defaultFee50And100IfNotFinished, description: t('results.DefaultFee50And100IfNotFinished') },
-  { code: payments.defaultFeePaidByCompetitor, description: t('results.DefaultFeePaidByCompetitor') },
+  { code: payments.defaultFeePaidByCompetitor, description: t('results.DefaultFeePaidByCompetitor') }
 ];
 
 export const lightConditions: Record<string, LightConditionTypes> = {
   day: 'Day',
   night: 'Night',
   dusk: 'Dusk',
-  dawn: 'Dawn',
+  dawn: 'Dawn'
 };
 
 export const raceLightConditionOptions = (t: TFunction): IOption[] => [
   { code: lightConditions.day, description: t('results.Day') },
   { code: lightConditions.night, description: t('results.Night') },
   { code: lightConditions.dusk, description: t('results.Dusk') },
-  { code: lightConditions.dawn, description: t('results.Dawn') },
+  { code: lightConditions.dawn, description: t('results.Dawn') }
 ];
 
 export const distances: Record<string, DistanceTypes> = {
   sprint: 'Sprint',
   middle: 'Middle',
   long: 'Long',
-  ultraLong: 'UltraLong',
+  ultraLong: 'UltraLong'
 };
 
 export const raceDistanceOptions = (t: TFunction): IOption[] => [
   { code: distances.sprint, description: t('results.Sprint') },
   { code: distances.middle, description: t('results.Middle') },
   { code: distances.long, description: t('results.Long') },
-  { code: distances.ultraLong, description: t('results.UltraLong') },
+  { code: distances.ultraLong, description: t('results.UltraLong') }
 ];

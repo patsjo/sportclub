@@ -19,18 +19,31 @@ export const getFileType = (file: { type?: string; name: string }): string => {
   return 'application/octet-stream';
 };
 
-export const fileAsUrl = (file: RcFile): Promise<string | ArrayBuffer | null> => {
+export const fileAsUrl = (file: RcFile): Promise<string | null> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {
-      resolve(reader.result);
+      if (typeof reader.result === 'string') {
+        resolve(reader.result);
+      } else if (reader.result instanceof ArrayBuffer) {
+        // Convert ArrayBuffer → base64 data URL
+        const bytes = new Uint8Array(reader.result);
+        let binary = '';
+        for (let i = 0; i < bytes.byteLength; i++) {
+          binary += String.fromCharCode(bytes[i]);
+        }
+        resolve(`data:${file.type};base64,${btoa(binary)}`);
+      } else {
+        resolve(null);
+      }
     };
-    reader.onerror = (error) => reject(error);
+    reader.onerror = error => reject(error);
     reader.readAsDataURL(file);
   });
 };
 
-export const fileAsBase64 = (file: RcFile): Promise<string | null> => {
+export const fileAsBase64 = (file: RcFile | undefined): Promise<string | null> => {
+  if (!file) return new Promise(resolve => resolve(null));
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {
@@ -44,7 +57,7 @@ export const fileAsBase64 = (file: RcFile): Promise<string | null> => {
       }
       resolve(encoded);
     };
-    reader.onerror = (error) => reject(error);
+    reader.onerror = error => reject(error);
     reader.readAsDataURL(file);
   });
 };

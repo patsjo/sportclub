@@ -1,10842 +1,10842 @@
 export default [
   {
     id: '1',
-    name: 'Svenska Orienteringsförbundet',
+    name: 'Svenska Orienteringsförbundet'
   },
   {
     id: '2',
-    name: 'Smålands OF',
+    name: 'Smålands OF'
   },
   {
     id: '3',
-    name: 'Västergötlands OF',
+    name: 'Västergötlands OF'
   },
   {
     id: '4',
-    name: 'Upplands OF',
+    name: 'Upplands OF'
   },
   {
     id: '5',
-    name: 'Ångermanlands OF',
+    name: 'Ångermanlands OF'
   },
   {
     id: '6',
-    name: 'Bohuslän-Dals OF',
+    name: 'Bohuslän-Dals OF'
   },
   {
     id: '7',
-    name: 'Blekinge OF',
+    name: 'Blekinge OF'
   },
   {
     id: '8',
-    name: 'Dalarnas OF',
+    name: 'Dalarnas OF'
   },
   {
     id: '9',
-    name: 'Gotlands OF',
+    name: 'Gotlands OF'
   },
   {
     id: '10',
-    name: 'Gästriklands OF',
+    name: 'Gästriklands OF'
   },
   {
     id: '11',
-    name: 'Hälsinglands OF',
+    name: 'Hälsinglands OF'
   },
   {
     id: '12',
-    name: 'Hallands OF',
+    name: 'Hallands OF'
   },
   {
     id: '13',
-    name: 'Göteborgs OF',
+    name: 'Göteborgs OF'
   },
   {
     id: '14',
-    name: 'Medelpads OF',
+    name: 'Medelpads OF'
   },
   {
     id: '15',
-    name: 'Norrbottens OF',
+    name: 'Norrbottens OF'
   },
   {
     id: '16',
-    name: 'Skånes OF',
+    name: 'Skånes OF'
   },
   {
     id: '17',
-    name: 'Örebro Läns OF',
+    name: 'Örebro Läns OF'
   },
   {
     id: '18',
-    name: 'Stockholms OF',
+    name: 'Stockholms OF'
   },
   {
     id: '19',
-    name: 'Jämtland-Härjedalens OF',
+    name: 'Jämtland-Härjedalens OF'
   },
   {
     id: '20',
-    name: 'Södermanlands OF',
+    name: 'Södermanlands OF'
   },
   {
     id: '21',
-    name: 'Värmlands OF',
+    name: 'Värmlands OF'
   },
   {
     id: '22',
-    name: 'Västerbottens OF',
+    name: 'Västerbottens OF'
   },
   {
     id: '23',
-    name: 'Västmanlands OF',
+    name: 'Västmanlands OF'
   },
   {
     id: '24',
-    name: 'Östergötlands OF',
+    name: 'Östergötlands OF'
   },
   {
     id: '25',
-    name: 'Degerfors OK',
+    name: 'Degerfors OK'
   },
   {
     id: '26',
-    name: 'Alvesta SOK',
+    name: 'Alvesta SOK'
   },
   {
     id: '27',
-    name: 'OK Amne',
+    name: 'OK Amne'
   },
   {
     id: '28',
-    name: 'IK Albion',
+    name: 'IK Albion'
   },
   {
     id: '29',
-    name: 'OK Alehof',
+    name: 'OK Alehof'
   },
   {
     id: '30',
-    name: 'OK Alferna',
+    name: 'OK Alferna'
   },
   {
     id: '31',
-    name: 'Alfta-Ösa OK',
+    name: 'Alfta-Ösa OK'
   },
   {
     id: '32',
-    name: 'Almby IK',
+    name: 'Almby IK'
   },
   {
     id: '33',
-    name: 'Alstermo IF',
+    name: 'Alstermo IF'
   },
   {
     id: '34',
-    name: 'Arboga OK',
+    name: 'Arboga OK'
   },
   {
     id: '35',
-    name: 'Andrarums IF',
+    name: 'Andrarums IF'
   },
   {
     id: '36',
-    name: 'Anderstorps OK',
+    name: 'Anderstorps OK'
   },
   {
     id: '37',
-    name: 'SOK Aneby',
+    name: 'SOK Aneby'
   },
   {
     id: '38',
-    name: 'Ankarsrums OK',
+    name: 'Ankarsrums OK'
   },
   {
     id: '39',
-    name: 'Annebergs GIF',
+    name: 'Annebergs GIF'
   },
   {
     id: '40',
-    name: 'Berga SOK',
+    name: 'Berga SOK'
   },
   {
     id: '41',
-    name: 'Avesta OK',
+    name: 'Avesta OK'
   },
   {
     id: '42',
-    name: 'Bergens IF',
+    name: 'Bergens IF'
   },
   {
     id: '43',
-    name: 'Bergnäsets AIK',
+    name: 'Bergnäsets AIK'
   },
   {
     id: '44',
-    name: 'SK Björnen',
+    name: 'SK Björnen'
   },
   {
     id: '45',
-    name: 'OK Bjur',
+    name: 'OK Bjur'
   },
   {
     id: '46',
-    name: 'Bjursås OK',
+    name: 'Bjursås OK'
   },
   {
     id: '47',
-    name: 'Björkfors GOIF',
+    name: 'Björkfors GOIF'
   },
   {
     id: '48',
-    name: 'Bjurholms IF',
+    name: 'Bjurholms IF'
   },
   {
     id: '49',
-    name: 'OK Borgen',
+    name: 'OK Borgen'
   },
   {
     id: '50',
-    name: 'Enköpings Garnisons IF',
+    name: 'Enköpings Garnisons IF'
   },
   {
     id: '51',
-    name: 'Bodafors OK',
+    name: 'Bodafors OK'
   },
   {
     id: '52',
-    name: 'Bodens BK',
+    name: 'Bodens BK'
   },
   {
     id: '53',
-    name: 'Boliden FFI',
+    name: 'Boliden FFI'
   },
   {
     id: '54',
-    name: 'FK Boken',
+    name: 'FK Boken'
   },
   {
     id: '55',
-    name: 'Borås GIF',
+    name: 'Borås GIF'
   },
   {
     id: '56',
-    name: 'Bottnaryds IF',
+    name: 'Bottnaryds IF'
   },
   {
     id: '57',
-    name: 'Bredareds IF',
+    name: 'Bredareds IF'
   },
   {
     id: '58',
-    name: 'Brattås CK',
+    name: 'Brattås CK'
   },
   {
     id: '59',
-    name: 'Boxholms OK',
+    name: 'Boxholms OK'
   },
   {
     id: '60',
-    name: 'Bredaryds SOK',
+    name: 'Bredaryds SOK'
   },
   {
     id: '61',
-    name: 'Brittatorps Träningsklubb',
+    name: 'Brittatorps Träningsklubb'
   },
   {
     id: '62',
-    name: 'Broddbo SK',
+    name: 'Broddbo SK'
   },
   {
     id: '63',
-    name: 'Bromma-Vällingby SOK',
+    name: 'Bromma-Vällingby SOK'
   },
   {
     id: '64',
-    name: 'Burseryds IF',
+    name: 'Burseryds IF'
   },
   {
     id: '65',
-    name: 'OK Bävern',
+    name: 'OK Bävern'
   },
   {
     id: '66',
-    name: 'Brunflo IF',
+    name: 'Brunflo IF'
   },
   {
     id: '68',
-    name: 'Dala-Järna IK',
+    name: 'Dala-Järna IK'
   },
   {
     id: '69',
-    name: 'Deje SF',
+    name: 'Deje SF'
   },
   {
     id: '70',
-    name: 'OK Dacke',
+    name: 'OK Dacke'
   },
   {
     id: '71',
-    name: 'Edsbyns OK',
+    name: 'Edsbyns OK'
   },
   {
     id: '72',
-    name: 'OK Dellen',
+    name: 'OK Dellen'
   },
   {
     id: '73',
-    name: 'OK Denseln',
+    name: 'OK Denseln'
   },
   {
     id: '74',
-    name: 'OK Djerf',
+    name: 'OK Djerf'
   },
   {
     id: '75',
-    name: 'OK Drommen',
+    name: 'OK Drommen'
   },
   {
     id: '76',
-    name: 'IK Dran',
+    name: 'IK Dran'
   },
   {
     id: '77',
-    name: 'Domnarvets GOIF',
+    name: 'Domnarvets GOIF'
   },
   {
     id: '78',
-    name: 'Duveds IF',
+    name: 'Duveds IF'
   },
   {
     id: '79',
-    name: 'Eds SK',
+    name: 'Eds SK'
   },
   {
     id: '80',
-    name: 'IK Fyris',
+    name: 'IK Fyris'
   },
   {
     id: '81',
-    name: 'Frosta OK',
+    name: 'Frosta OK'
   },
   {
     id: '82',
-    name: 'Främmestads IK',
+    name: 'Främmestads IK'
   },
   {
     id: '83',
-    name: 'IK Fryken',
+    name: 'IK Fryken'
   },
   {
     id: '84',
-    name: 'OK Linné',
+    name: 'OK Linné'
   },
   {
     id: '85',
-    name: 'Frösö IF',
+    name: 'Frösö IF'
   },
   {
     id: '86',
-    name: 'FK Friskus-Varberg',
+    name: 'FK Friskus-Varberg'
   },
   {
     id: '87',
-    name: 'Eksjö SOK',
+    name: 'Eksjö SOK'
   },
   {
     id: '88',
-    name: 'Fritsla VIK',
+    name: 'Fritsla VIK'
   },
   {
     id: '89',
-    name: 'Fältjägarnas IF',
+    name: 'Fältjägarnas IF'
   },
   {
     id: '90',
-    name: 'Gamleby OK',
+    name: 'Gamleby OK'
   },
   {
     id: '91',
-    name: 'Gagnefs OK',
+    name: 'Gagnefs OK'
   },
   {
     id: '92',
-    name: 'Gammelstads IF',
+    name: 'Gammelstads IF'
   },
   {
     id: '93',
-    name: 'IK Gandvik',
+    name: 'IK Gandvik'
   },
   {
     id: '94',
-    name: 'Garda IK',
+    name: 'Garda IK'
   },
   {
     id: '95',
-    name: 'Garphyttans IF',
+    name: 'Garphyttans IF'
   },
   {
     id: '96',
-    name: 'OK Gipen',
+    name: 'OK Gipen'
   },
   {
     id: '97',
-    name: 'OK Gisle',
+    name: 'OK Gisle'
   },
   {
     id: '98',
-    name: 'Stuguns SK',
+    name: 'Stuguns SK'
   },
   {
     id: '99',
-    name: 'Gnosjö FK',
+    name: 'Gnosjö FK'
   },
   {
     id: '100',
-    name: 'OK Gläntan Vessigebro',
+    name: 'OK Gläntan Vessigebro'
   },
   {
     id: '101',
-    name: 'Gotlands Bro OK',
+    name: 'Gotlands Bro OK'
   },
   {
     id: '102',
-    name: 'SK Graal',
+    name: 'SK Graal'
   },
   {
     id: '103',
-    name: 'Grangärde OK',
+    name: 'Grangärde OK'
   },
   {
     id: '104',
-    name: 'Grisslehamns SK',
+    name: 'Grisslehamns SK'
   },
   {
     id: '105',
-    name: 'Gränna-Bygdens OK',
+    name: 'Gränna-Bygdens OK'
   },
   {
     id: '106',
-    name: 'SK Gränsen',
+    name: 'SK Gränsen'
   },
   {
     id: '107',
-    name: 'OK Gränsen',
+    name: 'OK Gränsen'
   },
   {
     id: '108',
-    name: 'Gudhems IF',
+    name: 'Gudhems IF'
   },
   {
     id: '109',
-    name: 'Göteborgs Polismäns IF',
+    name: 'Göteborgs Polismäns IF'
   },
   {
     id: '110',
-    name: 'Göteborgs SK',
+    name: 'Göteborgs SK'
   },
   {
     id: '111',
-    name: 'OK Gynge',
+    name: 'OK Gynge'
   },
   {
     id: '112',
-    name: 'Gårdsby IK',
+    name: 'Gårdsby IK'
   },
   {
     id: '113',
-    name: 'Gällstads IF',
+    name: 'Gällstads IF'
   },
   {
     id: '114',
-    name: 'FK Göingarna',
+    name: 'FK Göingarna'
   },
   {
     id: '115',
-    name: 'Gävle OK',
+    name: 'Gävle OK'
   },
   {
     id: '116',
-    name: 'Halmstad OK',
+    name: 'Halmstad OK'
   },
   {
     id: '117',
-    name: 'Hallstahammars OK',
+    name: 'Hallstahammars OK'
   },
   {
     id: '118',
-    name: 'OK Hammaren',
+    name: 'OK Hammaren'
   },
   {
     id: '119',
-    name: 'IF Hallby',
+    name: 'IF Hallby'
   },
   {
     id: '120',
-    name: 'Föreningen Skatåsstugan',
+    name: 'Föreningen Skatåsstugan'
   },
   {
     id: '121',
-    name: 'Göteborgs SK',
+    name: 'Göteborgs SK'
   },
   {
     id: '122',
-    name: 'IF Hagen',
+    name: 'IF Hagen'
   },
   {
     id: '123',
-    name: 'Hagaby GoIF Örebro',
+    name: 'Hagaby GoIF Örebro'
   },
   {
     id: '124',
-    name: 'IK Hakarpspojkarna',
+    name: 'IK Hakarpspojkarna'
   },
   {
     id: '125',
-    name: 'Helsingborgs SOK',
+    name: 'Helsingborgs SOK'
   },
   {
     id: '126',
-    name: 'OK Hedströmmen',
+    name: 'OK Hedströmmen'
   },
   {
     id: '127',
-    name: 'Heleneholms IF',
+    name: 'Heleneholms IF'
   },
   {
     id: '128',
-    name: 'Heby AIF',
+    name: 'Heby AIF'
   },
   {
     id: '129',
-    name: 'Hedesunda IF',
+    name: 'Hedesunda IF'
   },
   {
     id: '130',
-    name: 'Haninge SOK',
+    name: 'Haninge SOK'
   },
   {
     id: '131',
-    name: 'IF Hansa-Hoburg',
+    name: 'IF Hansa-Hoburg'
   },
   {
     id: '132',
-    name: 'Eslövs FK',
+    name: 'Eslövs FK'
   },
   {
     id: '133',
-    name: 'Enebybergs IF',
+    name: 'Enebybergs IF'
   },
   {
     id: '134',
-    name: 'OK Enen',
+    name: 'OK Enen'
   },
   {
     id: '135',
-    name: 'Enköpings AIF',
+    name: 'Enköpings AIF'
   },
   {
     id: '136',
-    name: 'Eskilstuna OL',
+    name: 'Eskilstuna OL'
   },
   {
     id: '137',
-    name: 'Fjärås AIK',
+    name: 'Fjärås AIK'
   },
   {
     id: '138',
-    name: 'FK Finn',
+    name: 'FK Finn'
   },
   {
     id: '139',
-    name: 'Fagersta OK',
+    name: 'Fagersta OK'
   },
   {
     id: '140',
-    name: 'Falkenbergs OK',
+    name: 'Falkenbergs OK'
   },
   {
     id: '141',
-    name: 'Fellingsbro GOIF',
+    name: 'Fellingsbro GOIF'
   },
   {
     id: '142',
-    name: 'OK Forsarna',
+    name: 'OK Forsarna'
   },
   {
     id: '143',
-    name: 'OK Flundrehof',
+    name: 'OK Flundrehof'
   },
   {
     id: '144',
-    name: 'Forserums SOK',
+    name: 'Forserums SOK'
   },
   {
     id: '145',
-    name: 'FK Herkules',
+    name: 'FK Herkules'
   },
   {
     id: '146',
-    name: 'Herrestads AIF',
+    name: 'Herrestads AIF'
   },
   {
     id: '147',
-    name: 'Hestra IF',
+    name: 'Hestra IF'
   },
   {
     id: '148',
-    name: 'OK Hierne',
+    name: 'OK Hierne'
   },
   {
     id: '149',
-    name: 'Hestra Skid o SK',
+    name: 'Hestra Skid o SK'
   },
   {
     id: '150',
-    name: 'Himmeta IF',
+    name: 'Himmeta IF'
   },
   {
     id: '151',
-    name: 'Hjortens SK',
+    name: 'Hjortens SK'
   },
   {
     id: '152',
-    name: 'Horndals IF',
+    name: 'Horndals IF'
   },
   {
     id: '153',
-    name: 'Hulåns IF',
+    name: 'Hulåns IF'
   },
   {
     id: '154',
-    name: 'Hudiksvalls IF',
+    name: 'Hudiksvalls IF'
   },
   {
     id: '155',
-    name: 'Hultsfreds OK',
+    name: 'Hultsfreds OK'
   },
   {
     id: '156',
-    name: 'Horreds SK',
+    name: 'Horreds SK'
   },
   {
     id: '157',
-    name: 'Håby IF',
+    name: 'Håby IF'
   },
   {
     id: '158',
-    name: 'Hägersta GF',
+    name: 'Hägersta GF'
   },
   {
     id: '159',
-    name: 'Hylte OK',
+    name: 'Hylte OK'
   },
   {
     id: '160',
-    name: 'Hägglunds IoFK',
+    name: 'Hägglunds IoFK'
   },
   {
     id: '161',
-    name: 'OK Hällen',
+    name: 'OK Hällen'
   },
   {
     id: '162',
-    name: 'Hällefors OK',
+    name: 'Hällefors OK'
   },
   {
     id: '163',
-    name: 'Högåkers OK',
+    name: 'Högåkers OK'
   },
   {
     id: '164',
-    name: 'Högsjö GF',
+    name: 'Högsjö GF'
   },
   {
     id: '165',
-    name: 'Härlövs IF',
+    name: 'Härlövs IF'
   },
   {
     id: '166',
-    name: 'OK Härjulf',
+    name: 'OK Härjulf'
   },
   {
     id: '167',
-    name: 'Hässleholms OK',
+    name: 'Hässleholms OK'
   },
   {
     id: '168',
-    name: 'Häverödals SK',
+    name: 'Häverödals SK'
   },
   {
     id: '169',
-    name: 'Hästveda OK',
+    name: 'Hästveda OK'
   },
   {
     id: '170',
-    name: 'IFK Bergvik',
+    name: 'IFK Bergvik'
   },
   {
     id: '171',
-    name: 'IFK Dannemora/Österby',
+    name: 'IFK Dannemora/Österby'
   },
   {
     id: '172',
-    name: 'IFK Enskede',
+    name: 'IFK Enskede'
   },
   {
     id: '173',
-    name: 'I 15 IF',
+    name: 'I 15 IF'
   },
   {
     id: '174',
-    name: 'I 19 IF',
+    name: 'I 19 IF'
   },
   {
     id: '175',
-    name: 'OK Höken',
+    name: 'OK Höken'
   },
   {
     id: '176',
-    name: 'IBM Club Sweden',
+    name: 'IBM Club Sweden'
   },
   {
     id: '177',
-    name: 'Idefjordens SK',
+    name: 'Idefjordens SK'
   },
   {
     id: '178',
-    name: 'Halmstad Garnisons IF',
+    name: 'Halmstad Garnisons IF'
   },
   {
     id: '179',
-    name: 'Eksjö Garnisons IF',
+    name: 'Eksjö Garnisons IF'
   },
   {
     id: '181',
-    name: 'IFK Kiruna',
+    name: 'IFK Kiruna'
   },
   {
     id: '182',
-    name: 'IFK Stockaryd',
+    name: 'IFK Stockaryd'
   },
   {
     id: '183',
-    name: 'IFK Brattfors',
+    name: 'IFK Brattfors'
   },
   {
     id: '184',
-    name: 'IFK Umeå',
+    name: 'IFK Umeå'
   },
   {
     id: '185',
-    name: 'IFK Sävsjö',
+    name: 'IFK Sävsjö'
   },
   {
     id: '186',
-    name: 'IFK Strängnäs',
+    name: 'IFK Strängnäs'
   },
   {
     id: '187',
-    name: 'Södertälje-Nykvarn OF',
+    name: 'Södertälje-Nykvarn OF'
   },
   {
     id: '188',
-    name: 'Sol Tranås',
+    name: 'Sol Tranås'
   },
   {
     id: '189',
-    name: 'IK Jarl Rättvik',
+    name: 'IK Jarl Rättvik'
   },
   {
     id: '190',
-    name: 'Istrums SK',
+    name: 'Istrums SK'
   },
   {
     id: '191',
-    name: 'SOK Joar Viking Enköpin',
+    name: 'SOK Joar Viking Enköpin'
   },
   {
     id: '192',
-    name: 'Jokkmokks SK',
+    name: 'Jokkmokks SK'
   },
   {
     id: '193',
-    name: 'OK Jösse',
+    name: 'OK Jösse'
   },
   {
     id: '194',
-    name: 'K 3 IF',
+    name: 'K 3 IF'
   },
   {
     id: '195',
-    name: 'Järpens SK',
+    name: 'Järpens SK'
   },
   {
     id: '196',
-    name: 'OK Järnbärarna',
+    name: 'OK Järnbärarna'
   },
   {
     id: '197',
-    name: 'Järbo OK',
+    name: 'Järbo OK'
   },
   {
     id: '198',
-    name: 'Järfälla OK',
+    name: 'Järfälla OK'
   },
   {
     id: '199',
-    name: 'SK Järven',
+    name: 'SK Järven'
   },
   {
     id: '200',
-    name: 'Jönköpings OK',
+    name: 'Jönköpings OK'
   },
   {
     id: '201',
-    name: 'Katrineholms OK',
+    name: 'Katrineholms OK'
   },
   {
     id: '202',
-    name: 'KA 3 IF',
+    name: 'KA 3 IF'
   },
   {
     id: '203',
-    name: 'IF Marin Väst',
+    name: 'IF Marin Väst'
   },
   {
     id: '204',
-    name: 'Kalmar OK',
+    name: 'Kalmar OK'
   },
   {
     id: '205',
-    name: 'KF Kanotisterna',
+    name: 'KF Kanotisterna'
   },
   {
     id: '206',
-    name: 'Karlsbyhedens IK',
+    name: 'Karlsbyhedens IK'
   },
   {
     id: '207',
-    name: 'Kjula IF',
+    name: 'Kjula IF'
   },
   {
     id: '208',
-    name: 'OK Klemmingen',
+    name: 'OK Klemmingen'
   },
   {
     id: '209',
-    name: 'KFUK-KFUM Göteborg',
+    name: 'KFUK-KFUM Göteborg'
   },
   {
     id: '210',
-    name: 'KFUM Jönköping IA',
+    name: 'KFUM Jönköping IA'
   },
   {
     id: '211',
-    name: 'Kinnarumma IF',
+    name: 'Kinnarumma IF'
   },
   {
     id: '212',
-    name: 'Kinnaströms SK',
+    name: 'Kinnaströms SK'
   },
   {
     id: '213',
-    name: 'Kisa SK',
+    name: 'Kisa SK'
   },
   {
     id: '214',
-    name: 'Kristinehamns OK',
+    name: 'Kristinehamns OK'
   },
   {
     id: '215',
-    name: 'Kovlands IF',
+    name: 'Kovlands IF'
   },
   {
     id: '216',
-    name: 'Kroppa IF',
+    name: 'Kroppa IF'
   },
   {
     id: '217',
-    name: 'OK Klyftamo',
+    name: 'OK Klyftamo'
   },
   {
     id: '218',
-    name: 'OK Kroppefjäll',
+    name: 'OK Kroppefjäll'
   },
   {
     id: '219',
-    name: 'Kramfors-Alliansen',
+    name: 'Kramfors-Alliansen'
   },
   {
     id: '220',
-    name: 'Krokeks OK',
+    name: 'Krokeks OK'
   },
   {
     id: '221',
-    name: 'Kvillebyns SK',
+    name: 'Kvillebyns SK'
   },
   {
     id: '222',
-    name: 'Karlbergs SIF',
+    name: 'Karlbergs SIF'
   },
   {
     id: '223',
-    name: 'Kungsgårdens SK',
+    name: 'Kungsgårdens SK'
   },
   {
     id: '224',
-    name: 'Kungälvs OK',
+    name: 'Kungälvs OK'
   },
   {
     id: '225',
-    name: 'Krylbo OK',
+    name: 'Krylbo OK'
   },
   {
     id: '226',
-    name: 'Kubbe-Norrflärke IF',
+    name: 'Kubbe-Norrflärke IF'
   },
   {
     id: '227',
-    name: 'OK Kullingshof',
+    name: 'OK Kullingshof'
   },
   {
     id: '228',
-    name: 'IS Kullen',
+    name: 'IS Kullen'
   },
   {
     id: '229',
-    name: 'OK Kåre',
+    name: 'OK Kåre'
   },
   {
     id: '230',
-    name: 'OK Landehof',
+    name: 'OK Landehof'
   },
   {
     id: '231',
-    name: 'Landsbro IF FK',
+    name: 'Landsbro IF FK'
   },
   {
     id: '232',
-    name: 'Lidköpings VSK',
+    name: 'Lidköpings VSK'
   },
   {
     id: '233',
-    name: 'Laxå OK',
+    name: 'Laxå OK'
   },
   {
     id: '234',
-    name: 'Leksands OK',
+    name: 'Leksands OK'
   },
   {
     id: '235',
-    name: 'Lekeryd-Svarttorps SK',
+    name: 'Lekeryd-Svarttorps SK'
   },
   {
     id: '236',
-    name: 'Lesjöfors SK',
+    name: 'Lesjöfors SK'
   },
   {
     id: '237',
-    name: 'OK Letstigen',
+    name: 'OK Letstigen'
   },
   {
     id: '238',
-    name: 'Lerums SOK',
+    name: 'Lerums SOK'
   },
   {
     id: '239',
-    name: 'Lessebo OK',
+    name: 'Lessebo OK'
   },
   {
     id: '240',
-    name: 'Ljusdals OK',
+    name: 'Ljusdals OK'
   },
   {
     id: '241',
-    name: 'Lindebygdens OK',
+    name: 'Lindebygdens OK'
   },
   {
     id: '242',
-    name: 'Linköpings OK',
+    name: 'Linköpings OK'
   },
   {
     id: '243',
-    name: 'OK Lindéna',
+    name: 'OK Lindéna'
   },
   {
     id: '244',
-    name: 'Linköpings AIK',
+    name: 'Linköpings AIK'
   },
   {
     id: '245',
-    name: 'Ljungskile FK',
+    name: 'Ljungskile FK'
   },
   {
     id: '246',
-    name: 'Ljusne-Ala OK',
+    name: 'Ljusne-Ala OK'
   },
   {
     id: '247',
-    name: 'Föreningen Studentidrott Luleå',
+    name: 'Föreningen Studentidrott Luleå'
   },
   {
     id: '248',
-    name: 'Lycksele IF',
+    name: 'Lycksele IF'
   },
   {
     id: '249',
-    name: 'Lugnviks IF',
+    name: 'Lugnviks IF'
   },
   {
     id: '250',
-    name: 'Ludvika OK',
+    name: 'Ludvika OK'
   },
   {
     id: '251',
-    name: 'Malmbergets AIF',
+    name: 'Malmbergets AIF'
   },
   {
     id: '252',
-    name: 'Strängnäs-Malmby OL',
+    name: 'Strängnäs-Malmby OL'
   },
   {
     id: '253',
-    name: 'Långhundra IF',
+    name: 'Långhundra IF'
   },
   {
     id: '254',
-    name: 'OK Löftan',
+    name: 'OK Löftan'
   },
   {
     id: '255',
-    name: 'Länna IF',
+    name: 'Länna IF'
   },
   {
     id: '256',
-    name: 'Majornas IK',
+    name: 'Majornas IK'
   },
   {
     id: '257',
-    name: 'OK Malmia',
+    name: 'OK Malmia'
   },
   {
     id: '258',
-    name: 'Malmö OK',
+    name: 'Malmö OK'
   },
   {
     id: '259',
-    name: 'OK Mangen',
+    name: 'OK Mangen'
   },
   {
     id: '260',
-    name: 'Mariestads FK',
+    name: 'Mariestads FK'
   },
   {
     id: '261',
-    name: 'Markaryds FK',
+    name: 'Markaryds FK'
   },
   {
     id: '262',
-    name: 'OK Motala',
+    name: 'OK Motala'
   },
   {
     id: '263',
-    name: 'Mullsjö SOK',
+    name: 'Mullsjö SOK'
   },
   {
     id: '264',
-    name: 'Mjölby OK',
+    name: 'Mjölby OK'
   },
   {
     id: '265',
-    name: 'Munkedals SOK',
+    name: 'Munkedals SOK'
   },
   {
     id: '266',
-    name: 'OK Nackhe',
+    name: 'OK Nackhe'
   },
   {
     id: '267',
-    name: 'OK Nalle',
+    name: 'OK Nalle'
   },
   {
     id: '268',
-    name: 'Målilla OK',
+    name: 'Målilla OK'
   },
   {
     id: '269',
-    name: 'OK Måsen',
+    name: 'OK Måsen'
   },
   {
     id: '270',
-    name: 'Mälarö SOK',
+    name: 'Mälarö SOK'
   },
   {
     id: '271',
-    name: 'Mälarhöjdens IK',
+    name: 'Mälarhöjdens IK'
   },
   {
     id: '272',
-    name: 'Nilivaara IS',
+    name: 'Nilivaara IS'
   },
   {
     id: '273',
-    name: 'OK Nipan',
+    name: 'OK Nipan'
   },
   {
     id: '274',
-    name: 'Njurunda OK',
+    name: 'Njurunda OK'
   },
   {
     id: '275',
-    name: 'OK Nordanstig',
+    name: 'OK Nordanstig'
   },
   {
     id: '276',
-    name: 'Nitta IF',
+    name: 'Nitta IF'
   },
   {
     id: '277',
-    name: 'OK Njudung',
+    name: 'OK Njudung'
   },
   {
     id: '278',
-    name: 'OK Nolaskogsarna',
+    name: 'OK Nolaskogsarna'
   },
   {
     id: '279',
-    name: 'Norbergs OK',
+    name: 'Norbergs OK'
   },
   {
     id: '280',
-    name: 'K 4 IF',
+    name: 'K 4 IF'
   },
   {
     id: '281',
-    name: 'OK Norrvirdarna',
+    name: 'OK Norrvirdarna'
   },
   {
     id: '282',
-    name: 'NAIS Orienteringsklubb',
+    name: 'NAIS Orienteringsklubb'
   },
   {
     id: '283',
-    name: 'Nässjö OK',
+    name: 'Nässjö OK'
   },
   {
     id: '284',
-    name: 'Nybro OK',
+    name: 'Nybro OK'
   },
   {
     id: '285',
-    name: 'Nyköpings OK',
+    name: 'Nyköpings OK'
   },
   {
     id: '286',
-    name: 'Ockelbo OK',
+    name: 'Ockelbo OK'
   },
   {
     id: '287',
-    name: 'IK Omega',
+    name: 'IK Omega'
   },
   {
     id: '288',
-    name: 'OK Orion',
+    name: 'OK Orion'
   },
   {
     id: '289',
-    name: 'Ornäs IK',
+    name: 'Ornäs IK'
   },
   {
     id: '290',
-    name: 'Oslättforspojkarnas IK',
+    name: 'Oslättforspojkarnas IK'
   },
   {
     id: '291',
-    name: 'Södra Skåningarnas Skytte o IF',
+    name: 'Södra Skåningarnas Skytte o IF'
   },
   {
     id: '292',
-    name: 'Pajala IF',
+    name: 'Pajala IF'
   },
   {
     id: '293',
-    name: 'Oxvretens SK',
+    name: 'Oxvretens SK'
   },
   {
     id: '294',
-    name: 'OK Pan-Kristianstad',
+    name: 'OK Pan-Kristianstad'
   },
   {
     id: '295',
-    name: 'Piteå IF',
+    name: 'Piteå IF'
   },
   {
     id: '296',
-    name: 'IF Rigor',
+    name: 'IF Rigor'
   },
   {
     id: '297',
-    name: 'Ringsjö OK',
+    name: 'Ringsjö OK'
   },
   {
     id: '298',
-    name: 'Robertsfors IK',
+    name: 'Robertsfors IK'
   },
   {
     id: '299',
-    name: 'Rimbo SOK',
+    name: 'Rimbo SOK'
   },
   {
     id: '300',
-    name: 'OK Rodhen',
+    name: 'OK Rodhen'
   },
   {
     id: '301',
-    name: 'Rasbo IK',
+    name: 'Rasbo IK'
   },
   {
     id: '302',
-    name: 'OK Ravinen',
+    name: 'OK Ravinen'
   },
   {
     id: '303',
-    name: 'OK Reftele',
+    name: 'OK Reftele'
   },
   {
     id: '304',
-    name: 'Rembo IK',
+    name: 'Rembo IK'
   },
   {
     id: '305',
-    name: 'OK Renen',
+    name: 'OK Renen'
   },
   {
     id: '306',
-    name: 'Rehns BK',
+    name: 'Rehns BK'
   },
   {
     id: '307',
-    name: 'Regna IF',
+    name: 'Regna IF'
   },
   {
     id: '308',
-    name: 'Ryda SK',
+    name: 'Ryda SK'
   },
   {
     id: '309',
-    name: 'Rydboholms SK',
+    name: 'Rydboholms SK'
   },
   {
     id: '310',
-    name: 'Ronneby OK',
+    name: 'Ronneby OK'
   },
   {
     id: '311',
-    name: 'OK Roto',
+    name: 'OK Roto'
   },
   {
     id: '312',
-    name: 'IF Rune',
+    name: 'IF Rune'
   },
   {
     id: '313',
-    name: 'S-E Bankens IF',
+    name: 'S-E Bankens IF'
   },
   {
     id: '314',
-    name: 'Rönnskär Railcare IF',
+    name: 'Rönnskär Railcare IF'
   },
   {
     id: '315',
-    name: 'Rörbäcksnäs IS',
+    name: 'Rörbäcksnäs IS'
   },
   {
     id: '316',
-    name: 'Rånäs OK',
+    name: 'Rånäs OK'
   },
   {
     id: '317',
-    name: 'Rävetofta OK',
+    name: 'Rävetofta OK'
   },
   {
     id: '318',
-    name: 'OK Sarven',
+    name: 'OK Sarven'
   },
   {
     id: '319',
-    name: 'Segersta OK',
+    name: 'Segersta OK'
   },
   {
     id: '320',
-    name: 'Sala OK',
+    name: 'Sala OK'
   },
   {
     id: '321',
-    name: 'Sjövalla FK',
+    name: 'Sjövalla FK'
   },
   {
     id: '322',
-    name: 'Seskarö IF',
+    name: 'Seskarö IF'
   },
   {
     id: '323',
-    name: 'Sidensjö IK',
+    name: 'Sidensjö IK'
   },
   {
     id: '324',
-    name: 'Sigtuna OK',
+    name: 'Sigtuna OK'
   },
   {
     id: '325',
-    name: 'Hofors OK',
+    name: 'Hofors OK'
   },
   {
     id: '326',
-    name: 'OK Silvanus',
+    name: 'OK Silvanus'
   },
   {
     id: '327',
-    name: 'OK Silva',
+    name: 'OK Silva'
   },
   {
     id: '328',
-    name: 'Tidaholm SOK Sisu',
+    name: 'Tidaholm SOK Sisu'
   },
   {
     id: '329',
-    name: 'Simlångsdalens IF',
+    name: 'Simlångsdalens IF'
   },
   {
     id: '330',
-    name: 'Sisu Forshaga SK',
+    name: 'Sisu Forshaga SK'
   },
   {
     id: '331',
-    name: 'IS Skanne',
+    name: 'IS Skanne'
   },
   {
     id: '332',
-    name: 'Skogslöparna',
+    name: 'Skogslöparna'
   },
   {
     id: '333',
-    name: 'Skogspojkarnas OK',
+    name: 'Skogspojkarnas OK'
   },
   {
     id: '335',
-    name: 'Skarpnäcks OL',
+    name: 'Skarpnäcks OL'
   },
   {
     id: '336',
-    name: 'Skene Sim o IS',
+    name: 'Skene Sim o IS'
   },
   {
     id: '337',
-    name: 'Skellefteå OK',
+    name: 'Skellefteå OK'
   },
   {
     id: '338',
-    name: 'Skillingaryds FK',
+    name: 'Skillingaryds FK'
   },
   {
     id: '339',
-    name: 'OK Skogsfalken',
+    name: 'OK Skogsfalken'
   },
   {
     id: '340',
-    name: 'Skogsluffarnas OK',
+    name: 'Skogsluffarnas OK'
   },
   {
     id: '341',
-    name: 'OK Skogshjortarna',
+    name: 'OK Skogshjortarna'
   },
   {
     id: '342',
-    name: 'Malungs OK Skogsmårdarna',
+    name: 'Malungs OK Skogsmårdarna'
   },
   {
     id: '343',
-    name: 'OK Skogsstjärnan',
+    name: 'OK Skogsstjärnan'
   },
   {
     id: '344',
-    name: 'OK Skärmen',
+    name: 'OK Skärmen'
   },
   {
     id: '345',
-    name: 'OK Skärmjägarna',
+    name: 'OK Skärmjägarna'
   },
   {
     id: '346',
-    name: 'OK Skogsvargarna',
+    name: 'OK Skogsvargarna'
   },
   {
     id: '347',
-    name: 'Skutskärs OK',
+    name: 'Skutskärs OK'
   },
   {
     id: '348',
-    name: 'Snättringe SK',
+    name: 'Snättringe SK'
   },
   {
     id: '349',
-    name: 'Sollerö IF',
+    name: 'Sollerö IF'
   },
   {
     id: '350',
-    name: 'FK Snapphanarna',
+    name: 'FK Snapphanarna'
   },
   {
     id: '351',
-    name: 'Sofia Cykelklubb',
+    name: 'Sofia Cykelklubb'
   },
   {
     id: '352',
-    name: 'Smedsbyns IF',
+    name: 'Smedsbyns IF'
   },
   {
     id: '353',
-    name: 'Stora Sundby GoIF',
+    name: 'Stora Sundby GoIF'
   },
   {
     id: '354',
-    name: 'Solna OK',
+    name: 'Solna OK'
   },
   {
     id: '355',
-    name: 'IK Standard',
+    name: 'IK Standard'
   },
   {
     id: '356',
-    name: 'IF Start',
+    name: 'IF Start'
   },
   {
     id: '357',
-    name: 'Stockholms OK',
+    name: 'Stockholms OK'
   },
   {
     id: '358',
-    name: 'Smedjebackens OK',
+    name: 'Smedjebackens OK'
   },
   {
     id: '359',
-    name: 'Stockholms Godtemplares IF',
+    name: 'Stockholms Godtemplares IF'
   },
   {
     id: '360',
-    name: 'Stockholmspolisens IF',
+    name: 'Stockholmspolisens IF'
   },
   {
     id: '361',
-    name: 'Stenungsunds OK',
+    name: 'Stenungsunds OK'
   },
   {
     id: '362',
-    name: 'IK Stern',
+    name: 'IK Stern'
   },
   {
     id: '363',
-    name: 'Stigfinnarna',
+    name: 'Stigfinnarna'
   },
   {
     id: '364',
-    name: 'Stigmännen Karlshamns OK',
+    name: 'Stigmännen Karlshamns OK'
   },
   {
     id: '365',
-    name: 'OK Stigen',
+    name: 'OK Stigen'
   },
   {
     id: '366',
-    name: 'IF Stjärnan',
+    name: 'IF Stjärnan'
   },
   {
     id: '367',
-    name: 'Stjärnorps SK',
+    name: 'Stjärnorps SK'
   },
   {
     id: '368',
-    name: 'Storviks IF',
+    name: 'Storviks IF'
   },
   {
     id: '369',
-    name: 'OK Storsjön',
+    name: 'OK Storsjön'
   },
   {
     id: '370',
-    name: 'IF Strategen',
+    name: 'IF Strategen'
   },
   {
     id: '371',
-    name: 'Stångenäs AIS',
+    name: 'Stångenäs AIS'
   },
   {
     id: '372',
-    name: 'Stöcksjö IS',
+    name: 'Stöcksjö IS'
   },
   {
     id: '373',
-    name: 'Sundbybergs IK',
+    name: 'Sundbybergs IK'
   },
   {
     id: '374',
-    name: 'Sundsvalls OK',
+    name: 'Sundsvalls OK'
   },
   {
     id: '375',
-    name: 'Surahammars SOK',
+    name: 'Surahammars SOK'
   },
   {
     id: '376',
-    name: 'IK Surd',
+    name: 'IK Surd'
   },
   {
     id: '377',
-    name: 'Svappavaara AIF',
+    name: 'Svappavaara AIF'
   },
   {
     id: '378',
-    name: 'Svanesunds GIF',
+    name: 'Svanesunds GIF'
   },
   {
     id: '379',
-    name: 'Söderhamns OK',
+    name: 'Söderhamns OK'
   },
   {
     id: '380',
-    name: 'Säffle OK',
+    name: 'Säffle OK'
   },
   {
     id: '381',
-    name: 'Sälens IF',
+    name: 'Sälens IF'
   },
   {
     id: '382',
-    name: 'Särna SK',
+    name: 'Särna SK'
   },
   {
     id: '383',
-    name: 'Säterbygdens OK',
+    name: 'Säterbygdens OK'
   },
   {
     id: '384',
-    name: 'Sävedalens AIK',
+    name: 'Sävedalens AIK'
   },
   {
     id: '385',
-    name: 'Svärdsjö IF',
+    name: 'Svärdsjö IF'
   },
   {
     id: '386',
-    name: 'Tegs SK',
+    name: 'Tegs SK'
   },
   {
     id: '387',
-    name: 'Södertälje IF',
+    name: 'Södertälje IF'
   },
   {
     id: '388',
-    name: 'OK Södertörn',
+    name: 'OK Södertörn'
   },
   {
     id: '389',
-    name: 'Tandsbyns IF',
+    name: 'Tandsbyns IF'
   },
   {
     id: '390',
-    name: 'Timrå SOK',
+    name: 'Timrå SOK'
   },
   {
     id: '391',
-    name: 'Tjällmo-Godegårds OK',
+    name: 'Tjällmo-Godegårds OK'
   },
   {
     id: '392',
-    name: 'Tockarps IK',
+    name: 'Tockarps IK'
   },
   {
     id: '393',
-    name: 'Tolereds Allmänna IK',
+    name: 'Tolereds Allmänna IK'
   },
   {
     id: '394',
-    name: 'Tjalve IF Norrköping',
+    name: 'Tjalve IF Norrköping'
   },
   {
     id: '395',
-    name: 'Tenhults SOK',
+    name: 'Tenhults SOK'
   },
   {
     id: '396',
-    name: 'IF Thor',
+    name: 'IF Thor'
   },
   {
     id: '397',
-    name: 'Tierps SOK',
+    name: 'Tierps SOK'
   },
   {
     id: '398',
-    name: 'SK Trim/Virsbo',
+    name: 'SK Trim/Virsbo'
   },
   {
     id: '399',
-    name: 'OK Tor',
+    name: 'OK Tor'
   },
   {
     id: '400',
-    name: 'Tormestorps IF',
+    name: 'Tormestorps IF'
   },
   {
     id: '401',
-    name: 'OK 64 Torpa',
+    name: 'OK 64 Torpa'
   },
   {
     id: '402',
-    name: 'OK Tranan',
+    name: 'OK Tranan'
   },
   {
     id: '403',
-    name: 'OK Triangeln',
+    name: 'OK Triangeln'
   },
   {
     id: '404',
-    name: 'IK Trenne Ullared',
+    name: 'IK Trenne Ullared'
   },
   {
     id: '405',
-    name: 'Tväråbäcks IK',
+    name: 'Tväråbäcks IK'
   },
   {
     id: '406',
-    name: 'Trollhättans SK',
+    name: 'Trollhättans SK'
   },
   {
     id: '407',
-    name: 'Trosabygdens OK',
+    name: 'Trosabygdens OK'
   },
   {
     id: '408',
-    name: 'Trollhättans SOK',
+    name: 'Trollhättans SOK'
   },
   {
     id: '409',
-    name: 'SOK Träff',
+    name: 'SOK Träff'
   },
   {
     id: '410',
-    name: 'Tullinge SK',
+    name: 'Tullinge SK'
   },
   {
     id: '411',
-    name: 'Turebergs IF',
+    name: 'Turebergs IF'
   },
   {
     id: '412',
-    name: 'OK Tuvan',
+    name: 'OK Tuvan'
   },
   {
     id: '413',
-    name: 'Ulricehamns OK',
+    name: 'Ulricehamns OK'
   },
   {
     id: '414',
-    name: 'Ulriksbergs IK',
+    name: 'Ulriksbergs IK'
   },
   {
     id: '415',
-    name: 'Uddevalla OK',
+    name: 'Uddevalla OK'
   },
   {
     id: '416',
-    name: 'OK Tyr',
+    name: 'OK Tyr'
   },
   {
     id: '417',
-    name: 'Söders-Tyresö',
+    name: 'Söders-Tyresö'
   },
   {
     id: '418',
-    name: 'Uddevalla SK',
+    name: 'Uddevalla SK'
   },
   {
     id: '419',
-    name: 'Uddevalla IS',
+    name: 'Uddevalla IS'
   },
   {
     id: '420',
-    name: 'Umedalens IF',
+    name: 'Umedalens IF'
   },
   {
     id: '421',
-    name: 'Upsala IF',
+    name: 'Upsala IF'
   },
   {
     id: '422',
-    name: 'Upsala SIF',
+    name: 'Upsala SIF'
   },
   {
     id: '423',
-    name: 'IK Uven',
+    name: 'IK Uven'
   },
   {
     id: '424',
-    name: 'VK Uvarna',
+    name: 'VK Uvarna'
   },
   {
     id: '425',
-    name: 'Utby IK',
+    name: 'Utby IK'
   },
   {
     id: '426',
-    name: 'Vattenfalls IF Stockholm',
+    name: 'Vattenfalls IF Stockholm'
   },
   {
     id: '427',
-    name: 'OK Vargen',
+    name: 'OK Vargen'
   },
   {
     id: '428',
-    name: 'Forsmarks IF',
+    name: 'Forsmarks IF'
   },
   {
     id: '429',
-    name: 'Vaggeryds SOK',
+    name: 'Vaggeryds SOK'
   },
   {
     id: '430',
-    name: 'Valbo AIF',
+    name: 'Valbo AIF'
   },
   {
     id: '431',
-    name: 'Vallsta SK',
+    name: 'Vallsta SK'
   },
   {
     id: '432',
-    name: 'Vandrarringen',
+    name: 'Vandrarringen'
   },
   {
     id: '433',
-    name: 'Vidsels IK',
+    name: 'Vidsels IK'
   },
   {
     id: '434',
-    name: 'OK Vildhussen',
+    name: 'OK Vildhussen'
   },
   {
     id: '435',
-    name: 'SOK Viljan',
+    name: 'SOK Viljan'
   },
   {
     id: '436',
-    name: 'IK Vista',
+    name: 'IK Vista'
   },
   {
     id: '437',
-    name: 'Viksjöfors OK',
+    name: 'Viksjöfors OK'
   },
   {
     id: '438',
-    name: 'Vimmerby OK',
+    name: 'Vimmerby OK'
   },
   {
     id: '439',
-    name: 'Vingåkers OK',
+    name: 'Vingåkers OK'
   },
   {
     id: '440',
-    name: 'Visborgs OK',
+    name: 'Visborgs OK'
   },
   {
     id: '441',
-    name: 'Vittsjö OK',
+    name: 'Vittsjö OK'
   },
   {
     id: '442',
-    name: 'FK Vittus',
+    name: 'FK Vittus'
   },
   {
     id: '443',
-    name: 'Vittjärvs IK',
+    name: 'Vittjärvs IK'
   },
   {
     id: '444',
-    name: 'OK Vivill',
+    name: 'OK Vivill'
   },
   {
     id: '445',
-    name: 'Vännäs OK',
+    name: 'Vännäs OK'
   },
   {
     id: '446',
-    name: 'Vänersborgs SK',
+    name: 'Vänersborgs SK'
   },
   {
     id: '447',
-    name: 'Väsby OK',
+    name: 'Väsby OK'
   },
   {
     id: '448',
-    name: 'Västra Ämterviks IF',
+    name: 'Västra Ämterviks IF'
   },
   {
     id: '449',
-    name: 'Växjö AIS',
+    name: 'Växjö AIS'
   },
   {
     id: '450',
-    name: 'Växjö OK',
+    name: 'Växjö OK'
   },
   {
     id: '451',
-    name: 'Västerviks OK',
+    name: 'Västerviks OK'
   },
   {
     id: '452',
-    name: 'Västerfärnebo AIK',
+    name: 'Västerfärnebo AIK'
   },
   {
     id: '453',
-    name: 'Åkers IF',
+    name: 'Åkers IF'
   },
   {
     id: '454',
-    name: 'IK Ymer',
+    name: 'IK Ymer'
   },
   {
     id: '455',
-    name: 'Ytterhogdals IK',
+    name: 'Ytterhogdals IK'
   },
   {
     id: '456',
-    name: 'Åby Skid o OK',
+    name: 'Åby Skid o OK'
   },
   {
     id: '457',
-    name: 'IK Wilske',
+    name: 'IK Wilske'
   },
   {
     id: '458',
-    name: 'IK Wallgårda',
+    name: 'IK Wallgårda'
   },
   {
     id: '459',
-    name: 'Ålems OK',
+    name: 'Ålems OK'
   },
   {
     id: '460',
-    name: 'Årsunda IF',
+    name: 'Årsunda IF'
   },
   {
     id: '461',
-    name: 'FK Åsen',
+    name: 'FK Åsen'
   },
   {
     id: '462',
-    name: 'Åsele IK',
+    name: 'Åsele IK'
   },
   {
     id: '463',
-    name: 'Åre SLK',
+    name: 'Åre SLK'
   },
   {
     id: '464',
-    name: 'Åsarna IK',
+    name: 'Åsarna IK'
   },
   {
     id: '465',
-    name: 'Ärla IF',
+    name: 'Ärla IF'
   },
   {
     id: '466',
-    name: 'Ätrans IF',
+    name: 'Ätrans IF'
   },
   {
     id: '467',
-    name: 'Ödeshögs SK',
+    name: 'Ödeshögs SK'
   },
   {
     id: '468',
-    name: 'OK Ödmården',
+    name: 'OK Ödmården'
   },
   {
     id: '469',
-    name: 'Ölmstad IS',
+    name: 'Ölmstad IS'
   },
   {
     id: '470',
-    name: 'IK Örnen Måttsund',
+    name: 'IK Örnen Måttsund'
   },
   {
     id: '471',
-    name: 'Örkelljunga FK',
+    name: 'Örkelljunga FK'
   },
   {
     id: '472',
-    name: 'SK Örnen',
+    name: 'SK Örnen'
   },
   {
     id: '473',
-    name: 'Övertorneå IF',
+    name: 'Övertorneå IF'
   },
   {
     id: '474',
-    name: 'Stjärnhovs OK 65',
+    name: 'Stjärnhovs OK 65'
   },
   {
     id: '475',
-    name: 'Österfärnebo IF',
+    name: 'Österfärnebo IF'
   },
   {
     id: '476',
-    name: 'SOK 68',
+    name: 'SOK 68'
   },
   {
     id: '477',
-    name: 'Östersunds OK',
+    name: 'Östersunds OK'
   },
   {
     id: '478',
-    name: 'Jämtlandspolisens IF',
+    name: 'Jämtlandspolisens IF'
   },
   {
     id: '479',
-    name: 'Östra Almby FK',
+    name: 'Östra Almby FK'
   },
   {
     id: '480',
-    name: 'Närkes Skogskarlars Klubb',
+    name: 'Närkes Skogskarlars Klubb'
   },
   {
     id: '481',
-    name: 'Ånge OK',
+    name: 'Ånge OK'
   },
   {
     id: '482',
-    name: 'OK Torfinn',
+    name: 'OK Torfinn'
   },
   {
     id: '483',
-    name: 'Lunds OK',
+    name: 'Lunds OK'
   },
   {
     id: '484',
-    name: 'OK Älme',
+    name: 'OK Älme'
   },
   {
     id: '485',
-    name: 'OK Tylöskog',
+    name: 'OK Tylöskog'
   },
   {
     id: '486',
-    name: 'Simrishamns OK',
+    name: 'Simrishamns OK'
   },
   {
     id: '487',
-    name: 'OK Tyringe',
+    name: 'OK Tyringe'
   },
   {
     id: '488',
-    name: 'OK Virdarna',
+    name: 'OK Virdarna'
   },
   {
     id: '489',
-    name: 'OK Älvsjö-Örby',
+    name: 'OK Älvsjö-Örby'
   },
   {
     id: '490',
-    name: 'Hässleby SOK',
+    name: 'Hässleby SOK'
   },
   {
     id: '491',
-    name: 'Kongliga Orienterings Teknologerna IF',
+    name: 'Kongliga Orienterings Teknologerna IF'
   },
   {
     id: '492',
-    name: 'OK Isaberg',
+    name: 'OK Isaberg'
   },
   {
     id: '493',
-    name: 'Os Hjälpkurvan',
+    name: 'Os Hjälpkurvan'
   },
   {
     id: '494',
-    name: 'Skogsvandrarna',
+    name: 'Skogsvandrarna'
   },
   {
     id: '495',
-    name: 'BroSö OK',
+    name: 'BroSö OK'
   },
   {
     id: '496',
-    name: 'OK Pers Lärjungar',
+    name: 'OK Pers Lärjungar'
   },
   {
     id: '497',
-    name: 'OL Teamet Olofström',
+    name: 'OL Teamet Olofström'
   },
   {
     id: '498',
-    name: 'Haparanda OK',
+    name: 'Haparanda OK'
   },
   {
     id: '499',
-    name: 'Oskarströms OK',
+    name: 'Oskarströms OK'
   },
   {
     id: '500',
-    name: 'Askersunds OK',
+    name: 'Askersunds OK'
   },
   {
     id: '501',
-    name: 'KFUM Örebro OK',
+    name: 'KFUM Örebro OK'
   },
   {
     id: '502',
-    name: 'OK Tisaren',
+    name: 'OK Tisaren'
   },
   {
     id: '503',
-    name: 'Stigsökarna',
+    name: 'Stigsökarna'
   },
   {
     id: '504',
-    name: 'Åmåls OK',
+    name: 'Åmåls OK'
   },
   {
     id: '505',
-    name: 'OK Fjällstigen',
+    name: 'OK Fjällstigen'
   },
   {
     id: '506',
-    name: 'FK Sport',
+    name: 'FK Sport'
   },
   {
     id: '507',
-    name: 'OK Kontinent',
+    name: 'OK Kontinent'
   },
   {
     id: '508',
-    name: 'OK Milan',
+    name: 'OK Milan'
   },
   {
     id: '509',
-    name: 'OK Origo',
+    name: 'OK Origo'
   },
   {
     id: '510',
-    name: 'OK Eken',
+    name: 'OK Eken'
   },
   {
     id: '511',
-    name: 'Hällestads OK',
+    name: 'Hällestads OK'
   },
   {
     id: '512',
-    name: 'OK Skogsströvarna',
+    name: 'OK Skogsströvarna'
   },
   {
     id: '513',
-    name: 'Matteus SI',
+    name: 'Matteus SI'
   },
   {
     id: '514',
-    name: 'Hammarkinds OK',
+    name: 'Hammarkinds OK'
   },
   {
     id: '515',
-    name: 'OK Österåker',
+    name: 'OK Österåker'
   },
   {
     id: '516',
-    name: 'OK Tjärnen',
+    name: 'OK Tjärnen'
   },
   {
     id: '517',
-    name: 'OK Grip',
+    name: 'OK Grip'
   },
   {
     id: '518',
-    name: 'Hökmarks IF Gnistan',
+    name: 'Hökmarks IF Gnistan'
   },
   {
     id: '519',
-    name: 'Filipstads OK',
+    name: 'Filipstads OK'
   },
   {
     id: '520',
-    name: 'OK Grane',
+    name: 'OK Grane'
   },
   {
     id: '521',
-    name: 'OK Fryksdalen',
+    name: 'OK Fryksdalen'
   },
   {
     id: '522',
-    name: 'OK Älgen',
+    name: 'OK Älgen'
   },
   {
     id: '523',
-    name: 'Årjängs OK',
+    name: 'Årjängs OK'
   },
   {
     id: '524',
-    name: 'Åmotfors OK',
+    name: 'Åmotfors OK'
   },
   {
     id: '525',
-    name: 'Långvikens OK',
+    name: 'Långvikens OK'
   },
   {
     id: '526',
-    name: 'Kils OK',
+    name: 'Kils OK'
   },
   {
     id: '527',
-    name: 'OK Mark',
+    name: 'OK Mark'
   },
   {
     id: '528',
-    name: 'SJ IF',
+    name: 'SJ IF'
   },
   {
     id: '529',
-    name: 'OK Frisene',
+    name: 'OK Frisene'
   },
   {
     id: '530',
-    name: 'OK Orinto',
+    name: 'OK Orinto'
   },
   {
     id: '531',
-    name: 'Svenljunga OK',
+    name: 'Svenljunga OK'
   },
   {
     id: '532',
-    name: 'OK Branten',
+    name: 'OK Branten'
   },
   {
     id: '533',
-    name: 'Västerås RK',
+    name: 'Västerås RK'
   },
   {
     id: '534',
-    name: 'Odensala AF',
+    name: 'Odensala AF'
   },
   {
     id: '535',
-    name: 'OL Alternativet',
+    name: 'OL Alternativet'
   },
   {
     id: '536',
-    name: 'Stora Skedvi IK SOFF',
+    name: 'Stora Skedvi IK SOFF'
   },
   {
     id: '537',
-    name: 'Tranan HIK',
+    name: 'Tranan HIK'
   },
   {
     id: '538',
-    name: 'Litsbygdens SK',
+    name: 'Litsbygdens SK'
   },
   {
     id: '539',
-    name: 'OK Sänkan',
+    name: 'OK Sänkan'
   },
   {
     id: '540',
-    name: 'Torsås OK',
+    name: 'Torsås OK'
   },
   {
     id: '541',
-    name: 'Norrhults SOK',
+    name: 'Norrhults SOK'
   },
   {
     id: '542',
-    name: 'OK Räven',
+    name: 'OK Räven'
   },
   {
     id: '543',
-    name: 'Eksport OL',
+    name: 'Eksport OL'
   },
   {
     id: '544',
-    name: 'Ystads OK',
+    name: 'Ystads OK'
   },
   {
     id: '545',
-    name: 'OK Norden',
+    name: 'OK Norden'
   },
   {
     id: '546',
-    name: 'IFK Lidingö SOK',
+    name: 'IFK Lidingö SOK'
   },
   {
     id: '547',
-    name: 'HJS-Vansbro OK',
+    name: 'HJS-Vansbro OK'
   },
   {
     id: '548',
-    name: 'Köping-Kolsva OK',
+    name: 'Köping-Kolsva OK'
   },
   {
     id: '549',
-    name: 'Umeå OK',
+    name: 'Umeå OK'
   },
   {
     id: '550',
-    name: 'Chalmers OL',
+    name: 'Chalmers OL'
   },
   {
     id: '551',
-    name: 'OK Vilse 87',
+    name: 'OK Vilse 87'
   },
   {
     id: '552',
-    name: 'IFK Hedemora OK',
+    name: 'IFK Hedemora OK'
   },
   {
     id: '553',
-    name: 'OK Kolmården',
+    name: 'OK Kolmården'
   },
   {
     id: '554',
-    name: 'Västerås SOK',
+    name: 'Västerås SOK'
   },
   {
     id: '555',
-    name: 'Hjobygdens OK',
+    name: 'Hjobygdens OK'
   },
   {
     id: '556',
-    name: 'Korsnäs IF OK',
+    name: 'Korsnäs IF OK'
   },
   {
     id: '557',
-    name: 'Skogis IF',
+    name: 'Skogis IF'
   },
   {
     id: '558',
-    name: 'OK Kompassen',
+    name: 'OK Kompassen'
   },
   {
     id: '559',
-    name: 'Nynäshamns OK',
+    name: 'Nynäshamns OK'
   },
   {
     id: '560',
-    name: 'Västerås SK OK',
+    name: 'Västerås SK OK'
   },
   {
     id: '561',
-    name: 'IFK Linköpings OS',
+    name: 'IFK Linköpings OS'
   },
   {
     id: '562',
-    name: 'OK Skogsmunken',
+    name: 'OK Skogsmunken'
   },
   {
     id: '563',
-    name: 'Frölunda OL',
+    name: 'Frölunda OL'
   },
   {
     id: '564',
-    name: 'IK Vikings OK',
+    name: 'IK Vikings OK'
   },
   {
     id: '565',
-    name: 'Täby OK',
+    name: 'Täby OK'
   },
   {
     id: '566',
-    name: 'Herrljunga SK Skid o OL',
+    name: 'Herrljunga SK Skid o OL'
   },
   {
     id: '567',
-    name: 'Spårvägens OK',
+    name: 'Spårvägens OK'
   },
   {
     id: '568',
-    name: 'Selånger SOK',
+    name: 'Selånger SOK'
   },
   {
     id: '569',
-    name: 'Arvidsjaurs OK',
+    name: 'Arvidsjaurs OK'
   },
   {
     id: '570',
-    name: 'OK Roslagen',
+    name: 'OK Roslagen'
   },
   {
     id: '571',
-    name: 'Vallentuna-Össeby OL',
+    name: 'Vallentuna-Össeby OL'
   },
   {
     id: '572',
-    name: 'Tolered-Utby Ol-klubb',
+    name: 'Tolered-Utby Ol-klubb'
   },
   {
     id: '573',
-    name: 'Djurgårdens IF OF',
+    name: 'Djurgårdens IF OF'
   },
   {
     id: '574',
-    name: 'AstraZeneca IF Mölndal',
+    name: 'AstraZeneca IF Mölndal'
   },
   {
     id: '575',
-    name: 'IFK Mora OK',
+    name: 'IFK Mora OK'
   },
   {
     id: '576',
-    name: 'Långvikens FF',
+    name: 'Långvikens FF'
   },
   {
     id: '577',
-    name: 'Östgöta Helikopter SK & IF',
+    name: 'Östgöta Helikopter SK & IF'
   },
   {
     id: '578',
-    name: 'IFK Tumba SOK',
+    name: 'IFK Tumba SOK'
   },
   {
     id: '579',
-    name: 'Kvarnsvedens GOIF OK',
+    name: 'Kvarnsvedens GOIF OK'
   },
   {
     id: '580',
-    name: 'Västerbergslagens OL',
+    name: 'Västerbergslagens OL'
   },
   {
     id: '581',
-    name: 'Älvsjö AIK SOK',
+    name: 'Älvsjö AIK SOK'
   },
   {
     id: '582',
-    name: 'Göteborg-Majorna OK',
+    name: 'Göteborg-Majorna OK'
   },
   {
     id: '583',
-    name: 'Sveaskogs IF',
+    name: 'Sveaskogs IF'
   },
   {
     id: '584',
-    name: 'Värend GN OL',
+    name: 'Värend GN OL'
   },
   {
     id: '585',
-    name: 'Järla Orientering',
+    name: 'Järla Orientering'
   },
   {
     id: '586',
-    name: 'Boxholm-Mjölby OL',
+    name: 'Boxholm-Mjölby OL'
   },
   {
     id: '587',
-    name: 'Forsa OK',
+    name: 'Forsa OK'
   },
   {
     id: '588',
-    name: 'Motala AIF OL',
+    name: 'Motala AIF OL'
   },
   {
     id: '589',
-    name: 'Husums IF OK',
+    name: 'Husums IF OK'
   },
   {
     id: '590',
-    name: 'Åhusstrands Motions IF',
+    name: 'Åhusstrands Motions IF'
   },
   {
     id: '591',
-    name: 'Visby IF Gute SOK',
+    name: 'Visby IF Gute SOK'
   },
   {
     id: '592',
-    name: 'OK Viola Tricolor',
+    name: 'OK Viola Tricolor'
   },
   {
     id: '593',
-    name: 'Grycksbo IF OK',
+    name: 'Grycksbo IF OK'
   },
   {
     id: '594',
-    name: 'Långshyttans AIK OK',
+    name: 'Långshyttans AIK OK'
   },
   {
     id: '595',
-    name: 'Toarps OK',
+    name: 'Toarps OK'
   },
   {
     id: '596',
-    name: 'Emmaboda Verda OK',
+    name: 'Emmaboda Verda OK'
   },
   {
     id: '597',
-    name: 'Svaide Roma SOK',
+    name: 'Svaide Roma SOK'
   },
   {
     id: '598',
-    name: 'Dalaportens OL',
+    name: 'Dalaportens OL'
   },
   {
     id: '599',
-    name: 'Myggans OS',
+    name: 'Myggans OS'
   },
   {
     id: '600',
-    name: 'Orsa IF OK',
+    name: 'Orsa IF OK'
   },
   {
     id: '601',
-    name: 'Tibro OK',
+    name: 'Tibro OK'
   },
   {
     id: '602',
-    name: 'OK P4',
+    name: 'OK P4'
   },
   {
     id: '603',
-    name: 'Åvestbo Byalags IF',
+    name: 'Åvestbo Byalags IF'
   },
   {
     id: '604',
-    name: 'SOIK Hellas',
+    name: 'SOIK Hellas'
   },
   {
     id: '606',
-    name: 'Fredrikshofs IF Skid & OK',
+    name: 'Fredrikshofs IF Skid & OK'
   },
   {
     id: '607',
-    name: 'Hammarby IF OF',
+    name: 'Hammarby IF OF'
   },
   {
     id: '608',
-    name: 'Tumba-Mälarhöjden OK',
+    name: 'Tumba-Mälarhöjden OK'
   },
   {
     id: '609',
-    name: 'Ågesta OK',
+    name: 'Ågesta OK'
   },
   {
     id: '610',
-    name: 'OK Roxen',
+    name: 'OK Roxen'
   },
   {
     id: '611',
-    name: 'O-Ringen',
+    name: 'O-Ringen'
   },
   {
     id: '612',
-    name: 'Föreningen Soft',
+    name: 'Föreningen Soft'
   },
   {
     id: '613',
-    name: 'Björklinge SOK',
+    name: 'Björklinge SOK'
   },
   {
     id: '614',
-    name: 'Hjärnarps OL',
+    name: 'Hjärnarps OL'
   },
   {
     id: '615',
-    name: 'Insjöns IF OK',
+    name: 'Insjöns IF OK'
   },
   {
     id: '616',
-    name: 'Elfsborg SOK',
+    name: 'Elfsborg SOK'
   },
   {
     id: '617',
-    name: 'Finspångs SOK',
+    name: 'Finspångs SOK'
   },
   {
     id: '618',
-    name: 'Härnösands OK',
+    name: 'Härnösands OK'
   },
   {
     id: '619',
-    name: 'Ski-O Tour Club',
+    name: 'Ski-O Tour Club'
   },
   {
     id: '620',
-    name: 'Midälva OK',
+    name: 'Midälva OK'
   },
   {
     id: '621',
-    name: 'Idrefjällens OK',
+    name: 'Idrefjällens OK'
   },
   {
     id: '622',
-    name: 'SM-veckan',
+    name: 'SM-veckan'
   },
   {
     id: '623',
-    name: 'Laholms IF OK',
+    name: 'Laholms IF OK'
   },
   {
     id: '625',
-    name: 'Älvdalens IF OK',
+    name: 'Älvdalens IF OK'
   },
   {
     id: '626',
-    name: 'IFK Norrköpings OK',
+    name: 'IFK Norrköpings OK'
   },
   {
     id: '627',
-    name: 'IF Vildsvinet',
+    name: 'IF Vildsvinet'
   },
   {
     id: '628',
-    name: 'Rotebro IS OK',
+    name: 'Rotebro IS OK'
   },
   {
     id: '629',
-    name: 'Västvärmlands OK',
+    name: 'Västvärmlands OK'
   },
   {
     id: '630',
-    name: 'Waxholms OK',
+    name: 'Waxholms OK'
   },
   {
     id: '631',
-    name: 'Älvsby IF OK',
+    name: 'Älvsby IF OK'
   },
   {
     id: '632',
-    name: 'Gustavsbergs OK',
+    name: 'Gustavsbergs OK'
   },
   {
     id: '633',
-    name: 'Klavre Orienteringsklubb',
+    name: 'Klavre Orienteringsklubb'
   },
   {
     id: '634',
-    name: 'Markbygdens OK',
+    name: 'Markbygdens OK'
   },
   {
     id: '635',
-    name: 'Falköpings AIK OK',
+    name: 'Falköpings AIK OK'
   },
   {
     id: '636',
-    name: 'Centrum OK',
+    name: 'Centrum OK'
   },
   {
     id: '637',
-    name: 'Stora Tuna OK',
+    name: 'Stora Tuna OK'
   },
   {
     id: '638',
-    name: 'Attunda OK',
+    name: 'Attunda OK'
   },
   {
     id: '639',
-    name: 'Skåneslättens OL',
+    name: 'Skåneslättens OL'
   },
   {
     id: '640',
-    name: 'Lustens OK',
+    name: 'Lustens OK'
   },
   {
     id: '641',
-    name: 'Gällstadbygdens SOK',
+    name: 'Gällstadbygdens SOK'
   },
   {
     id: '642',
-    name: 'Vargens Skog & Skidrännarförening',
+    name: 'Vargens Skog & Skidrännarförening'
   },
   {
     id: '643',
-    name: 'Landsbro IF SK',
+    name: 'Landsbro IF SK'
   },
   {
     id: '644',
-    name: 'Stockholmspolisens IF OF',
+    name: 'Stockholmspolisens IF OF'
   },
   {
     id: '645',
-    name: 'Vålådalens Sportklubb',
+    name: 'Vålådalens Sportklubb'
   },
   {
     id: '646',
-    name: 'Kexholms SK',
+    name: 'Kexholms SK'
   },
   {
     id: '647',
-    name: 'Söderåsens FK',
+    name: 'Söderåsens FK'
   },
   {
     id: '648',
-    name: 'IF Hallby SOK',
+    name: 'IF Hallby SOK'
   },
   {
     id: '649',
-    name: 'Hudiksvalls OK',
+    name: 'Hudiksvalls OK'
   },
   {
     id: '650',
-    name: 'Internationella Orienteringsförbundet',
+    name: 'Internationella Orienteringsförbundet'
   },
   {
     id: '651',
-    name: 'Nxtgeneration OL',
+    name: 'Nxtgeneration OL'
   },
   {
     id: '653',
-    name: 'Uringa Orienteers',
+    name: 'Uringa Orienteers'
   },
   {
     id: '654',
-    name: 'OK Moss',
+    name: 'OK Moss'
   },
   {
     id: '655',
-    name: 'Løten o-lag',
+    name: 'Løten o-lag'
   },
   {
     id: '656',
-    name: 'Hamar OK',
+    name: 'Hamar OK'
   },
   {
     id: '657',
-    name: 'Nydalens SK',
+    name: 'Nydalens SK'
   },
   {
     id: '658',
-    name: 'Mar Orienteering Club',
+    name: 'Mar Orienteering Club'
   },
   {
     id: '660',
-    name: 'OLK Fricktal',
+    name: 'OLK Fricktal'
   },
   {
     id: '661',
-    name: 'OMEGA',
+    name: 'OMEGA'
   },
   {
     id: '662',
-    name: 'Lillomarka OL',
+    name: 'Lillomarka OL'
   },
   {
     id: '663',
-    name: 'Kristiansand OK',
+    name: 'Kristiansand OK'
   },
   {
     id: '664',
-    name: 'OLG Säuliamt',
+    name: 'OLG Säuliamt'
   },
   {
     id: '665',
-    name: 'Rajamäen Rykmentti',
+    name: 'Rajamäen Rykmentti'
   },
   {
     id: '666',
-    name: 'Farum OK',
+    name: 'Farum OK'
   },
   {
     id: '667',
-    name: 'Halden SK',
+    name: 'Halden SK'
   },
   {
     id: '668',
-    name: 'Bækkelagets SK',
+    name: 'Bækkelagets SK'
   },
   {
     id: '671',
-    name: 'Turun Metsänkävijät',
+    name: 'Turun Metsänkävijät'
   },
   {
     id: '672',
-    name: 'Hvetlanda skidklubb',
+    name: 'Hvetlanda skidklubb'
   },
   {
     id: '673',
-    name: 'Helsingin Suunnistajat',
+    name: 'Helsingin Suunnistajat'
   },
   {
     id: '674',
-    name: 'IL Imås',
+    name: 'IL Imås'
   },
   {
     id: '675',
-    name: 'Ås-NMBU Orientering',
+    name: 'Ås-NMBU Orientering'
   },
   {
     id: '676',
-    name: 'SK Praga',
+    name: 'SK Praga'
   },
   {
     id: '677',
-    name: 'Rasti-Jyry',
+    name: 'Rasti-Jyry'
   },
   {
     id: '678',
-    name: 'Vaajakosken Terä',
+    name: 'Vaajakosken Terä'
   },
   {
     id: '679',
-    name: 'Austmarka IL',
+    name: 'Austmarka IL'
   },
   {
     id: '680',
-    name: 'Kalevan Rasti',
+    name: 'Kalevan Rasti'
   },
   {
     id: '681',
-    name: 'UKS Siodemka Rumia',
+    name: 'UKS Siodemka Rumia'
   },
   {
     id: '682',
-    name: 'Victoria Jozefow',
+    name: 'Victoria Jozefow'
   },
   {
     id: '683',
-    name: 'Tyrving IL',
+    name: 'Tyrving IL'
   },
   {
     id: '684',
-    name: 'Turun Suunnistajat',
+    name: 'Turun Suunnistajat'
   },
   {
     id: '685',
-    name: 'OK RSP',
+    name: 'OK RSP'
   },
   {
     id: '686',
-    name: 'Larvik OK',
+    name: 'Larvik OK'
   },
   {
     id: '687',
-    name: 'NTNUI',
+    name: 'NTNUI'
   },
   {
     id: '688',
-    name: 'Porsgrunn OL',
+    name: 'Porsgrunn OL'
   },
   {
     id: '689',
-    name: 'Tampereen Pyrintö',
+    name: 'Tampereen Pyrintö'
   },
   {
     id: '690',
-    name: 'Kangasala SK',
+    name: 'Kangasala SK'
   },
   {
     id: '691',
-    name: 'Grue IL',
+    name: 'Grue IL'
   },
   {
     id: '692',
-    name: 'IF Åland',
+    name: 'IF Åland'
   },
   {
     id: '694',
-    name: 'OLG Wislig',
+    name: 'OLG Wislig'
   },
   {
     id: '695',
-    name: 'AOK Kosutnjak',
+    name: 'AOK Kosutnjak'
   },
   {
     id: '700',
-    name: 'Herlufsholm OK',
+    name: 'Herlufsholm OK'
   },
   {
     id: '701',
-    name: 'Abominable O-Men',
+    name: 'Abominable O-Men'
   },
   {
     id: '702',
-    name: 'USK Praga',
+    name: 'USK Praga'
   },
   {
     id: '703',
-    name: 'OK Roskilde',
+    name: 'OK Roskilde'
   },
   {
     id: '704',
-    name: 'Raumar Orientering',
+    name: 'Raumar Orientering'
   },
   {
     id: '705',
-    name: 'A.S.D. Cus Bologna',
+    name: 'A.S.D. Cus Bologna'
   },
   {
     id: '706',
-    name: 'Hiisirasti',
+    name: 'Hiisirasti'
   },
   {
     id: '707',
-    name: 'Purva Mala',
+    name: 'Purva Mala'
   },
   {
     id: '708',
-    name: 'Kolding OK',
+    name: 'Kolding OK'
   },
   {
     id: '709',
-    name: 'OL Vallset/Stange',
+    name: 'OL Vallset/Stange'
   },
   {
     id: '710',
-    name: 'Indre Østfold OK',
+    name: 'Indre Østfold OK'
   },
   {
     id: '712',
-    name: 'HOC 93',
+    name: 'HOC 93'
   },
   {
     id: '713',
-    name: 'HSOK.dk',
+    name: 'HSOK.dk'
   },
   {
     id: '714',
-    name: 'Tormod Skilag',
+    name: 'Tormod Skilag'
   },
   {
     id: '715',
-    name: 'Sandefjord OK',
+    name: 'Sandefjord OK'
   },
   {
     id: '716',
-    name: 'Epilän Esa',
+    name: 'Epilän Esa'
   },
   {
     id: '718',
-    name: 'Post SV Dresden',
+    name: 'Post SV Dresden'
   },
   {
     id: '719',
-    name: 'Lia IL',
+    name: 'Lia IL'
   },
   {
     id: '720',
-    name: 'ASKÖ Henndorf Orienteering',
+    name: 'ASKÖ Henndorf Orienteering'
   },
   {
     id: '721',
-    name: 'Vang OL',
+    name: 'Vang OL'
   },
   {
     id: '722',
-    name: 'UBOL',
+    name: 'UBOL'
   },
   {
     id: '723',
-    name: 'Elverum OK',
+    name: 'Elverum OK'
   },
   {
     id: '724',
-    name: 'A.S.D. Amatori Orienteering Genova',
+    name: 'A.S.D. Amatori Orienteering Genova'
   },
   {
     id: '725',
-    name: 'Tynset IF',
+    name: 'Tynset IF'
   },
   {
     id: '726',
-    name: 'Ringerike OL',
+    name: 'Ringerike OL'
   },
   {
     id: '727',
-    name: 'Moscow-O-Club',
+    name: 'Moscow-O-Club'
   },
   {
     id: '728',
-    name: 'SKV OLG Deutsch Kaltenbrunn',
+    name: 'SKV OLG Deutsch Kaltenbrunn'
   },
   {
     id: '729',
-    name: 'Søllerød OK',
+    name: 'Søllerød OK'
   },
   {
     id: '730',
-    name: 'SV Robotron Dresden',
+    name: 'SV Robotron Dresden'
   },
   {
     id: '731',
-    name: 'Oxford University',
+    name: 'Oxford University'
   },
   {
     id: '732',
-    name: 'FSK Orientering',
+    name: 'FSK Orientering'
   },
   {
     id: '733',
-    name: 'Hadeland OL',
+    name: 'Hadeland OL'
   },
   {
     id: '734',
-    name: 'CRCO',
+    name: 'CRCO'
   },
   {
     id: '735',
-    name: 'OK Jihlava',
+    name: 'OK Jihlava'
   },
   {
     id: '736',
-    name: 'Spring Cup OK',
+    name: 'Spring Cup OK'
   },
   {
     id: '737',
-    name: 'IF Femman',
+    name: 'IF Femman'
   },
   {
     id: '738',
-    name: 'Eksjö CK',
+    name: 'Eksjö CK'
   },
   {
     id: '739',
-    name: 'Måren OK',
+    name: 'Måren OK'
   },
   {
     id: '740',
-    name: 'Dunedin Orienteering Club',
+    name: 'Dunedin Orienteering Club'
   },
   {
     id: '741',
-    name: 'Asker SK',
+    name: 'Asker SK'
   },
   {
     id: '742',
-    name: 'Orienta SKI-O',
+    name: 'Orienta SKI-O'
   },
   {
     id: '743',
-    name: 'OK Snab',
+    name: 'OK Snab'
   },
   {
     id: '744',
-    name: 'Naturfreunde Villach Orienteering',
+    name: 'Naturfreunde Villach Orienteering'
   },
   {
     id: '745',
-    name: 'OLV Uslar',
+    name: 'OLV Uslar'
   },
   {
     id: '747',
-    name: 'Mariager Fjord OK',
+    name: 'Mariager Fjord OK'
   },
   {
     id: '748',
-    name: 'Badenoch and Strathspey OC',
+    name: 'Badenoch and Strathspey OC'
   },
   {
     id: '749',
-    name: 'WUOC TeamAustria',
+    name: 'WUOC TeamAustria'
   },
   {
     id: '750',
-    name: 'Kajaanin Suunnistajat',
+    name: 'Kajaanin Suunnistajat'
   },
   {
     id: '752',
-    name: 'CSLG Melun',
+    name: 'CSLG Melun'
   },
   {
     id: '753',
-    name: 'Eureka Orienteering Club',
+    name: 'Eureka Orienteering Club'
   },
   {
     id: '754',
-    name: 'Tisvilde Hegn OK',
+    name: 'Tisvilde Hegn OK'
   },
   {
     id: '755',
-    name: 'Hermathenae',
+    name: 'Hermathenae'
   },
   {
     id: '756',
-    name: 'Comunitat Valenciana',
+    name: 'Comunitat Valenciana'
   },
   {
     id: '757',
-    name: 'Hellas Orientering',
+    name: 'Hellas Orientering'
   },
   {
     id: '758',
-    name: 'Fredensborg OK',
+    name: 'Fredensborg OK'
   },
   {
     id: '759',
-    name: 'Lagan Valley Orienteers',
+    name: 'Lagan Valley Orienteers'
   },
   {
     id: '760',
-    name: 'OK Raseborg',
+    name: 'OK Raseborg'
   },
   {
     id: '761',
-    name: 'GVOC',
+    name: 'GVOC'
   },
   {
     id: '762',
-    name: 'FIF Hillerød',
+    name: 'FIF Hillerød'
   },
   {
     id: '764',
-    name: 'Oppsal Orientering',
+    name: 'Oppsal Orientering'
   },
   {
     id: '765',
-    name: 'HOC',
+    name: 'HOC'
   },
   {
     id: '766',
-    name: 'Slavia Liberec Orienteering',
+    name: 'Slavia Liberec Orienteering'
   },
   {
     id: '767',
-    name: 'BOK',
+    name: 'BOK'
   },
   {
     id: '768',
-    name: 'Wellington OC',
+    name: 'Wellington OC'
   },
   {
     id: '769',
-    name: 'Mosmeridian',
+    name: 'Mosmeridian'
   },
   {
     id: '770',
-    name: 'OK Øst',
+    name: 'OK Øst'
   },
   {
     id: '771',
-    name: 'Tuga Sun',
+    name: 'Tuga Sun'
   },
   {
     id: '772',
-    name: 'IF Sibbo-Vargarna',
+    name: 'IF Sibbo-Vargarna'
   },
   {
     id: '773',
-    name: 'Lynx',
+    name: 'Lynx'
   },
   {
     id: '774',
-    name: 'Bø OL',
+    name: 'Bø OL'
   },
   {
     id: '775',
-    name: 'Bodø & Omegn IF Orientering',
+    name: 'Bodø & Omegn IF Orientering'
   },
   {
     id: '776',
-    name: 'Inderøy IL',
+    name: 'Inderøy IL'
   },
   {
     id: '777',
-    name: 'Cat-team',
+    name: 'Cat-team'
   },
   {
     id: '778',
-    name: 'Kolbotn og Skimt OL',
+    name: 'Kolbotn og Skimt OL'
   },
   {
     id: '779',
-    name: 'Enoggeroos',
+    name: 'Enoggeroos'
   },
   {
     id: '780',
-    name: 'OK77',
+    name: 'OK77'
   },
   {
     id: '781',
-    name: 'Brandval/Kongsvinger OK',
+    name: 'Brandval/Kongsvinger OK'
   },
   {
     id: '783',
-    name: 'Sandefjord TIF',
+    name: 'Sandefjord TIF'
   },
   {
     id: '784',
-    name: 'Østmarka OK',
+    name: 'Østmarka OK'
   },
   {
     id: '785',
-    name: 'Ärna IF',
+    name: 'Ärna IF'
   },
   {
     id: '786',
-    name: 'OK Sorø',
+    name: 'OK Sorø'
   },
   {
     id: '789',
-    name: 'Nittedal OL',
+    name: 'Nittedal OL'
   },
   {
     id: '790',
-    name: 'USV TU Dresden',
+    name: 'USV TU Dresden'
   },
   {
     id: '791',
-    name: 'Stavanger OK',
+    name: 'Stavanger OK'
   },
   {
     id: '792',
-    name: 'Lyn ski',
+    name: 'Lyn ski'
   },
   {
     id: '793',
-    name: 'New England Orienteering Club',
+    name: 'New England Orienteering Club'
   },
   {
     id: '794',
-    name: 'Idd SPK',
+    name: 'Idd SPK'
   },
   {
     id: '795',
-    name: 'IL BUL-Tromsø',
+    name: 'IL BUL-Tromsø'
   },
   {
     id: '796',
-    name: 'Fredrikstad SK',
+    name: 'Fredrikstad SK'
   },
   {
     id: '797',
-    name: 'Sarpsborg OL',
+    name: 'Sarpsborg OL'
   },
   {
     id: '798',
-    name: 'Skaukameratene OL',
+    name: 'Skaukameratene OL'
   },
   {
     id: '799',
-    name: 'OLG Goldau',
+    name: 'OLG Goldau'
   },
   {
     id: '800',
-    name: 'Hedrum OL',
+    name: 'Hedrum OL'
   },
   {
     id: '801',
-    name: 'Odal OL',
+    name: 'Odal OL'
   },
   {
     id: '802',
-    name: 'Svendborg OK',
+    name: 'Svendborg OK'
   },
   {
     id: '803',
-    name: 'Fossum IF',
+    name: 'Fossum IF'
   },
   {
     id: '804',
-    name: 'Drangedal OL',
+    name: 'Drangedal OL'
   },
   {
     id: '805',
-    name: 'OK Horten',
+    name: 'OK Horten'
   },
   {
     id: '806',
-    name: 'OLK Argus',
+    name: 'OLK Argus'
   },
   {
     id: '807',
-    name: 'Nordreisa IL',
+    name: 'Nordreisa IL'
   },
   {
     id: '808',
-    name: 'Rond OL',
+    name: 'Rond OL'
   },
   {
     id: '809',
-    name: 'Gimle IF',
+    name: 'Gimle IF'
   },
   {
     id: '810',
-    name: 'Konnerud IL',
+    name: 'Konnerud IL'
   },
   {
     id: '811',
-    name: 'ASD Orientisti Mezzaluna',
+    name: 'ASD Orientisti Mezzaluna'
   },
   {
     id: '812',
-    name: 'OK Pan Århus',
+    name: 'OK Pan Århus'
   },
   {
     id: '813',
-    name: 'IF Minken',
+    name: 'IF Minken'
   },
   {
     id: '814',
-    name: 'Gjø-Vard OL',
+    name: 'Gjø-Vard OL'
   },
   {
     id: '815',
-    name: 'Ålgård Orientering',
+    name: 'Ålgård Orientering'
   },
   {
     id: '816',
-    name: 'Fet OL',
+    name: 'Fet OL'
   },
   {
     id: '818',
-    name: 'OSI Orientering',
+    name: 'OSI Orientering'
   },
   {
     id: '819',
-    name: 'IF Sturla',
+    name: 'IF Sturla'
   },
   {
     id: '820',
-    name: 'SSV Planeta Radebeul',
+    name: 'SSV Planeta Radebeul'
   },
   {
     id: '821',
-    name: 'Krokstadøra IL',
+    name: 'Krokstadøra IL'
   },
   {
     id: '822',
-    name: 'Varteig OL',
+    name: 'Varteig OL'
   },
   {
     id: '823',
-    name: 'Viborg Orienteringsklub',
+    name: 'Viborg Orienteringsklub'
   },
   {
     id: '824',
-    name: 'OLC Graz',
+    name: 'OLC Graz'
   },
   {
     id: '825',
-    name: 'Harstad OL',
+    name: 'Harstad OL'
   },
   {
     id: '826',
-    name: 'SKO RUS',
+    name: 'SKO RUS'
   },
   {
     id: '827',
-    name: 'Club d orientation du CERN',
+    name: 'Club d orientation du CERN'
   },
   {
     id: '828',
-    name: 'Angelniemen Ankkuri',
+    name: 'Angelniemen Ankkuri'
   },
   {
     id: '829',
-    name: 'Allerød OK',
+    name: 'Allerød OK'
   },
   {
     id: '830',
-    name: 'OKS Otwock',
+    name: 'OKS Otwock'
   },
   {
     id: '831',
-    name: 'Eidskog OL',
+    name: 'Eidskog OL'
   },
   {
     id: '833',
-    name: 'Heming Orientering',
+    name: 'Heming Orientering'
   },
   {
     id: '834',
-    name: 'Malvik IL',
+    name: 'Malvik IL'
   },
   {
     id: '835',
-    name: 'Synnfjell OK',
+    name: 'Synnfjell OK'
   },
   {
     id: '836',
-    name: 'Toten-Troll',
+    name: 'Toten-Troll'
   },
   {
     id: '837',
-    name: 'East Midland Juniors',
+    name: 'East Midland Juniors'
   },
   {
     id: '838',
-    name: 'Fuersten OK Ettingen',
+    name: 'Fuersten OK Ettingen'
   },
   {
     id: '839',
-    name: 'SK Vuoksi',
+    name: 'SK Vuoksi'
   },
   {
     id: '840',
-    name: 'GBR O Academy',
+    name: 'GBR O Academy'
   },
   {
     id: '841',
-    name: 'WARRIOR OC',
+    name: 'WARRIOR OC'
   },
   {
     id: '842',
-    name: 'Farum Tisvilde OK',
+    name: 'Farum Tisvilde OK'
   },
   {
     id: '843',
-    name: 'Solvikingarna',
+    name: 'Solvikingarna'
   },
   {
     id: '844',
-    name: 'Gundelfinger Turnerschaft',
+    name: 'Gundelfinger Turnerschaft'
   },
   {
     id: '845',
-    name: 'OLC Wienerwald',
+    name: 'OLC Wienerwald'
   },
   {
     id: '846',
-    name: 'Filipstadsbygdens OK',
+    name: 'Filipstadsbygdens OK'
   },
   {
     id: '847',
-    name: 'WCOC',
+    name: 'WCOC'
   },
   {
     id: '848',
-    name: 'North West Junior Squad',
+    name: 'North West Junior Squad'
   },
   {
     id: '849',
-    name: 'OL Regio Olten',
+    name: 'OL Regio Olten'
   },
   {
     id: '850',
-    name: 'Holbæk OK',
+    name: 'Holbæk OK'
   },
   {
     id: '851',
-    name: 'OLC Stubai',
+    name: 'OLC Stubai'
   },
   {
     id: '852',
-    name: 'DVOA',
+    name: 'DVOA'
   },
   {
     id: '853',
-    name: 'Alatornion Pirkat',
+    name: 'Alatornion Pirkat'
   },
   {
     id: '854',
-    name: 'Poitiers Course d Orientation',
+    name: 'Poitiers Course d Orientation'
   },
   {
     id: '855',
-    name: 'OK Fortna',
+    name: 'OK Fortna'
   },
   {
     id: '857',
-    name: 'GEN',
+    name: 'GEN'
   },
   {
     id: '858',
-    name: 'orientabonito',
+    name: 'orientabonito'
   },
   {
     id: '859',
-    name: 'OL Regio Wil',
+    name: 'OL Regio Wil'
   },
   {
     id: '861',
-    name: 'Pellon Ponsi',
+    name: 'Pellon Ponsi'
   },
   {
     id: '862',
-    name: 'Koovee',
+    name: 'Koovee'
   },
   {
     id: '863',
-    name: 'Ounasvaaran Hiihtoseura',
+    name: 'Ounasvaaran Hiihtoseura'
   },
   {
     id: '864',
-    name: 'Aalborg OK',
+    name: 'Aalborg OK'
   },
   {
     id: '866',
-    name: 'Nidarøst OK',
+    name: 'Nidarøst OK'
   },
   {
     id: '867',
-    name: 'OK Skærmen Værløse',
+    name: 'OK Skærmen Værløse'
   },
   {
     id: '869',
-    name: 'Silkeborg OK',
+    name: 'Silkeborg OK'
   },
   {
     id: '870',
-    name: 'IKSU Multisport',
+    name: 'IKSU Multisport'
   },
   {
     id: '871',
-    name: 'OK Ursus',
+    name: 'OK Ursus'
   },
   {
     id: '872',
-    name: 'Talant SO',
+    name: 'Talant SO'
   },
   {
     id: '873',
-    name: 'Suunta-Sepot',
+    name: 'Suunta-Sepot'
   },
   {
     id: '874',
-    name: 'Ballerup OK',
+    name: 'Ballerup OK'
   },
   {
     id: '876',
-    name: 'OK Skeidi',
+    name: 'OK Skeidi'
   },
   {
     id: '877',
-    name: 'OK Øst Birkerød',
+    name: 'OK Øst Birkerød'
   },
   {
     id: '878',
-    name: 'Wing OK',
+    name: 'Wing OK'
   },
   {
     id: '879',
-    name: 'Køge OK',
+    name: 'Køge OK'
   },
   {
     id: '880',
-    name: 'IK Kronan',
+    name: 'IK Kronan'
   },
   {
     id: '881',
-    name: 'MS Parma',
+    name: 'MS Parma'
   },
   {
     id: '882',
-    name: 'Bergnäsets AIK SkidO',
+    name: 'Bergnäsets AIK SkidO'
   },
   {
     id: '883',
-    name: 'OK Renen SkidO',
+    name: 'OK Renen SkidO'
   },
   {
     id: '884',
-    name: 'RastiPielinen',
+    name: 'RastiPielinen'
   },
   {
     id: '885',
-    name: 'SK Pohjantähti',
+    name: 'SK Pohjantähti'
   },
   {
     id: '886',
-    name: 'OLV ZUG',
+    name: 'OLV ZUG'
   },
   {
     id: '887',
-    name: 'CNOC',
+    name: 'CNOC'
   },
   {
     id: '888',
-    name: 'Quantico Orienteering Club (QOC)',
+    name: 'Quantico Orienteering Club (QOC)'
   },
   {
     id: '889',
-    name: 'GAOC',
+    name: 'GAOC'
   },
   {
     id: '890',
-    name: 'OK Ilves',
+    name: 'OK Ilves'
   },
   {
     id: '891',
-    name: 'Frol IL',
+    name: 'Frol IL'
   },
   {
     id: '892',
-    name: 'Scout Orienteering Club',
+    name: 'Scout Orienteering Club'
   },
   {
     id: '893',
-    name: 'IL Gular',
+    name: 'IL Gular'
   },
   {
     id: '894',
-    name: 'Bjerkvik IF',
+    name: 'Bjerkvik IF'
   },
   {
     id: '895',
-    name: 'Bendigo Orienteers Incorporated',
+    name: 'Bendigo Orienteers Incorporated'
   },
   {
     id: '897',
-    name: 'Eborienteers',
+    name: 'Eborienteers'
   },
   {
     id: '898',
-    name: 'ODTÜ',
+    name: 'ODTÜ'
   },
   {
     id: '899',
-    name: 'TC Sjælland',
+    name: 'TC Sjælland'
   },
   {
     id: '900',
-    name: 'Ähtärin Urheilijat',
+    name: 'Ähtärin Urheilijat'
   },
   {
     id: '901',
-    name: 'AWOC',
+    name: 'AWOC'
   },
   {
     id: '902',
-    name: 'Szegedi Vasutas SE',
+    name: 'Szegedi Vasutas SE'
   },
   {
     id: '903',
-    name: 'OSC Kassel',
+    name: 'OSC Kassel'
   },
   {
     id: '904',
-    name: 'Freidig',
+    name: 'Freidig'
   },
   {
     id: '906',
-    name: 'Mölndal Outdoor IF',
+    name: 'Mölndal Outdoor IF'
   },
   {
     id: '907',
-    name: 'Lounais-Hämeen Rasti',
+    name: 'Lounais-Hämeen Rasti'
   },
   {
     id: '908',
-    name: 'Newcastle Orienteering Club',
+    name: 'Newcastle Orienteering Club'
   },
   {
     id: '909',
-    name: 'MTBO Team',
+    name: 'MTBO Team'
   },
   {
     id: '910',
-    name: 'Paimion Rasti',
+    name: 'Paimion Rasti'
   },
   {
     id: '911',
-    name: 'Lyngby OK',
+    name: 'Lyngby OK'
   },
   {
     id: '912',
-    name: 'Itä-Päijänteen Rasti',
+    name: 'Itä-Päijänteen Rasti'
   },
   {
     id: '913',
-    name: 'Lillehammer OK',
+    name: 'Lillehammer OK'
   },
   {
     id: '914',
-    name: 'OLG Galgenen',
+    name: 'OLG Galgenen'
   },
   {
     id: '916',
-    name: 'OK Yeisk',
+    name: 'OK Yeisk'
   },
   {
     id: '917',
-    name: 'Tous Azimuts Douai',
+    name: 'Tous Azimuts Douai'
   },
   {
     id: '918',
-    name: 'Vehkalahden Veikot',
+    name: 'Vehkalahden Veikot'
   },
   {
     id: '919',
-    name: 'SK OS Nové M?sto na Morav?',
+    name: 'SK OS Nové M?sto na Morav?'
   },
   {
     id: '920',
-    name: 'Kongsberg OL',
+    name: 'Kongsberg OL'
   },
   {
     id: '921',
-    name: 'Delta',
+    name: 'Delta'
   },
   {
     id: '922',
-    name: 'CPOC',
+    name: 'CPOC'
   },
   {
     id: '923',
-    name: 'OL Tønsberg og Omegn',
+    name: 'OL Tønsberg og Omegn'
   },
   {
     id: '924',
-    name: 'KROL BELGIUM',
+    name: 'KROL BELGIUM'
   },
   {
     id: '925',
-    name: 'OK FROS',
+    name: 'OK FROS'
   },
   {
     id: '926',
-    name: 'Notodden OL',
+    name: 'Notodden OL'
   },
   {
     id: '927',
-    name: 'Varegg Fleridrett',
+    name: 'Varegg Fleridrett'
   },
   {
     id: '928',
-    name: 'Skien OK',
+    name: 'Skien OK'
   },
   {
     id: '929',
-    name: 'Skien O-klubb',
+    name: 'Skien O-klubb'
   },
   {
     id: '930',
-    name: 'LSF Pronoking Team',
+    name: 'LSF Pronoking Team'
   },
   {
     id: '931',
-    name: 'Furusunds Atletsällskap',
+    name: 'Furusunds Atletsällskap'
   },
   {
     id: '933',
-    name: 'OL Amriswil',
+    name: 'OL Amriswil'
   },
   {
     id: '934',
-    name: 'OLG Bern',
+    name: 'OLG Bern'
   },
   {
     id: '935',
-    name: 'Espoon Suunta',
+    name: 'Espoon Suunta'
   },
   {
     id: '936',
-    name: 'Kokkolan Suunnistajat',
+    name: 'Kokkolan Suunnistajat'
   },
   {
     id: '937',
-    name: 'Viul OK',
+    name: 'Viul OK'
   },
   {
     id: '938',
-    name: 'Magnus Orienteering',
+    name: 'Magnus Orienteering'
   },
   {
     id: '939',
-    name: 'Lapin Veikot',
+    name: 'Lapin Veikot'
   },
   {
     id: '941',
-    name: 'Tarpian Suunta',
+    name: 'Tarpian Suunta'
   },
   {
     id: '942',
-    name: 'Styriapower',
+    name: 'Styriapower'
   },
   {
     id: '943',
-    name: 'Sparta Prague',
+    name: 'Sparta Prague'
   },
   {
     id: '944',
-    name: 'OK Botnia',
+    name: 'OK Botnia'
   },
   {
     id: '945',
-    name: 'GBR MTBO',
+    name: 'GBR MTBO'
   },
   {
     id: '946',
-    name: 'Dansk Orienteringsforbund',
+    name: 'Dansk Orienteringsforbund'
   },
   {
     id: '947',
-    name: 'OK SG',
+    name: 'OK SG'
   },
   {
     id: '948',
-    name: 'UNTS Warszawa',
+    name: 'UNTS Warszawa'
   },
   {
     id: '949',
-    name: 'RIK-Orientering, Bornholm',
+    name: 'RIK-Orientering, Bornholm'
   },
   {
     id: '950',
-    name: 'SV Turbine Neubrandenburg',
+    name: 'SV Turbine Neubrandenburg'
   },
   {
     id: '951',
-    name: 'Hærens Officersskoles IF',
+    name: 'Hærens Officersskoles IF'
   },
   {
     id: '952',
-    name: 'Rastivarsat',
+    name: 'Rastivarsat'
   },
   {
     id: '953',
-    name: 'OLG Oberwil',
+    name: 'OLG Oberwil'
   },
   {
     id: '954',
-    name: 'OLG Thun',
+    name: 'OLG Thun'
   },
   {
     id: '955',
-    name: 'OOB Kotlarka Praha',
+    name: 'OOB Kotlarka Praha'
   },
   {
     id: '956',
-    name: 'Czech MTB-O Masters Team',
+    name: 'Czech MTB-O Masters Team'
   },
   {
     id: '957',
-    name: 'Jönköpingspolisens Skytte- Och If',
+    name: 'Jönköpingspolisens Skytte- Och If'
   },
   {
     id: '958',
-    name: 'Selbu OK',
+    name: 'Selbu OK'
   },
   {
     id: '959',
-    name: 'POBO Opava',
+    name: 'POBO Opava'
   },
   {
     id: '960',
-    name: 'Interlopers',
+    name: 'Interlopers'
   },
   {
     id: '962',
-    name: 'Livgardets IK',
+    name: 'Livgardets IK'
   },
   {
     id: '964',
-    name: 'OK Orion, Zagreb',
+    name: 'OK Orion, Zagreb'
   },
   {
     id: '965',
-    name: 'QUBOC',
+    name: 'QUBOC'
   },
   {
     id: '967',
-    name: 'Horsens OK',
+    name: 'Horsens OK'
   },
   {
     id: '968',
-    name: 'HSV OL Wiener Neustadt',
+    name: 'HSV OL Wiener Neustadt'
   },
   {
     id: '970',
-    name: 'Nika-Moscow',
+    name: 'Nika-Moscow'
   },
   {
     id: '971',
-    name: 'OLC SKOG Fribourg',
+    name: 'OLC SKOG Fribourg'
   },
   {
     id: '972',
-    name: 'OK Lehola',
+    name: 'OK Lehola'
   },
   {
     id: '973',
-    name: 'Moscow-Ivanovskoe',
+    name: 'Moscow-Ivanovskoe'
   },
   {
     id: '974',
-    name: 'MTBO Team Germany',
+    name: 'MTBO Team Germany'
   },
   {
     id: '975',
-    name: 'OK Dainava',
+    name: 'OK Dainava'
   },
   {
     id: '976',
-    name: 'OL Trollelg',
+    name: 'OL Trollelg'
   },
   {
     id: '977',
-    name: 'Nivalan Urheilijat',
+    name: 'Nivalan Urheilijat'
   },
   {
     id: '978',
-    name: 'Oulun NMKY',
+    name: 'Oulun NMKY'
   },
   {
     id: '979',
-    name: 'C O B F',
+    name: 'C O B F'
   },
   {
     id: '980',
-    name: 'AXA SportsClub',
+    name: 'AXA SportsClub'
   },
   {
     id: '981',
-    name: 'OLG Welsikon',
+    name: 'OLG Welsikon'
   },
   {
     id: '982',
-    name: 'Hungarian MTBO Team',
+    name: 'Hungarian MTBO Team'
   },
   {
     id: '983',
-    name: 'Byåsen IL',
+    name: 'Byåsen IL'
   },
   {
     id: '984',
-    name: 'MR Tradutores Associados',
+    name: 'MR Tradutores Associados'
   },
   {
     id: '985',
-    name: 'Kankaanpään Suunnistajat',
+    name: 'Kankaanpään Suunnistajat'
   },
   {
     id: '986',
-    name: 'Asikkalan Raikas',
+    name: 'Asikkalan Raikas'
   },
   {
     id: '987',
-    name: 'Malahit',
+    name: 'Malahit'
   },
   {
     id: '988',
-    name: 'OK Devyni',
+    name: 'OK Devyni'
   },
   {
     id: '989',
-    name: 'TJ Rapid Bratislava',
+    name: 'TJ Rapid Bratislava'
   },
   {
     id: '990',
-    name: '?K Vazka Bratislava',
+    name: '?K Vazka Bratislava'
   },
   {
     id: '991',
-    name: '?K Cart print Nitra',
+    name: '?K Cart print Nitra'
   },
   {
     id: '992',
-    name: 'Ycone Sens FRA',
+    name: 'Ycone Sens FRA'
   },
   {
     id: '994',
-    name: 'SK Saue Tammed',
+    name: 'SK Saue Tammed'
   },
   {
     id: '996',
-    name: 'ADFA Portugal',
+    name: 'ADFA Portugal'
   },
   {
     id: '997',
-    name: 'AKFA',
+    name: 'AKFA'
   },
   {
     id: '998',
-    name: 'Akilles OK',
+    name: 'Akilles OK'
   },
   {
     id: '999',
-    name: 'Akin',
+    name: 'Akin'
   },
   {
     id: '1000',
-    name: 'ALCO St Priest',
+    name: 'ALCO St Priest'
   },
   {
     id: '1001',
-    name: 'Anttolan Urheilijat',
+    name: 'Anttolan Urheilijat'
   },
   {
     id: '1002',
-    name: 'Arco di carta',
+    name: 'Arco di carta'
   },
   {
     id: '1003',
-    name: 'ARDOC',
+    name: 'ARDOC'
   },
   {
     id: '1004',
-    name: 'ASCO Lugano',
+    name: 'ASCO Lugano'
   },
   {
     id: '1006',
-    name: 'ASVÖ Österrike',
+    name: 'ASVÖ Österrike'
   },
   {
     id: '1007',
-    name: 'Auckland OC',
+    name: 'Auckland OC'
   },
   {
     id: '1008',
-    name: 'Australia',
+    name: 'Australia'
   },
   {
     id: '1009',
-    name: 'Aventura-t',
+    name: 'Aventura-t'
   },
   {
     id: '1010',
-    name: 'avon ok',
+    name: 'avon ok'
   },
   {
     id: '1011',
-    name: 'Azimut, SPB',
+    name: 'Azimut, SPB'
   },
   {
     id: '1012',
-    name: 'British Army OC',
+    name: 'British Army OC'
   },
   {
     id: '1013',
-    name: 'Bay Area Orienteering Club',
+    name: 'Bay Area Orienteering Club'
   },
   {
     id: '1014',
-    name: 'Bay of Plenty',
+    name: 'Bay of Plenty'
   },
   {
     id: '1016',
-    name: 'BORASCA',
+    name: 'BORASCA'
   },
   {
     id: '1017',
-    name: 'Bridgnorth O.C',
+    name: 'Bridgnorth O.C'
   },
   {
     id: '1018',
-    name: 'BRIGHTNET',
+    name: 'BRIGHTNET'
   },
   {
     id: '1019',
-    name: 'Cern',
+    name: 'Cern'
   },
   {
     id: '1020',
-    name: 'Cleveland Orienteering Klub',
+    name: 'Cleveland Orienteering Klub'
   },
   {
     id: '1021',
-    name: 'COMM',
+    name: 'COMM'
   },
   {
     id: '1022',
-    name: 'Crapahut',
+    name: 'Crapahut'
   },
   {
     id: '1023',
-    name: 'CSA Ambérieu',
+    name: 'CSA Ambérieu'
   },
   {
     id: '1024',
-    name: 'DJK Adler 07 Bottrop',
+    name: 'DJK Adler 07 Bottrop'
   },
   {
     id: '1025',
-    name: 'Draugyste',
+    name: 'Draugyste'
   },
   {
     id: '1028',
-    name: 'Eiker OL',
+    name: 'Eiker OL'
   },
   {
     id: '1029',
-    name: 'Emblem IL',
+    name: 'Emblem IL'
   },
   {
     id: '1030',
-    name: 'Ennstal',
+    name: 'Ennstal'
   },
   {
     id: '1031',
-    name: 'Ermak',
+    name: 'Ermak'
   },
   {
     id: '1032',
-    name: 'ESV Lok Berlin-Schoeneweide',
+    name: 'ESV Lok Berlin-Schoeneweide'
   },
   {
     id: '1033',
-    name: 'Faaborg OK',
+    name: 'Faaborg OK'
   },
   {
     id: '1034',
-    name: 'Fana IL',
+    name: 'Fana IL'
   },
   {
     id: '1035',
-    name: 'Forest OC',
+    name: 'Forest OC'
   },
   {
     id: '1037',
-    name: 'FRSO',
+    name: 'FRSO'
   },
   {
     id: '1038',
-    name: 'Gold Savosa',
+    name: 'Gold Savosa'
   },
   {
     id: '1039',
-    name: 'Gronlait Orienteering Team',
+    name: 'Gronlait Orienteering Team'
   },
   {
     id: '1040',
-    name: 'GSPORT',
+    name: 'GSPORT'
   },
   {
     id: '1043',
-    name: 'Harlequins Orienteering Club',
+    name: 'Harlequins Orienteering Club'
   },
   {
     id: '1044',
-    name: 'Hauhon Sisu',
+    name: 'Hauhon Sisu'
   },
   {
     id: '1045',
-    name: 'Hawkes Bay Orienteering Club',
+    name: 'Hawkes Bay Orienteering Club'
   },
   {
     id: '1046',
-    name: 'Helsingør Ski & Orienteringsklub',
+    name: 'Helsingør Ski & Orienteringsklub'
   },
   {
     id: '1047',
-    name: 'Helsingør SOK',
+    name: 'Helsingør SOK'
   },
   {
     id: '1048',
-    name: 'Hertfordshire Orienteering Club  HH',
+    name: 'Hertfordshire Orienteering Club  HH'
   },
   {
     id: '1049',
-    name: 'Hiidenkiertäjät',
+    name: 'Hiidenkiertäjät'
   },
   {
     id: '1050',
-    name: 'Himangan Urheilijat',
+    name: 'Himangan Urheilijat'
   },
   {
     id: '1051',
-    name: 'HK Family Orienteering Club',
+    name: 'HK Family Orienteering Club'
   },
   {
     id: '1052',
-    name: 'HKOC',
+    name: 'HKOC'
   },
   {
     id: '1053',
-    name: 'HKOXCC',
+    name: 'HKOXCC'
   },
   {
     id: '1055',
-    name: 'IF Brahe',
+    name: 'IF Brahe'
   },
   {
     id: '1057',
-    name: 'IK Falken',
+    name: 'IK Falken'
   },
   {
     id: '1058',
-    name: 'IL Leik',
+    name: 'IL Leik'
   },
   {
     id: '1060',
-    name: 'IOF veteran',
+    name: 'IOF veteran'
   },
   {
     id: '1061',
-    name: 'ILVES OK',
+    name: 'ILVES OK'
   },
   {
     id: '1062',
-    name: 'Kaulsdorfer OLV (Berlin)',
+    name: 'Kaulsdorfer OLV (Berlin)'
   },
   {
     id: '1063',
-    name: 'Kaunas RSK',
+    name: 'Kaunas RSK'
   },
   {
     id: '1064',
-    name: 'Kaustisen Pohjan-Veikot',
+    name: 'Kaustisen Pohjan-Veikot'
   },
   {
     id: '1065',
-    name: 'Kauvatsan Ponteva',
+    name: 'Kauvatsan Ponteva'
   },
   {
     id: '1066',
-    name: 'Keminmaan Urheilijat',
+    name: 'Keminmaan Urheilijat'
   },
   {
     id: '1067',
-    name: 'Keravan Urheilijat',
+    name: 'Keravan Urheilijat'
   },
   {
     id: '1068',
-    name: 'KFIU',
+    name: 'KFIU'
   },
   {
     id: '1070',
-    name: 'Koo-Vee',
+    name: 'Koo-Vee'
   },
   {
     id: '1071',
-    name: 'Kouvolan Suunnistajat',
+    name: 'Kouvolan Suunnistajat'
   },
   {
     id: '1072',
-    name: 'KOVZ',
+    name: 'KOVZ'
   },
   {
     id: '1073',
-    name: 'Kuzmolovo 110%',
+    name: 'Kuzmolovo 110%'
   },
   {
     id: '1074',
-    name: 'Kvernbit IL',
+    name: 'Kvernbit IL'
   },
   {
     id: '1075',
-    name: 'Lahden Suunnistajat-37',
+    name: 'Lahden Suunnistajat-37'
   },
   {
     id: '1076',
-    name: 'Lardal OL',
+    name: 'Lardal OL'
   },
   {
     id: '1077',
-    name: 'Lierbygda O-lag',
+    name: 'Lierbygda O-lag'
   },
   {
     id: '1078',
-    name: 'love_beer2011',
+    name: 'love_beer2011'
   },
   {
     id: '1079',
-    name: 'LVB Leipzig',
+    name: 'LVB Leipzig'
   },
   {
     id: '1082',
-    name: 'MDOC',
+    name: 'MDOC'
   },
   {
     id: '1083',
-    name: 'Melhus IL',
+    name: 'Melhus IL'
   },
   {
     id: '1085',
-    name: 'Modum O-lag',
+    name: 'Modum O-lag'
   },
   {
     id: '1086',
-    name: 'Mäntsälän Urheilijat',
+    name: 'Mäntsälän Urheilijat'
   },
   {
     id: '1087',
-    name: 'Naturfreunde Wien',
+    name: 'Naturfreunde Wien'
   },
   {
     id: '1088',
-    name: 'Navi',
+    name: 'Navi'
   },
   {
     id: '1090',
-    name: 'Nizhni Novgorod',
+    name: 'Nizhni Novgorod'
   },
   {
     id: '1091',
-    name: 'Nord-Østerdal OK',
+    name: 'Nord-Østerdal OK'
   },
   {
     id: '1092',
-    name: 'North West Orienteering Club',
+    name: 'North West Orienteering Club'
   },
   {
     id: '1093',
-    name: 'Northern Wind',
+    name: 'Northern Wind'
   },
   {
     id: '1094',
-    name: 'Novosibirsk',
+    name: 'Novosibirsk'
   },
   {
     id: '1095',
-    name: 'Närpes OK',
+    name: 'Närpes OK'
   },
   {
     id: '1096',
-    name: 'o-92.ch',
+    name: 'o-92.ch'
   },
   {
     id: '1097',
-    name: 'O.K. SILVA CAMPINA',
+    name: 'O.K. SILVA CAMPINA'
   },
   {
     id: '1098',
-    name: 'OC Ataset',
+    name: 'OC Ataset'
   },
   {
     id: '1099',
-    name: 'Odda OL',
+    name: 'Odda OL'
   },
   {
     id: '1100',
-    name: 'Odense OK',
+    name: 'Odense OK'
   },
   {
     id: '1101',
-    name: 'OK Esbjerg',
+    name: 'OK Esbjerg'
   },
   {
     id: '1102',
-    name: 'OK Nidarøst',
+    name: 'OK Nidarøst'
   },
   {
     id: '1103',
-    name: 'OK OTA',
+    name: 'OK OTA'
   },
   {
     id: '1104',
-    name: 'OK HTF',
+    name: 'OK HTF'
   },
   {
     id: '1105',
-    name: 'OL NWK NWS',
+    name: 'OL NWK NWS'
   },
   {
     id: '1106',
-    name: 'OL Toten-Troll',
+    name: 'OL Toten-Troll'
   },
   {
     id: '1107',
-    name: 'Olavin Rasti',
+    name: 'Olavin Rasti'
   },
   {
     id: '1108',
-    name: 'OLC Kapreolo',
+    name: 'OLC Kapreolo'
   },
   {
     id: '1109',
-    name: 'OLC Looper',
+    name: 'OLC Looper'
   },
   {
     id: '1111',
-    name: 'OLG Biberist SO',
+    name: 'OLG Biberist SO'
   },
   {
     id: '1112',
-    name: 'OLG Cordoba',
+    name: 'OLG Cordoba'
   },
   {
     id: '1114',
-    name: 'OLG Herzogenbuchsee',
+    name: 'OLG Herzogenbuchsee'
   },
   {
     id: '1115',
-    name: 'OLG Hondrich',
+    name: 'OLG Hondrich'
   },
   {
     id: '1116',
-    name: 'OLG Kölliken',
+    name: 'OLG Kölliken'
   },
   {
     id: '1117',
-    name: 'OLG Ortenau Spätzleteam',
+    name: 'OLG Ortenau Spätzleteam'
   },
   {
     id: '1118',
-    name: 'OLG Pfäffikon',
+    name: 'OLG Pfäffikon'
   },
   {
     id: '1119',
-    name: 'OLG Siegerland',
+    name: 'OLG Siegerland'
   },
   {
     id: '1120',
-    name: 'OLG Suhr',
+    name: 'OLG Suhr'
   },
   {
     id: '1121',
-    name: 'OLIMP',
+    name: 'OLIMP'
   },
   {
     id: '1122',
-    name: 'OLK 31st',
+    name: 'OLK 31st'
   },
   {
     id: '1123',
-    name: 'OLK Rafzerfeld',
+    name: 'OLK Rafzerfeld'
   },
   {
     id: '1124',
-    name: 'OLP Hyogo',
+    name: 'OLP Hyogo'
   },
   {
     id: '1125',
-    name: 'OLT Transdanubien',
+    name: 'OLT Transdanubien'
   },
   {
     id: '1126',
-    name: 'OLV Baselland',
+    name: 'OLV Baselland'
   },
   {
     id: '1127',
-    name: 'OLV Hindelbank',
+    name: 'OLV Hindelbank'
   },
   {
     id: '1128',
-    name: 'OLV Luzern',
+    name: 'OLV Luzern'
   },
   {
     id: '1130',
-    name: 'Or. Swallows Noale',
+    name: 'Or. Swallows Noale'
   },
   {
     id: '1131',
-    name: 'Ori-Estarreja',
+    name: 'Ori-Estarreja'
   },
   {
     id: '1132',
-    name: 'Oriens',
+    name: 'Oriens'
   },
   {
     id: '1133',
-    name: 'Orienta PODA',
+    name: 'Orienta PODA'
   },
   {
     id: '1134',
-    name: 'Pargas IF',
+    name: 'Pargas IF'
   },
   {
     id: '1135',
-    name: 'Penoc Orienteering Club',
+    name: 'Penoc Orienteering Club'
   },
   {
     id: '1136',
-    name: 'Pihkaniskat',
+    name: 'Pihkaniskat'
   },
   {
     id: '1137',
-    name: 'Pol Besanese',
+    name: 'Pol Besanese'
   },
   {
     id: '1138',
-    name: 'Pskov',
+    name: 'Pskov'
   },
   {
     id: '1139',
-    name: 'Rasti-Hyry',
+    name: 'Rasti-Hyry'
   },
   {
     id: '1140',
-    name: 'Rasti-Jussit',
+    name: 'Rasti-Jussit'
   },
   {
     id: '1141',
-    name: 'Rastihaukat',
+    name: 'Rastihaukat'
   },
   {
     id: '1142',
-    name: 'Reilut Miehet Havumetsien',
+    name: 'Reilut Miehet Havumetsien'
   },
   {
     id: '1143',
-    name: 'Rem Maps',
+    name: 'Rem Maps'
   },
   {
     id: '1144',
-    name: 'Rudsbygd IL',
+    name: 'Rudsbygd IL'
   },
   {
     id: '1145',
-    name: 'Rønne IK Orientering',
+    name: 'Rønne IK Orientering'
   },
   {
     id: '1146',
-    name: 'Røros IL',
+    name: 'Røros IL'
   },
   {
     id: '1147',
-    name: 'Sans Souci',
+    name: 'Sans Souci'
   },
   {
     id: '1148',
-    name: 'SC Helsa',
+    name: 'SC Helsa'
   },
   {
     id: '1149',
-    name: 'Selkien Sisu',
+    name: 'Selkien Sisu'
   },
   {
     id: '1150',
-    name: 'Semiperdo Or. Maniago',
+    name: 'Semiperdo Or. Maniago'
   },
   {
     id: '1151',
-    name: 'Seniors',
+    name: 'Seniors'
   },
   {
     id: '1152',
-    name: 'SILD team',
+    name: 'SILD team'
   },
   {
     id: '1153',
-    name: 'Ski-O United',
+    name: 'Ski-O United'
   },
   {
     id: '1154',
-    name: 'SKOB Zlin',
+    name: 'SKOB Zlin'
   },
   {
     id: '1155',
-    name: 'Slavia Hradec Kralove',
+    name: 'Slavia Hradec Kralove'
   },
   {
     id: '1157',
-    name: 'Spiridon-Hochwald',
+    name: 'Spiridon-Hochwald'
   },
   {
     id: '1159',
-    name: 'SSV Langenhagen',
+    name: 'SSV Langenhagen'
   },
   {
     id: '1160',
-    name: 'Steinkjer OK',
+    name: 'Steinkjer OK'
   },
   {
     id: '1161',
-    name: 'Stjørdals-Blink Orientering',
+    name: 'Stjørdals-Blink Orientering'
   },
   {
     id: '1162',
-    name: 'Suunta Jyväskylä',
+    name: 'Suunta Jyväskylä'
   },
   {
     id: '1163',
-    name: 'SV Vorwärts Leipzig',
+    name: 'SV Vorwärts Leipzig'
   },
   {
     id: '1164',
-    name: 'Sveio OL',
+    name: 'Sveio OL'
   },
   {
     id: '1165',
-    name: 'SYO',
+    name: 'SYO'
   },
   {
     id: '1166',
-    name: 'Sørreisa OL',
+    name: 'Sørreisa OL'
   },
   {
     id: '1167',
-    name: 'Thurgorienta',
+    name: 'Thurgorienta'
   },
   {
     id: '1168',
-    name: 'TJ Tesla Brno',
+    name: 'TJ Tesla Brno'
   },
   {
     id: '1169',
-    name: 'Top End Orienteers',
+    name: 'Top End Orienteers'
   },
   {
     id: '1170',
-    name: 'Trol Belgium',
+    name: 'Trol Belgium'
   },
   {
     id: '1171',
-    name: 'Tropicana Golf and Country Club',
+    name: 'Tropicana Golf and Country Club'
   },
   {
     id: '1172',
-    name: 'TTOC',
+    name: 'TTOC'
   },
   {
     id: '1173',
-    name: 'Tuldav Lohe',
+    name: 'Tuldav Lohe'
   },
   {
     id: '1174',
-    name: 'Tuusulan Voima-Veikot',
+    name: 'Tuusulan Voima-Veikot'
   },
   {
     id: '1175',
-    name: 'TV Coburg-Neuses',
+    name: 'TV Coburg-Neuses'
   },
   {
     id: '1176',
-    name: 'UKS OSIR Gora Kalwaria',
+    name: 'UKS OSIR Gora Kalwaria'
   },
   {
     id: '1177',
-    name: 'Up North Orienteers',
+    name: 'Up North Orienteers'
   },
   {
     id: '1178',
-    name: 'USA Orienteering',
+    name: 'USA Orienteering'
   },
   {
     id: '1179',
-    name: 'USV Jena',
+    name: 'USV Jena'
   },
   {
     id: '1180',
-    name: 'Valbonne SAO',
+    name: 'Valbonne SAO'
   },
   {
     id: '1181',
-    name: 'Vegårshei IL',
+    name: 'Vegårshei IL'
   },
   {
     id: '1182',
-    name: 'Vetelin Urheilijat',
+    name: 'Vetelin Urheilijat'
   },
   {
     id: '1183',
-    name: 'Wanderers',
+    name: 'Wanderers'
   },
   {
     id: '1185',
-    name: 'Wellington Ranges',
+    name: 'Wellington Ranges'
   },
   {
     id: '1186',
-    name: 'Western Connecticut OC',
+    name: 'Western Connecticut OC'
   },
   {
     id: '1187',
-    name: 'YAOC, Hong Kong',
+    name: 'YAOC, Hong Kong'
   },
   {
     id: '1188',
-    name: 'Yarra Valley OC',
+    name: 'Yarra Valley OC'
   },
   {
     id: '1250',
-    name: 'FMTM',
+    name: 'FMTM'
   },
   {
     id: '1251',
-    name: 'GIH Stockholm',
+    name: 'GIH Stockholm'
   },
   {
     id: '1252',
-    name: 'Club Academy',
+    name: 'Club Academy'
   },
   {
     id: '1253',
-    name: 'OL Norska',
+    name: 'OL Norska'
   },
   {
     id: '1254',
-    name: 'VSSK MFF Praha (MFP)',
+    name: 'VSSK MFF Praha (MFP)'
   },
   {
     id: '1255',
-    name: 'RAE',
+    name: 'RAE'
   },
   {
     id: '1256',
-    name: 'MTBO SPb Club',
+    name: 'MTBO SPb Club'
   },
   {
     id: '1257',
-    name: 'Ylivieskan Kuula',
+    name: 'Ylivieskan Kuula'
   },
   {
     id: '1258',
-    name: 'Røyken O-lag',
+    name: 'Røyken O-lag'
   },
   {
     id: '1259',
-    name: 'OL Gaula',
+    name: 'OL Gaula'
   },
   {
     id: '1260',
-    name: 'OK Gorm',
+    name: 'OK Gorm'
   },
   {
     id: '1261',
-    name: 'Jesus OK',
+    name: 'Jesus OK'
   },
   {
     id: '1266',
-    name: 'OLA TSV Deggendorf',
+    name: 'OLA TSV Deggendorf'
   },
   {
     id: '1267',
-    name: 'Pol. G. Castello',
+    name: 'Pol. G. Castello'
   },
   {
     id: '1268',
-    name: 'COTRIM',
+    name: 'COTRIM'
   },
   {
     id: '1269',
-    name: 'Orienta-Opal',
+    name: 'Orienta-Opal'
   },
   {
     id: '1270',
-    name: 'TV Fürstenfeld',
+    name: 'TV Fürstenfeld'
   },
   {
     id: '1271',
-    name: 'Team Spain',
+    name: 'Team Spain'
   },
   {
     id: '1272',
-    name: 'Team Italia FISO',
+    name: 'Team Italia FISO'
   },
   {
     id: '1274',
-    name: 'bussola ok/OLG Säuliamt',
+    name: 'bussola ok/OLG Säuliamt'
   },
   {
     id: '1275',
-    name: 'Oddersjaa',
+    name: 'Oddersjaa'
   },
   {
     id: '1276',
-    name: 'Tama-O-Club',
+    name: 'Tama-O-Club'
   },
   {
     id: '1277',
-    name: 'Son of JJ',
+    name: 'Son of JJ'
   },
   {
     id: '1279',
-    name: 'Ursula O-lag',
+    name: 'Ursula O-lag'
   },
   {
     id: '1280',
-    name: 'Slækt O-lag',
+    name: 'Slækt O-lag'
   },
   {
     id: '1282',
-    name: 'Björnbär OK',
+    name: 'Björnbär OK'
   },
   {
     id: '1283',
-    name: 'Trøsken IL',
+    name: 'Trøsken IL'
   },
   {
     id: '1284',
-    name: 'O-63',
+    name: 'O-63'
   },
   {
     id: '1285',
-    name: 'SC Klecken',
+    name: 'SC Klecken'
   },
   {
     id: '1286',
-    name: 'WAT.OL',
+    name: 'WAT.OL'
   },
   {
     id: '1287',
-    name: 'Ringsaker OK',
+    name: 'Ringsaker OK'
   },
   {
     id: '1288',
-    name: 'CONVERGENCE',
+    name: 'CONVERGENCE'
   },
   {
     id: '1289',
-    name: 'OBAA',
+    name: 'OBAA'
   },
   {
     id: '1290',
-    name: 'Almaty',
+    name: 'Almaty'
   },
   {
     id: '1291',
-    name: 'OLV Steinberg',
+    name: 'OLV Steinberg'
   },
   {
     id: '1292',
-    name: 'HokoOnchi',
+    name: 'HokoOnchi'
   },
   {
     id: '1293',
-    name: 'PWT China',
+    name: 'PWT China'
   },
   {
     id: '1294',
-    name: 'Verdal OK',
+    name: 'Verdal OK'
   },
   {
     id: '1295',
-    name: 'Haugesund IL Orientering',
+    name: 'Haugesund IL Orientering'
   },
   {
     id: '1296',
-    name: 'Fitjar IL',
+    name: 'Fitjar IL'
   },
   {
     id: '1297',
-    name: 'WKS Wawel Krakow',
+    name: 'WKS Wawel Krakow'
   },
   {
     id: '1298',
-    name: 'Hudson Valley Orienteering',
+    name: 'Hudson Valley Orienteering'
   },
   {
     id: '1299',
-    name: 'K3/Fskj',
+    name: 'K3/Fskj'
   },
   {
     id: '1300',
-    name: 'I 19',
+    name: 'I 19'
   },
   {
     id: '1301',
-    name: 'Vaasan Suunnistajat',
+    name: 'Vaasan Suunnistajat'
   },
   {
     id: '1302',
-    name: 'OK Orient',
+    name: 'OK Orient'
   },
   {
     id: '1303',
-    name: 'FM/HKV/Info',
+    name: 'FM/HKV/Info'
   },
   {
     id: '1304',
-    name: 'OK Skøynar',
+    name: 'OK Skøynar'
   },
   {
     id: '1306',
-    name: 'LedR',
+    name: 'LedR'
   },
   {
     id: '1307',
-    name: 'P 7',
+    name: 'P 7'
   },
   {
     id: '1308',
-    name: 'Hkpflj',
+    name: 'Hkpflj'
   },
   {
     id: '1309',
-    name: 'Ing 2',
+    name: 'Ing 2'
   },
   {
     id: '1310',
-    name: 'HvSS',
+    name: 'HvSS'
   },
   {
     id: '1311',
-    name: 'Försvarsmakten',
+    name: 'Försvarsmakten'
   },
   {
     id: '1312',
-    name: 'Halmstad Garnison',
+    name: 'Halmstad Garnison'
   },
   {
     id: '1313',
-    name: 'IL Trysilgutten',
+    name: 'IL Trysilgutten'
   },
   {
     id: '1314',
-    name: 'Amager OK',
+    name: 'Amager OK'
   },
   {
     id: '1315',
-    name: 'IK Jogg',
+    name: 'IK Jogg'
   },
   {
     id: '1316',
-    name: 'Alta OL',
+    name: 'Alta OL'
   },
   {
     id: '1317',
-    name: 'Herning O-Klub',
+    name: 'Herning O-Klub'
   },
   {
     id: '1318',
-    name: 'AKIF',
+    name: 'AKIF'
   },
   {
     id: '1319',
-    name: 'MTR Sportu',
+    name: 'MTR Sportu'
   },
   {
     id: '1320',
-    name: 'Leader Petrozavodsk',
+    name: 'Leader Petrozavodsk'
   },
   {
     id: '1321',
-    name: 'Raufoss I.L. Orientering',
+    name: 'Raufoss I.L. Orientering'
   },
   {
     id: '1322',
-    name: 'LSS/Uppsala',
+    name: 'LSS/Uppsala'
   },
   {
     id: '1323',
-    name: 'Ikaalisten Nouseva-Voima',
+    name: 'Ikaalisten Nouseva-Voima'
   },
   {
     id: '1325',
-    name: 'OK Võru',
+    name: 'OK Võru'
   },
   {
     id: '1326',
-    name: 'Tacina',
+    name: 'Tacina'
   },
   {
     id: '1327',
-    name: 'OK Sigulda',
+    name: 'OK Sigulda'
   },
   {
     id: '1328',
-    name: 'PUKS M?ode Or?y Nowy Dwór Mazowiecki',
+    name: 'PUKS M?ode Or?y Nowy Dwór Mazowiecki'
   },
   {
     id: '1329',
-    name: 'PI-København',
+    name: 'PI-København'
   },
   {
     id: '1330',
-    name: 'OK Carnika',
+    name: 'OK Carnika'
   },
   {
     id: '1331',
-    name: 'Øvrebø/Vindbjart Orientering',
+    name: 'Øvrebø/Vindbjart Orientering'
   },
   {
     id: '1332',
-    name: 'Sentrum OK',
+    name: 'Sentrum OK'
   },
   {
     id: '1334',
-    name: 'Dental power',
+    name: 'Dental power'
   },
   {
     id: '1336',
-    name: 'OK Vendelboerne',
+    name: 'OK Vendelboerne'
   },
   {
     id: '1337',
-    name: 'JOKA',
+    name: 'JOKA'
   },
   {
     id: '1338',
-    name: 'OL Zuid-Holland',
+    name: 'OL Zuid-Holland'
   },
   {
     id: '1339',
-    name: 'Lost Orienteering Club',
+    name: 'Lost Orienteering Club'
   },
   {
     id: '1340',
-    name: 'Handelsbanken IF',
+    name: 'Handelsbanken IF'
   },
   {
     id: '1342',
-    name: 'IK Auseklis',
+    name: 'IK Auseklis'
   },
   {
     id: '1344',
-    name: 'Wiens Naturvänner',
+    name: 'Wiens Naturvänner'
   },
   {
     id: '1345',
-    name: 'Roxburgh Reivers',
+    name: 'Roxburgh Reivers'
   },
   {
     id: '1346',
-    name: 'RR',
+    name: 'RR'
   },
   {
     id: '1347',
-    name: 'OLG Dachsen',
+    name: 'OLG Dachsen'
   },
   {
     id: '1348',
-    name: 'IZRAEL OC',
+    name: 'IZRAEL OC'
   },
   {
     id: '1349',
-    name: 'SMOG St-Medard-en-Jalles',
+    name: 'SMOG St-Medard-en-Jalles'
   },
   {
     id: '1350',
-    name: 'Tampereen Yritys',
+    name: 'Tampereen Yritys'
   },
   {
     id: '1351',
-    name: 'Ylikiimingin Nuijamiehet',
+    name: 'Ylikiimingin Nuijamiehet'
   },
   {
     id: '1353',
-    name: 'Lulekamraterna',
+    name: 'Lulekamraterna'
   },
   {
     id: '1354',
-    name: 'OLF Mainz',
+    name: 'OLF Mainz'
   },
   {
     id: '1355',
-    name: 'WKS ?l?sk',
+    name: 'WKS ?l?sk'
   },
   {
     id: '1357',
-    name: 'Dolny ?l?sk',
+    name: 'Dolny ?l?sk'
   },
   {
     id: '1358',
-    name: 'OLG Kakowa',
+    name: 'OLG Kakowa'
   },
   {
     id: '1359',
-    name: 'OK Ozons',
+    name: 'OK Ozons'
   },
   {
     id: '1360',
-    name: 'U.S. SAN GIORGIO A.D.S.',
+    name: 'U.S. SAN GIORGIO A.D.S.'
   },
   {
     id: '1361',
-    name: 'Salgotarjani Dornyay SE',
+    name: 'Salgotarjani Dornyay SE'
   },
   {
     id: '1362',
-    name: 'Altair',
+    name: 'Altair'
   },
   {
     id: '1363',
-    name: 'OK Tivoli',
+    name: 'OK Tivoli'
   },
   {
     id: '1365',
-    name: 'ACA Aix-en-Provence',
+    name: 'ACA Aix-en-Provence'
   },
   {
     id: '1366',
-    name: 'dinamo',
+    name: 'dinamo'
   },
   {
     id: '1368',
-    name: 'Lithuania Deaf Team',
+    name: 'Lithuania Deaf Team'
   },
   {
     id: '1369',
-    name: 'OK Melfar',
+    name: 'OK Melfar'
   },
   {
     id: '1370',
-    name: 'CSA CNSD de Fontainebleau',
+    name: 'CSA CNSD de Fontainebleau'
   },
   {
     id: '1371',
-    name: 'I 2 IF Karlstad',
+    name: 'I 2 IF Karlstad'
   },
   {
     id: '1372',
-    name: 'Nuuk Orienteringsklub',
+    name: 'Nuuk Orienteringsklub'
   },
   {
     id: '1373',
-    name: 'Guyancourt Orientation 78',
+    name: 'Guyancourt Orientation 78'
   },
   {
     id: '1374',
-    name: 'Junior Team Trentino',
+    name: 'Junior Team Trentino'
   },
   {
     id: '1375',
-    name: 'St.Petersburg',
+    name: 'St.Petersburg'
   },
   {
     id: '1376',
-    name: 'IK Grane Arendal Orientering',
+    name: 'IK Grane Arendal Orientering'
   },
   {
     id: '1377',
-    name: '3ROC',
+    name: '3ROC'
   },
   {
     id: '1378',
-    name: 'OK Gulfstream',
+    name: 'OK Gulfstream'
   },
   {
     id: '1380',
-    name: 'Karjaan-Karis URA',
+    name: 'Karjaan-Karis URA'
   },
   {
     id: '1382',
-    name: 'Rumbo Madrid Sanse',
+    name: 'Rumbo Madrid Sanse'
   },
   {
     id: '1383',
-    name: 'ASUB Orientation',
+    name: 'ASUB Orientation'
   },
   {
     id: '1384',
-    name: 'Club Rennais de Course d orientation',
+    name: 'Club Rennais de Course d orientation'
   },
   {
     id: '1385',
-    name: 'Kolebakkens IF',
+    name: 'Kolebakkens IF'
   },
   {
     id: '1386',
-    name: 'DANMARK',
+    name: 'DANMARK'
   },
   {
     id: '1387',
-    name: 'Rakvere OK',
+    name: 'Rakvere OK'
   },
   {
     id: '1388',
-    name: 'P 10 IF',
+    name: 'P 10 IF'
   },
   {
     id: '1389',
-    name: 'Naturfreunde Linz',
+    name: 'Naturfreunde Linz'
   },
   {
     id: '1391',
-    name: 'SKOB HAV',
+    name: 'SKOB HAV'
   },
   {
     id: '1392',
-    name: 'Oberösterreich',
+    name: 'Oberösterreich'
   },
   {
     id: '1393',
-    name: 'Hyvinkään Rasti',
+    name: 'Hyvinkään Rasti'
   },
   {
     id: '1394',
-    name: 'OK SYD',
+    name: 'OK SYD'
   },
   {
     id: '1395',
-    name: 'South Ribble OC',
+    name: 'South Ribble OC'
   },
   {
     id: '1396',
-    name: 'C.O. Aget Lugano',
+    name: 'C.O. Aget Lugano'
   },
   {
     id: '1397',
-    name: 'Sävast Ski Team IF',
+    name: 'Sävast Ski Team IF'
   },
   {
     id: '1398',
-    name: 'Stockholm Multisport Klubb',
+    name: 'Stockholm Multisport Klubb'
   },
   {
     id: '1399',
-    name: 'Militära Landslaget',
+    name: 'Militära Landslaget'
   },
   {
     id: '1400',
-    name: 'Tjeck Biathlon Orienteering Team',
+    name: 'Tjeck Biathlon Orienteering Team'
   },
   {
     id: '1401',
-    name: 'Dalregementets IF',
+    name: 'Dalregementets IF'
   },
   {
     id: '1402',
-    name: 'Biathlon Team Germany',
+    name: 'Biathlon Team Germany'
   },
   {
     id: '1403',
-    name: 'Gneist',
+    name: 'Gneist'
   },
   {
     id: '1404',
-    name: 'Cornwall OC',
+    name: 'Cornwall OC'
   },
   {
     id: '1405',
-    name: 'OOB TJ Tatran Jablonec nad Nisou',
+    name: 'OOB TJ Tatran Jablonec nad Nisou'
   },
   {
     id: '1406',
-    name: 'ÖSeT SkidO',
+    name: 'ÖSeT SkidO'
   },
   {
     id: '1407',
-    name: 'GMOK OL Skytte',
+    name: 'GMOK OL Skytte'
   },
   {
     id: '1408',
-    name: 'K.O.L. Belgium',
+    name: 'K.O.L. Belgium'
   },
   {
     id: '1409',
-    name: 'OK ??uolas',
+    name: 'OK ??uolas'
   },
   {
     id: '1410',
-    name: 'ESV Lok Bad Schandau',
+    name: 'ESV Lok Bad Schandau'
   },
   {
     id: '1411',
-    name: '3502',
+    name: '3502'
   },
   {
     id: '1412',
-    name: 'KOB Kladno',
+    name: 'KOB Kladno'
   },
   {
     id: '1413',
-    name: 'CHIG',
+    name: 'CHIG'
   },
   {
     id: '1414',
-    name: 'TOLF Berlin',
+    name: 'TOLF Berlin'
   },
   {
     id: '1415',
-    name: 'Mo o-klubb',
+    name: 'Mo o-klubb'
   },
   {
     id: '1416',
-    name: 'COSE',
+    name: 'COSE'
   },
   {
     id: '1417',
-    name: 'Bielefelder TG',
+    name: 'Bielefelder TG'
   },
   {
     id: '1418',
-    name: 'ASCO Orléans',
+    name: 'ASCO Orléans'
   },
   {
     id: '1419',
-    name: 'Northern Navigators',
+    name: 'Northern Navigators'
   },
   {
     id: '1420',
-    name: 'Indiana Crossroads Orienteering',
+    name: 'Indiana Crossroads Orienteering'
   },
   {
     id: '1421',
-    name: 'Tout Azimut Fameck',
+    name: 'Tout Azimut Fameck'
   },
   {
     id: '1422',
-    name: 'Åtvidabergs IF',
+    name: 'Åtvidabergs IF'
   },
   {
     id: '1423',
-    name: 'Foton-Moscow',
+    name: 'Foton-Moscow'
   },
   {
     id: '1424',
-    name: 'Hertals OK',
+    name: 'Hertals OK'
   },
   {
     id: '1425',
-    name: 'Aarhus 1900 orientering',
+    name: 'Aarhus 1900 orientering'
   },
   {
     id: '1426',
-    name: 'CS Pertuis',
+    name: 'CS Pertuis'
   },
   {
     id: '1427',
-    name: 'Stord IL',
+    name: 'Stord IL'
   },
   {
     id: '1428',
-    name: 'SMHI IF',
+    name: 'SMHI IF'
   },
   {
     id: '1429',
-    name: 'HSV Klagenfurt',
+    name: 'HSV Klagenfurt'
   },
   {
     id: '1430',
-    name: 'Tintookies',
+    name: 'Tintookies'
   },
   {
     id: '1431',
-    name: 'SK Zabovresky Brno',
+    name: 'SK Zabovresky Brno'
   },
   {
     id: '1432',
-    name: 'Kaliningrad',
+    name: 'Kaliningrad'
   },
   {
     id: '1433',
-    name: 'OL-Team Magdeburg',
+    name: 'OL-Team Magdeburg'
   },
   {
     id: '1434',
-    name: 'HKS Azymut Mochy',
+    name: 'HKS Azymut Mochy'
   },
   {
     id: '1435',
-    name: 'Guildford Orienteers',
+    name: 'Guildford Orienteers'
   },
   {
     id: '1436',
-    name: 'SV Handwerk Erfurt',
+    name: 'SV Handwerk Erfurt'
   },
   {
     id: '1437',
-    name: 'UZO',
+    name: 'UZO'
   },
   {
     id: '1438',
-    name: 'ARGUS',
+    name: 'ARGUS'
   },
   {
     id: '1439',
-    name: 'Aire',
+    name: 'Aire'
   },
   {
     id: '1440',
-    name: 'OK24 Praha',
+    name: 'OK24 Praha'
   },
   {
     id: '1441',
-    name: 'Lev Hsaron',
+    name: 'Lev Hsaron'
   },
   {
     id: '1442',
-    name: 'coolfr',
+    name: 'coolfr'
   },
   {
     id: '1443',
-    name: 'Ziemelkurzeme OK',
+    name: 'Ziemelkurzeme OK'
   },
   {
     id: '1444',
-    name: 'Police Orienteering Club',
+    name: 'Police Orienteering Club'
   },
   {
     id: '1445',
-    name: 'Suunta 2000',
+    name: 'Suunta 2000'
   },
   {
     id: '1446',
-    name: 'SV Eintracht Neuenkirchen',
+    name: 'SV Eintracht Neuenkirchen'
   },
   {
     id: '1447',
-    name: 'www.obelarus.net',
+    name: 'www.obelarus.net'
   },
   {
     id: '1448',
-    name: 'OK Kar?uva',
+    name: 'OK Kar?uva'
   },
   {
     id: '1449',
-    name: 'Västgöta nations IF',
+    name: 'Västgöta nations IF'
   },
   {
     id: '1450',
-    name: 'OLG Zürich',
+    name: 'OLG Zürich'
   },
   {
     id: '1451',
-    name: 'REBIL',
+    name: 'REBIL'
   },
   {
     id: '1452',
-    name: 'OK Gittis Klosterneuburg',
+    name: 'OK Gittis Klosterneuburg'
   },
   {
     id: '1453',
-    name: 'Rattescharf OK',
+    name: 'Rattescharf OK'
   },
   {
     id: '1455',
-    name: 'CSAG METZ',
+    name: 'CSAG METZ'
   },
   {
     id: '1456',
-    name: 'Postens IF',
+    name: 'Postens IF'
   },
   {
     id: '1457',
-    name: 'LSG Olten',
+    name: 'LSG Olten'
   },
   {
     id: '1460',
-    name: 'LKI Laufklub Kompass Innsbruck',
+    name: 'LKI Laufklub Kompass Innsbruck'
   },
   {
     id: '1461',
-    name: 'Stora Tuna IK SK',
+    name: 'Stora Tuna IK SK'
   },
   {
     id: '1462',
-    name: 'Älvsborg Ro/Ro AB',
+    name: 'Älvsborg Ro/Ro AB'
   },
   {
     id: '1463',
-    name: 'Junior O-sport',
+    name: 'Junior O-sport'
   },
   {
     id: '1464',
-    name: 'Health club SPb',
+    name: 'Health club SPb'
   },
   {
     id: '1465',
-    name: 'CopenhagenO',
+    name: 'CopenhagenO'
   },
   {
     id: '1466',
-    name: 'AROMON',
+    name: 'AROMON'
   },
   {
     id: '1467',
-    name: 'Valkeakosken Haka',
+    name: 'Valkeakosken Haka'
   },
   {
     id: '1468',
-    name: 'Cambridge Sports Union',
+    name: 'Cambridge Sports Union'
   },
   {
     id: '1469',
-    name: 'COMIB',
+    name: 'COMIB'
   },
   {
     id: '1470',
-    name: 'HAMOK',
+    name: 'HAMOK'
   },
   {
     id: '1471',
-    name: 'Eagles Orienteering Club',
+    name: 'Eagles Orienteering Club'
   },
   {
     id: '1472',
-    name: 'Fanclub Hubmann',
+    name: 'Fanclub Hubmann'
   },
   {
     id: '1473',
-    name: 'Boussole Audomaroise',
+    name: 'Boussole Audomaroise'
   },
   {
     id: '1474',
-    name: 'NOR',
+    name: 'NOR'
   },
   {
     id: '1475',
-    name: 'OK Japetic',
+    name: 'OK Japetic'
   },
   {
     id: '1476',
-    name: 'Övertorneå IF SkidO',
+    name: 'Övertorneå IF SkidO'
   },
   {
     id: '1477',
-    name: 'Søgne og Songdalen OK',
+    name: 'Søgne og Songdalen OK'
   },
   {
     id: '1478',
-    name: 'Nousiaisten Alku',
+    name: 'Nousiaisten Alku'
   },
   {
     id: '1479',
-    name: 'KSO Kompas',
+    name: 'KSO Kompas'
   },
   {
     id: '1480',
-    name: 'Lappeen Riento',
+    name: 'Lappeen Riento'
   },
   {
     id: '1482',
-    name: 'TGV Horn',
+    name: 'TGV Horn'
   },
   {
     id: '1483',
-    name: 'Australopers',
+    name: 'Australopers'
   },
   {
     id: '1484',
-    name: 'SKRUM Moscow',
+    name: 'SKRUM Moscow'
   },
   {
     id: '1485',
-    name: 'Vähänkyrön Viesti',
+    name: 'Vähänkyrön Viesti'
   },
   {
     id: '1486',
-    name: 'LG Stettlen',
+    name: 'LG Stettlen'
   },
   {
     id: '1487',
-    name: 'OK Medeina',
+    name: 'OK Medeina'
   },
   {
     id: '1488',
-    name: 'Paracin Ok',
+    name: 'Paracin Ok'
   },
   {
     id: '1489',
-    name: 'Tetra Pak IF',
+    name: 'Tetra Pak IF'
   },
   {
     id: '1490',
-    name: 'Joutsenon Kullervo',
+    name: 'Joutsenon Kullervo'
   },
   {
     id: '1491',
-    name: 'Odense Poilti Idrætsforening',
+    name: 'Odense Poilti Idrætsforening'
   },
   {
     id: '1492',
-    name: 'Montsant',
+    name: 'Montsant'
   },
   {
     id: '1493',
-    name: 'UKS Traper',
+    name: 'UKS Traper'
   },
   {
     id: '1494',
-    name: 'Gafanhori',
+    name: 'Gafanhori'
   },
   {
     id: '1495',
-    name: 'Team Bulgaria',
+    name: 'Team Bulgaria'
   },
   {
     id: '1497',
-    name: 'IF Friskis&Svettis',
+    name: 'IF Friskis&Svettis'
   },
   {
     id: '1498',
-    name: 'Saarijärven Pullistus',
+    name: 'Saarijärven Pullistus'
   },
   {
     id: '1499',
-    name: 'Illinois River Valley Orienteering Club',
+    name: 'Illinois River Valley Orienteering Club'
   },
   {
     id: '1500',
-    name: 'TIF Viking',
+    name: 'TIF Viking'
   },
   {
     id: '1501',
-    name: 'KASTAMONU',
+    name: 'KASTAMONU'
   },
   {
     id: '1502',
-    name: 'JWOC 2013',
+    name: 'JWOC 2013'
   },
   {
     id: '1503',
-    name: 'Korven Honka',
+    name: 'Korven Honka'
   },
   {
     id: '1505',
-    name: '??????',
+    name: '??????'
   },
   {
     id: '1506',
-    name: 'O-klub',
+    name: 'O-klub'
   },
   {
     id: '1508',
-    name: 'COL Etrechy',
+    name: 'COL Etrechy'
   },
   {
     id: '1509',
-    name: 'Minor',
+    name: 'Minor'
   },
   {
     id: '1510',
-    name: 'Saloisten Reipas',
+    name: 'Saloisten Reipas'
   },
   {
     id: '1511',
-    name: 'Oulaisten Huima',
+    name: 'Oulaisten Huima'
   },
   {
     id: '1512',
-    name: 'Riihimäen Suunnistajat',
+    name: 'Riihimäen Suunnistajat'
   },
   {
     id: '1513',
-    name: 'Raja-Karjalan Suunnistajat',
+    name: 'Raja-Karjalan Suunnistajat'
   },
   {
     id: '1514',
-    name: 'Forth Valley Orienteers',
+    name: 'Forth Valley Orienteers'
   },
   {
     id: '1515',
-    name: 'Vesaisen pojat',
+    name: 'Vesaisen pojat'
   },
   {
     id: '1516',
-    name: 'OLV Weimar',
+    name: 'OLV Weimar'
   },
   {
     id: '1517',
-    name: 'Kuopion Suunnistajat',
+    name: 'Kuopion Suunnistajat'
   },
   {
     id: '1518',
-    name: 'Hämeenlinnan Suunnistajat',
+    name: 'Hämeenlinnan Suunnistajat'
   },
   {
     id: '1519',
-    name: 'CSA EMHM CHAMONIX',
+    name: 'CSA EMHM CHAMONIX'
   },
   {
     id: '1520',
-    name: 'RAFO',
+    name: 'RAFO'
   },
   {
     id: '1521',
-    name: 'COA',
+    name: 'COA'
   },
   {
     id: '1522',
-    name: 'Kirishi-Ladoga',
+    name: 'Kirishi-Ladoga'
   },
   {
     id: '1523',
-    name: 'Rastikarhut',
+    name: 'Rastikarhut'
   },
   {
     id: '1524',
-    name: 'Rasti-Kurikka',
+    name: 'Rasti-Kurikka'
   },
   {
     id: '1525',
-    name: 'Alajärven Ankkurit',
+    name: 'Alajärven Ankkurit'
   },
   {
     id: '1526',
-    name: 'Tio Rättens Män',
+    name: 'Tio Rättens Män'
   },
   {
     id: '1527',
-    name: 'O Jura',
+    name: 'O Jura'
   },
   {
     id: '1528',
-    name: 'Laitilan Jyske',
+    name: 'Laitilan Jyske'
   },
   {
     id: '1530',
-    name: 'Lahden Taimi',
+    name: 'Lahden Taimi'
   },
   {
     id: '1531',
-    name: 'OPALE ORIENTATION',
+    name: 'OPALE ORIENTATION'
   },
   {
     id: '1532',
-    name: 'NORD',
+    name: 'NORD'
   },
   {
     id: '1533',
-    name: 'TA Douai',
+    name: 'TA Douai'
   },
   {
     id: '1534',
-    name: 'Melbourne Forest racers',
+    name: 'Melbourne Forest racers'
   },
   {
     id: '1535',
-    name: 'UOF',
+    name: 'UOF'
   },
   {
     id: '1536',
-    name: 'Ylistaron Kilpa-Veljet',
+    name: 'Ylistaron Kilpa-Veljet'
   },
   {
     id: '1537',
-    name: 'CO Utoe Bellinzona',
+    name: 'CO Utoe Bellinzona'
   },
   {
     id: '1538',
-    name: 'Jämsän Retki-Veikot',
+    name: 'Jämsän Retki-Veikot'
   },
   {
     id: '1539',
-    name: 'WMOC 2012 OK',
+    name: 'WMOC 2012 OK'
   },
   {
     id: '1540',
-    name: 'Rasti E4',
+    name: 'Rasti E4'
   },
   {
     id: '1541',
-    name: 'OL-Universities of Turku',
+    name: 'OL-Universities of Turku'
   },
   {
     id: '1542',
-    name: 'Stokke IL',
+    name: 'Stokke IL'
   },
   {
     id: '1543',
-    name: 'Ulvilan Ura',
+    name: 'Ulvilan Ura'
   },
   {
     id: '1544',
-    name: 'Rasti-Nokia',
+    name: 'Rasti-Nokia'
   },
   {
     id: '1545',
-    name: 'SBS Vikke',
+    name: 'SBS Vikke'
   },
   {
     id: '1547',
-    name: 'Kemiön Kiilat',
+    name: 'Kemiön Kiilat'
   },
   {
     id: '1550',
-    name: 'OLC Union VIKTRING',
+    name: 'OLC Union VIKTRING'
   },
   {
     id: '1551',
-    name: 'OL Zimmerberg',
+    name: 'OL Zimmerberg'
   },
   {
     id: '1553',
-    name: 'Bergens TF',
+    name: 'Bergens TF'
   },
   {
     id: '1555',
-    name: 'OK 73',
+    name: 'OK 73'
   },
   {
     id: '1556',
-    name: 'HSV-Ried',
+    name: 'HSV-Ried'
   },
   {
     id: '1557',
-    name: 'Saab FF Järfälla',
+    name: 'Saab FF Järfälla'
   },
   {
     id: '1558',
-    name: 'Unione Sportiva Primiero A.S.D.',
+    name: 'Unione Sportiva Primiero A.S.D.'
   },
   {
     id: '1559',
-    name: 'IL Koll',
+    name: 'IL Koll'
   },
   {
     id: '1560',
-    name: 'Zwahlen Seeland',
+    name: 'Zwahlen Seeland'
   },
   {
     id: '1561',
-    name: 'OSK Sakas',
+    name: 'OSK Sakas'
   },
   {
     id: '1562',
-    name: 'MVOC',
+    name: 'MVOC'
   },
   {
     id: '1563',
-    name: 'Dublin University Orienteers',
+    name: 'Dublin University Orienteers'
   },
   {
     id: '1564',
-    name: 'Club Montsant de Curses d Orientació',
+    name: 'Club Montsant de Curses d Orientació'
   },
   {
     id: '1565',
-    name: 'Weston Emus',
+    name: 'Weston Emus'
   },
   {
     id: '1567',
-    name: 'OLK Piz Hasi',
+    name: 'OLK Piz Hasi'
   },
   {
     id: '1568',
-    name: 'Hautes Vosges Orientation',
+    name: 'Hautes Vosges Orientation'
   },
   {
     id: '1569',
-    name: 'azimut provence',
+    name: 'azimut provence'
   },
   {
     id: '1570',
-    name: 'Lapuan Virkiä',
+    name: 'Lapuan Virkiä'
   },
   {
     id: '1571',
-    name: 'OT Rtanj',
+    name: 'OT Rtanj'
   },
   {
     id: '1573',
-    name: 'Kronan',
+    name: 'Kronan'
   },
   {
     id: '1574',
-    name: 'BEGUN',
+    name: 'BEGUN'
   },
   {
     id: '1575',
-    name: 'NAVEGAR',
+    name: 'NAVEGAR'
   },
   {
     id: '1576',
-    name: 'OLK Wiggertal',
+    name: 'OLK Wiggertal'
   },
   {
     id: '1577',
-    name: 'OLG Basel',
+    name: 'OLG Basel'
   },
   {
     id: '1578',
-    name: 'OLG Chur',
+    name: 'OLG Chur'
   },
   {
     id: '1579',
-    name: 'Solf IK',
+    name: 'Solf IK'
   },
   {
     id: '1580',
-    name: 'SV IHW Alex 78 Berlin e.V.',
+    name: 'SV IHW Alex 78 Berlin e.V.'
   },
   {
     id: '1581',
-    name: 'Orion',
+    name: 'Orion'
   },
   {
     id: '1582',
-    name: 'ALIGOTS',
+    name: 'ALIGOTS'
   },
   {
     id: '1584',
-    name: 'NOC',
+    name: 'NOC'
   },
   {
     id: '1585',
-    name: 'MZLU Brno',
+    name: 'MZLU Brno'
   },
   {
     id: '1586',
-    name: 'Sportclub Meran',
+    name: 'Sportclub Meran'
   },
   {
     id: '1587',
-    name: 'Spb',
+    name: 'Spb'
   },
   {
     id: '1588',
-    name: 'PARMA',
+    name: 'PARMA'
   },
   {
     id: '1589',
-    name: 'OK Usterbadet',
+    name: 'OK Usterbadet'
   },
   {
     id: '1590',
-    name: 'Octavian Droobers',
+    name: 'Octavian Droobers'
   },
   {
     id: '1591',
-    name: 'Clydeside Orienteers',
+    name: 'Clydeside Orienteers'
   },
   {
     id: '1592',
-    name: 'KU AZS WAT Warszawa',
+    name: 'KU AZS WAT Warszawa'
   },
   {
     id: '1593',
-    name: 'Orient Express 42',
+    name: 'Orient Express 42'
   },
   {
     id: '1596',
-    name: 'UKS Azymut Pabianice',
+    name: 'UKS Azymut Pabianice'
   },
   {
     id: '1597',
-    name: 'OK Lokomotiva Pardubice',
+    name: 'OK Lokomotiva Pardubice'
   },
   {
     id: '1598',
-    name: 'Fingal Orienteers',
+    name: 'Fingal Orienteers'
   },
   {
     id: '1599',
-    name: 'OK Vihor, Zagreb',
+    name: 'OK Vihor, Zagreb'
   },
   {
     id: '1602',
-    name: 'Legenda',
+    name: 'Legenda'
   },
   {
     id: '1603',
-    name: 'OLG Rymenzburg',
+    name: 'OLG Rymenzburg'
   },
   {
     id: '1605',
-    name: 'Os IL orientering',
+    name: 'Os IL orientering'
   },
   {
     id: '1606',
-    name: 'Lancaster OC',
+    name: 'Lancaster OC'
   },
   {
     id: '1607',
-    name: 'Orient alp',
+    name: 'Orient alp'
   },
   {
     id: '1609',
-    name: 'SK OB Ostrava',
+    name: 'SK OB Ostrava'
   },
   {
     id: '1610',
-    name: 'BSI Orientering',
+    name: 'BSI Orientering'
   },
   {
     id: '1611',
-    name: 'EUOC',
+    name: 'EUOC'
   },
   {
     id: '1613',
-    name: 'OK Kobras',
+    name: 'OK Kobras'
   },
   {
     id: '1614',
-    name: 'Ås IL',
+    name: 'Ås IL'
   },
   {
     id: '1615',
-    name: 'OSK Falco',
+    name: 'OSK Falco'
   },
   {
     id: '1616',
-    name: 'Adventure Aura',
+    name: 'Adventure Aura'
   },
   {
     id: '1617',
-    name: 'SLE 78',
+    name: 'SLE 78'
   },
   {
     id: '1618',
-    name: 'OL Team Lippe',
+    name: 'OL Team Lippe'
   },
   {
     id: '1619',
-    name: 'SBOC',
+    name: 'SBOC'
   },
   {
     id: '1620',
-    name: 'OL Trollo',
+    name: 'OL Trollo'
   },
   {
     id: '1621',
-    name: 'Karkki-Rasti',
+    name: 'Karkki-Rasti'
   },
   {
     id: '1623',
-    name: 'COTS',
+    name: 'COTS'
   },
   {
     id: '1624',
-    name: 'Øyer/Tretten if',
+    name: 'Øyer/Tretten if'
   },
   {
     id: '1625',
-    name: 'SK Kamenice',
+    name: 'SK Kamenice'
   },
   {
     id: '1627',
-    name: 'Bussola OK',
+    name: 'Bussola OK'
   },
   {
     id: '1628',
-    name: 'USMAOC',
+    name: 'USMAOC'
   },
   {
     id: '1629',
-    name: 'Orienta-Zarya',
+    name: 'Orienta-Zarya'
   },
   {
     id: '1630',
-    name: 'Nero Hil',
+    name: 'Nero Hil'
   },
   {
     id: '1631',
-    name: 'OL Biel Seeland',
+    name: 'OL Biel Seeland'
   },
   {
     id: '1632',
-    name: 'SELOC',
+    name: 'SELOC'
   },
   {
     id: '1633',
-    name: 'Sini Kamani',
+    name: 'Sini Kamani'
   },
   {
     id: '1634',
-    name: 'Järlåsa IF',
+    name: 'Järlåsa IF'
   },
   {
     id: '1635',
-    name: 'Perhon Kiri',
+    name: 'Perhon Kiri'
   },
   {
     id: '1636',
-    name: 'Rastiimi',
+    name: 'Rastiimi'
   },
   {
     id: '1639',
-    name: 'GSO 5909 Grande-Synthe Orientation',
+    name: 'GSO 5909 Grande-Synthe Orientation'
   },
   {
     id: '1640',
-    name: 'Suomusjärven Sisu',
+    name: 'Suomusjärven Sisu'
   },
   {
     id: '1641',
-    name: 'O-Team Besançon',
+    name: 'O-Team Besançon'
   },
   {
     id: '1642',
-    name: 'Døvania',
+    name: 'Døvania'
   },
   {
     id: '1644',
-    name: 'A.S.D. Unione Lombarda',
+    name: 'A.S.D. Unione Lombarda'
   },
   {
     id: '1647',
-    name: 'Sachsen-Marathon e.V., Dresden',
+    name: 'Sachsen-Marathon e.V., Dresden'
   },
   {
     id: '1648',
-    name: 'LegendaChe',
+    name: 'LegendaChe'
   },
   {
     id: '1650',
-    name: 'KS Spójnia Warszawa',
+    name: 'KS Spójnia Warszawa'
   },
   {
     id: '1651',
-    name: 'EOOC',
+    name: 'EOOC'
   },
   {
     id: '1652',
-    name: 'ANCO',
+    name: 'ANCO'
   },
   {
     id: '1653',
-    name: 'Socol Perm',
+    name: 'Socol Perm'
   },
   {
     id: '1654',
-    name: 'RSV Hannover',
+    name: 'RSV Hannover'
   },
   {
     id: '1656',
-    name: 'OMEGA RUS',
+    name: 'OMEGA RUS'
   },
   {
     id: '1657',
-    name: 'Lune Orienteers',
+    name: 'Lune Orienteers'
   },
   {
     id: '1658',
-    name: 'TechnoPort',
+    name: 'TechnoPort'
   },
   {
     id: '1660',
-    name: 'CSM RILLIEUX',
+    name: 'CSM RILLIEUX'
   },
   {
     id: '1661',
-    name: 'G.S. Pavione A.S.D. - Imèr',
+    name: 'G.S. Pavione A.S.D. - Imèr'
   },
   {
     id: '1662',
-    name: 'VSB Ostrava',
+    name: 'VSB Ostrava'
   },
   {
     id: '1663',
-    name: 'Junior PiemonTeam',
+    name: 'Junior PiemonTeam'
   },
   {
     id: '1664',
-    name: 'SLOW',
+    name: 'SLOW'
   },
   {
     id: '1665',
-    name: 'UZAO-Team Moscow',
+    name: 'UZAO-Team Moscow'
   },
   {
     id: '1666',
-    name: 'Northern Wind Pushkin',
+    name: 'Northern Wind Pushkin'
   },
   {
     id: '1670',
-    name: 'Eridan',
+    name: 'Eridan'
   },
   {
     id: '1674',
-    name: 'Monaña de Data OL',
+    name: 'Monaña de Data OL'
   },
   {
     id: '1675',
-    name: 'USC Theresianum',
+    name: 'USC Theresianum'
   },
   {
     id: '1676',
-    name: 'Lammin Säkiä',
+    name: 'Lammin Säkiä'
   },
   {
     id: '1677',
-    name: 'Aluksne OK',
+    name: 'Aluksne OK'
   },
   {
     id: '1678',
-    name: 'Venjans AIK',
+    name: 'Venjans AIK'
   },
   {
     id: '1679',
-    name: 'Walton Chasers',
+    name: 'Walton Chasers'
   },
   {
     id: '1680',
-    name: 'OLG Stäfa',
+    name: 'OLG Stäfa'
   },
   {
     id: '1681',
-    name: 'LLI Lokomotiva Liberec',
+    name: 'LLI Lokomotiva Liberec'
   },
   {
     id: '1682',
-    name: 'MLOK Marianske lazne',
+    name: 'MLOK Marianske lazne'
   },
   {
     id: '1683',
-    name: 'Det är OK',
+    name: 'Det är OK'
   },
   {
     id: '1684',
-    name: 'Buffalo OC',
+    name: 'Buffalo OC'
   },
   {
     id: '1685',
-    name: 'Peninsula And Plains Orienteers',
+    name: 'Peninsula And Plains Orienteers'
   },
   {
     id: '1686',
-    name: 'Nastolan Terä',
+    name: 'Nastolan Terä'
   },
   {
     id: '1687',
-    name: 'Rasti-Lukko',
+    name: 'Rasti-Lukko'
   },
   {
     id: '1688',
-    name: 'OK K?pa',
+    name: 'OK K?pa'
   },
   {
     id: '1689',
-    name: 'D-Team Belgium',
+    name: 'D-Team Belgium'
   },
   {
     id: '1690',
-    name: 'Randers OK',
+    name: 'Randers OK'
   },
   {
     id: '1691',
-    name: 'Kalinka',
+    name: 'Kalinka'
   },
   {
     id: '1692',
-    name: 'WWOP Germany',
+    name: 'WWOP Germany'
   },
   {
     id: '1694',
-    name: 'Elinorspelen',
+    name: 'Elinorspelen'
   },
   {
     id: '1695',
-    name: 'Nässjö SKI',
+    name: 'Nässjö SKI'
   },
   {
     id: '1697',
-    name: 'Falu IK',
+    name: 'Falu IK'
   },
   {
     id: '1698',
-    name: 'Mona OK',
+    name: 'Mona OK'
   },
   {
     id: '1699',
-    name: 'Götlunda IF',
+    name: 'Götlunda IF'
   },
   {
     id: '1700',
-    name: 'asd Park World Tour Italia',
+    name: 'asd Park World Tour Italia'
   },
   {
     id: '1701',
-    name: 'Ottawa OC',
+    name: 'Ottawa OC'
   },
   {
     id: '1702',
-    name: 'Kooperaator OK',
+    name: 'Kooperaator OK'
   },
   {
     id: '1704',
-    name: 'PPN Pol. Punto Nord',
+    name: 'PPN Pol. Punto Nord'
   },
   {
     id: '1705',
-    name: 'Fryazino',
+    name: 'Fryazino'
   },
   {
     id: '1706',
-    name: 'P4IF',
+    name: 'P4IF'
   },
   {
     id: '1707',
-    name: 'Lauter Team',
+    name: 'Lauter Team'
   },
   {
     id: '1708',
-    name: 'Tjuringa Orienteers',
+    name: 'Tjuringa Orienteers'
   },
   {
     id: '1709',
-    name: 'Central Coast',
+    name: 'Central Coast'
   },
   {
     id: '1710',
-    name: 'Vindelns IF',
+    name: 'Vindelns IF'
   },
   {
     id: '1711',
-    name: 'USG Chemnitz',
+    name: 'USG Chemnitz'
   },
   {
     id: '1712',
-    name: 'Big Foot Orienteers',
+    name: 'Big Foot Orienteers'
   },
   {
     id: '1713',
-    name: 'Villena-O Spain',
+    name: 'Villena-O Spain'
   },
   {
     id: '1714',
-    name: 'OK Bovec',
+    name: 'OK Bovec'
   },
   {
     id: '1716',
-    name: 'Akershus og Oslo orienteringskrets',
+    name: 'Akershus og Oslo orienteringskrets'
   },
   {
     id: '1718',
-    name: 'Iisalmen Visa',
+    name: 'Iisalmen Visa'
   },
   {
     id: '1719',
-    name: 'Molde og omegn IF',
+    name: 'Molde og omegn IF'
   },
   {
     id: '1721',
-    name: 'Øyestad IF Allianse Orientering',
+    name: 'Øyestad IF Allianse Orientering'
   },
   {
     id: '1722',
-    name: 'OLG St.Gallen/Appenzell',
+    name: 'OLG St.Gallen/Appenzell'
   },
   {
     id: '1723',
-    name: 'Tistedalen Friluftslag',
+    name: 'Tistedalen Friluftslag'
   },
   {
     id: '1724',
-    name: 'IK Scania',
+    name: 'IK Scania'
   },
   {
     id: '1725',
-    name: 'Årvoll IL',
+    name: 'Årvoll IL'
   },
   {
     id: '1726',
-    name: 'Skovsneglene OK',
+    name: 'Skovsneglene OK'
   },
   {
     id: '1727',
-    name: 'Oslo O-krets',
+    name: 'Oslo O-krets'
   },
   {
     id: '1728',
-    name: 'Akershus o-krets',
+    name: 'Akershus o-krets'
   },
   {
     id: '1729',
-    name: '4mila',
+    name: '4mila'
   },
   {
     id: '1730',
-    name: 'Giant-RUS',
+    name: 'Giant-RUS'
   },
   {
     id: '1731',
-    name: 'Nord-Trøndelag o-krets',
+    name: 'Nord-Trøndelag o-krets'
   },
   {
     id: '1732',
-    name: 'SV Lengefeld',
+    name: 'SV Lengefeld'
   },
   {
     id: '1733',
-    name: 'Vörå IF',
+    name: 'Vörå IF'
   },
   {
     id: '1734',
-    name: 'Uthamra OK',
+    name: 'Uthamra OK'
   },
   {
     id: '1735',
-    name: 'FOREST SPORT',
+    name: 'FOREST SPORT'
   },
   {
     id: '1736',
-    name: 'NF Wien',
+    name: 'NF Wien'
   },
   {
     id: '1737',
-    name: 'Belaya Rus',
+    name: 'Belaya Rus'
   },
   {
     id: '1738',
-    name: 'Kauhavan Wisa',
+    name: 'Kauhavan Wisa'
   },
   {
     id: '1739',
-    name: 'Jukkasjärvi IF',
+    name: 'Jukkasjärvi IF'
   },
   {
     id: '1740',
-    name: 'Falkenberg RR',
+    name: 'Falkenberg RR'
   },
   {
     id: '1741',
-    name: 'Orientation Caennaise',
+    name: 'Orientation Caennaise'
   },
   {
     id: '1742',
-    name: 'Länsi-Rajan Rasti',
+    name: 'Länsi-Rajan Rasti'
   },
   {
     id: '1743',
-    name: 'JROS',
+    name: 'JROS'
   },
   {
     id: '1744',
-    name: 'MWOC',
+    name: 'MWOC'
   },
   {
     id: '1745',
-    name: 'Kortesjärven Järviveikot',
+    name: 'Kortesjärven Järviveikot'
   },
   {
     id: '1746',
-    name: 'OLG Schaffhausen',
+    name: 'OLG Schaffhausen'
   },
   {
     id: '1747',
-    name: 'Porahinoné TIERRA TRAGAME',
+    name: 'Porahinoné TIERRA TRAGAME'
   },
   {
     id: '1748',
-    name: 'Vihtavuoren Pamaus',
+    name: 'Vihtavuoren Pamaus'
   },
   {
     id: '1749',
-    name: 'Perämeren Rasti',
+    name: 'Perämeren Rasti'
   },
   {
     id: '1750',
-    name: 'SLIF / IF Oliven',
+    name: 'SLIF / IF Oliven'
   },
   {
     id: '1751',
-    name: 'Punkalaitumen Kunto',
+    name: 'Punkalaitumen Kunto'
   },
   {
     id: '1752',
-    name: 'TSC Eintracht Dortmund',
+    name: 'TSC Eintracht Dortmund'
   },
   {
     id: '1753',
-    name: 'Perttelin Peikot',
+    name: 'Perttelin Peikot'
   },
   {
     id: '1754',
-    name: 'Hirvensalon Heitto',
+    name: 'Hirvensalon Heitto'
   },
   {
     id: '1755',
-    name: 'Kymin Suunnistajat',
+    name: 'Kymin Suunnistajat'
   },
   {
     id: '1756',
-    name: 'Kärkölän Kisa-Veikot',
+    name: 'Kärkölän Kisa-Veikot'
   },
   {
     id: '1757',
-    name: 'OK Silsand',
+    name: 'OK Silsand'
   },
   {
     id: '1758',
-    name: 'RastiPiikkiö',
+    name: 'RastiPiikkiö'
   },
   {
     id: '1759',
-    name: 'Maarian Mahti',
+    name: 'Maarian Mahti'
   },
   {
     id: '1761',
-    name: 'WOLF Haltern',
+    name: 'WOLF Haltern'
   },
   {
     id: '1762',
-    name: 'IkNV/KanSu/KyRa',
+    name: 'IkNV/KanSu/KyRa'
   },
   {
     id: '1764',
-    name: 'OK Slovenske Konjice',
+    name: 'OK Slovenske Konjice'
   },
   {
     id: '1765',
-    name: 'Dalsjöfors GoIF',
+    name: 'Dalsjöfors GoIF'
   },
   {
     id: '1766',
-    name: 'Svärdsjö SOK',
+    name: 'Svärdsjö SOK'
   },
   {
     id: '1767',
-    name: 'Buena Vista A.C.',
+    name: 'Buena Vista A.C.'
   },
   {
     id: '1768',
-    name: 'Kuhakerho',
+    name: 'Kuhakerho'
   },
   {
     id: '1769',
-    name: 'CORRECAMINOS VALENCIA',
+    name: 'CORRECAMINOS VALENCIA'
   },
   {
     id: '1770',
-    name: 'LOK Berlin',
+    name: 'LOK Berlin'
   },
   {
     id: '1771',
-    name: 'SC Sirius',
+    name: 'SC Sirius'
   },
   {
     id: '1772',
-    name: 'ASQuétigny',
+    name: 'ASQuétigny'
   },
   {
     id: '1773',
-    name: 'Zürich United',
+    name: 'Zürich United'
   },
   {
     id: '1774',
-    name: 'Kimito SF',
+    name: 'Kimito SF'
   },
   {
     id: '1775',
-    name: 'NOSE',
+    name: 'NOSE'
   },
   {
     id: '1776',
-    name: 'OLG Holeerain',
+    name: 'OLG Holeerain'
   },
   {
     id: '1777',
-    name: 'Grenoble Université Club -CO',
+    name: 'Grenoble Université Club -CO'
   },
   {
     id: '1778',
-    name: 'OLG Breitsee',
+    name: 'OLG Breitsee'
   },
   {
     id: '1779',
-    name: 'Kobra Bratislava',
+    name: 'Kobra Bratislava'
   },
   {
     id: '1780',
-    name: 'Sokol Pezinok',
+    name: 'Sokol Pezinok'
   },
   {
     id: '1781',
-    name: 'Hvalsø OK',
+    name: 'Hvalsø OK'
   },
   {
     id: '1782',
-    name: 'BALISE 25 BESANCON',
+    name: 'BALISE 25 BESANCON'
   },
   {
     id: '1783',
-    name: 'OJE Wappler',
+    name: 'OJE Wappler'
   },
   {
     id: '1785',
-    name: 'Oulun Tarmo',
+    name: 'Oulun Tarmo'
   },
   {
     id: '1786',
-    name: 'Beefo',
+    name: 'Beefo'
   },
   {
     id: '1788',
-    name: 'Waldfreunde',
+    name: 'Waldfreunde'
   },
   {
     id: '1789',
-    name: 'OLV Waldfreunde',
+    name: 'OLV Waldfreunde'
   },
   {
     id: '1790',
-    name: 'OLV Langenthal',
+    name: 'OLV Langenthal'
   },
   {
     id: '1791',
-    name: 'OK Terjärv',
+    name: 'OK Terjärv'
   },
   {
     id: '1792',
-    name: 'OLG Elch',
+    name: 'OLG Elch'
   },
   {
     id: '1793',
-    name: 'Vesoul Haute Saône Orientation',
+    name: 'Vesoul Haute Saône Orientation'
   },
   {
     id: '1794',
-    name: 'MTK Bad Harzburg',
+    name: 'MTK Bad Harzburg'
   },
   {
     id: '1795',
-    name: 'Essinge Båtsällskap',
+    name: 'Essinge Båtsällskap'
   },
   {
     id: '1796',
-    name: 'Kuhmon Peurat',
+    name: 'Kuhmon Peurat'
   },
   {
     id: '1798',
-    name: 'OLG Huttwil',
+    name: 'OLG Huttwil'
   },
   {
     id: '1799',
-    name: 'OLC Gittis Fürstenfeld',
+    name: 'OLC Gittis Fürstenfeld'
   },
   {
     id: '1800',
-    name: 'Falcons',
+    name: 'Falcons'
   },
   {
     id: '1801',
-    name: 'Bardu IL',
+    name: 'Bardu IL'
   },
   {
     id: '1802',
-    name: 'CO Vidycamper',
+    name: 'CO Vidycamper'
   },
   {
     id: '1803',
-    name: 'Hälge OK',
+    name: 'Hälge OK'
   },
   {
     id: '1804',
-    name: 'Technion-Carmel',
+    name: 'Technion-Carmel'
   },
   {
     id: '1805',
-    name: 'KUUL OK',
+    name: 'KUUL OK'
   },
   {
     id: '1806',
-    name: 'ZVOC',
+    name: 'ZVOC'
   },
   {
     id: '1807',
-    name: 'OLC Winterthur',
+    name: 'OLC Winterthur'
   },
   {
     id: '1808',
-    name: 'Gamlakarleby IF',
+    name: 'Gamlakarleby IF'
   },
   {
     id: '1809',
-    name: 'KeiyoOLClub',
+    name: 'KeiyoOLClub'
   },
   {
     id: '1810',
-    name: 'PARUS',
+    name: 'PARUS'
   },
   {
     id: '1811',
-    name: 'OSK S?lijas Me?s',
+    name: 'OSK S?lijas Me?s'
   },
   {
     id: '1812',
-    name: 'Yukon OA',
+    name: 'Yukon OA'
   },
   {
     id: '1813',
-    name: 'Saxons OC',
+    name: 'Saxons OC'
   },
   {
     id: '1814',
-    name: 'Saldus OK',
+    name: 'Saldus OK'
   },
   {
     id: '1815',
-    name: 'Essex Stragglers OS',
+    name: 'Essex Stragglers OS'
   },
   {
     id: '1816',
-    name: 'OK Perkunas',
+    name: 'OK Perkunas'
   },
   {
     id: '1819',
-    name: 'Team Slovenia',
+    name: 'Team Slovenia'
   },
   {
     id: '1820',
-    name: 'Club d Orientation Lausanne-Jorat',
+    name: 'Club d Orientation Lausanne-Jorat'
   },
   {
     id: '1822',
-    name: 'Nature Orientation Saint Etienne',
+    name: 'Nature Orientation Saint Etienne'
   },
   {
     id: '1823',
-    name: 'I-Taiwan Orienteering Club',
+    name: 'I-Taiwan Orienteering Club'
   },
   {
     id: '1824',
-    name: 'Ski-O-Swiss',
+    name: 'Ski-O-Swiss'
   },
   {
     id: '1825',
-    name: 'Björnstorps IF',
+    name: 'Björnstorps IF'
   },
   {
     id: '1826',
-    name: 'Liezen',
+    name: 'Liezen'
   },
   {
     id: '1827',
-    name: 'Haapamäen Urheilijat',
+    name: 'Haapamäen Urheilijat'
   },
   {
     id: '1829',
-    name: 'Red Kiwi Orienteering Club',
+    name: 'Red Kiwi Orienteering Club'
   },
   {
     id: '1830',
-    name: 'COBOC',
+    name: 'COBOC'
   },
   {
     id: '1831',
-    name: 'Broby Goif',
+    name: 'Broby Goif'
   },
   {
     id: '1832',
-    name: 'Xi-an Wolf Orienteering Club',
+    name: 'Xi-an Wolf Orienteering Club'
   },
   {
     id: '1833',
-    name: 'Nanjing Deer Orienteering Club',
+    name: 'Nanjing Deer Orienteering Club'
   },
   {
     id: '1834',
-    name: 'TJ Tatran Jablonec nad Nisou',
+    name: 'TJ Tatran Jablonec nad Nisou'
   },
   {
     id: '1835',
-    name: 'Aaterbaaten',
+    name: 'Aaterbaaten'
   },
   {
     id: '1836',
-    name: 'OLG Murten',
+    name: 'OLG Murten'
   },
   {
     id: '1837',
-    name: 'TokorozawaOLC',
+    name: 'TokorozawaOLC'
   },
   {
     id: '1838',
-    name: 'Idrottsföreningen OLGY Uppsala',
+    name: 'Idrottsföreningen OLGY Uppsala'
   },
   {
     id: '1839',
-    name: 'Teuger IK',
+    name: 'Teuger IK'
   },
   {
     id: '1840',
-    name: 'OLG Saar',
+    name: 'OLG Saar'
   },
   {
     id: '1842',
-    name: 'Espoon Akilles',
+    name: 'Espoon Akilles'
   },
   {
     id: '1843',
-    name: 'ASS Raisu Lumous',
+    name: 'ASS Raisu Lumous'
   },
   {
     id: '1844',
-    name: 'TA OK',
+    name: 'TA OK'
   },
   {
     id: '1847',
-    name: 'CO Liège',
+    name: 'CO Liège'
   },
   {
     id: '1848',
-    name: 'Soubäre OK',
+    name: 'Soubäre OK'
   },
   {
     id: '1849',
-    name: 'Lima IF',
+    name: 'Lima IF'
   },
   {
     id: '1850',
-    name: 'Jandarma Gücü',
+    name: 'Jandarma Gücü'
   },
   {
     id: '1851',
-    name: 'Ferrum OK',
+    name: 'Ferrum OK'
   },
   {
     id: '1852',
-    name: 'Club Orientació Catalunya',
+    name: 'Club Orientació Catalunya'
   },
   {
     id: '1853',
-    name: 'Timini Orientering og Sportsklubb (TOSK)',
+    name: 'Timini Orientering og Sportsklubb (TOSK)'
   },
   {
     id: '1854',
-    name: 'Garingal Orienteers',
+    name: 'Garingal Orienteers'
   },
   {
     id: '1855',
-    name: 'OMEGA MOSCOW',
+    name: 'OMEGA MOSCOW'
   },
   {
     id: '1857',
-    name: 'Rasti 88',
+    name: 'Rasti 88'
   },
   {
     id: '1858',
-    name: 'Siilin Rasti',
+    name: 'Siilin Rasti'
   },
   {
     id: '1859',
-    name: 'SWOC',
+    name: 'SWOC'
   },
   {
     id: '1860',
-    name: 'OK Purva Brid?js',
+    name: 'OK Purva Brid?js'
   },
   {
     id: '1861',
-    name: 'Koskelankylän Riento',
+    name: 'Koskelankylän Riento'
   },
   {
     id: '1862',
-    name: 'Toyonaka OLC',
+    name: 'Toyonaka OLC'
   },
   {
     id: '1863',
-    name: 'O-RUN Turnov',
+    name: 'O-RUN Turnov'
   },
   {
     id: '1864',
-    name: 'OK Ingen Vinst',
+    name: 'OK Ingen Vinst'
   },
   {
     id: '1865',
-    name: 'Calasparra-O',
+    name: 'Calasparra-O'
   },
   {
     id: '1866',
-    name: 'Wrekin',
+    name: 'Wrekin'
   },
   {
     id: '1867',
-    name: 'Fokino Primorskiy Kray',
+    name: 'Fokino Primorskiy Kray'
   },
   {
     id: '1868',
-    name: 'RC Eemeli',
+    name: 'RC Eemeli'
   },
   {
     id: '1869',
-    name: 'Berliner TSC',
+    name: 'Berliner TSC'
   },
   {
     id: '1871',
-    name: 'Sertolovo',
+    name: 'Sertolovo'
   },
   {
     id: '1872',
-    name: 'SK Uranus',
+    name: 'SK Uranus'
   },
   {
     id: '1873',
-    name: 'SC Achmer',
+    name: 'SC Achmer'
   },
   {
     id: '1874',
-    name: 'T&P Balkan OK',
+    name: 'T&P Balkan OK'
   },
   {
     id: '1875',
-    name: 'IKP Prato - Alta Badia Orienteering',
+    name: 'IKP Prato - Alta Badia Orienteering'
   },
   {
     id: '1877',
-    name: 'Astana',
+    name: 'Astana'
   },
   {
     id: '1880',
-    name: 'WKS Grunwald Poznan',
+    name: 'WKS Grunwald Poznan'
   },
   {
     id: '1881',
-    name: 'love_beer2013',
+    name: 'love_beer2013'
   },
   {
     id: '1882',
-    name: 'Gnellspikes MSC',
+    name: 'Gnellspikes MSC'
   },
   {
     id: '1883',
-    name: 'SuS Vehrte',
+    name: 'SuS Vehrte'
   },
   {
     id: '1884',
-    name: 'A.S.D. Gruppo Orientisti Subiaco',
+    name: 'A.S.D. Gruppo Orientisti Subiaco'
   },
   {
     id: '1885',
-    name: 'Sandnes IL',
+    name: 'Sandnes IL'
   },
   {
     id: '1886',
-    name: 'A.S.D. Orsa Maggiore - Roma',
+    name: 'A.S.D. Orsa Maggiore - Roma'
   },
   {
     id: '1887',
-    name: 'DFOK',
+    name: 'DFOK'
   },
   {
     id: '1888',
-    name: 'Ganddal IL',
+    name: 'Ganddal IL'
   },
   {
     id: '1889',
-    name: 'Ålen IL',
+    name: 'Ålen IL'
   },
   {
     id: '1890',
-    name: 'Tokyo Orienteering Club',
+    name: 'Tokyo Orienteering Club'
   },
   {
     id: '1891',
-    name: 'OLG Davos',
+    name: 'OLG Davos'
   },
   {
     id: '1892',
-    name: 'CO Ambérieu',
+    name: 'CO Ambérieu'
   },
   {
     id: '1893',
-    name: 'Neverfjord IL',
+    name: 'Neverfjord IL'
   },
   {
     id: '1894',
-    name: 'ESOC',
+    name: 'ESOC'
   },
   {
     id: '1895',
-    name: 'Goldseekers Orienteering Club',
+    name: 'Goldseekers Orienteering Club'
   },
   {
     id: '1896',
-    name: 'Sotkamon Jymy',
+    name: 'Sotkamon Jymy'
   },
   {
     id: '1897',
-    name: 'TJ Cingov Spi?ská Nová Ves',
+    name: 'TJ Cingov Spi?ská Nová Ves'
   },
   {
     id: '1898',
-    name: 'Start Náchod',
+    name: 'Start Náchod'
   },
   {
     id: '1900',
-    name: 'GATA DO?K',
+    name: 'GATA DO?K'
   },
   {
     id: '1901',
-    name: 'OK Furth im Wald',
+    name: 'OK Furth im Wald'
   },
   {
     id: '1903',
-    name: 'NATO',
+    name: 'NATO'
   },
   {
     id: '1904',
-    name: 'Haukiputaan Heitto',
+    name: 'Haukiputaan Heitto'
   },
   {
     id: '1905',
-    name: 'Zaporozhye',
+    name: 'Zaporozhye'
   },
   {
     id: '1906',
-    name: 'Forsand IL',
+    name: 'Forsand IL'
   },
   {
     id: '1907',
-    name: 'OK Slavutich',
+    name: 'OK Slavutich'
   },
   {
     id: '1908',
-    name: 'Y2Y',
+    name: 'Y2Y'
   },
   {
     id: '1909',
-    name: 'RACO',
+    name: 'RACO'
   },
   {
     id: '1910',
-    name: 'Kankaantaan Kisa',
+    name: 'Kankaantaan Kisa'
   },
   {
     id: '1911',
-    name: 'Range Runners Orienteering Club (RROQ)',
+    name: 'Range Runners Orienteering Club (RROQ)'
   },
   {
     id: '1912',
-    name: 'CO Chenau',
+    name: 'CO Chenau'
   },
   {
     id: '1913',
-    name: 'Corsaorientamento Club Roma',
+    name: 'Corsaorientamento Club Roma'
   },
   {
     id: '1914',
-    name: 'Pudasjärven Urheilijat ry',
+    name: 'Pudasjärven Urheilijat ry'
   },
   {
     id: '1915',
-    name: 'Överboda SK',
+    name: 'Överboda SK'
   },
   {
     id: '1916',
-    name: 'Bushflyers',
+    name: 'Bushflyers'
   },
   {
     id: '1917',
-    name: 'POLES 8311',
+    name: 'POLES 8311'
   },
   {
     id: '1918',
-    name: 'Balise O4',
+    name: 'Balise O4'
   },
   {
     id: '1919',
-    name: 'CSIPA SE',
+    name: 'CSIPA SE'
   },
   {
     id: '1920',
-    name: 'Sundoms IF',
+    name: 'Sundoms IF'
   },
   {
     id: '1921',
-    name: 'Frosta Multisport',
+    name: 'Frosta Multisport'
   },
   {
     id: '1922',
-    name: 'Club Polaris',
+    name: 'Club Polaris'
   },
   {
     id: '1923',
-    name: 'Skåla IL',
+    name: 'Skåla IL'
   },
   {
     id: '1924',
-    name: 'UKS Orientus Lodz',
+    name: 'UKS Orientus Lodz'
   },
   {
     id: '1925',
-    name: 'Knouac',
+    name: 'Knouac'
   },
   {
     id: '1926',
-    name: 'CATI',
+    name: 'CATI'
   },
   {
     id: '1927',
-    name: 'Czech Orienteering',
+    name: 'Czech Orienteering'
   },
   {
     id: '1928',
-    name: 'Mellembygd OL',
+    name: 'Mellembygd OL'
   },
   {
     id: '1929',
-    name: 'OK Stiga',
+    name: 'OK Stiga'
   },
   {
     id: '1932',
-    name: 'Lorca-O',
+    name: 'Lorca-O'
   },
   {
     id: '1933',
-    name: 'Los Angeles',
+    name: 'Los Angeles'
   },
   {
     id: '1934',
-    name: 'Skogis OK',
+    name: 'Skogis OK'
   },
   {
     id: '1935',
-    name: 'Nord West',
+    name: 'Nord West'
   },
   {
     id: '1936',
-    name: 'Strömnäs GIF',
+    name: 'Strömnäs GIF'
   },
   {
     id: '1937',
-    name: 'BÖF',
+    name: 'BÖF'
   },
   {
     id: '1938',
-    name: 'Grong IL',
+    name: 'Grong IL'
   },
   {
     id: '1941',
-    name: 'Toohey Forest Orienteering Club',
+    name: 'Toohey Forest Orienteering Club'
   },
   {
     id: '1942',
-    name: 'Lentulus',
+    name: 'Lentulus'
   },
   {
     id: '1943',
-    name: 'Olderskog IL',
+    name: 'Olderskog IL'
   },
   {
     id: '1944',
-    name: 'Malax IF',
+    name: 'Malax IF'
   },
   {
     id: '1945',
-    name: 'Nagoya Univ OLC',
+    name: 'Nagoya Univ OLC'
   },
   {
     id: '1946',
-    name: 'Kildeholm OK',
+    name: 'Kildeholm OK'
   },
   {
     id: '1947',
-    name: 'Turumai OLC',
+    name: 'Turumai OLC'
   },
   {
     id: '1949',
-    name: 'Sarum Orienteers',
+    name: 'Sarum Orienteers'
   },
   {
     id: '1950',
-    name: 'Sarum MTBO',
+    name: 'Sarum MTBO'
   },
   {
     id: '1952',
-    name: 'RO Paris',
+    name: 'RO Paris'
   },
   {
     id: '1954',
-    name: 'Hutt Valley',
+    name: 'Hutt Valley'
   },
   {
     id: '1955',
-    name: 'Orienteering Tarzo a.s.d.',
+    name: 'Orienteering Tarzo a.s.d.'
   },
   {
     id: '1956',
-    name: 'Bolidens SK',
+    name: 'Bolidens SK'
   },
   {
     id: '1957',
-    name: 'Iisu',
+    name: 'Iisu'
   },
   {
     id: '1958',
-    name: 'Bullecourt Boulder Bounders Orienteering Club',
+    name: 'Bullecourt Boulder Bounders Orienteering Club'
   },
   {
     id: '1959',
-    name: 'TOK Taka',
+    name: 'TOK Taka'
   },
   {
     id: '1960',
-    name: 'GEM Tver',
+    name: 'GEM Tver'
   },
   {
     id: '1961',
-    name: 'Wolpertinger OK',
+    name: 'Wolpertinger OK'
   },
   {
     id: '1962',
-    name: 'Laitasaaren Veto',
+    name: 'Laitasaaren Veto'
   },
   {
     id: '1963',
-    name: 'Hølen IK',
+    name: 'Hølen IK'
   },
   {
     id: '1964',
-    name: 'Berger og Svelvik o-lag',
+    name: 'Berger og Svelvik o-lag'
   },
   {
     id: '1966',
-    name: 'Tyresö Friidrott',
+    name: 'Tyresö Friidrott'
   },
   {
     id: '1967',
-    name: 'Kirishi-O-Kinef',
+    name: 'Kirishi-O-Kinef'
   },
   {
     id: '1968',
-    name: 'IL Veten',
+    name: 'IL Veten'
   },
   {
     id: '1969',
-    name: 'AJAX',
+    name: 'AJAX'
   },
   {
     id: '1970',
-    name: 'OC Tortoise',
+    name: 'OC Tortoise'
   },
   {
     id: '1971',
-    name: 'TSV Gruenwald',
+    name: 'TSV Gruenwald'
   },
   {
     id: '1972',
-    name: 'Ski-World Team',
+    name: 'Ski-World Team'
   },
   {
     id: '1973',
-    name: 'Olifant',
+    name: 'Olifant'
   },
   {
     id: '1974',
-    name: 'Academy 2013',
+    name: 'Academy 2013'
   },
   {
     id: '1977',
-    name: 'IF Trauma',
+    name: 'IF Trauma'
   },
   {
     id: '1978',
-    name: 'Haugerud IF',
+    name: 'Haugerud IF'
   },
   {
     id: '1980',
-    name: 'Botne SK Orientering',
+    name: 'Botne SK Orientering'
   },
   {
     id: '1981',
-    name: 'Peräkylän Ponnistus',
+    name: 'Peräkylän Ponnistus'
   },
   {
     id: '1983',
-    name: 'Lunderseter IL',
+    name: 'Lunderseter IL'
   },
   {
     id: '1984',
-    name: 'Team Switzerland',
+    name: 'Team Switzerland'
   },
   {
     id: '1986',
-    name: 'Volvo OK Skövde',
+    name: 'Volvo OK Skövde'
   },
   {
     id: '1987',
-    name: 'Wootory',
+    name: 'Wootory'
   },
   {
     id: '1988',
-    name: 'CorkO',
+    name: 'CorkO'
   },
   {
     id: '1989',
-    name: 'Puymirol Sport Nature Orientation',
+    name: 'Puymirol Sport Nature Orientation'
   },
   {
     id: '1990',
-    name: 'Arctic Orienteering',
+    name: 'Arctic Orienteering'
   },
   {
     id: '1992',
-    name: 'Southern Navigators',
+    name: 'Southern Navigators'
   },
   {
     id: '1993',
-    name: 'Sør-Trøndelag o-krets',
+    name: 'Sør-Trøndelag o-krets'
   },
   {
     id: '1994',
-    name: 'Vaalan Karhu',
+    name: 'Vaalan Karhu'
   },
   {
     id: '1996',
-    name: 'SDSZ Orienteering Club',
+    name: 'SDSZ Orienteering Club'
   },
   {
     id: '1997',
-    name: 'Perido',
+    name: 'Perido'
   },
   {
     id: '2000',
-    name: 'Moose Island Trail Runners',
+    name: 'Moose Island Trail Runners'
   },
   {
     id: '2001',
-    name: 'Welsh Junior Orienteering Squad',
+    name: 'Welsh Junior Orienteering Squad'
   },
   {
     id: '2002',
-    name: 'SK HANA Orienteering',
+    name: 'SK HANA Orienteering'
   },
   {
     id: '2003',
-    name: 'UAE Military Team',
+    name: 'UAE Military Team'
   },
   {
     id: '2004',
-    name: 'Öregrunds IK',
+    name: 'Öregrunds IK'
   },
   {
     id: '2005',
-    name: 'Kustein',
+    name: 'Kustein'
   },
   {
     id: '2007',
-    name: 'OLE',
+    name: 'OLE'
   },
   {
     id: '2008',
-    name: 'OLV Potsdam',
+    name: 'OLV Potsdam'
   },
   {
     id: '2009',
-    name: 'Päijät-Rasti',
+    name: 'Päijät-Rasti'
   },
   {
     id: '2010',
-    name: 'Trailo.it',
+    name: 'Trailo.it'
   },
   {
     id: '2012',
-    name: 'Leicestershire Orienteering Club',
+    name: 'Leicestershire Orienteering Club'
   },
   {
     id: '2014',
-    name: 'OK Merz',
+    name: 'OK Merz'
   },
   {
     id: '2015',
-    name: 'SK100',
+    name: 'SK100'
   },
   {
     id: '2017',
-    name: 'Trol',
+    name: 'Trol'
   },
   {
     id: '2019',
-    name: 'Balassagyarmati Balassi Bálint KSE',
+    name: 'Balassagyarmati Balassi Bálint KSE'
   },
   {
     id: '2021',
-    name: 'TSV Jetzendorf',
+    name: 'TSV Jetzendorf'
   },
   {
     id: '2022',
-    name: 'Chicago Area Orienteering Club',
+    name: 'Chicago Area Orienteering Club'
   },
   {
     id: '2023',
-    name: 'SDUSSHOR po LVS Sergiev Posad',
+    name: 'SDUSSHOR po LVS Sergiev Posad'
   },
   {
     id: '2024',
-    name: 'Bryansk OF',
+    name: 'Bryansk OF'
   },
   {
     id: '2025',
-    name: 'Boden sk',
+    name: 'Boden sk'
   },
   {
     id: '2027',
-    name: 'OK Chrastava',
+    name: 'OK Chrastava'
   },
   {
     id: '2028',
-    name: 'Grövelsjöfjällens OK',
+    name: 'Grövelsjöfjällens OK'
   },
   {
     id: '2029',
-    name: 'Storvreta IK',
+    name: 'Storvreta IK'
   },
   {
     id: '2030',
-    name: 'OLG Berne-Ostring',
+    name: 'OLG Berne-Ostring'
   },
   {
     id: '2032',
-    name: 'Tykistöprikaati',
+    name: 'Tykistöprikaati'
   },
   {
     id: '2033',
-    name: 'Russian Masters Team',
+    name: 'Russian Masters Team'
   },
   {
     id: '2034',
-    name: 'Vatutinki',
+    name: 'Vatutinki'
   },
   {
     id: '2035',
-    name: 'Dore OC',
+    name: 'Dore OC'
   },
   {
     id: '2036',
-    name: 'Sportovni klub vozickaru Praha',
+    name: 'Sportovni klub vozickaru Praha'
   },
   {
     id: '2038',
-    name: 'KOS Tesla Brno',
+    name: 'KOS Tesla Brno'
   },
   {
     id: '2039',
-    name: 'Mile-Sport SPb',
+    name: 'Mile-Sport SPb'
   },
   {
     id: '2041',
-    name: 'Bennelong Northside',
+    name: 'Bennelong Northside'
   },
   {
     id: '2042',
-    name: 'Tver-GoGo',
+    name: 'Tver-GoGo'
   },
   {
     id: '2043',
-    name: 'Muuramen Rasti',
+    name: 'Muuramen Rasti'
   },
   {
     id: '2044',
-    name: 'Ugly Gully',
+    name: 'Ugly Gully'
   },
   {
     id: '2045',
-    name: 'Sandnes IL (Rogaland)',
+    name: 'Sandnes IL (Rogaland)'
   },
   {
     id: '2046',
-    name: 'Moscow Compass MPEI',
+    name: 'Moscow Compass MPEI'
   },
   {
     id: '2047',
-    name: 'Kentavr - Kovrov',
+    name: 'Kentavr - Kovrov'
   },
   {
     id: '2048',
-    name: 'Asuf Azienda studenti unifersitari Firenze',
+    name: 'Asuf Azienda studenti unifersitari Firenze'
   },
   {
     id: '2049',
-    name: 'West Yorkshire Orienteers',
+    name: 'West Yorkshire Orienteers'
   },
   {
     id: '2050',
-    name: 'Lochalsh Orienteers',
+    name: 'Lochalsh Orienteers'
   },
   {
     id: '2051',
-    name: 'West Midlands Orienteers',
+    name: 'West Midlands Orienteers'
   },
   {
     id: '2052',
-    name: 'OLG Skandia',
+    name: 'OLG Skandia'
   },
   {
     id: '2054',
-    name: 'OK Kaliningrad',
+    name: 'OK Kaliningrad'
   },
   {
     id: '2055',
-    name: 'Navicom_Garmin',
+    name: 'Navicom_Garmin'
   },
   {
     id: '2056',
-    name: 'OL-Team Bayern',
+    name: 'OL-Team Bayern'
   },
   {
     id: '2057',
-    name: 'New Direction Orienteering Club',
+    name: 'New Direction Orienteering Club'
   },
   {
     id: '2058',
-    name: 'IFK Årstad',
+    name: 'IFK Årstad'
   },
   {
     id: '2059',
-    name: 'Vesta',
+    name: 'Vesta'
   },
   {
     id: '2060',
-    name: 'Saint-Petersburg',
+    name: 'Saint-Petersburg'
   },
   {
     id: '2061',
-    name: 'MATT SE',
+    name: 'MATT SE'
   },
   {
     id: '2063',
-    name: 'TULA',
+    name: 'TULA'
   },
   {
     id: '2064',
-    name: 'HKAYP',
+    name: 'HKAYP'
   },
   {
     id: '2065',
-    name: 'EPOS',
+    name: 'EPOS'
   },
   {
     id: '2066',
-    name: 'OOS Tj Spartak Vrchlabi',
+    name: 'OOS Tj Spartak Vrchlabi'
   },
   {
     id: '2067',
-    name: 'SK Aasa 5',
+    name: 'SK Aasa 5'
   },
   {
     id: '2068',
-    name: 'Ecran SK',
+    name: 'Ecran SK'
   },
   {
     id: '2069',
-    name: 'Krasnogorsk',
+    name: 'Krasnogorsk'
   },
   {
     id: '2070',
-    name: 'Orienta Vesna',
+    name: 'Orienta Vesna'
   },
   {
     id: '2071',
-    name: 'Smolensk',
+    name: 'Smolensk'
   },
   {
     id: '2072',
-    name: 'Arkhangelsk',
+    name: 'Arkhangelsk'
   },
   {
     id: '2073',
-    name: 'VelNovgorod',
+    name: 'VelNovgorod'
   },
   {
     id: '2074',
-    name: 'ESV Dresden',
+    name: 'ESV Dresden'
   },
   {
     id: '2075',
-    name: 'ADOL (Asociación Deportiva de Orientación Lince)',
+    name: 'ADOL (Asociación Deportiva de Orientación Lince)'
   },
   {
     id: '2077',
-    name: 'Moscow Dinamo',
+    name: 'Moscow Dinamo'
   },
   {
     id: '2078',
-    name: 'UKS ARKADY Raszków',
+    name: 'UKS ARKADY Raszków'
   },
   {
     id: '2079',
-    name: 'Moscow Centre',
+    name: 'Moscow Centre'
   },
   {
     id: '2080',
-    name: 'Cheboksary',
+    name: 'Cheboksary'
   },
   {
     id: '2081',
-    name: 'SK UP Olomouc',
+    name: 'SK UP Olomouc'
   },
   {
     id: '2082',
-    name: 'Energy',
+    name: 'Energy'
   },
   {
     id: '2083',
-    name: 'OK Labirintas',
+    name: 'OK Labirintas'
   },
   {
     id: '2084',
-    name: 'Dinamo',
+    name: 'Dinamo'
   },
   {
     id: '2085',
-    name: 'Bergamiont Russia',
+    name: 'Bergamiont Russia'
   },
   {
     id: '2087',
-    name: 'OL-Team Wehrsdorf',
+    name: 'OL-Team Wehrsdorf'
   },
   {
     id: '2088',
-    name: 'OL Görlitz',
+    name: 'OL Görlitz'
   },
   {
     id: '2089',
-    name: 'LOUP',
+    name: 'LOUP'
   },
   {
     id: '2090',
-    name: 'Prizma-Penza',
+    name: 'Prizma-Penza'
   },
   {
     id: '2091',
-    name: 'Forest Runner O C',
+    name: 'Forest Runner O C'
   },
   {
     id: '2092',
-    name: 'Grampian Orienteers',
+    name: 'Grampian Orienteers'
   },
   {
     id: '2095',
-    name: 'BEAC',
+    name: 'BEAC'
   },
   {
     id: '2097',
-    name: 'Orientación Colmenar',
+    name: 'Orientación Colmenar'
   },
   {
     id: '2098',
-    name: 'Rejlers IF',
+    name: 'Rejlers IF'
   },
   {
     id: '2100',
-    name: 'Kyrös-Rasti',
+    name: 'Kyrös-Rasti'
   },
   {
     id: '2101',
-    name: 'Unleashing The Fury LK',
+    name: 'Unleashing The Fury LK'
   },
   {
     id: '2103',
-    name: 'Krasnoyarsk AWS - SFU',
+    name: 'Krasnoyarsk AWS - SFU'
   },
   {
     id: '2104',
-    name: 'Cherepovets',
+    name: 'Cherepovets'
   },
   {
     id: '2105',
-    name: 'Belarus',
+    name: 'Belarus'
   },
   {
     id: '2106',
-    name: 'Azimuth',
+    name: 'Azimuth'
   },
   {
     id: '2107',
-    name: 'Värska OK Peko',
+    name: 'Värska OK Peko'
   },
   {
     id: '2108',
-    name: 'Ruissa',
+    name: 'Ruissa'
   },
   {
     id: '2111',
-    name: 'O-Ringenföreningen',
+    name: 'O-Ringenföreningen'
   },
   {
     id: '2112',
-    name: 'Team Latvia',
+    name: 'Team Latvia'
   },
   {
     id: '2113',
-    name: 'Hiiltomiehet',
+    name: 'Hiiltomiehet'
   },
   {
     id: '2114',
-    name: 'Adventure Racing Club',
+    name: 'Adventure Racing Club'
   },
   {
     id: '2115',
-    name: 'Skeriol IF',
+    name: 'Skeriol IF'
   },
   {
     id: '2116',
-    name: 'Tambov',
+    name: 'Tambov'
   },
   {
     id: '2117',
-    name: 'KawagoeOLC',
+    name: 'KawagoeOLC'
   },
   {
     id: '2118',
-    name: 'HAVA GÜCÜ',
+    name: 'HAVA GÜCÜ'
   },
   {
     id: '2119',
-    name: 'Ekaterinburg',
+    name: 'Ekaterinburg'
   },
   {
     id: '2120',
-    name: 'CO Colmar',
+    name: 'CO Colmar'
   },
   {
     id: '2121',
-    name: 'Magnytnaya Strelka',
+    name: 'Magnytnaya Strelka'
   },
   {
     id: '2122',
-    name: 'Firstbeat',
+    name: 'Firstbeat'
   },
   {
     id: '2123',
-    name: 'Deeside OC',
+    name: 'Deeside OC'
   },
   {
     id: '2124',
-    name: 'Bayside Kangaroos Orienteers',
+    name: 'Bayside Kangaroos Orienteers'
   },
   {
     id: '2125',
-    name: 'Örnsköldsviks OK',
+    name: 'Örnsköldsviks OK'
   },
   {
     id: '2126',
-    name: 'Laskuvarjojääkärikilta',
+    name: 'Laskuvarjojääkärikilta'
   },
   {
     id: '2127',
-    name: 'DEER-O',
+    name: 'DEER-O'
   },
   {
     id: '2128',
-    name: 'Tver',
+    name: 'Tver'
   },
   {
     id: '2130',
-    name: 'Kamrat och IF KIF',
+    name: 'Kamrat och IF KIF'
   },
   {
     id: '2131',
-    name: 'OLG Regensburg',
+    name: 'OLG Regensburg'
   },
   {
     id: '2132',
-    name: 'Balise 10',
+    name: 'Balise 10'
   },
   {
     id: '2133',
-    name: 'Tuckonie',
+    name: 'Tuckonie'
   },
   {
     id: '2134',
-    name: 'MTBO Brno',
+    name: 'MTBO Brno'
   },
   {
     id: '2136',
-    name: 'CO Pégase',
+    name: 'CO Pégase'
   },
   {
     id: '2138',
-    name: 'COM',
+    name: 'COM'
   },
   {
     id: '2139',
-    name: 'Barbados Orienteering Federation',
+    name: 'Barbados Orienteering Federation'
   },
   {
     id: '2140',
-    name: 'Bishopstown Orienteering Club',
+    name: 'Bishopstown Orienteering Club'
   },
   {
     id: '2141',
-    name: 'IGTISA',
+    name: 'IGTISA'
   },
   {
     id: '2142',
-    name: 'Team Vejle Orientering',
+    name: 'Team Vejle Orientering'
   },
   {
     id: '2143',
-    name: 'Hansa Simmerath',
+    name: 'Hansa Simmerath'
   },
   {
     id: '2144',
-    name: 'DARC Berlin',
+    name: 'DARC Berlin'
   },
   {
     id: '2145',
-    name: 'Askøy O-Lag',
+    name: 'Askøy O-Lag'
   },
   {
     id: '2146',
-    name: 'OREL',
+    name: 'OREL'
   },
   {
     id: '2147',
-    name: 'Octoivot',
+    name: 'Octoivot'
   },
   {
     id: '2148',
-    name: 'Club Orientacion Sant Joan',
+    name: 'Club Orientacion Sant Joan'
   },
   {
     id: '2149',
-    name: 'HSG Merseburg',
+    name: 'HSG Merseburg'
   },
   {
     id: '2150',
-    name: 'Hauketo IF',
+    name: 'Hauketo IF'
   },
   {
     id: '2151',
-    name: 'SK Uusi',
+    name: 'SK Uusi'
   },
   {
     id: '2152',
-    name: 'Team AyaKuri',
+    name: 'Team AyaKuri'
   },
   {
     id: '2153',
-    name: 'Valmo',
+    name: 'Valmo'
   },
   {
     id: '2154',
-    name: 'Hód-mentor SE',
+    name: 'Hód-mentor SE'
   },
   {
     id: '2155',
-    name: 'Orienta-Kyncevo',
+    name: 'Orienta-Kyncevo'
   },
   {
     id: '2156',
-    name: 'BorderLiners',
+    name: 'BorderLiners'
   },
   {
     id: '2160',
-    name: 'Lapenieki',
+    name: 'Lapenieki'
   },
   {
     id: '2161',
-    name: 'ASA Tel-Aviv',
+    name: 'ASA Tel-Aviv'
   },
   {
     id: '2162',
-    name: 'Yokohama OL Club',
+    name: 'Yokohama OL Club'
   },
   {
     id: '2163',
-    name: 'Loisir Orientation Sanchey',
+    name: 'Loisir Orientation Sanchey'
   },
   {
     id: '2164',
-    name: 'A.S.D. Orient-Express Verona',
+    name: 'A.S.D. Orient-Express Verona'
   },
   {
     id: '2165',
-    name: 'COMA Club de Orientación de Málaga',
+    name: 'COMA Club de Orientación de Málaga'
   },
   {
     id: '2166',
-    name: 'Devon OC',
+    name: 'Devon OC'
   },
   {
     id: '2167',
-    name: 'HSV Pinkafeld',
+    name: 'HSV Pinkafeld'
   },
   {
     id: '2168',
-    name: 'LZ Omaha',
+    name: 'LZ Omaha'
   },
   {
     id: '2169',
-    name: 'BKO',
+    name: 'BKO'
   },
   {
     id: '2170',
-    name: 'OC-DK Muenchen',
+    name: 'OC-DK Muenchen'
   },
   {
     id: '2171',
-    name: 'Culbin OC',
+    name: 'Culbin OC'
   },
   {
     id: '2172',
-    name: 'Scottish Junior Squad',
+    name: 'Scottish Junior Squad'
   },
   {
     id: '2173',
-    name: 'EsSu',
+    name: 'EsSu'
   },
   {
     id: '2174',
-    name: 'BOKArmy',
+    name: 'BOKArmy'
   },
   {
     id: '2175',
-    name: 'Ufa-United',
+    name: 'Ufa-United'
   },
   {
     id: '2177',
-    name: 'Swiss Orienteering Junior Team',
+    name: 'Swiss Orienteering Junior Team'
   },
   {
     id: '2178',
-    name: 'C.O Totana',
+    name: 'C.O Totana'
   },
   {
     id: '2179',
-    name: 'COC CLUBE DE ORIENTAÇÃO DE CURITIBA BRASIL',
+    name: 'COC CLUBE DE ORIENTAÇÃO DE CURITIBA BRASIL'
   },
   {
     id: '2180',
-    name: 'Korolev',
+    name: 'Korolev'
   },
   {
     id: '2181',
-    name: 'Star',
+    name: 'Star'
   },
   {
     id: '2183',
-    name: 'ABC',
+    name: 'ABC'
   },
   {
     id: '2185',
-    name: 'Hamburg OL',
+    name: 'Hamburg OL'
   },
   {
     id: '2189',
-    name: 'IL Express',
+    name: 'IL Express'
   },
   {
     id: '2191',
-    name: 'Moscow MSU',
+    name: 'Moscow MSU'
   },
   {
     id: '2192',
-    name: 'BSV Halle-Ammendorf',
+    name: 'BSV Halle-Ammendorf'
   },
   {
     id: '2193',
-    name: '?ilal?s SM',
+    name: '?ilal?s SM'
   },
   {
     id: '2194',
-    name: 'Team Hoffmann',
+    name: 'Team Hoffmann'
   },
   {
     id: '2195',
-    name: 'Baltiyskiy Bereg',
+    name: 'Baltiyskiy Bereg'
   },
   {
     id: '2196',
-    name: 'Kölner OL-Team',
+    name: 'Kölner OL-Team'
   },
   {
     id: '2197',
-    name: 'Eidsvoll OL',
+    name: 'Eidsvoll OL'
   },
   {
     id: '2198',
-    name: 'CUOC',
+    name: 'CUOC'
   },
   {
     id: '2199',
-    name: 'DrongO',
+    name: 'DrongO'
   },
   {
     id: '2200',
-    name: 'OK OREL',
+    name: 'OK OREL'
   },
   {
     id: '2201',
-    name: 'Rand Orienteering Club',
+    name: 'Rand Orienteering Club'
   },
   {
     id: '2202',
-    name: 'WOLV Oelsa',
+    name: 'WOLV Oelsa'
   },
   {
     id: '2203',
-    name: 'Truckee Orienteering Club',
+    name: 'Truckee Orienteering Club'
   },
   {
     id: '2205',
-    name: 'PKO Harpagan',
+    name: 'PKO Harpagan'
   },
   {
     id: '2206',
-    name: 'GALIL',
+    name: 'GALIL'
   },
   {
     id: '2207',
-    name: 'OC Fürstenfeld',
+    name: 'OC Fürstenfeld'
   },
   {
     id: '2209',
-    name: 'Imperdible',
+    name: 'Imperdible'
   },
   {
     id: '2211',
-    name: 'Orienta-Vostok',
+    name: 'Orienta-Vostok'
   },
   {
     id: '2212',
-    name: 'BMSTU Moscow',
+    name: 'BMSTU Moscow'
   },
   {
     id: '2213',
-    name: 'HSV Langenlebarn',
+    name: 'HSV Langenlebarn'
   },
   {
     id: '2214',
-    name: 'Multisportivnyj klub OLen',
+    name: 'Multisportivnyj klub OLen'
   },
   {
     id: '2216',
-    name: 'Pole Fontainebleau',
+    name: 'Pole Fontainebleau'
   },
   {
     id: '2217',
-    name: 'SV Bad Dueben',
+    name: 'SV Bad Dueben'
   },
   {
     id: '2220',
-    name: 'NiNo-o-Team',
+    name: 'NiNo-o-Team'
   },
   {
     id: '2221',
-    name: 'SRD SK',
+    name: 'SRD SK'
   },
   {
     id: '2223',
-    name: 'MTBO Youth Team',
+    name: 'MTBO Youth Team'
   },
   {
     id: '2224',
-    name: 'Meridians OK',
+    name: 'Meridians OK'
   },
   {
     id: '2225',
-    name: 'ASKÖ Austria',
+    name: 'ASKÖ Austria'
   },
   {
     id: '2228',
-    name: 'French MTBO Team',
+    name: 'French MTBO Team'
   },
   {
     id: '2229',
-    name: 'Veresk SPb',
+    name: 'Veresk SPb'
   },
   {
     id: '2230',
-    name: 'OK Takas',
+    name: 'OK Takas'
   },
   {
     id: '2231',
-    name: 'Deaf-sport',
+    name: 'Deaf-sport'
   },
   {
     id: '2232',
-    name: 'MARCO - Marseille Course Orientation',
+    name: 'MARCO - Marseille Course Orientation'
   },
   {
     id: '2233',
-    name: 'Orientamondo',
+    name: 'Orientamondo'
   },
   {
     id: '2234',
-    name: 'Sportunion Klagenfurt',
+    name: 'Sportunion Klagenfurt'
   },
   {
     id: '2235',
-    name: 'COC',
+    name: 'COC'
   },
   {
     id: '2236',
-    name: 'SpeedyPants St. Petersburg',
+    name: 'SpeedyPants St. Petersburg'
   },
   {
     id: '2237',
-    name: 'Lidingö RK',
+    name: 'Lidingö RK'
   },
   {
     id: '2238',
-    name: 'Italy MTBO Team',
+    name: 'Italy MTBO Team'
   },
   {
     id: '2239',
-    name: 'OK TON',
+    name: 'OK TON'
   },
   {
     id: '2245',
-    name: 'Portuguese MTBO Team',
+    name: 'Portuguese MTBO Team'
   },
   {
     id: '2246',
-    name: 'Nordvest OK',
+    name: 'Nordvest OK'
   },
   {
     id: '2247',
-    name: 'Sande Sportsklubb',
+    name: 'Sande Sportsklubb'
   },
   {
     id: '2248',
-    name: 'UKS Azymut 45 Gdynia',
+    name: 'UKS Azymut 45 Gdynia'
   },
   {
     id: '2249',
-    name: 'Bullarens GoIF',
+    name: 'Bullarens GoIF'
   },
   {
     id: '2250',
-    name: 'Los Angeles Orienteering Club',
+    name: 'Los Angeles Orienteering Club'
   },
   {
     id: '2252',
-    name: 'Sorekves KNSE',
+    name: 'Sorekves KNSE'
   },
   {
     id: '2253',
-    name: 'OK Perm',
+    name: 'OK Perm'
   },
   {
     id: '2254',
-    name: 'Magadan',
+    name: 'Magadan'
   },
   {
     id: '2256',
-    name: 'Team Blekinge Löparförening',
+    name: 'Team Blekinge Löparförening'
   },
   {
     id: '2257',
-    name: 'FK Studenterna',
+    name: 'FK Studenterna'
   },
   {
     id: '2258',
-    name: 'EONTOURS',
+    name: 'EONTOURS'
   },
   {
     id: '2259',
-    name: 'ES kanto C',
+    name: 'ES kanto C'
   },
   {
     id: '2261',
-    name: 'OAC',
+    name: 'OAC'
   },
   {
     id: '2262',
-    name: 'Sollefteå Skidor IF',
+    name: 'Sollefteå Skidor IF'
   },
   {
     id: '2263',
-    name: 'PCOC',
+    name: 'PCOC'
   },
   {
     id: '2264',
-    name: 'SKOB Bruntal',
+    name: 'SKOB Bruntal'
   },
   {
     id: '2265',
-    name: 'SK Los M?lník',
+    name: 'SK Los M?lník'
   },
   {
     id: '2266',
-    name: 'COSM',
+    name: 'COSM'
   },
   {
     id: '2267',
-    name: 'Titan',
+    name: 'Titan'
   },
   {
     id: '2268',
-    name: 'Belgorod',
+    name: 'Belgorod'
   },
   {
     id: '2269',
-    name: 'Østfold orienteringskrets',
+    name: 'Østfold orienteringskrets'
   },
   {
     id: '2270',
-    name: 'A2',
+    name: 'A2'
   },
   {
     id: '2271',
-    name: 'Perm, Sokol',
+    name: 'Perm, Sokol'
   },
   {
     id: '2272',
-    name: 'Polisportiva G. Masi',
+    name: 'Polisportiva G. Masi'
   },
   {
     id: '2273',
-    name: 'NTA O tour',
+    name: 'NTA O tour'
   },
   {
     id: '2275',
-    name: 'Birkenes IL',
+    name: 'Birkenes IL'
   },
   {
     id: '2276',
-    name: 'Dandenong Ranges Orienteering Club',
+    name: 'Dandenong Ranges Orienteering Club'
   },
   {
     id: '2277',
-    name: 'Noyon CO',
+    name: 'Noyon CO'
   },
   {
     id: '2278',
-    name: 'OL-Team Filder',
+    name: 'OL-Team Filder'
   },
   {
     id: '2279',
-    name: 'Leibnitzer AC',
+    name: 'Leibnitzer AC'
   },
   {
     id: '2281',
-    name: 'Team 2Pi',
+    name: 'Team 2Pi'
   },
   {
     id: '2282',
-    name: 'Fire Services orienteering club',
+    name: 'Fire Services orienteering club'
   },
   {
     id: '2283',
-    name: 'Learnjoy',
+    name: 'Learnjoy'
   },
   {
     id: '2284',
-    name: 'North Texas Orienteering Association',
+    name: 'North Texas Orienteering Association'
   },
   {
     id: '2285',
-    name: 'Backwoods Orienteering Klub',
+    name: 'Backwoods Orienteering Klub'
   },
   {
     id: '2287',
-    name: 'Murmansk Orienteering Association',
+    name: 'Murmansk Orienteering Association'
   },
   {
     id: '2288',
-    name: 'Stockholms Rävjägare',
+    name: 'Stockholms Rävjägare'
   },
   {
     id: '2289',
-    name: 'UMKS Kwidzyn',
+    name: 'UMKS Kwidzyn'
   },
   {
     id: '2290',
-    name: 'Southampton Orienteering Club',
+    name: 'Southampton Orienteering Club'
   },
   {
     id: '2291',
-    name: 'OK Orvand',
+    name: 'OK Orvand'
   },
   {
     id: '2293',
-    name: 'Orienta Moscow Compass',
+    name: 'Orienta Moscow Compass'
   },
   {
     id: '2294',
-    name: 'IL Hauken',
+    name: 'IL Hauken'
   },
   {
     id: '2295',
-    name: 'Rathelot, Garde Republicaine',
+    name: 'Rathelot, Garde Republicaine'
   },
   {
     id: '2297',
-    name: 'OK Vipsport.lv',
+    name: 'OK Vipsport.lv'
   },
   {
     id: '2298',
-    name: 'Arnadal IL',
+    name: 'Arnadal IL'
   },
   {
     id: '2299',
-    name: 'TUS Lübbecke',
+    name: 'TUS Lübbecke'
   },
   {
     id: '2300',
-    name: 'C.S. Orienter Targu Mures',
+    name: 'C.S. Orienter Targu Mures'
   },
   {
     id: '2301',
-    name: 'Yläneen Kiri',
+    name: 'Yläneen Kiri'
   },
   {
     id: '2302',
-    name: 'orienta-victoria',
+    name: 'orienta-victoria'
   },
   {
     id: '2303',
-    name: 'CKX',
+    name: 'CKX'
   },
   {
     id: '2305',
-    name: 'Tavelweg',
+    name: 'Tavelweg'
   },
   {
     id: '2306',
-    name: 'Luleå Gjutarens IF',
+    name: 'Luleå Gjutarens IF'
   },
   {
     id: '2309',
-    name: 'Brinitou',
+    name: 'Brinitou'
   },
   {
     id: '2310',
-    name: 'Jylland',
+    name: 'Jylland'
   },
   {
     id: '2311',
-    name: 'Buskerud o-krets',
+    name: 'Buskerud o-krets'
   },
   {
     id: '2312',
-    name: 'Garda OK',
+    name: 'Garda OK'
   },
   {
     id: '2313',
-    name: 'Varanger OL',
+    name: 'Varanger OL'
   },
   {
     id: '2314',
-    name: 'RusTwisting',
+    name: 'RusTwisting'
   },
   {
     id: '2315',
-    name: 'AOCM',
+    name: 'AOCM'
   },
   {
     id: '2316',
-    name: 'Team Ella',
+    name: 'Team Ella'
   },
   {
     id: '2317',
-    name: 'Gruppo Orientamento Cai XXX Ottobre A.S.D.',
+    name: 'Gruppo Orientamento Cai XXX Ottobre A.S.D.'
   },
   {
     id: '2318',
-    name: 'Coach K runners',
+    name: 'Coach K runners'
   },
   {
     id: '2319',
-    name: 'ryssbergets',
+    name: 'ryssbergets'
   },
   {
     id: '2320',
-    name: 'Ylläksen Rasti',
+    name: 'Ylläksen Rasti'
   },
   {
     id: '2321',
-    name: 'International Dimensions',
+    name: 'International Dimensions'
   },
   {
     id: '2323',
-    name: 'CLUBE DE ORIENTAÇÃO DO ROCHA - COR-DF',
+    name: 'CLUBE DE ORIENTAÇÃO DO ROCHA - COR-DF'
   },
   {
     id: '2324',
-    name: 'OPA Montigny',
+    name: 'OPA Montigny'
   },
   {
     id: '2325',
-    name: 'ASOP ERSTEIN',
+    name: 'ASOP ERSTEIN'
   },
   {
     id: '2326',
-    name: 'Zselici Tájfutók',
+    name: 'Zselici Tájfutók'
   },
   {
     id: '2327',
-    name: 'SC Melle 03',
+    name: 'SC Melle 03'
   },
   {
     id: '2328',
-    name: 'Hekla',
+    name: 'Hekla'
   },
   {
     id: '2329',
-    name: 'Wullundigong Orienteers of the West',
+    name: 'Wullundigong Orienteers of the West'
   },
   {
     id: '2331',
-    name: 'Malarruta',
+    name: 'Malarruta'
   },
   {
     id: '2332',
-    name: 'INTERFOREST',
+    name: 'INTERFOREST'
   },
   {
     id: '2333',
-    name: 'HaSharon',
+    name: 'HaSharon'
   },
   {
     id: '2334',
-    name: 'CHIBA OLK',
+    name: 'CHIBA OLK'
   },
   {
     id: '2335',
-    name: 'HSV Villach',
+    name: 'HSV Villach'
   },
   {
     id: '2337',
-    name: 'Wessex',
+    name: 'Wessex'
   },
   {
     id: '2338',
-    name: 'A.S.D. Terlaner Orientierungsläufer',
+    name: 'A.S.D. Terlaner Orientierungsläufer'
   },
   {
     id: '2339',
-    name: 'Hämeenlinnan Tarmo',
+    name: 'Hämeenlinnan Tarmo'
   },
   {
     id: '2340',
-    name: 'Skattkärrs SOK',
+    name: 'Skattkärrs SOK'
   },
   {
     id: '2341',
-    name: 'Or-Ly',
+    name: 'Or-Ly'
   },
   {
     id: '2342',
-    name: 'OSK Arboro',
+    name: 'OSK Arboro'
   },
   {
     id: '2344',
-    name: 'DVO',
+    name: 'DVO'
   },
   {
     id: '2345',
-    name: 'Fredrikshof IF CK',
+    name: 'Fredrikshof IF CK'
   },
   {
     id: '2346',
-    name: 'Hong Kong Community of Education in Orienteering',
+    name: 'Hong Kong Community of Education in Orienteering'
   },
   {
     id: '2348',
-    name: 'OK Azimut',
+    name: 'OK Azimut'
   },
   {
     id: '2349',
-    name: 'ASD Agorosso S. Alessandro',
+    name: 'ASD Agorosso S. Alessandro'
   },
   {
     id: '2350',
-    name: 'Ljuserz',
+    name: 'Ljuserz'
   },
   {
     id: '2351',
-    name: 'TC Syd Vejle',
+    name: 'TC Syd Vejle'
   },
   {
     id: '2352',
-    name: 'TJ Lokomotiva Teplice',
+    name: 'TJ Lokomotiva Teplice'
   },
   {
     id: '2353',
-    name: 'CLAC',
+    name: 'CLAC'
   },
   {
     id: '2354',
-    name: 'Rybinsk',
+    name: 'Rybinsk'
   },
   {
     id: '2355',
-    name: 'Solway',
+    name: 'Solway'
   },
   {
     id: '2356',
-    name: 'BO Albi FRANCE',
+    name: 'BO Albi FRANCE'
   },
   {
     id: '2357',
-    name: 'Vladivostok',
+    name: 'Vladivostok'
   },
   {
     id: '2358',
-    name: 'Slovan Karlovy Vary',
+    name: 'Slovan Karlovy Vary'
   },
   {
     id: '2359',
-    name: 'Kokemäen Kova-Väki',
+    name: 'Kokemäen Kova-Väki'
   },
   {
     id: '2360',
-    name: 'Khabarovsk',
+    name: 'Khabarovsk'
   },
   {
     id: '2361',
-    name: 'SPARTA Rostov-on-Don',
+    name: 'SPARTA Rostov-on-Don'
   },
   {
     id: '2363',
-    name: 'Hong Kong Orienteering Development Force',
+    name: 'Hong Kong Orienteering Development Force'
   },
   {
     id: '2364',
-    name: 'SCAPA NANCY',
+    name: 'SCAPA NANCY'
   },
   {
     id: '2365',
-    name: 'Lisboa OK',
+    name: 'Lisboa OK'
   },
   {
     id: '2367',
-    name: 'UMKS Orkan Ostróda',
+    name: 'UMKS Orkan Ostróda'
   },
   {
     id: '2368',
-    name: 'Tomsk',
+    name: 'Tomsk'
   },
   {
     id: '2369',
-    name: 'CKC4',
+    name: 'CKC4'
   },
   {
     id: '2370',
-    name: 'RUS-Veteran',
+    name: 'RUS-Veteran'
   },
   {
     id: '2371',
-    name: 'Thames Valley Orienteering Club',
+    name: 'Thames Valley Orienteering Club'
   },
   {
     id: '2372',
-    name: 'CA Rosé',
+    name: 'CA Rosé'
   },
   {
     id: '2373',
-    name: 'Dalasjö IK Framåt',
+    name: 'Dalasjö IK Framåt'
   },
   {
     id: '2374',
-    name: 'ASG Teutoburger Wald',
+    name: 'ASG Teutoburger Wald'
   },
   {
     id: '2375',
-    name: 'OLV Zug 2015',
+    name: 'OLV Zug 2015'
   },
   {
     id: '2376',
-    name: 'Ryazan Vek',
+    name: 'Ryazan Vek'
   },
   {
     id: '2377',
-    name: 'SKP Zdar nad Sazavou',
+    name: 'SKP Zdar nad Sazavou'
   },
   {
     id: '2381',
-    name: 'TJ Slovan Karlovy Vary',
+    name: 'TJ Slovan Karlovy Vary'
   },
   {
     id: '2382',
-    name: 'Moravian',
+    name: 'Moravian'
   },
   {
     id: '2383',
-    name: 'FWOC',
+    name: 'FWOC'
   },
   {
     id: '2384',
-    name: 'OK Rudamina',
+    name: 'OK Rudamina'
   },
   {
     id: '2385',
-    name: 'Korshuniata',
+    name: 'Korshuniata'
   },
   {
     id: '2386',
-    name: 'SK LOB Nova Paka',
+    name: 'SK LOB Nova Paka'
   },
   {
     id: '2387',
-    name: 'SK Triturus Nitra',
+    name: 'SK Triturus Nitra'
   },
   {
     id: '2388',
-    name: 'Sportclub Meran',
+    name: 'Sportclub Meran'
   },
   {
     id: '2390',
-    name: 'Tabani Spartacus',
+    name: 'Tabani Spartacus'
   },
   {
     id: '2391',
-    name: 'Twycross OC',
+    name: 'Twycross OC'
   },
   {
     id: '2392',
-    name: 'Parawanga ACT',
+    name: 'Parawanga ACT'
   },
   {
     id: '2393',
-    name: 'Nivalan Suunnistajat (NIS)',
+    name: 'Nivalan Suunnistajat (NIS)'
   },
   {
     id: '2394',
-    name: 'Sokol Frydek-Mistek',
+    name: 'Sokol Frydek-Mistek'
   },
   {
     id: '2395',
-    name: 'Budapest',
+    name: 'Budapest'
   },
   {
     id: '2396',
-    name: 'ATU Kosice',
+    name: 'ATU Kosice'
   },
   {
     id: '2397',
-    name: 'Vissefjärda GOIF',
+    name: 'Vissefjärda GOIF'
   },
   {
     id: '2399',
-    name: 'Sunny',
+    name: 'Sunny'
   },
   {
     id: '2401',
-    name: 'Calder Valley Orienteers',
+    name: 'Calder Valley Orienteers'
   },
   {
     id: '2402',
-    name: 'Corrèze CO',
+    name: 'Corrèze CO'
   },
   {
     id: '2405',
-    name: 'EPOC',
+    name: 'EPOC'
   },
   {
     id: '2407',
-    name: 'COPA',
+    name: 'COPA'
   },
   {
     id: '2408',
-    name: 'Helloworld',
+    name: 'Helloworld'
   },
   {
     id: '2409',
-    name: 'Stockholms Inomhusorienterare',
+    name: 'Stockholms Inomhusorienterare'
   },
   {
     id: '2410',
-    name: 'OK',
+    name: 'OK'
   },
   {
     id: '2412',
-    name: 'Hollolan Urheilijat 46',
+    name: 'Hollolan Urheilijat 46'
   },
   {
     id: '2413',
-    name: 'Ogre OK',
+    name: 'Ogre OK'
   },
   {
     id: '2414',
-    name: 'Bimahev',
+    name: 'Bimahev'
   },
   {
     id: '2415',
-    name: 'OK Trian',
+    name: 'OK Trian'
   },
   {
     id: '2416',
-    name: 'GMOC, Vermont',
+    name: 'GMOC, Vermont'
   },
   {
     id: '2417',
-    name: 'Cankaya University Sport Club',
+    name: 'Cankaya University Sport Club'
   },
   {
     id: '2419',
-    name: 'Southern Highlands Occasional Orienteers',
+    name: 'Southern Highlands Occasional Orienteers'
   },
   {
     id: '2420',
-    name: 'COTI - Clube de Orientação Tiradentes - DF',
+    name: 'COTI - Clube de Orientação Tiradentes - DF'
   },
   {
     id: '2421',
-    name: 'COGA - Clube de Orientação Gralha Azul',
+    name: 'COGA - Clube de Orientação Gralha Azul'
   },
   {
     id: '2423',
-    name: 'OLG Nidwalden+Obwalden',
+    name: 'OLG Nidwalden+Obwalden'
   },
   {
     id: '2424',
-    name: 'OLV Landshut',
+    name: 'OLV Landshut'
   },
   {
     id: '2425',
-    name: 'CORM - RIOMAFRENSE',
+    name: 'CORM - RIOMAFRENSE'
   },
   {
     id: '2426',
-    name: 'MMOC',
+    name: 'MMOC'
   },
   {
     id: '2427',
-    name: 'NEO DSK',
+    name: 'NEO DSK'
   },
   {
     id: '2428',
-    name: 'Onkaparinga Hills Orienteering Club',
+    name: 'Onkaparinga Hills Orienteering Club'
   },
   {
     id: '2430',
-    name: 'OK Doksy',
+    name: 'OK Doksy'
   },
   {
     id: '2431',
-    name: 'OLC Omström-Sense',
+    name: 'OLC Omström-Sense'
   },
   {
     id: '2432',
-    name: 'Kokkosenkylän Rasti & Risahdus',
+    name: 'Kokkosenkylän Rasti & Risahdus'
   },
   {
     id: '2433',
-    name: 'Horse',
+    name: 'Horse'
   },
   {
     id: '2435',
-    name: 'Southdowns Orienteers',
+    name: 'Southdowns Orienteers'
   },
   {
     id: '2436',
-    name: 'Wilhelmina OK',
+    name: 'Wilhelmina OK'
   },
   {
     id: '2437',
-    name: 'Sellnäs IF',
+    name: 'Sellnäs IF'
   },
   {
     id: '2438',
-    name: 'Mälarhöjdens IK OK',
+    name: 'Mälarhöjdens IK OK'
   },
   {
     id: '2439',
-    name: 'Homo Navigators',
+    name: 'Homo Navigators'
   },
   {
     id: '2440',
-    name: 'Nerima OLC',
+    name: 'Nerima OLC'
   },
   {
     id: '2441',
-    name: 'Kopanica',
+    name: 'Kopanica'
   },
   {
     id: '2442',
-    name: 'COMIPA',
+    name: 'COMIPA'
   },
   {
     id: '2445',
-    name: 'ATLAS',
+    name: 'ATLAS'
   },
   {
     id: '2446',
-    name: 'Cascade OC',
+    name: 'Cascade OC'
   },
   {
     id: '2447',
-    name: 'Fritsla IF',
+    name: 'Fritsla IF'
   },
   {
     id: '2448',
-    name: 'LiTHe Vilse',
+    name: 'LiTHe Vilse'
   },
   {
     id: '2449',
-    name: 'Toutes Orientations Meaux',
+    name: 'Toutes Orientations Meaux'
   },
   {
     id: '2450',
-    name: 'AS IGN',
+    name: 'AS IGN'
   },
   {
     id: '2451',
-    name: 'SV Schmalkalden 04',
+    name: 'SV Schmalkalden 04'
   },
   {
     id: '2453',
-    name: 'Red Roos',
+    name: 'Red Roos'
   },
   {
     id: '2454',
-    name: 'Wimborne Orienteers',
+    name: 'Wimborne Orienteers'
   },
   {
     id: '2455',
-    name: 'Hong Kong Island Orienteering Force',
+    name: 'Hong Kong Island Orienteering Force'
   },
   {
     id: '2456',
-    name: 'STE Hungary',
+    name: 'STE Hungary'
   },
   {
     id: '2457',
-    name: 'ULUs REISEWELT',
+    name: 'ULUs REISEWELT'
   },
   {
     id: '2458',
-    name: 'Sage Orienteering and Rogaining Club',
+    name: 'Sage Orienteering and Rogaining Club'
   },
   {
     id: '2459',
-    name: 'SPLAV - X-Race.info',
+    name: 'SPLAV - X-Race.info'
   },
   {
     id: '2460',
-    name: 'Rold Skov OK',
+    name: 'Rold Skov OK'
   },
   {
     id: '2461',
-    name: 'Snertingdal IF Orientering',
+    name: 'Snertingdal IF Orientering'
   },
   {
     id: '2462',
-    name: 'COCAMP',
+    name: 'COCAMP'
   },
   {
     id: '2463',
-    name: 'Builder',
+    name: 'Builder'
   },
   {
     id: '2466',
-    name: 'Team Chako',
+    name: 'Team Chako'
   },
   {
     id: '2467',
-    name: 'CusBologna Agorosso',
+    name: 'CusBologna Agorosso'
   },
   {
     id: '2468',
-    name: 'Naturfreunde Stmk',
+    name: 'Naturfreunde Stmk'
   },
   {
     id: '2470',
-    name: 'HSV OL Wiener Neustadt',
+    name: 'HSV OL Wiener Neustadt'
   },
   {
     id: '2471',
-    name: 'OK99 Hradec Kralove',
+    name: 'OK99 Hradec Kralove'
   },
   {
     id: '2472',
-    name: 'OK Dif',
+    name: 'OK Dif'
   },
   {
     id: '2473',
-    name: 'COVAR',
+    name: 'COVAR'
   },
   {
     id: '2475',
-    name: 'Givry Sport Orientation',
+    name: 'Givry Sport Orientation'
   },
   {
     id: '2476',
-    name: 'OYS Vapari',
+    name: 'OYS Vapari'
   },
   {
     id: '2477',
-    name: 'Balise 77',
+    name: 'Balise 77'
   },
   {
     id: '2478',
-    name: 'DontGetLost Adventure Running',
+    name: 'DontGetLost Adventure Running'
   },
   {
     id: '2479',
-    name: 'Uppsala multisport',
+    name: 'Uppsala multisport'
   },
   {
     id: '2480',
-    name: 'Ramblers',
+    name: 'Ramblers'
   },
   {
     id: '2481',
-    name: 'C.d.p.o',
+    name: 'C.d.p.o'
   },
   {
     id: '2482',
-    name: 'SJJ',
+    name: 'SJJ'
   },
   {
     id: '2483',
-    name: 'ANCO-Neuchâtel',
+    name: 'ANCO-Neuchâtel'
   },
   {
     id: '2484',
-    name: 'OK Leipzig',
+    name: 'OK Leipzig'
   },
   {
     id: '2485',
-    name: 'TGM Budenheim',
+    name: 'TGM Budenheim'
   },
   {
     id: '2486',
-    name: 'Klub OB BOR Topo??ianky',
+    name: 'Klub OB BOR Topo??ianky'
   },
   {
     id: '2487',
-    name: 'TJ Slávia Farmaceut Bratislava',
+    name: 'TJ Slávia Farmaceut Bratislava'
   },
   {
     id: '2488',
-    name: 'HSV Grossmittel',
+    name: 'HSV Grossmittel'
   },
   {
     id: '2489',
-    name: 'BSU OK',
+    name: 'BSU OK'
   },
   {
     id: '2490',
-    name: 'Uganda Scouts Orienteering Club',
+    name: 'Uganda Scouts Orienteering Club'
   },
   {
     id: '2491',
-    name: 'Dauphine Orientation',
+    name: 'Dauphine Orientation'
   },
   {
     id: '2492',
-    name: 'Kyoto OLC',
+    name: 'Kyoto OLC'
   },
   {
     id: '2493',
-    name: 'Tirol',
+    name: 'Tirol'
   },
   {
     id: '2494',
-    name: 'LOC',
+    name: 'LOC'
   },
   {
     id: '2495',
-    name: 'Quack OK',
+    name: 'Quack OK'
   },
   {
     id: '2496',
-    name: 'OC Bruntal',
+    name: 'OC Bruntal'
   },
   {
     id: '2497',
-    name: 'Andebu IL',
+    name: 'Andebu IL'
   },
   {
     id: '2498',
-    name: 'China Deer Orienteering Club',
+    name: 'China Deer Orienteering Club'
   },
   {
     id: '2499',
-    name: 'SOK Knallen',
+    name: 'SOK Knallen'
   },
   {
     id: '2500',
-    name: 'LBV Phönix Lübeck',
+    name: 'LBV Phönix Lübeck'
   },
   {
     id: '2505',
-    name: 'Team360',
+    name: 'Team360'
   },
   {
     id: '2506',
-    name: 'K.O.B. Chocen',
+    name: 'K.O.B. Chocen'
   },
   {
     id: '2507',
-    name: 'Hunan University Orienteering Club',
+    name: 'Hunan University Orienteering Club'
   },
   {
     id: '2509',
-    name: 'O-mikron',
+    name: 'O-mikron'
   },
   {
     id: '2510',
-    name: 'Dusigne-OFamily',
+    name: 'Dusigne-OFamily'
   },
   {
     id: '2511',
-    name: 'Orienteering Klosterneuburg',
+    name: 'Orienteering Klosterneuburg'
   },
   {
     id: '2512',
-    name: 'OK Oachkatzlschwoaf',
+    name: 'OK Oachkatzlschwoaf'
   },
   {
     id: '2513',
-    name: 'Idrott Klubb Prato',
+    name: 'Idrott Klubb Prato'
   },
   {
     id: '2516',
-    name: 'Counties Manukau',
+    name: 'Counties Manukau'
   },
   {
     id: '2518',
-    name: 'UNIVERSIDAD DE ALICANTE',
+    name: 'UNIVERSIDAD DE ALICANTE'
   },
   {
     id: '2519',
-    name: 'PSOK DMB Beograd',
+    name: 'PSOK DMB Beograd'
   },
   {
     id: '2520',
-    name: 'Berliner Turnerschaft',
+    name: 'Berliner Turnerschaft'
   },
   {
     id: '2522',
-    name: 'Halsuan Toivo',
+    name: 'Halsuan Toivo'
   },
   {
     id: '2523',
-    name: 'Minnesota Orienteering Club',
+    name: 'Minnesota Orienteering Club'
   },
   {
     id: '2524',
-    name: 'COFORT',
+    name: 'COFORT'
   },
   {
     id: '2525',
-    name: 'Taiwan Junior Orienteering Club',
+    name: 'Taiwan Junior Orienteering Club'
   },
   {
     id: '2526',
-    name: 'COQUEIRO',
+    name: 'COQUEIRO'
   },
   {
     id: '2527',
-    name: 'Czech junior team',
+    name: 'Czech junior team'
   },
   {
     id: '2528',
-    name: 'Tama OL',
+    name: 'Tama OL'
   },
   {
     id: '2529',
-    name: 'US Orienteering',
+    name: 'US Orienteering'
   },
   {
     id: '2530',
-    name: 'Wallaringa Orienteers',
+    name: 'Wallaringa Orienteers'
   },
   {
     id: '2531',
-    name: 'RMOC Rocky Mtn',
+    name: 'RMOC Rocky Mtn'
   },
   {
     id: '2532',
-    name: 'B&B',
+    name: 'B&B'
   },
   {
     id: '2534',
-    name: 'Scania Södertälje',
+    name: 'Scania Södertälje'
   },
   {
     id: '2535',
-    name: 'SK Varianssi',
+    name: 'SK Varianssi'
   },
   {
     id: '2536',
-    name: 'OLK Rafzerfeld-Bülach',
+    name: 'OLK Rafzerfeld-Bülach'
   },
   {
     id: '2538',
-    name: 'Keuruun Kisailijat',
+    name: 'Keuruun Kisailijat'
   },
   {
     id: '2539',
-    name: 'Polish Junior Team',
+    name: 'Polish Junior Team'
   },
   {
     id: '2540',
-    name: 'Orienteer Kansas',
+    name: 'Orienteer Kansas'
   },
   {
     id: '2541',
-    name: 'Simon',
+    name: 'Simon'
   },
   {
     id: '2542',
-    name: 'IFK Ilfis OK',
+    name: 'IFK Ilfis OK'
   },
   {
     id: '2544',
-    name: 'Lidköpings CK',
+    name: 'Lidköpings CK'
   },
   {
     id: '2545',
-    name: 'OC Emek Hefer',
+    name: 'OC Emek Hefer'
   },
   {
     id: '2546',
-    name: 'OsakaOLC',
+    name: 'OsakaOLC'
   },
   {
     id: '2549',
-    name: 'Ageo OL Club',
+    name: 'Ageo OL Club'
   },
   {
     id: '2550',
-    name: 'Miami Valley Orienteering Club',
+    name: 'Miami Valley Orienteering Club'
   },
   {
     id: '2551',
-    name: 'Fredrikshofs FIF',
+    name: 'Fredrikshofs FIF'
   },
   {
     id: '2552',
-    name: 'SC Volpriehausen',
+    name: 'SC Volpriehausen'
   },
   {
     id: '2553',
-    name: 'VIVAIO ORI',
+    name: 'VIVAIO ORI'
   },
   {
     id: '2554',
-    name: 'Norges orienteringsforbund',
+    name: 'Norges orienteringsforbund'
   },
   {
     id: '2555',
-    name: 'TuksOrienteering',
+    name: 'TuksOrienteering'
   },
   {
     id: '2556',
-    name: 'Escondite Nature Sport- Madrid',
+    name: 'Escondite Nature Sport- Madrid'
   },
   {
     id: '2557',
-    name: 'Team Italy',
+    name: 'Team Italy'
   },
   {
     id: '2559',
-    name: 'Treptower SV Berlin',
+    name: 'Treptower SV Berlin'
   },
   {
     id: '2561',
-    name: 'Coureur de Bois',
+    name: 'Coureur de Bois'
   },
   {
     id: '2562',
-    name: 'Lättja IF',
+    name: 'Lättja IF'
   },
   {
     id: '2563',
-    name: 'Spårvägen CF',
+    name: 'Spårvägen CF'
   },
   {
     id: '2564',
-    name: 'LiU Elitidrott',
+    name: 'LiU Elitidrott'
   },
   {
     id: '2566',
-    name: 'Clube de Orientação de Divinópolis - Codiv',
+    name: 'Clube de Orientação de Divinópolis - Codiv'
   },
   {
     id: '2567',
-    name: 'Troy',
+    name: 'Troy'
   },
   {
     id: '2568',
-    name: 'Preetzer TSV',
+    name: 'Preetzer TSV'
   },
   {
     id: '2569',
-    name: 'Telia IF',
+    name: 'Telia IF'
   },
   {
     id: '2570',
-    name: 'Viking Orientering',
+    name: 'Viking Orientering'
   },
   {
     id: '2572',
-    name: 'Storsteinnes IL Orientering',
+    name: 'Storsteinnes IL Orientering'
   },
   {
     id: '2573',
-    name: 'Lytkarino',
+    name: 'Lytkarino'
   },
   {
     id: '2574',
-    name: 'Harju KEK RSK',
+    name: 'Harju KEK RSK'
   },
   {
     id: '2575',
-    name: 'BROS',
+    name: 'BROS'
   },
   {
     id: '2576',
-    name: 'AstraZeneca IF Södertälje',
+    name: 'AstraZeneca IF Södertälje'
   },
   {
     id: '2578',
-    name: 'OK!Sport',
+    name: 'OK!Sport'
   },
   {
     id: '2579',
-    name: 'HiveAndFive',
+    name: 'HiveAndFive'
   },
   {
     id: '2580',
-    name: 'Mefos ik',
+    name: 'Mefos ik'
   },
   {
     id: '2581',
-    name: 'ALCON',
+    name: 'ALCON'
   },
   {
     id: '2582',
-    name: 'COSELE - Clube de Orientação Serra do Lenheiro',
+    name: 'COSELE - Clube de Orientação Serra do Lenheiro'
   },
   {
     id: '2583',
-    name: 'Auld Reekie Orienteering Club',
+    name: 'Auld Reekie Orienteering Club'
   },
   {
     id: '2584',
-    name: 'Almadraba',
+    name: 'Almadraba'
   },
   {
     id: '2585',
-    name: 'Codan Extremadura',
+    name: 'Codan Extremadura'
   },
   {
     id: '2586',
-    name: 'COHU',
+    name: 'COHU'
   },
   {
     id: '2587',
-    name: 'Los Califas Orientacion',
+    name: 'Los Califas Orientacion'
   },
   {
     id: '2588',
-    name: 'Toledo',
+    name: 'Toledo'
   },
   {
     id: '2589',
-    name: 'UE Vic',
+    name: 'UE Vic'
   },
   {
     id: '2590',
-    name: 'Veleta',
+    name: 'Veleta'
   },
   {
     id: '2591',
-    name: 'Swiss O Tours',
+    name: 'Swiss O Tours'
   },
   {
     id: '2592',
-    name: 'UPC-O',
+    name: 'UPC-O'
   },
   {
     id: '2594',
-    name: 'CD Arista',
+    name: 'CD Arista'
   },
   {
     id: '2595',
-    name: 'Kuusankosken Urheiluseura',
+    name: 'Kuusankosken Urheiluseura'
   },
   {
     id: '2596',
-    name: 'Orienteering Canada',
+    name: 'Orienteering Canada'
   },
   {
     id: '2597',
-    name: 'Åstadkameratene IL',
+    name: 'Åstadkameratene IL'
   },
   {
     id: '2598',
-    name: 'Lincoln Orienteering Group',
+    name: 'Lincoln Orienteering Group'
   },
   {
     id: '2599',
-    name: 'Badalona Orientacio',
+    name: 'Badalona Orientacio'
   },
   {
     id: '2600',
-    name: 'TSV Malente',
+    name: 'TSV Malente'
   },
   {
     id: '2601',
-    name: 'Vestre Akers Skiklub',
+    name: 'Vestre Akers Skiklub'
   },
   {
     id: '2602',
-    name: 'German Youth Team',
+    name: 'German Youth Team'
   },
   {
     id: '2603',
-    name: 'Taupo Orienteering Club',
+    name: 'Taupo Orienteering Club'
   },
   {
     id: '2604',
-    name: 'Taipei Orienteering Club',
+    name: 'Taipei Orienteering Club'
   },
   {
     id: '2605',
-    name: 'TV Eptingen',
+    name: 'TV Eptingen'
   },
   {
     id: '2607',
-    name: 'Pälkäneen Luja-Lukko',
+    name: 'Pälkäneen Luja-Lukko'
   },
   {
     id: '2608',
-    name: 'OK Jaunyste',
+    name: 'OK Jaunyste'
   },
   {
     id: '2609',
-    name: 'Gulfstream',
+    name: 'Gulfstream'
   },
   {
     id: '2612',
-    name: 'Gäddede SK',
+    name: 'Gäddede SK'
   },
   {
     id: '2613',
-    name: 'Spriditis TSK',
+    name: 'Spriditis TSK'
   },
   {
     id: '2614',
-    name: 'Erebus Orientamento Vicenza',
+    name: 'Erebus Orientamento Vicenza'
   },
   {
     id: '2615',
-    name: 'SDSZ Orienteering Club',
+    name: 'SDSZ Orienteering Club'
   },
   {
     id: '2616',
-    name: 'IL Try',
+    name: 'IL Try'
   },
   {
     id: '2617',
-    name: 'Hong Kong Joint School Orienteering Association',
+    name: 'Hong Kong Joint School Orienteering Association'
   },
   {
     id: '2618',
-    name: 'Sandvik IK',
+    name: 'Sandvik IK'
   },
   {
     id: '2619',
-    name: 'TPL',
+    name: 'TPL'
   },
   {
     id: '2620',
-    name: 'Umara SC',
+    name: 'Umara SC'
   },
   {
     id: '2621',
-    name: 'Metropolitan Orienteering Club',
+    name: 'Metropolitan Orienteering Club'
   },
   {
     id: '2622',
-    name: 'KOLC',
+    name: 'KOLC'
   },
   {
     id: '2623',
-    name: 'Todai OLK',
+    name: 'Todai OLK'
   },
   {
     id: '2624',
-    name: 'Aycaramba',
+    name: 'Aycaramba'
   },
   {
     id: '2625',
-    name: 'Haga Norra',
+    name: 'Haga Norra'
   },
   {
     id: '2626',
-    name: 'Eryri',
+    name: 'Eryri'
   },
   {
     id: '2627',
-    name: 'C.E.Colivenc',
+    name: 'C.E.Colivenc'
   },
   {
     id: '2629',
-    name: 'Skellefteå AIK Friidrott',
+    name: 'Skellefteå AIK Friidrott'
   },
   {
     id: '2630',
-    name: 'BK15',
+    name: 'BK15'
   },
   {
     id: '2631',
-    name: '???????????',
+    name: '???????????'
   },
   {
     id: '2634',
-    name: 'ROK - Reserveofficerernes Orienteringsklub',
+    name: 'ROK - Reserveofficerernes Orienteringsklub'
   },
   {
     id: '2635',
-    name: 'Föreningen Uppsala Multisport',
+    name: 'Föreningen Uppsala Multisport'
   },
   {
     id: '2636',
-    name: 'odihost',
+    name: 'odihost'
   },
   {
     id: '2639',
-    name: 'SOOB Spartak Rychnov nad Kn??nou',
+    name: 'SOOB Spartak Rychnov nad Kn??nou'
   },
   {
     id: '2640',
-    name: 'Hemsedal IL',
+    name: 'Hemsedal IL'
   },
   {
     id: '2643',
-    name: 'Suomussalmen Rasti',
+    name: 'Suomussalmen Rasti'
   },
   {
     id: '2649',
-    name: 'Sport Orientation Lunéville',
+    name: 'Sport Orientation Lunéville'
   },
   {
     id: '2650',
-    name: 'Laihian Luja',
+    name: 'Laihian Luja'
   },
   {
     id: '2651',
-    name: 'Navalcán Orientación',
+    name: 'Navalcán Orientación'
   },
   {
     id: '2652',
-    name: 'Ski Team Forest',
+    name: 'Ski Team Forest'
   },
   {
     id: '2653',
-    name: 'Hisøy OK',
+    name: 'Hisøy OK'
   },
   {
     id: '2654',
-    name: 'Suunta Jurva',
+    name: 'Suunta Jurva'
   },
   {
     id: '2655',
-    name: 'Team Dala Sports Academy IF',
+    name: 'Team Dala Sports Academy IF'
   },
   {
     id: '2656',
-    name: 'UNEFS Bucuresti',
+    name: 'UNEFS Bucuresti'
   },
   {
     id: '2657',
-    name: 'Chläberen OK',
+    name: 'Chläberen OK'
   },
   {
     id: '2658',
-    name: 'Lucksta IF',
+    name: 'Lucksta IF'
   },
   {
     id: '2659',
-    name: 'Keminmaan Urheilijat',
+    name: 'Keminmaan Urheilijat'
   },
   {
     id: '2660',
-    name: 'SYO rotherham',
+    name: 'SYO rotherham'
   },
   {
     id: '2661',
-    name: 'Ystads IF',
+    name: 'Ystads IF'
   },
   {
     id: '2662',
-    name: 'OK Djurs',
+    name: 'OK Djurs'
   },
   {
     id: '2663',
-    name: 'Azimuth-SPB',
+    name: 'Azimuth-SPB'
   },
   {
     id: '2664',
-    name: 'Puppy TS',
+    name: 'Puppy TS'
   },
   {
     id: '2665',
-    name: 'Hankasalmen Hanka',
+    name: 'Hankasalmen Hanka'
   },
   {
     id: '2666',
-    name: 'Vingelen IL',
+    name: 'Vingelen IL'
   },
   {
     id: '2667',
-    name: 'Rasti-Hyry',
+    name: 'Rasti-Hyry'
   },
   {
     id: '2668',
-    name: 'Karbennings GoIF',
+    name: 'Karbennings GoIF'
   },
   {
     id: '2669',
-    name: 'West Anglia Orienteering Club',
+    name: 'West Anglia Orienteering Club'
   },
   {
     id: '2670',
-    name: 'Vladimir',
+    name: 'Vladimir'
   },
   {
     id: '2671',
-    name: 'IFK Hindås',
+    name: 'IFK Hindås'
   },
   {
     id: '2673',
-    name: 'OK Tiveden',
+    name: 'OK Tiveden'
   },
   {
     id: '2675',
-    name: 'Alleskolans IF',
+    name: 'Alleskolans IF'
   },
   {
     id: '2676',
-    name: 'COPS91',
+    name: 'COPS91'
   },
   {
     id: '2677',
-    name: 'Klaj?nas OK',
+    name: 'Klaj?nas OK'
   },
   {
     id: '2678',
-    name: 'IG Bloch',
+    name: 'IG Bloch'
   },
   {
     id: '2679',
-    name: 'SV Mietraching',
+    name: 'SV Mietraching'
   },
   {
     id: '2680',
-    name: 'Liperin Taimi',
+    name: 'Liperin Taimi'
   },
   {
     id: '2681',
-    name: 'ELO',
+    name: 'ELO'
   },
   {
     id: '2682',
-    name: 'OK Telsiai',
+    name: 'OK Telsiai'
   },
   {
     id: '2683',
-    name: 'TOAC Orientation',
+    name: 'TOAC Orientation'
   },
   {
     id: '2684',
-    name: 'GD4C',
+    name: 'GD4C'
   },
   {
     id: '2685',
-    name: 'UGRA',
+    name: 'UGRA'
   },
   {
     id: '2686',
-    name: 'Kuzey Geyikleri DSK',
+    name: 'Kuzey Geyikleri DSK'
   },
   {
     id: '2687',
-    name: 'Rælingen ok',
+    name: 'Rælingen ok'
   },
   {
     id: '2688',
-    name: 'ASUL SPORTS NATURE',
+    name: 'ASUL SPORTS NATURE'
   },
   {
     id: '2689',
-    name: 'POP',
+    name: 'POP'
   },
   {
     id: '2690',
-    name: 'GODIH Albacete',
+    name: 'GODIH Albacete'
   },
   {
     id: '2691',
-    name: 'Hegyvidék-KFKI Optimista Sportklub',
+    name: 'Hegyvidék-KFKI Optimista Sportklub'
   },
   {
     id: '2692',
-    name: 'Rastiketut',
+    name: 'Rastiketut'
   },
   {
     id: '2693',
-    name: 'UCDO',
+    name: 'UCDO'
   },
   {
     id: '2694',
-    name: 'FS Praha',
+    name: 'FS Praha'
   },
   {
     id: '2695',
-    name: 'The Woodchucks',
+    name: 'The Woodchucks'
   },
   {
     id: '2696',
-    name: 'ECHO73',
+    name: 'ECHO73'
   },
   {
     id: '2697',
-    name: 'TuS Rüppurr',
+    name: 'TuS Rüppurr'
   },
   {
     id: '2698',
-    name: 'Karlskrona SOK',
+    name: 'Karlskrona SOK'
   },
   {
     id: '2699',
-    name: 'Team1966',
+    name: 'Team1966'
   },
   {
     id: '2700',
-    name: 'Pendle Forest Orienteers',
+    name: 'Pendle Forest Orienteers'
   },
   {
     id: '2701',
-    name: 'TV Gebenstorf',
+    name: 'TV Gebenstorf'
   },
   {
     id: '2702',
-    name: 'UMA Idrottsförening',
+    name: 'UMA Idrottsförening'
   },
   {
     id: '2703',
-    name: 'IK NocOut.se',
+    name: 'IK NocOut.se'
   },
   {
     id: '2704',
-    name: '500Mila Finnish Team',
+    name: '500Mila Finnish Team'
   },
   {
     id: '2705',
-    name: 'OK Ris Delnice',
+    name: 'OK Ris Delnice'
   },
   {
     id: '2706',
-    name: 'Pannon Supersonics',
+    name: 'Pannon Supersonics'
   },
   {
     id: '2708',
-    name: 'Sportcentrum Jicin',
+    name: 'Sportcentrum Jicin'
   },
   {
     id: '2709',
-    name: 'Team Germany',
+    name: 'Team Germany'
   },
   {
     id: '2710',
-    name: 'Etelä-Karjalan Suunnistus',
+    name: 'Etelä-Karjalan Suunnistus'
   },
   {
     id: '2711',
-    name: 'OK Moss',
+    name: 'OK Moss'
   },
   {
     id: '2712',
-    name: 'INTEAM',
+    name: 'INTEAM'
   },
   {
     id: '2713',
-    name: 'Teekkarisuunnistajat',
+    name: 'Teekkarisuunnistajat'
   },
   {
     id: '2714',
-    name: 'Knoppen Elit',
+    name: 'Knoppen Elit'
   },
   {
     id: '2715',
-    name: 'TSM Praha',
+    name: 'TSM Praha'
   },
   {
     id: '2716',
-    name: 'Dala XC Ski Team',
+    name: 'Dala XC Ski Team'
   },
   {
     id: '2717',
-    name: 'GO Harzberg / Bad Voeslau',
+    name: 'GO Harzberg / Bad Voeslau'
   },
   {
     id: '2718',
-    name: 'Torridal',
+    name: 'Torridal'
   },
   {
     id: '2719',
-    name: 'OK JISKRA NOVY BOR',
+    name: 'OK JISKRA NOVY BOR'
   },
   {
     id: '2720',
-    name: 'Panev??ys',
+    name: 'Panev??ys'
   },
   {
     id: '2721',
-    name: 'Raision Kuula',
+    name: 'Raision Kuula'
   },
   {
     id: '2722',
-    name: 'Hegyisport Szentendre SE',
+    name: 'Hegyisport Szentendre SE'
   },
   {
     id: '2723',
-    name: '??????? ???????',
+    name: '??????? ???????'
   },
   {
     id: '2724',
-    name: 'OK Mark Brandenburg',
+    name: 'OK Mark Brandenburg'
   },
   {
     id: '2725',
-    name: 'Råneå Skidklubb',
+    name: 'Råneå Skidklubb'
   },
   {
     id: '2726',
-    name: 'Luumäen Rasti',
+    name: 'Luumäen Rasti'
   },
   {
     id: '2727',
-    name: 'South African Youth Squad',
+    name: 'South African Youth Squad'
   },
   {
     id: '2728',
-    name: 'GO-XTREM',
+    name: 'GO-XTREM'
   },
   {
     id: '2730',
-    name: 'LUUOC',
+    name: 'LUUOC'
   },
   {
     id: '2731',
-    name: 'Lag LG 40',
+    name: 'Lag LG 40'
   },
   {
     id: '2732',
-    name: 'Team Turbo',
+    name: 'Team Turbo'
   },
   {
     id: '2733',
-    name: 'Club Orientació Berguedà',
+    name: 'Club Orientació Berguedà'
   },
   {
     id: '2735',
-    name: 'Karlskogacyklisterna',
+    name: 'Karlskogacyklisterna'
   },
   {
     id: '2736',
-    name: 'Hindås Skidklubb',
+    name: 'Hindås Skidklubb'
   },
   {
     id: '2737',
-    name: 'KUARAY',
+    name: 'KUARAY'
   },
   {
     id: '2738',
-    name: 'Orienteering Waikato',
+    name: 'Orienteering Waikato'
   },
   {
     id: '2739',
-    name: 'Uppsala LK',
+    name: 'Uppsala LK'
   },
   {
     id: '2740',
-    name: 'SKIF Sumy',
+    name: 'SKIF Sumy'
   },
   {
     id: '2742',
-    name: 'dansk militære biathlon landshold',
+    name: 'dansk militære biathlon landshold'
   },
   {
     id: '2743',
-    name: 'Doruk Oryantiring',
+    name: 'Doruk Oryantiring'
   },
   {
     id: '2744',
-    name: 'Nås IF',
+    name: 'Nås IF'
   },
   {
     id: '2745',
-    name: 'SV Wannweil',
+    name: 'SV Wannweil'
   },
   {
     id: '2746',
-    name: 'SOS Jind?ich?v Hradec',
+    name: 'SOS Jind?ich?v Hradec'
   },
   {
     id: '2747',
-    name: 'DOFs Venner',
+    name: 'DOFs Venner'
   },
   {
     id: '2748',
-    name: 'Irumashi OLC',
+    name: 'Irumashi OLC'
   },
   {
     id: '2749',
-    name: 'Luxembourg Orienteering Club',
+    name: 'Luxembourg Orienteering Club'
   },
   {
     id: '2750',
-    name: 'KOB Dob?ichovice',
+    name: 'KOB Dob?ichovice'
   },
   {
     id: '2751',
-    name: 'Xinoxano Orientació',
+    name: 'Xinoxano Orientació'
   },
   {
     id: '2752',
-    name: 'Argovias Finest',
+    name: 'Argovias Finest'
   },
   {
     id: '2753',
-    name: 'Järvenpään Palo',
+    name: 'Järvenpään Palo'
   },
   {
     id: '2755',
-    name: 'Marnardal IL',
+    name: 'Marnardal IL'
   },
   {
     id: '2756',
-    name: 'GDU Azoia',
+    name: 'GDU Azoia'
   },
   {
     id: '2757',
-    name: 'MNAV-Ireland',
+    name: 'MNAV-Ireland'
   },
   {
     id: '2758',
-    name: 'CO Ticino',
+    name: 'CO Ticino'
   },
   {
     id: '2759',
-    name: 'Dorotea IF',
+    name: 'Dorotea IF'
   },
   {
     id: '2760',
-    name: 'BADO',
+    name: 'BADO'
   },
   {
     id: '2761',
-    name: 'Orienteering Cincinnati',
+    name: 'Orienteering Cincinnati'
   },
   {
     id: '2762',
-    name: 'Strömstad Gymnasium',
+    name: 'Strömstad Gymnasium'
   },
   {
     id: '2763',
-    name: 'University of Bristol OC',
+    name: 'University of Bristol OC'
   },
   {
     id: '2764',
-    name: 'Hangzhou No.2 Middle School ?DEER-O?',
+    name: 'Hangzhou No.2 Middle School ?DEER-O?'
   },
   {
     id: '2765',
-    name: 'OC Annclama',
+    name: 'OC Annclama'
   },
   {
     id: '2766',
-    name: 'USK Praha',
+    name: 'USK Praha'
   },
   {
     id: '2768',
-    name: 'UppsalaRunners',
+    name: 'UppsalaRunners'
   },
   {
     id: '2769',
-    name: 'Driv il',
+    name: 'Driv il'
   },
   {
     id: '2770',
-    name: 'CANKAYA ORYANTIRING',
+    name: 'CANKAYA ORYANTIRING'
   },
   {
     id: '2771',
-    name: 'Polish Team',
+    name: 'Polish Team'
   },
   {
     id: '2772',
-    name: 'HSV Absam',
+    name: 'HSV Absam'
   },
   {
     id: '2773',
-    name: 'RASKK SK',
+    name: 'RASKK SK'
   },
   {
     id: '2774',
-    name: 'UKS Orientpark.pl Iwiny',
+    name: 'UKS Orientpark.pl Iwiny'
   },
   {
     id: '2775',
-    name: 'BNCO',
+    name: 'BNCO'
   },
   {
     id: '2776',
-    name: 'Suldal O-Lag',
+    name: 'Suldal O-Lag'
   },
   {
     id: '2778',
-    name: 'Maribo OK',
+    name: 'Maribo OK'
   },
   {
     id: '2779',
-    name: 'Kiimingin Urheilijat',
+    name: 'Kiimingin Urheilijat'
   },
   {
     id: '2780',
-    name: 'Førde IL',
+    name: 'Førde IL'
   },
   {
     id: '2781',
-    name: 'Verde3',
+    name: 'Verde3'
   },
   {
     id: '2782',
-    name: 'Swiss Orienteering Olten',
+    name: 'Swiss Orienteering Olten'
   },
   {
     id: '2783',
-    name: 'SK SEVERKA ?UMPERK',
+    name: 'SK SEVERKA ?UMPERK'
   },
   {
     id: '2784',
-    name: 'Orientacni Beh Opava',
+    name: 'Orientacni Beh Opava'
   },
   {
     id: '2785',
-    name: 'INVOC',
+    name: 'INVOC'
   },
   {
     id: '2786',
-    name: 'ÅF IK',
+    name: 'ÅF IK'
   },
   {
     id: '2787',
-    name: 'Aust-Agder O-krets',
+    name: 'Aust-Agder O-krets'
   },
   {
     id: '2788',
-    name: 'CO C?ur de Savoie',
+    name: 'CO C?ur de Savoie'
   },
   {
     id: '2789',
-    name: 'Sogndal IL',
+    name: 'Sogndal IL'
   },
   {
     id: '2790',
-    name: 'Orienteer',
+    name: 'Orienteer'
   },
   {
     id: '2791',
-    name: 'Moravskoslezsky kraj (MSK)',
+    name: 'Moravskoslezsky kraj (MSK)'
   },
   {
     id: '2792',
-    name: 'Ennstal',
+    name: 'Ennstal'
   },
   {
     id: '2793',
-    name: 'Hangzhou Migu Orienteering Club',
+    name: 'Hangzhou Migu Orienteering Club'
   },
   {
     id: '2794',
-    name: 'Öje IF',
+    name: 'Öje IF'
   },
   {
     id: '2795',
-    name: '42km.lv',
+    name: '42km.lv'
   },
   {
     id: '2798',
-    name: 'Tokiwasourinkai',
+    name: 'Tokiwasourinkai'
   },
   {
     id: '2799',
-    name: '2NULL16',
+    name: '2NULL16'
   },
   {
     id: '2800',
-    name: 'Rogaland o-krets',
+    name: 'Rogaland o-krets'
   },
   {
     id: '2801',
-    name: 'CODAC',
+    name: 'CODAC'
   },
   {
     id: '2802',
-    name: 'SK Gruvspårets vänner',
+    name: 'SK Gruvspårets vänner'
   },
   {
     id: '2806',
-    name: 'LOK',
+    name: 'LOK'
   },
   {
     id: '2807',
-    name: 'KOB Pteni',
+    name: 'KOB Pteni'
   },
   {
     id: '2808',
-    name: 'Ranger',
+    name: 'Ranger'
   },
   {
     id: '2810',
-    name: 'Hexagon-Runners',
+    name: 'Hexagon-Runners'
   },
   {
     id: '2811',
-    name: 'Humberside and Lincolnshire Orienteers',
+    name: 'Humberside and Lincolnshire Orienteers'
   },
   {
     id: '2812',
-    name: 'WOC Team Austria',
+    name: 'WOC Team Austria'
   },
   {
     id: '2813',
-    name: 'Lommedalens IL',
+    name: 'Lommedalens IL'
   },
   {
     id: '2814',
-    name: 'NSA-SIVEN, Sofia',
+    name: 'NSA-SIVEN, Sofia'
   },
   {
     id: '2815',
-    name: 'Vestjysk Orienteringsklub',
+    name: 'Vestjysk Orienteringsklub'
   },
   {
     id: '2817',
-    name: 'KyoudaiOLC',
+    name: 'KyoudaiOLC'
   },
   {
     id: '2818',
-    name: 'GOC',
+    name: 'GOC'
   },
   {
     id: '2819',
-    name: 'Rödöns Sportklubb',
+    name: 'Rödöns Sportklubb'
   },
   {
     id: '2820',
-    name: 'Sporting',
+    name: 'Sporting'
   },
   {
     id: '2821',
-    name: 'Someron Esa',
+    name: 'Someron Esa'
   },
   {
     id: '2822',
-    name: 'TJ Slávia ?ilinská univerzita ?ilina',
+    name: 'TJ Slávia ?ilinská univerzita ?ilina'
   },
   {
     id: '2823',
-    name: 'Hadveo Banská Bystrica',
+    name: 'Hadveo Banská Bystrica'
   },
   {
     id: '2824',
-    name: 'Ås IF',
+    name: 'Ås IF'
   },
   {
     id: '2825',
-    name: 'Florida Orienteering',
+    name: 'Florida Orienteering'
   },
   {
     id: '2826',
-    name: 'Bodens Bandyklubb OS',
+    name: 'Bodens Bandyklubb OS'
   },
   {
     id: '2827',
-    name: 'Temp',
+    name: 'Temp'
   },
   {
     id: '2828',
-    name: 'Turf Skåne',
+    name: 'Turf Skåne'
   },
   {
     id: '2830',
-    name: 'Nelson Orienteering Club',
+    name: 'Nelson Orienteering Club'
   },
   {
     id: '2831',
-    name: 'St. Binderup OK',
+    name: 'St. Binderup OK'
   },
   {
     id: '2832',
-    name: 'LK Gränslöst',
+    name: 'LK Gränslöst'
   },
   {
     id: '2834',
-    name: 'O - Motion',
+    name: 'O - Motion'
   },
   {
     id: '2835',
-    name: 'Ica Sjöstaden Running Club',
+    name: 'Ica Sjöstaden Running Club'
   },
   {
     id: '2836',
-    name: 'Esprit Raid',
+    name: 'Esprit Raid'
   },
   {
     id: '2837',
-    name: 'Southern Michigan Orienteering Club',
+    name: 'Southern Michigan Orienteering Club'
   },
   {
     id: '2838',
-    name: 'Turebergs IF SOK',
+    name: 'Turebergs IF SOK'
   },
   {
     id: '2841',
-    name: 'MIASTO SPORTU',
+    name: 'MIASTO SPORTU'
   },
   {
     id: '2842',
-    name: 'Göteborgskartor',
+    name: 'Göteborgskartor'
   },
   {
     id: '2843',
-    name: 'Piteå IF Orienteringsklubb',
+    name: 'Piteå IF Orienteringsklubb'
   },
   {
     id: '2844',
-    name: 'Kuusamon Erä-Veikot',
+    name: 'Kuusamon Erä-Veikot'
   },
   {
     id: '2845',
-    name: 'Haapaveden Urheilijat',
+    name: 'Haapaveden Urheilijat'
   },
   {
     id: '2847',
-    name: 'Orienteringscentrum Kristianstad',
+    name: 'Orienteringscentrum Kristianstad'
   },
   {
     id: '2848',
-    name: 'Järvi-Espoon Eräpartiolaiset',
+    name: 'Järvi-Espoon Eräpartiolaiset'
   },
   {
     id: '2849',
-    name: 'Idrottsveteranerna',
+    name: 'Idrottsveteranerna'
   },
   {
     id: '2850',
-    name: 'SOS-GO',
+    name: 'SOS-GO'
   },
   {
     id: '2852',
-    name: 'ALEHOF 1997',
+    name: 'ALEHOF 1997'
   },
   {
     id: '2853',
-    name: 'Czech West O-team',
+    name: 'Czech West O-team'
   },
   {
     id: '2855',
-    name: 'OK Dark Knight',
+    name: 'OK Dark Knight'
   },
   {
     id: '2856',
-    name: 'IL GeoForm',
+    name: 'IL GeoForm'
   },
   {
     id: '2857',
-    name: 'OK Illern 1986',
+    name: 'OK Illern 1986'
   },
   {
     id: '2858',
-    name: 'Otaniemen Jyllääjät',
+    name: 'Otaniemen Jyllääjät'
   },
   {
     id: '2859',
-    name: 'KOB Kysak',
+    name: 'KOB Kysak'
   },
   {
     id: '2860',
-    name: 'IFK Söderhamn',
+    name: 'IFK Söderhamn'
   },
   {
     id: '2861',
-    name: 'Åre OK',
+    name: 'Åre OK'
   },
   {
     id: '2862',
-    name: 'Kalmar Turfförening',
+    name: 'Kalmar Turfförening'
   },
   {
     id: '2863',
-    name: 'Military Orienteering Team NL',
+    name: 'Military Orienteering Team NL'
   },
   {
     id: '2864',
-    name: 'KVS ?umperk',
+    name: 'KVS ?umperk'
   },
   {
     id: '2865',
-    name: 'Karlsbyhedens OK',
+    name: 'Karlsbyhedens OK'
   },
   {
     id: '2866',
-    name: 'Team Jeløy',
+    name: 'Team Jeløy'
   },
   {
     id: '2867',
-    name: 'Magra IS',
+    name: 'Magra IS'
   },
   {
     id: '2870',
-    name: 'Turengin Sarastus',
+    name: 'Turengin Sarastus'
   },
   {
     id: '2871',
-    name: 'Bailamama',
+    name: 'Bailamama'
   },
   {
     id: '2872',
-    name: 'Göteborgs Stigcyklister',
+    name: 'Göteborgs Stigcyklister'
   },
   {
     id: '2873',
-    name: 'VfL Hitzhusen',
+    name: 'VfL Hitzhusen'
   },
   {
     id: '2874',
-    name: 'Halmstad ok',
+    name: 'Halmstad ok'
   },
   {
     id: '2876',
-    name: 'OLG Cordoba Basel',
+    name: 'OLG Cordoba Basel'
   },
   {
     id: '2880',
-    name: 'Offerdals SK',
+    name: 'Offerdals SK'
   },
   {
     id: '2884',
-    name: 'Mjøs-o',
+    name: 'Mjøs-o'
   },
   {
     id: '2886',
-    name: 'Edsbyns SK',
+    name: 'Edsbyns SK'
   },
   {
     id: '2887',
-    name: 'OKK',
+    name: 'OKK'
   },
   {
     id: '2888',
-    name: 'Örnsköldsviks Brandkårs Idrottsklubb',
+    name: 'Örnsköldsviks Brandkårs Idrottsklubb'
   },
   {
     id: '2889',
-    name: 'Jok',
+    name: 'Jok'
   },
   {
     id: '2890',
-    name: 'Team Nordic Trail',
+    name: 'Team Nordic Trail'
   },
   {
     id: '2891',
-    name: 'Team Saxony',
+    name: 'Team Saxony'
   },
   {
     id: '2892',
-    name: 'Helsingin Poliisi-Voimailijat',
+    name: 'Helsingin Poliisi-Voimailijat'
   },
   {
     id: '2893',
-    name: 'Strömstad LK',
+    name: 'Strömstad LK'
   },
   {
     id: '2894',
-    name: 'Funäsfjällens SK',
+    name: 'Funäsfjällens SK'
   },
   {
     id: '2895',
-    name: 'TJ Turnov',
+    name: 'TJ Turnov'
   },
   {
     id: '2896',
-    name: 'Yorkshire Junior Squad',
+    name: 'Yorkshire Junior Squad'
   },
   {
     id: '2900',
-    name: 'Lghh',
+    name: 'Lghh'
   },
   {
     id: '2901',
-    name: 'Horoshevo Moscow',
+    name: 'Horoshevo Moscow'
   },
   {
     id: '2902',
-    name: 'IHW Alex 78 Berlin',
+    name: 'IHW Alex 78 Berlin'
   },
   {
     id: '2903',
-    name: 'Svala IF',
+    name: 'Svala IF'
   },
   {
     id: '2904',
-    name: 'OK Kristina',
+    name: 'OK Kristina'
   },
   {
     id: '2905',
-    name: 'OK!Sport Warszawa',
+    name: 'OK!Sport Warszawa'
   },
   {
     id: '2906',
-    name: 'Driada',
+    name: 'Driada'
   },
   {
     id: '2907',
-    name: 'Orientop Wroc?aw',
+    name: 'Orientop Wroc?aw'
   },
   {
     id: '2908',
-    name: 'OK Trzin',
+    name: 'OK Trzin'
   },
   {
     id: '2909',
-    name: 'Virtain Urheilijat',
+    name: 'Virtain Urheilijat'
   },
   {
     id: '2910',
-    name: 'Prolisok',
+    name: 'Prolisok'
   },
   {
     id: '2911',
-    name: 'Bälinge IF',
+    name: 'Bälinge IF'
   },
   {
     id: '2915',
-    name: 'A.S.D. Orienteering G. Galilei',
+    name: 'A.S.D. Orienteering G. Galilei'
   },
   {
     id: '2917',
-    name: 'Lynx Multisport Team',
+    name: 'Lynx Multisport Team'
   },
   {
     id: '2918',
-    name: 'Team Experience',
+    name: 'Team Experience'
   },
   {
     id: '2919',
-    name: 'IFK Göteborg Orientering',
+    name: 'IFK Göteborg Orientering'
   },
   {
     id: '2920',
-    name: 'loong kalsoong',
+    name: 'loong kalsoong'
   },
   {
     id: '2922',
-    name: 'CDCEBE',
+    name: 'CDCEBE'
   },
   {
     id: '2923',
-    name: 'OK Långberget',
+    name: 'OK Långberget'
   },
   {
     id: '2924',
-    name: 'Dackeskolans IF',
+    name: 'Dackeskolans IF'
   },
   {
     id: '2925',
-    name: 'TTGU IF',
+    name: 'TTGU IF'
   },
   {
     id: '2927',
-    name: 'SK Suuntavaisto',
+    name: 'SK Suuntavaisto'
   },
   {
     id: '2928',
-    name: 'Väddö 88',
+    name: 'Väddö 88'
   },
   {
     id: '2929',
-    name: 'OAHK',
+    name: 'OAHK'
   },
   {
     id: '2930',
-    name: 'ASO Sillery',
+    name: 'ASO Sillery'
   },
   {
     id: '2931',
-    name: '.COM',
+    name: '.COM'
   },
   {
     id: '2932',
-    name: 'MKS Paulinum Jelenia Góra',
+    name: 'MKS Paulinum Jelenia Góra'
   },
   {
     id: '2933',
-    name: 'Bromstens IK',
+    name: 'Bromstens IK'
   },
   {
     id: '2934',
-    name: 'Funäsfjällens SK',
+    name: 'Funäsfjällens SK'
   },
   {
     id: '2936',
-    name: 'TSM Je?t?dské oblasti',
+    name: 'TSM Je?t?dské oblasti'
   },
   {
     id: '2937',
-    name: 'Savo-Karjalan Suunnistus',
+    name: 'Savo-Karjalan Suunnistus'
   },
   {
     id: '2938',
-    name: 'OOB TJ Turnov',
+    name: 'OOB TJ Turnov'
   },
   {
     id: '2939',
-    name: 'England Juniors',
+    name: 'England Juniors'
   },
   {
     id: '2940',
-    name: 'Kuzmolovo',
+    name: 'Kuzmolovo'
   },
   {
     id: '2943',
-    name: 'TSM Kralovehradecko',
+    name: 'TSM Kralovehradecko'
   },
   {
     id: '2945',
-    name: 'Orienteering Adventure',
+    name: 'Orienteering Adventure'
   },
   {
     id: '2946',
-    name: 'Tacton OK',
+    name: 'Tacton OK'
   },
   {
     id: '2948',
-    name: 'Malmby IF 1988 Jubileumslag',
+    name: 'Malmby IF 1988 Jubileumslag'
   },
   {
     id: '2949',
-    name: 'VALENCE SPORTS ORIENTATION',
+    name: 'VALENCE SPORTS ORIENTATION'
   },
   {
     id: '2950',
-    name: 'Loisir Orientation Vercors',
+    name: 'Loisir Orientation Vercors'
   },
   {
     id: '2951',
-    name: 'AC Beauchamp',
+    name: 'AC Beauchamp'
   },
   {
     id: '2954',
-    name: 'OK Sør',
+    name: 'OK Sør'
   },
   {
     id: '2955',
-    name: 'STHLM gigolo',
+    name: 'STHLM gigolo'
   },
   {
     id: '2956',
-    name: 'OK Kamenice',
+    name: 'OK Kamenice'
   },
   {
     id: '2957',
-    name: 'GCO Gruyère',
+    name: 'GCO Gruyère'
   },
   {
     id: '2959',
-    name: 'Wagga and Riverina',
+    name: 'Wagga and Riverina'
   },
   {
     id: '2962',
-    name: 'Báje?né ?eny v orienta?ním b?hu',
+    name: 'Báje?né ?eny v orienta?ním b?hu'
   },
   {
     id: '2963',
-    name: 'NO NO',
+    name: 'NO NO'
   },
   {
     id: '2965',
-    name: 'TJ Hostivice and friends',
+    name: 'TJ Hostivice and friends'
   },
   {
     id: '2968',
-    name: 'MTV Seesen',
+    name: 'MTV Seesen'
   },
   {
     id: '2974',
-    name: 'Lifesaving Team Bad Bramstedt',
+    name: 'Lifesaving Team Bad Bramstedt'
   },
   {
     id: '2975',
-    name: 'GOT-GIpuzkoako Orientazio Taldea',
+    name: 'GOT-GIpuzkoako Orientazio Taldea'
   },
   {
     id: '2976',
-    name: 'O-riéntate',
+    name: 'O-riéntate'
   },
   {
     id: '2977',
-    name: 'Lübecker Turnerschaft',
+    name: 'Lübecker Turnerschaft'
   },
   {
     id: '2979',
-    name: 'FLX Adventure',
+    name: 'FLX Adventure'
   },
   {
     id: '2980',
-    name: 'Accenture IF',
+    name: 'Accenture IF'
   },
   {
     id: '2981',
-    name: 'Olimp Velikij Novgorod',
+    name: 'Olimp Velikij Novgorod'
   },
   {
     id: '2982',
-    name: 'PoP Karlstad',
+    name: 'PoP Karlstad'
   },
   {
     id: '2984',
-    name: 'Team Ramudden',
+    name: 'Team Ramudden'
   },
   {
     id: '2987',
-    name: 'Road to Tokyo 2020',
+    name: 'Road to Tokyo 2020'
   },
   {
     id: '2988',
-    name: 'Enskede ik',
+    name: 'Enskede ik'
   },
   {
     id: '2990',
-    name: 'Middle distance Lunsen',
+    name: 'Middle distance Lunsen'
   },
   {
     id: '2991',
-    name: 'Dinamo OLD',
+    name: 'Dinamo OLD'
   },
   {
     id: '2993',
-    name: 'Stockholms Roddförening',
+    name: 'Stockholms Roddförening'
   },
   {
     id: '2996',
-    name: 'IK Granit',
+    name: 'IK Granit'
   },
   {
     id: '2998',
-    name: '40team',
+    name: '40team'
   },
   {
     id: '2999',
-    name: 'Obygdens OK',
+    name: 'Obygdens OK'
   },
   {
     id: '3000',
-    name: 'RAIDLINKS 07',
+    name: 'RAIDLINKS 07'
   },
   {
     id: '3001',
-    name: 'OK Swazza',
+    name: 'OK Swazza'
   },
   {
     id: '3002',
-    name: 'OK Swazza',
+    name: 'OK Swazza'
   },
   {
     id: '3003',
-    name: 'OK Versm?',
+    name: 'OK Versm?'
   },
   {
     id: '3004',
-    name: 'IF Löjp',
+    name: 'IF Löjp'
   },
   {
     id: '3005',
-    name: 'ADOC',
+    name: 'ADOC'
   },
   {
     id: '3006',
-    name: 'hej',
+    name: 'hej'
   },
   {
     id: '3007',
-    name: 'U10 Segrare 1999 (TP)',
+    name: 'U10 Segrare 1999 (TP)'
   },
   {
     id: '3008',
-    name: 'ADM -Ori-Mondego',
+    name: 'ADM -Ori-Mondego'
   },
   {
     id: '3009',
-    name: 'ASS Cavemen',
+    name: 'ASS Cavemen'
   },
   {
     id: '3010',
-    name: 'Göteborg Radio Orientering',
+    name: 'Göteborg Radio Orientering'
   },
   {
     id: '3011',
-    name: 'Oriveden Ponnistus',
+    name: 'Oriveden Ponnistus'
   },
   {
     id: '3012',
-    name: 'SK Sandberg',
+    name: 'SK Sandberg'
   },
   {
     id: '3013',
-    name: 'Kainuu Orienteering Week',
+    name: 'Kainuu Orienteering Week'
   },
   {
     id: '3014',
-    name: 'Jalasjärven Jalas',
+    name: 'Jalasjärven Jalas'
   },
   {
     id: '3015',
-    name: 'junkies',
+    name: 'junkies'
   },
   {
     id: '3016',
-    name: 'Azymut 45 Gdynia',
+    name: 'Azymut 45 Gdynia'
   },
   {
     id: '3017',
-    name: 'OK Brunnen',
+    name: 'OK Brunnen'
   },
   {
     id: '3018',
-    name: 'Odesa Team',
+    name: 'Odesa Team'
   },
   {
     id: '3019',
-    name: 'Siguldas Takas',
+    name: 'Siguldas Takas'
   },
   {
     id: '3020',
-    name: 'Sanfo adventure racing team',
+    name: 'Sanfo adventure racing team'
   },
   {
     id: '3022',
-    name: 'ASD Mareno Orienteering',
+    name: 'ASD Mareno Orienteering'
   },
   {
     id: '3023',
-    name: 'Motaña de la data alta OL',
+    name: 'Motaña de la data alta OL'
   },
   {
     id: '3024',
-    name: 'Pohjankyrön Rasti',
+    name: 'Pohjankyrön Rasti'
   },
   {
     id: '3025',
-    name: 'Bulgaria National Team',
+    name: 'Bulgaria National Team'
   },
   {
     id: '3026',
-    name: 'Cube O-hunt',
+    name: 'Cube O-hunt'
   },
   {
     id: '3027',
-    name: 'marydwyne',
+    name: 'marydwyne'
   },
   {
     id: '3028',
-    name: 'Torvastad Idrettslag',
+    name: 'Torvastad Idrettslag'
   },
   {
     id: '3029',
-    name: 'Ringmurens ck',
+    name: 'Ringmurens ck'
   },
   {
     id: '3030',
-    name: 'O-Fryazino',
+    name: 'O-Fryazino'
   },
   {
     id: '3031',
-    name: 'xeroheilplinenumber',
+    name: 'xeroheilplinenumber'
   },
   {
     id: '3032',
-    name: 'OLG KTV Altdorf',
+    name: 'OLG KTV Altdorf'
   },
   {
     id: '3033',
-    name: 'MKS Metalowiec Lodz',
+    name: 'MKS Metalowiec Lodz'
   },
   {
     id: '3034',
-    name: 'SKOB Ostrov',
+    name: 'SKOB Ostrov'
   },
   {
     id: '3035',
-    name: 'F21 IF',
+    name: 'F21 IF'
   },
   {
     id: '3036',
-    name: 'LeO-Team',
+    name: 'LeO-Team'
   },
   {
     id: '3037',
-    name: 'Andrarums IF',
+    name: 'Andrarums IF'
   },
   {
     id: '3038',
-    name: '????????????',
+    name: '????????????'
   },
   {
     id: '3039',
-    name: 'IK Hephata',
+    name: 'IK Hephata'
   },
   {
     id: '3040',
-    name: 'Karlskrona CK',
+    name: 'Karlskrona CK'
   },
   {
     id: '3041',
-    name: 'COUFRJ',
+    name: 'COUFRJ'
   },
   {
     id: '3042',
-    name: 'Östersunds SK',
+    name: 'Östersunds SK'
   },
   {
     id: '3043',
-    name: 'Östersund Triathlon',
+    name: 'Östersund Triathlon'
   },
   {
     id: '3044',
-    name: 'Multi Terrain Bike Orienteers',
+    name: 'Multi Terrain Bike Orienteers'
   },
   {
     id: '3045',
-    name: 'IK Akele',
+    name: 'IK Akele'
   },
   {
     id: '3046',
-    name: 'MOPC',
+    name: 'MOPC'
   },
   {
     id: '3047',
-    name: 'SK Smalspåret',
+    name: 'SK Smalspåret'
   },
   {
     id: '3048',
-    name: 'Brandkårens Idrottsklubb',
+    name: 'Brandkårens Idrottsklubb'
   },
   {
     id: '3049',
-    name: 'Bibbulmun Orienteers',
+    name: 'Bibbulmun Orienteers'
   },
   {
     id: '3050',
-    name: 'Göta Trängregementes IF',
+    name: 'Göta Trängregementes IF'
   },
   {
     id: '3051',
-    name: 'Hede SK',
+    name: 'Hede SK'
   },
   {
     id: '3052',
-    name: 'Linköpings Skidklubb',
+    name: 'Linköpings Skidklubb'
   },
   {
     id: '3053',
-    name: 'Ik aluminium',
+    name: 'Ik aluminium'
   },
   {
     id: '3054',
-    name: 'Västvärmlands OK',
+    name: 'Västvärmlands OK'
   },
   {
     id: '3055',
-    name: 'Dnipro',
+    name: 'Dnipro'
   },
   {
     id: '3056',
-    name: 'acehoodslim',
+    name: 'acehoodslim'
   },
   {
     id: '3057',
-    name: 'New Zealand',
+    name: 'New Zealand'
   },
   {
     id: '3058',
-    name: 'Røa IL',
+    name: 'Røa IL'
   },
   {
     id: '3059',
-    name: 'Grava SK',
+    name: 'Grava SK'
   },
   {
     id: '3060',
-    name: 'North German Youth Team',
+    name: 'North German Youth Team'
   },
   {
     id: '3061',
-    name: 'Skagerak Sportsklubb',
+    name: 'Skagerak Sportsklubb'
   },
   {
     id: '3062',
-    name: 'Claro',
+    name: 'Claro'
   },
   {
     id: '3063',
-    name: 'Ekonom Praha',
+    name: 'Ekonom Praha'
   },
   {
     id: '3064',
-    name: 'NGOC',
+    name: 'NGOC'
   },
   {
     id: '3065',
-    name: 'Funäsdalens IF',
+    name: 'Funäsdalens IF'
   },
   {
     id: '3066',
-    name: 'Bakklamon OK',
+    name: 'Bakklamon OK'
   },
   {
     id: '3067',
-    name: 'Nómadas',
+    name: 'Nómadas'
   },
   {
     id: '3068',
-    name: 'Bjuhhv',
+    name: 'Bjuhhv'
   },
   {
     id: '3069',
-    name: 'Tipo TKE',
+    name: 'Tipo TKE'
   },
   {
     id: '3070',
-    name: 'Høydalsmo IL',
+    name: 'Høydalsmo IL'
   },
   {
     id: '3071',
-    name: 'Dinan Course d Orientation',
+    name: 'Dinan Course d Orientation'
   },
   {
     id: '3072',
-    name: 'Alicante-o',
+    name: 'Alicante-o'
   },
   {
     id: '3073',
-    name: 'Uzana',
+    name: 'Uzana'
   },
   {
     id: '3074',
-    name: 'MENISKOS Brno',
+    name: 'MENISKOS Brno'
   },
   {
     id: '3075',
-    name: 'Borussia Dortmund',
+    name: 'Borussia Dortmund'
   },
   {
     id: '3076',
-    name: 'De Hårdes Klub',
+    name: 'De Hårdes Klub'
   },
   {
     id: '3077',
-    name: 'SK Lundia',
+    name: 'SK Lundia'
   },
   {
     id: '3078',
-    name: 'N/A',
+    name: 'N/A'
   },
   {
     id: '3079',
-    name: 'Nacka Värmdö skidklubb',
+    name: 'Nacka Värmdö skidklubb'
   },
   {
     id: '3080',
-    name: 'MOM Orienteering',
+    name: 'MOM Orienteering'
   },
   {
     id: '3081',
-    name: 'Micke Mellbergs SOK',
+    name: 'Micke Mellbergs SOK'
   },
   {
     id: '3082',
-    name: 'Italy',
+    name: 'Italy'
   },
   {
     id: '3083',
-    name: 'ASD Padova Orienteering',
+    name: 'ASD Padova Orienteering'
   },
   {
     id: '3084',
-    name: 'rico',
+    name: 'rico'
   },
   {
     id: '3085',
-    name: 'OLG Wald',
+    name: 'OLG Wald'
   },
   {
     id: '3086',
-    name: 'AIF Barrikaden',
+    name: 'AIF Barrikaden'
   },
   {
     id: '3087',
-    name: 'Norway Pre-O',
+    name: 'Norway Pre-O'
   },
   {
     id: '3088',
-    name: 'AMSO34',
+    name: 'AMSO34'
   },
   {
     id: '3089',
-    name: 'KSO O-Compass',
+    name: 'KSO O-Compass'
   },
   {
     id: '3090',
-    name: 'Hull',
+    name: 'Hull'
   },
   {
     id: '3091',
-    name: 'San Diego Orienteering',
+    name: 'San Diego Orienteering'
   },
   {
     id: '3092',
-    name: 'Northeast Ohio Orienteering Club',
+    name: 'Northeast Ohio Orienteering Club'
   },
   {
     id: '3093',
-    name: 'jaypp',
+    name: 'jaypp'
   },
   {
     id: '3094',
-    name: 'Or Swallows Noale',
+    name: 'Or Swallows Noale'
   },
   {
     id: '3095',
-    name: 'Ulricehamns ok',
+    name: 'Ulricehamns ok'
   },
   {
     id: '3096',
-    name: 'Sturla o-lag',
+    name: 'Sturla o-lag'
   },
   {
     id: '3097',
-    name: 'Sturla o-lag',
+    name: 'Sturla o-lag'
   },
   {
     id: '3098',
-    name: 'Eridano Adventure',
+    name: 'Eridano Adventure'
   },
   {
     id: '3099',
-    name: 'bestcost24',
+    name: 'bestcost24'
   },
   {
     id: '3100',
-    name: 'Törekvés',
+    name: 'Törekvés'
   },
   {
     id: '3101',
-    name: 'Wilmera',
+    name: 'Wilmera'
   },
   {
     id: '3102',
-    name: 'easydocs',
+    name: 'easydocs'
   },
   {
     id: '3103',
-    name: 'Skarpnäcks OL',
+    name: 'Skarpnäcks OL'
   },
   {
     id: '3104',
-    name: 'Express Documents',
+    name: 'Express Documents'
   },
   {
     id: '3105',
-    name: 'wenexamedia@gmail.com',
+    name: 'wenexamedia@gmail.com'
   },
   {
     id: '3106',
-    name: 'Stävie Allmänna IF',
+    name: 'Stävie Allmänna IF'
   },
   {
     id: '3107',
-    name: 'eLadies',
+    name: 'eLadies'
   },
   {
     id: '3108',
-    name: 'Darba rezerves',
+    name: 'Darba rezerves'
   },
   {
     id: '3109',
-    name: 'Surikati',
+    name: 'Surikati'
   },
   {
     id: '3110',
-    name: 'Enkurs',
+    name: 'Enkurs'
   },
   {
     id: '3111',
-    name: 'CS Atletic Roman',
+    name: 'CS Atletic Roman'
   },
   {
     id: '3112',
-    name: 'Vicker IF',
+    name: 'Vicker IF'
   },
   {
     id: '3113',
-    name: 'Aktivitus Sports Club',
+    name: 'Aktivitus Sports Club'
   },
   {
     id: '3114',
-    name: 'OK Saule',
+    name: 'OK Saule'
   },
   {
     id: '3115',
-    name: 'Downtown 65',
+    name: 'Downtown 65'
   },
   {
     id: '3116',
-    name: 'Springtime Sports Club',
+    name: 'Springtime Sports Club'
   },
   {
     id: '3117',
-    name: 'TK IF',
+    name: 'TK IF'
   },
   {
     id: '3118',
-    name: 'Akademisk Skytteforening',
+    name: 'Akademisk Skytteforening'
   },
   {
     id: '3119',
-    name: 'the eagles',
+    name: 'the eagles'
   },
   {
     id: '3120',
-    name: 'QCOC',
+    name: 'QCOC'
   },
   {
     id: '3121',
-    name: 'Nurmeksen Sepot',
+    name: 'Nurmeksen Sepot'
   },
   {
     id: '3122',
-    name: 'Musta Neliö',
+    name: 'Musta Neliö'
   },
   {
     id: '3123',
-    name: 'Nordre Follo Orientering',
+    name: 'Nordre Follo Orientering'
   },
   {
     id: '3124',
-    name: 'First Karelian Team',
+    name: 'First Karelian Team'
   },
   {
     id: '3125',
-    name: 'Nyköpings Orienteringsgymnasium',
-  },
+    name: 'Nyköpings Orienteringsgymnasium'
+  }
 ];
