@@ -3,6 +3,7 @@
   "homepage": "/",
   "version": "2.0.0",
   "private": true,
+  "license": "GPL-2.0-only",
   "scripts": {
     "start": "vite",
     "build": "npm run typecheck && vite build",

@@ -14,6 +14,11 @@ This is a react app for sports like orienteering or any other sport, with the fo
 - Upload files, and connect them into the menu
 - Administrate members
 
+## License
+
+This project is licensed under the GNU General Public License v2.0 (GPL-2.0).
+See the LICENSE file for details.
+
 ## Contribute
 
 It's free to use this as you like, but I will be happy if:
