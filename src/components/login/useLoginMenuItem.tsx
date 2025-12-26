@@ -1,12 +1,11 @@
-import { observer } from 'mobx-react';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { GetJsonData } from '../../utils/api';
 import { useMobxStore } from '../../utils/mobxStore';
-import MenuItem from '../menu/MenuItem';
+import { getMenuItem } from '../menu/MenuItem';
 import LoginForm from './LoginForm';
 
-const LoginMenuItem = observer(() => {
+export const useLoginMenuItem = () => {
   const { clubModel, globalStateModel, sessionModel } = useMobxStore();
   const { t } = useTranslation();
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -39,17 +38,13 @@ const LoginMenuItem = observer(() => {
     setShowLoginModal(false);
   }, []);
 
-  return (
-    <>
-      <MenuItem
-        key={'menuItem#login'}
-        icon={sessionModel.loggedIn ? 'LogoutIcon' : 'LoginIcon'}
-        name={sessionModel.loggedIn ? t('common.Logout') + ' ' + sessionModel.name : t('common.Login')}
-        onClick={openModal}
-      />
-      <LoginForm open={showLoginModal && !loggingOut} onClose={closeModal} />
-    </>
-  );
-});
-
-export default LoginMenuItem;
+  return {
+    loginMenuItem: getMenuItem(
+      'menuItem#login',
+      sessionModel.loggedIn ? 'LogoutIcon' : 'LoginIcon',
+      sessionModel.loggedIn ? t('common.Logout') + ' ' + sessionModel.name : t('common.Login'),
+      openModal
+    ),
+    loginForm: <LoginForm open={showLoginModal && !loggingOut} onClose={closeModal} />
+  };
+};

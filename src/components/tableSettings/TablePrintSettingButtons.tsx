@@ -58,34 +58,34 @@ const TablePrintSettingButtons = ({
   };
 
   const printAllmenu = (
-    <Menu>
-      <Menu.Item
-        key="allInOnePdf"
-        icon={<PrinterOutlined />}
-        onClick={() => {
-          setLoading(true);
-          if (onPrintAll)
-            onPrintAll(settings, true)
-              .then(() => setLoading(false))
-              .catch(() => setLoading(false));
-        }}
-      >
-        {t('common.AllInOnePdf')}
-      </Menu.Item>
-      <Menu.Item
-        key="allDividedInZip"
-        icon={<FileZipOutlined />}
-        onClick={() => {
-          setLoading(true);
-          if (onPrintAll)
-            onPrintAll(settings, false)
-              .then(() => setLoading(false))
-              .catch(() => setLoading(false));
-        }}
-      >
-        {t('common.AllDividedInZip')}
-      </Menu.Item>
-    </Menu>
+    <Menu
+      items={[
+        {
+          key: 'allInOnePdf',
+          label: t('common.AllInOnePdf'),
+          icon: <PrinterOutlined />,
+          onClick: () => {
+            setLoading(true);
+            if (onPrintAll)
+              onPrintAll(settings, true)
+                .then(() => setLoading(false))
+                .catch(() => setLoading(false));
+          }
+        },
+        {
+          key: 'allDividedInZip',
+          label: t('common.AllDividedInZip'),
+          icon: <FileZipOutlined />,
+          onClick: () => {
+            setLoading(true);
+            if (onPrintAll)
+              onPrintAll(settings, false)
+                .then(() => setLoading(false))
+                .catch(() => setLoading(false));
+          }
+        }
+      ]}
+    />
   );
 
   return (

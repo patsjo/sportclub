@@ -1,18 +1,17 @@
 import { AreaChartOutlined, AuditOutlined } from '@ant-design/icons';
 import { message } from 'antd';
 import dayjs from 'dayjs';
-import { observer } from 'mobx-react';
 import React, { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { IRaceClubsProps, IRaceCompetitor } from '../../../models/resultModel';
 import { PostJsonData } from '../../../utils/api';
 import { useMobxStore } from '../../../utils/mobxStore';
-import MenuItem from '../MenuItem';
+import { getMenuItem } from '../MenuItem';
 
 const RenounceModal = lazy(() => import('../../results/RenounceModal'));
 
-const ResultsSubMenus = observer(() => {
+export const useResultsSubMenus = () => {
   const { t } = useTranslation();
   const { clubModel, globalStateModel, sessionModel } = useMobxStore();
   const resultsModule = React.useMemo(
@@ -23,9 +22,10 @@ const ResultsSubMenus = observer(() => {
   const [competitor, setCompetitor] = useState<IRaceCompetitor>();
   const [loadingCompetitor, setLoadingCompetitor] = useState(true);
   const navigate = useNavigate();
+  const competitorExcludeTime = competitor?.excludeTime;
   const daysSinceRenounce = useMemo(
-    () => (!competitor?.excludeTime ? 0 : dayjs().diff(dayjs(competitor.excludeTime), 'days')),
-    [competitor?.excludeTime]
+    () => (!competitorExcludeTime ? 0 : dayjs().diff(dayjs(competitorExcludeTime), 'days')),
+    [competitorExcludeTime]
   );
 
   const onRegretRenounce = useCallback(() => {
@@ -57,10 +57,8 @@ const ResultsSubMenus = observer(() => {
   }, [sessionModel, competitor, clubModel.modules]);
 
   useEffect(() => {
-    const url = clubModel.modules.find(module => module.name === 'Results')?.queryUrl;
+    const url = resultsModule?.queryUrl;
     if (!url || !sessionModel.loggedIn || !sessionModel.eventorPersonId) return;
-
-    setLoadingCompetitor(true);
 
     PostJsonData<IRaceClubsProps>(
       url,
@@ -83,11 +81,17 @@ const ResultsSubMenus = observer(() => {
         if (e?.message) message.error(e.message);
         setLoadingCompetitor(false);
       });
-  }, [clubModel, sessionModel.authorizationHeader, sessionModel.eventorPersonId, sessionModel.loggedIn]);
+  }, [
+    clubModel,
+    resultsModule?.queryUrl,
+    sessionModel.authorizationHeader,
+    sessionModel.eventorPersonId,
+    sessionModel.loggedIn
+  ]);
 
-  return (
-    <>
-      {renounceModalIsOpen && competitor ? (
+  return {
+    renounceModal:
+      renounceModalIsOpen && competitor ? (
         <Suspense fallback={null}>
           <RenounceModal
             competitor={competitor}
@@ -98,114 +102,108 @@ const ResultsSubMenus = observer(() => {
             }}
           />
         </Suspense>
-      ) : null}
-      <MenuItem
-        key={'menuItem#resultsStatistics'}
-        isSubMenu
-        icon={<AreaChartOutlined style={{ verticalAlign: 'middle', fontSize: 18 }} />}
-        name={t('results.Statistics')}
-        onClick={() => {
+      ) : null,
+    resultsMenuItems: [
+      getMenuItem(
+        'menuItem#resultsStatistics',
+        <AreaChartOutlined style={{ verticalAlign: 'middle', fontSize: 18 }} />,
+        t('results.Statistics'),
+        () => {
           globalStateModel.setRightMenuVisible(false);
           globalStateModel.setDashboard(navigate, '/results/statistics');
-        }}
-      />
-      <MenuItem
-        key={'menuItem#results'}
-        isSubMenu
-        icon={'ResultsIcon'}
-        name={t('results.Latest')}
-        disabled={!sessionModel.loggedIn}
-        onClick={() => {
+        },
+        true
+      ),
+      getMenuItem(
+        'menuItem#results',
+        'ResultsIcon',
+        t('results.Latest'),
+        () => {
           globalStateModel.setRightMenuVisible(false);
           globalStateModel.setDashboard(navigate, '/results');
-        }}
-      />
-      <MenuItem
-        key={'menuItem#resultsIndividual'}
-        isSubMenu
-        icon="user"
-        name={t('results.Individual')}
-        disabled={!sessionModel.loggedIn}
-        onClick={() => {
+        },
+        true,
+        1,
+        !sessionModel.loggedIn
+      ),
+      getMenuItem(
+        'menuItem#resultsIndividual',
+        'user',
+        t('results.Individual'),
+        () => {
           globalStateModel.setRightMenuVisible(false);
           globalStateModel.setDashboard(navigate, '/results/individual');
-        }}
-      />
-      <MenuItem
-        key={'menuItem#resultsAdd'}
-        isSubMenu
-        icon="plus"
-        name={t('results.Add')}
-        disabled={!resultsModule?.addUrl || !sessionModel.loggedIn || !sessionModel.isAdmin}
-        onClick={() => {
+        },
+        true,
+        1,
+        !sessionModel.loggedIn
+      ),
+      getMenuItem(
+        'menuItem#resultsAdd',
+        'plus',
+        t('results.Add'),
+        () => {
           globalStateModel.setRightMenuVisible(false);
           globalStateModel.setDashboard(navigate, '/results/import');
-        }}
-      />
-      <MenuItem
-        key={'menuItem#resultsInvoiceVerifier'}
-        isSubMenu
-        icon={<AuditOutlined style={{ verticalAlign: 'middle', fontSize: 18 }} />}
-        name={t('results.InvoiceVerifier')}
-        disabled={!resultsModule?.addUrl || !sessionModel.loggedIn || !sessionModel.isAdmin}
-        onClick={() => {
+        },
+        true,
+        1,
+        !resultsModule?.addUrl || !sessionModel.loggedIn || !sessionModel.isAdmin
+      ),
+      getMenuItem(
+        'menuItem#resultsInvoiceVerifier',
+        <AuditOutlined style={{ verticalAlign: 'middle', fontSize: 18 }} />,
+        t('results.InvoiceVerifier'),
+        () => {
           globalStateModel.setRightMenuVisible(false);
           globalStateModel.setDashboard(navigate, '/results/verifyinvoice');
-        }}
-      />
-      <MenuItem
-        key={'menuItem#resultsFees'}
-        isSubMenu
-        icon="euro"
-        name={t('results.Invoices')}
-        disabled={!sessionModel.loggedIn}
-        onClick={() => {
+        },
+        true,
+        1,
+        !resultsModule?.addUrl || !sessionModel.loggedIn || !sessionModel.isAdmin
+      ),
+      getMenuItem(
+        'menuItem#resultsFees',
+        'euro',
+        t('results.Invoices'),
+        () => {
           globalStateModel.setRightMenuVisible(false);
           globalStateModel.setDashboard(navigate, '/results/fees');
-        }}
-      />
-      {/*
-      <MenuItem
-        key={'menuItem#resultsConvert'}
-        icon="cloud-upload"
-        name={t('results.Convert')}
-        disabled={true || !sessionModel.loggedIn || !sessionModel.isAdmin}
-        isSubMenu
-        onClick={() => {
-          globalStateModel.setRightMenuVisible(false);
-          setTimeout(() => setAddOldResultsWizardModalIsOpen(true), 0);
-        }}
-      />*/}
-      {sessionModel.loggedIn &&
+        },
+        true,
+        1,
+        !sessionModel.loggedIn
+      ),
+      sessionModel.loggedIn &&
       sessionModel.eventorPersonId &&
-      (loadingCompetitor || (competitor && !competitor.excludeResults)) ? (
-        <MenuItem
-          key={'menuItem#resultsRenounce'}
-          isSubMenu
-          icon={loadingCompetitor ? 'loading' : 'frown'}
-          name={t('results.Renounce')}
-          disabled={loadingCompetitor}
-          onClick={() => {
-            globalStateModel.setRightMenuVisible(false);
-            setTimeout(() => setRenounceModalIsOpen(true), 0);
-          }}
-        />
-      ) : null}
-      {sessionModel.loggedIn && sessionModel.eventorPersonId && competitor && competitor.excludeResults ? (
-        <MenuItem
-          key={'menuItem#resultsRegretRenounce'}
-          isSubMenu
-          icon="smile"
-          name={t('results.RegretRenounce')}
-          disabled={daysSinceRenounce < 30}
-          onClick={() => {
-            globalStateModel.setRightMenuVisible(false);
-            setTimeout(() => onRegretRenounce(), 0);
-          }}
-        />
-      ) : null}
-    </>
-  );
-});
-
-export default ResultsSubMenus;
+      (loadingCompetitor || (competitor && !competitor.excludeResults))
+        ? getMenuItem(
+            'menuItem#resultsRenounce',
+            loadingCompetitor ? 'loading' : 'frown',
+            t('results.Renounce'),
+            () => {
+              globalStateModel.setRightMenuVisible(false);
+              setTimeout(() => setRenounceModalIsOpen(true), 0);
+            },
+            true,
+            1,
+            loadingCompetitor
+          )
+        : null,
+      sessionModel.loggedIn && sessionModel.eventorPersonId && competitor && competitor.excludeResults
+        ? getMenuItem(
+            'menuItem#resultsRegretRenounce',
+            'smile',
+            t('results.RegretRenounce'),
+            () => {
+              globalStateModel.setRightMenuVisible(false);
+              setTimeout(() => onRegretRenounce(), 0);
+            },
+            true,
+            1,
+            daysSinceRenounce < 30
+          )
+        : null
+    ].filter(item => item !== null)
+  };
+};

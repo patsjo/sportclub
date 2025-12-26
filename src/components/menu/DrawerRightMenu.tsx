@@ -1,5 +1,6 @@
-import { Button, Col, Drawer, Form, Menu, message, Modal, Row, Spin, Typography } from 'antd';
+import { Button, Col, Drawer, Form, Menu, MenuProps, message, Modal, Row, Spin, Typography } from 'antd';
 import { observer } from 'mobx-react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { styled } from 'styled-components';
@@ -11,27 +12,26 @@ import { FolderEditorModal } from '../htmlEditor/FolderEditorModal';
 import { DefaultMenuPath } from '../htmlEditor/HtmlEditor';
 import { HtmlEditorLinkModal } from '../htmlEditor/HtmlEditorLinkModal';
 import { getHtmlEditorMenus } from '../htmlEditor/HtmlEditorMenus';
-import LoginMenuItem from '../login/LoginMenuItem';
-import MaterialIcon, { MaterialIconsType } from '../materialIcon/MaterialIcon';
-import MenuItem from './MenuItem';
-import ModuleSubMenu from './moduleSubMenus/ModuleSubMenu';
+import { useLoginMenuItem } from '../login/useLoginMenuItem';
+import MaterialIcon from '../materialIcon/MaterialIcon';
+import { getMenuItem } from './MenuItem';
+import { useModuleSubMenu } from './moduleSubMenus/useModuleSubMenu';
 
 const { Title } = Typography;
 const StyledMenu = styled(Menu)`
   &&&.ant-menu-inline {
     border-right: 0px;
   }
-`;
-
-const StyledSubMenu = styled(Menu.SubMenu)`
-  &&& {
-    line-height: 22px;
-    padding: 0;
-  }
-  &&& .ant-menu-submenu-title {
-    line-height: 22px;
-    height: 22px;
+  &&& .ant-menu-item,
+  .ant-menu-submenu-title {
     padding: 0 !important;
+    margin: 0;
+    line-height: 28px !important;
+    height: 28px !important;
+    width: 100%;
+  }
+  &&& .ant-menu-sub {
+    background-color: #ffffff;
   }
 `;
 
@@ -44,6 +44,172 @@ const DrawerRightMenu = observer(() => {
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
   const [modal, contextHolder2] = Modal.useModal();
+  const { loginMenuItem, loginForm } = useLoginMenuItem();
+  const { allModuleMenuItems, allModuleModals } = useModuleSubMenu();
+  const htmlEditorMenu = globalStateModel.htmlEditorMenu;
+  const htmlEditorMenuItems = useMemo(
+    (): NonNullable<MenuProps['items']> =>
+      htmlEditorMenu
+        ? getHtmlEditorMenus(
+            htmlEditorMenu,
+            (path: string) => globalStateModel.setHtmlEditor(navigate, path),
+            '',
+            htmEditorLinkform,
+            fileEditorForm,
+            folderEditorForm,
+            t,
+            modal,
+            globalStateModel,
+            sessionModel,
+            clubModel,
+            messageApi
+          )
+        : [{ key: 'htmlEditorLoading', label: <Spin size="small" /> }],
+    [
+      clubModel,
+      fileEditorForm,
+      folderEditorForm,
+      globalStateModel,
+      htmEditorLinkform,
+      htmlEditorMenu,
+      messageApi,
+      modal,
+      navigate,
+      sessionModel,
+      t
+    ]
+  );
+  const editHtmlEditorMenuItems = useMemo(
+    (): NonNullable<MenuProps['items']> =>
+      clubModel.modules.some(module => module.name === 'HTMLEditor')
+        ? [
+            getMenuItem('menuItem#htmlEditor', 'edit', t('modules.HtmlEditor'), () => {
+              globalStateModel.setHtmlEditor(navigate, '/page/new');
+            }),
+            getMenuItem('menuItem#createLink', 'edit', t('htmlEditor.MenuLink'), () => {
+              globalStateModel.setRightMenuVisible(false);
+              htmEditorLinkform?.setFieldsValue({
+                iLinkID: -1,
+                iMenuPath: DefaultMenuPath,
+                iUrl: 'https://'
+              });
+
+              HtmlEditorLinkModal(
+                t,
+                modal,
+                -1,
+                DefaultMenuPath,
+                'https://',
+                htmEditorLinkform,
+                globalStateModel,
+                sessionModel,
+                clubModel,
+                messageApi
+              )
+                .then()
+                .catch(error => {
+                  console.error(error);
+                });
+            })
+          ]
+        : [],
+    [clubModel, globalStateModel, htmEditorLinkform, messageApi, modal, navigate, sessionModel, t]
+  );
+
+  const filesMenuItems = useMemo(
+    (): NonNullable<MenuProps['items']> =>
+      clubModel.modules.some(module => module.name === 'Files')
+        ? [
+            getMenuItem(
+              'menuItem#uploadFile',
+              'cloud-upload',
+              t('files.UploadFile'),
+              () => {
+                globalStateModel.setRightMenuVisible(false);
+                FileEditorModal(t, modal, -1, fileEditorForm, globalStateModel, sessionModel, clubModel, messageApi)
+                  .then()
+                  .catch(error => {
+                    console.error(error);
+                  });
+              },
+              false,
+              1,
+              !sessionModel.loggedIn || !sessionModel.isAdmin
+            ),
+            getMenuItem(
+              'menuItem#newFolder',
+              'cloud-upload',
+              t('files.AddFolder'),
+              () => {
+                globalStateModel.setRightMenuVisible(false);
+                FolderEditorModal(t, modal, -1, folderEditorForm, globalStateModel, sessionModel, clubModel, messageApi)
+                  .then()
+                  .catch(error => {
+                    console.error(error);
+                  });
+              },
+              false,
+              1,
+              !sessionModel.loggedIn || !sessionModel.isAdmin
+            )
+          ]
+        : [],
+    [clubModel, fileEditorForm, folderEditorForm, globalStateModel, messageApi, modal, sessionModel, t]
+  );
+
+  const menuItemDivider: NonNullable<MenuProps['items']>[number] = useMemo(
+    () => ({
+      type: 'divider'
+    }),
+    []
+  );
+
+  const menuItems: NonNullable<MenuProps['items']> = useMemo(
+    () =>
+      [
+        getMenuItem('menuItem#home0', 'HomeIcon', t('modules.Home'), () => {
+          globalStateModel.setDashboard(navigate, '/');
+        }),
+        loginMenuItem,
+        menuItemDivider,
+        ...allModuleMenuItems,
+        clubModel.map?.layers.length
+          ? getMenuItem('menuItem#maps', 'map', t('modules.Maps'), () => {
+              globalStateModel.setDashboard(navigate, `/${t('modules.Maps').toLowerCase()}`);
+            })
+          : null,
+        menuItemDivider,
+        ...htmlEditorMenuItems,
+        ...editHtmlEditorMenuItems,
+        ...filesMenuItems,
+        menuItemDivider,
+        clubModel.sponsors && clubModel.sponsors.length > 0
+          ? getMenuItem('menuItem#ourSponsors', 'bank', t('common.OurSponsors'), () => {
+              globalStateModel.setDashboard(navigate, '/sponsors');
+            })
+          : null,
+        clubModel.oldUrl
+          ? getMenuItem('menuItem#oldHomePage', 'rollback', t('common.OldHomePage'), () => {
+              const win = window.open(clubModel.oldUrl, '_blank');
+              win?.focus();
+            })
+          : null
+      ].filter(item => item !== null),
+    [
+      allModuleMenuItems,
+      clubModel.map?.layers.length,
+      clubModel.oldUrl,
+      clubModel.sponsors,
+      editHtmlEditorMenuItems,
+      filesMenuItems,
+      globalStateModel,
+      htmlEditorMenuItems,
+      loginMenuItem,
+      menuItemDivider,
+      navigate,
+      t
+    ]
+  );
 
   return (
     <Drawer
@@ -67,174 +233,23 @@ const DrawerRightMenu = observer(() => {
       closable={false}
       width={360}
       open={globalStateModel.rightMenuVisible}
+      styles={{
+        header: { paddingLeft: 12, paddingRight: 18, paddingTop: 8, paddingBottom: 8 },
+        body: {
+          paddingLeft: 12,
+          paddingRight: 0,
+          paddingTop: 8,
+          paddingBottom: 8,
+          scrollbarGutter: 'stable'
+        }
+      }}
       onClose={() => globalStateModel.setRightMenuVisible(false)}
     >
       {contextHolder}
       {contextHolder2}
-      <StyledMenu mode="inline" onClick={() => globalStateModel.setRightMenuVisible(false)}>
-        <MenuItem
-          key={'menuItem#home0'}
-          icon={'HomeIcon'}
-          name={t('modules.Home')}
-          onClick={() => {
-            globalStateModel.setDashboard(navigate, '/');
-          }}
-        />
-        <LoginMenuItem />
-        <Menu.Divider />
-        {clubModel.modules
-          .filter(module => module.name !== 'HTMLEditor')
-          .map((module, index) =>
-            module.hasSubMenus ? (
-              <StyledSubMenu
-                key={'subMenu#' + module.name + index}
-                title={
-                  <span>
-                    <MaterialIcon icon={(module.name + 'Icon') as MaterialIconsType} fontSize={18} marginRight={10} />
-                    <span>{t('modules.' + module.name)}</span>
-                  </span>
-                }
-                disabled={
-                  module.name !== 'Calendar' &&
-                  module.name !== 'News' &&
-                  module.name !== 'Eventor' &&
-                  module.name !== 'Results'
-                }
-              >
-                <ModuleSubMenu module={module} />
-              </StyledSubMenu>
-            ) : (
-              <ModuleSubMenu key={'subMenu#' + module.name + index} module={module} />
-            )
-          )}
-        {clubModel.map?.layers.length ? (
-          <MenuItem
-            key={'menuItem#maps'}
-            icon={'map'}
-            name={t('modules.Maps')}
-            onClick={() => {
-              globalStateModel.setDashboard(navigate, `/${t('modules.Maps').toLowerCase()}`);
-            }}
-          />
-        ) : null}
-        <Menu.Divider />
-        {globalStateModel.htmlEditorMenu ? (
-          getHtmlEditorMenus(
-            globalStateModel.htmlEditorMenu,
-            (path: string) => globalStateModel.setHtmlEditor(navigate, path),
-            '',
-            htmEditorLinkform,
-            fileEditorForm,
-            folderEditorForm,
-            t,
-            modal,
-            globalStateModel,
-            sessionModel,
-            clubModel,
-            messageApi
-          )
-        ) : (
-          <Spin size="small" />
-        )}
-        {clubModel.modules.some(module => module.name === 'HTMLEditor') ? (
-          <>
-            <MenuItem
-              key={'menuItem#htmlEditor'}
-              icon={'edit'}
-              name={t('modules.HtmlEditor')}
-              disabled={!sessionModel.loggedIn || !sessionModel.isAdmin}
-              onClick={() => {
-                globalStateModel.setHtmlEditor(navigate, '/page/new');
-              }}
-            />
-            <MenuItem
-              key={'menuItem#createLink'}
-              icon={'edit'}
-              name={t('htmlEditor.MenuLink')}
-              disabled={!sessionModel.loggedIn || !sessionModel.isAdmin}
-              onClick={() => {
-                globalStateModel.setRightMenuVisible(false);
-                htmEditorLinkform?.setFieldsValue({
-                  iLinkID: -1,
-                  iMenuPath: DefaultMenuPath,
-                  iUrl: 'https://'
-                });
-
-                HtmlEditorLinkModal(
-                  t,
-                  modal,
-                  -1,
-                  DefaultMenuPath,
-                  'https://',
-                  htmEditorLinkform,
-                  globalStateModel,
-                  sessionModel,
-                  clubModel,
-                  messageApi
-                )
-                  .then()
-                  .catch(error => {
-                    console.error(error);
-                  });
-              }}
-            />
-          </>
-        ) : null}
-        {clubModel.modules.some(module => module.name === 'Files') ? (
-          <>
-            <MenuItem
-              key={'menuItem#uploadFile'}
-              icon={'cloud-upload'}
-              name={t('files.UploadFile')}
-              disabled={!sessionModel.loggedIn || !sessionModel.isAdmin}
-              onClick={() => {
-                globalStateModel.setRightMenuVisible(false);
-                FileEditorModal(t, modal, -1, fileEditorForm, globalStateModel, sessionModel, clubModel, messageApi)
-                  .then()
-                  .catch(error => {
-                    console.error(error);
-                  });
-              }}
-            />
-            <MenuItem
-              key={'menuItem#newFolder'}
-              icon={'cloud-upload'}
-              name={t('files.AddFolder')}
-              disabled={!sessionModel.loggedIn || !sessionModel.isAdmin}
-              onClick={() => {
-                globalStateModel.setRightMenuVisible(false);
-                FolderEditorModal(t, modal, -1, folderEditorForm, globalStateModel, sessionModel, clubModel, messageApi)
-                  .then()
-                  .catch(error => {
-                    console.error(error);
-                  });
-              }}
-            />
-          </>
-        ) : null}
-        <Menu.Divider />
-        {clubModel.sponsors && clubModel.sponsors.length > 0 ? (
-          <MenuItem
-            key={'menuItem#ourSponsors'}
-            icon={'bank'}
-            name={t('common.OurSponsors')}
-            onClick={() => {
-              globalStateModel.setDashboard(navigate, '/sponsors');
-            }}
-          />
-        ) : null}
-        {clubModel.oldUrl ? (
-          <MenuItem
-            key={'menuItem#oldHomePage'}
-            icon="rollback"
-            name={t('common.OldHomePage')}
-            onClick={() => {
-              const win = window.open(clubModel.oldUrl, '_blank');
-              win?.focus();
-            }}
-          />
-        ) : null}
-      </StyledMenu>
+      {loginForm}
+      {allModuleModals}
+      <StyledMenu mode="inline" items={menuItems} onClick={() => globalStateModel.setRightMenuVisible(false)} />
     </Drawer>
   );
 });

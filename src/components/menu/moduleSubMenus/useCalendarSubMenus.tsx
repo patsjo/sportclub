@@ -1,6 +1,5 @@
 import { message } from 'antd';
 import dayjs from 'dayjs';
-import { observer } from 'mobx-react';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -10,7 +9,7 @@ import { useMobxStore } from '../../../utils/mobxStore';
 import { ICalendarActivity, ICalendarDomains } from '../../../utils/responseCalendarInterfaces';
 import CalendarEdit from '../../calendar/item/CalendarEdit';
 import { MaterialIconsType } from '../../materialIcon/MaterialIcon';
-import MenuItem from '../MenuItem';
+import { getMenuItem } from '../MenuItem';
 
 const moduleName = 'Calendar';
 const defaultCalendarObject = (userId: string | undefined): ICalendarActivity => ({
@@ -31,7 +30,7 @@ const defaultCalendarObject = (userId: string | undefined): ICalendarActivity =>
   latitude: null
 });
 
-const CalendarSubMenus = observer(() => {
+export const useCalendarSubMenus = () => {
   const { t } = useTranslation();
   const { clubModel, globalStateModel, sessionModel } = useMobxStore();
   const calendarModule = React.useMemo(
@@ -65,9 +64,9 @@ const CalendarSubMenus = observer(() => {
       });
   }, [clubModel.modules]);
 
-  return (
-    <>
-      {addCalendarModalIsOpen && domains ? (
+  return {
+    addCalendarModal:
+      addCalendarModalIsOpen && domains ? (
         <CalendarEdit
           title={t('calendar.Add')}
           calendarObject={defaultCalendarObject(sessionModel.id)}
@@ -75,14 +74,13 @@ const CalendarSubMenus = observer(() => {
           domains={domains}
           onClose={() => setAddCalendarModalIsOpen(false)}
         />
-      ) : null}
-      <MenuItem
-        key={'menuItem#calendar'}
-        isSubMenu
-        icon={(moduleName + 'Icon') as MaterialIconsType}
-        name={t('calendar.Calendar')}
-        disabled={false}
-        onClick={() => {
+      ) : null,
+    calendarMenuItems: [
+      getMenuItem(
+        'menuItem#calendar',
+        (moduleName + 'Icon') as MaterialIconsType,
+        t('calendar.Calendar'),
+        () => {
           globalStateModel.setDashboard(
             navigate,
             '/calendar',
@@ -90,34 +88,33 @@ const CalendarSubMenus = observer(() => {
             dayjs().endOf('month').format(dateFormat),
             1
           );
-        }}
-      />
-      <MenuItem
-        key={'menuItem#calendarAdd'}
-        isSubMenu
-        icon="plus"
-        name={t('calendar.Add')}
-        disabled={!calendarModule?.addUrl || !sessionModel.loggedIn || !domains}
-        onClick={() => {
+        },
+        true
+      ),
+      getMenuItem(
+        'menuItem#calendarAdd',
+        'plus',
+        t('calendar.Add'),
+        () => {
           globalStateModel.setRightMenuVisible(false);
           setTimeout(() => setAddCalendarModalIsOpen(true), 0);
-        }}
-      />
-      <MenuItem
-        key={'menuItem#calendarEventSelector'}
-        isSubMenu
-        icon="star"
-        name={t('calendar.EventSelector')}
-        disabled={
-          !calendarModule?.addUrl || !resultsModule?.queryUrl || !sessionModel.loggedIn || !sessionModel.isAdmin
-        }
-        onClick={() => {
+        },
+        true,
+        1,
+        !calendarModule?.addUrl || !sessionModel.loggedIn || !domains
+      ),
+      getMenuItem(
+        'menuItem#calendarEventSelector',
+        'star',
+        t('calendar.EventSelector'),
+        () => {
           globalStateModel.setRightMenuVisible(false);
           globalStateModel.setDashboard(navigate, '/calendar/eventselector');
-        }}
-      />
-    </>
-  );
-});
-
-export default CalendarSubMenus;
+        },
+        true,
+        1,
+        !calendarModule?.addUrl || !resultsModule?.queryUrl || !sessionModel.loggedIn || !sessionModel.isAdmin
+      )
+    ]
+  };
+};

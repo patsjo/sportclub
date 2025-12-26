@@ -1,10 +1,9 @@
 import { CaretRightOutlined, FileOutlined, LinkOutlined, SettingOutlined } from '@ant-design/icons';
-import { Menu } from 'antd';
+import { MenuProps } from 'antd';
 import { FormInstance } from 'antd/lib/form';
 import { MessageInstance } from 'antd/lib/message/interface';
 import { HookAPI } from 'antd/lib/modal/useModal';
 import { TFunction } from 'i18next';
-import { styled } from 'styled-components';
 import { IGlobalStateModel } from '../../models/globalStateModel';
 import { IMenu, IMenuItem } from '../../models/htmlEditorModel';
 import { IMobxClubModel } from '../../models/mobxClubModel';
@@ -13,27 +12,10 @@ import { DownloadData } from '../../utils/api';
 import { IFileUploadRequest, ISaveLinkRequest } from '../../utils/requestInterfaces';
 import { IFolderResponse } from '../../utils/responseInterfaces';
 import MaterialIcon from '../materialIcon/MaterialIcon';
-import MenuItem from '../menu/MenuItem';
+import { getMenuItem } from '../menu/MenuItem';
 import { FileEditorModal } from './FileEditorModal';
 import { FolderEditorModal } from './FolderEditorModal';
 import { HtmlEditorLinkModal } from './HtmlEditorLinkModal';
-
-interface IStyledSubMenu {
-  level: number;
-}
-const StyledSubMenu = styled(Menu.SubMenu)<IStyledSubMenu>`
-  &&& {
-    line-height: 22px !important;
-    padding: 0;
-  }
-  &&& .ant-menu-submenu-title {
-    margin-left: ${props => (props.level - 1) * 24}px;
-    width: calc(100% - ${props => (props.level - 1) * 24}px);
-    line-height: 22px !important;
-    height: 22px !important;
-    padding: 0 !important;
-  }
-`;
 
 const getMenuItems = (
   items: IMenuItem[],
@@ -46,76 +28,71 @@ const getMenuItems = (
   sessionModel: ISessionModel,
   clubModel: IMobxClubModel,
   messageApi: MessageInstance
-) =>
-  items.map(item => (
-    <MenuItem
-      key={`menuItem#htmlEditor#${
+): NonNullable<MenuProps['items']> =>
+  items.map(item =>
+    getMenuItem(
+      `menuItem#htmlEditor#${
         item.pageId ? `pageId#${item.pageId}` : item.linkId ? `linkId#${item.linkId}` : `fileId#${item.fileId}`
-      }`}
-      level={item.level}
-      icon={
-        item.pageId ? (
-          <FileOutlined style={{ verticalAlign: 'middle', fontSize: 18 }} />
-        ) : item.linkId && sessionModel.loggedIn && sessionModel.isAdmin ? (
-          <SettingOutlined
-            style={{ verticalAlign: 'middle', fontSize: 18 }}
-            onClick={event => {
-              event.stopPropagation();
-              globalStateModel.setRightMenuVisible(false);
-              htmEditorLinkform?.setFieldsValue({
-                iLinkID: item.linkId,
-                iMenuPath: item.menuPath,
-                iUrl: item.url
-              });
+      }`,
+      item.pageId ? (
+        <FileOutlined style={{ verticalAlign: 'middle', fontSize: 18 }} />
+      ) : item.linkId && sessionModel.loggedIn && sessionModel.isAdmin ? (
+        <SettingOutlined
+          style={{ verticalAlign: 'middle', fontSize: 18 }}
+          onClick={event => {
+            event.stopPropagation();
+            globalStateModel.setRightMenuVisible(false);
+            htmEditorLinkform?.setFieldsValue({
+              iLinkID: item.linkId,
+              iMenuPath: item.menuPath,
+              iUrl: item.url
+            });
 
-              HtmlEditorLinkModal(
-                t,
-                modal,
-                item.linkId!,
-                item.menuPath,
-                item.url!,
-                htmEditorLinkform,
-                globalStateModel,
-                sessionModel,
-                clubModel,
-                messageApi
-              )
-                .then()
-                .catch(error => {
-                  console.error(error);
-                });
-            }}
-          />
-        ) : item.fileId &&
-          sessionModel.loggedIn &&
-          (sessionModel.isAdmin || sessionModel.id == item.createdByUserId) ? (
-          <SettingOutlined
-            style={{ verticalAlign: 'middle', fontSize: 18 }}
-            onClick={event => {
-              event.stopPropagation();
-              globalStateModel.setRightMenuVisible(false);
-              FileEditorModal(
-                t,
-                modal,
-                item.fileId!,
-                fileEditorForm,
-                globalStateModel,
-                sessionModel,
-                clubModel,
-                messageApi
-              )
-                .then()
-                .catch(error => {
-                  console.error(error);
-                });
-            }}
-          />
-        ) : (
-          <LinkOutlined style={{ verticalAlign: 'middle', fontSize: 18 }} />
-        )
-      }
-      name={item.description}
-      onClick={async () => {
+            HtmlEditorLinkModal(
+              t,
+              modal,
+              item.linkId!,
+              item.menuPath,
+              item.url!,
+              htmEditorLinkform,
+              globalStateModel,
+              sessionModel,
+              clubModel,
+              messageApi
+            )
+              .then()
+              .catch(error => {
+                console.error(error);
+              });
+          }}
+        />
+      ) : item.fileId && sessionModel.loggedIn && (sessionModel.isAdmin || sessionModel.id == item.createdByUserId) ? (
+        <SettingOutlined
+          style={{ verticalAlign: 'middle', fontSize: 18 }}
+          onClick={event => {
+            event.stopPropagation();
+            globalStateModel.setRightMenuVisible(false);
+            FileEditorModal(
+              t,
+              modal,
+              item.fileId!,
+              fileEditorForm,
+              globalStateModel,
+              sessionModel,
+              clubModel,
+              messageApi
+            )
+              .then()
+              .catch(error => {
+                console.error(error);
+              });
+          }}
+        />
+      ) : (
+        <LinkOutlined style={{ verticalAlign: 'middle', fontSize: 18 }} />
+      ),
+      item.description,
+      async () => {
         if (item.pageId) {
           setHtmlEditor(item.menuPath);
         } else if (item.linkId) {
@@ -132,9 +109,11 @@ const getMenuItems = (
             sessionModel.authorizationHeader
           );
         }
-      }}
-    />
-  ));
+      },
+      false,
+      item.level
+    )
+  );
 
 export const getHtmlEditorMenus = (
   menu: IMenu,
@@ -149,74 +128,70 @@ export const getHtmlEditorMenus = (
   sessionModel: ISessionModel,
   clubModel: IMobxClubModel,
   messageApi: MessageInstance
-) => (
-  <>
-    {getMenuItems(
-      menu.menuItems,
+): NonNullable<MenuProps['items']> => [
+  ...getMenuItems(
+    menu.menuItems,
+    setHtmlEditor,
+    htmEditorLinkform,
+    fileEditorForm,
+    t,
+    modal,
+    globalStateModel,
+    sessionModel,
+    clubModel,
+    messageApi
+  ),
+  ...menu.subMenus.map(subMenu => ({
+    key: 'subMenu#htmlEditor' + path + '#' + subMenu.description,
+    style: {
+      marginLeft: (subMenu.level - 1) * 28,
+      width: `calc(100% - ${(subMenu.level - 1) * 28}px)`,
+      padding: '0 !important'
+    },
+    label: (
+      <span>
+        <MaterialIcon icon={<CaretRightOutlined style={{ verticalAlign: 'middle', fontSize: 18 }} />} fontSize={18} />
+        {subMenu.folderId &&
+        sessionModel.loggedIn &&
+        (sessionModel.isAdmin || sessionModel.id == subMenu.createdByUserId) ? (
+          <SettingOutlined
+            style={{ verticalAlign: 'middle', fontSize: 18 }}
+            onClick={event => {
+              event.stopPropagation();
+              globalStateModel.setRightMenuVisible(false);
+              FolderEditorModal(
+                t,
+                modal,
+                subMenu.folderId!,
+                folderEditorForm,
+                globalStateModel,
+                sessionModel,
+                clubModel,
+                messageApi
+              )
+                .then()
+                .catch(error => {
+                  console.error(error);
+                });
+            }}
+          />
+        ) : null}
+        <span>{subMenu.description}</span>
+      </span>
+    ),
+    children: getHtmlEditorMenus(
+      subMenu.subMenus,
       setHtmlEditor,
+      path + '#' + subMenu.description,
       htmEditorLinkform,
       fileEditorForm,
+      folderEditorForm,
       t,
       modal,
       globalStateModel,
       sessionModel,
       clubModel,
       messageApi
-    )}
-    {menu.subMenus.map(subMenu => (
-      <StyledSubMenu
-        key={'subMenu#htmlEditor' + path + '#' + subMenu.description}
-        level={subMenu.level}
-        title={
-          <span>
-            <MaterialIcon
-              icon={<CaretRightOutlined style={{ verticalAlign: 'middle', fontSize: 18 }} />}
-              fontSize={18}
-            />
-            {subMenu.folderId &&
-            sessionModel.loggedIn &&
-            (sessionModel.isAdmin || sessionModel.id == subMenu.createdByUserId) ? (
-              <SettingOutlined
-                style={{ verticalAlign: 'middle', fontSize: 18 }}
-                onClick={event => {
-                  event.stopPropagation();
-                  globalStateModel.setRightMenuVisible(false);
-                  FolderEditorModal(
-                    t,
-                    modal,
-                    subMenu.folderId!,
-                    folderEditorForm,
-                    globalStateModel,
-                    sessionModel,
-                    clubModel,
-                    messageApi
-                  )
-                    .then()
-                    .catch(error => {
-                      console.error(error);
-                    });
-                }}
-              />
-            ) : null}
-            <span>{subMenu.description}</span>
-          </span>
-        }
-      >
-        {getHtmlEditorMenus(
-          subMenu.subMenus,
-          setHtmlEditor,
-          path + '#' + subMenu.description,
-          htmEditorLinkform,
-          fileEditorForm,
-          folderEditorForm,
-          t,
-          modal,
-          globalStateModel,
-          sessionModel,
-          clubModel,
-          messageApi
-        )}
-      </StyledSubMenu>
-    ))}
-  </>
-);
+    )
+  }))
+];
