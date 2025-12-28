@@ -42,7 +42,6 @@ import ResultWizardStep2EditRace from './ResultsWizardStep2EditRace';
 import ResultWizardStep3Ranking from './ResultsWizardStep3Ranking';
 import { SelectEventorIdConfirmModal } from './SelectEventorIdConfirmModal';
 
-const { Step } = Steps;
 const StyledFullWidth = styled.div`
   width: 100%;
   padding-bottom: 8px;
@@ -59,7 +58,7 @@ const ResultsWizard = observer(() => {
   const [saving, setSaving] = useState(false);
   const [contentOffsetHeight, setContentOffsetHeight] = useState(0);
   const stepsRef = useRef<HTMLDivElement>(null);
-  const { height: stepsHeight } = useSize(stepsRef, ['height'], 'offset');
+  const { height: stepsHeight } = useSize(stepsRef, false, true, 'offset');
   const [ctrlAltDown, setCtrlAltDown] = useState(false);
   const [autoUpdateResultWithSameClass, setAutoUpdateResultWithSameClass] = useState(true);
   const navigate = useNavigate();
@@ -557,12 +556,15 @@ const ResultsWizard = observer(() => {
       >
         <StyledModalContent>
           <StyledFullWidth ref={stepsRef}>
-            <Steps current={wizardStep}>
-              <Step key="ResultsWizardStep0" title={t('results.Step0Input')} />
-              <Step key="ResultsWizardStep1" title={t('results.Step1ChooseRace')} />
-              <Step key="ResultsWizardStep2" title={t('results.Step2EditRace')} />
-              <Step key="ResultsWizardStep3" title={t('results.Step3Ranking')} />
-            </Steps>
+            <Steps
+              current={wizardStep}
+              items={[
+                { title: t('results.Step0Input') },
+                { title: t('results.Step1ChooseRace') },
+                { title: t('results.Step2EditRace') },
+                { title: t('results.Step3Ranking') }
+              ]}
+            />
           </StyledFullWidth>
           {wizardStep === 0 ? <ResultWizardStep0Input /> : null}
           {wizardStep >= 1 && raceWizardModel.current.existInEventor ? (

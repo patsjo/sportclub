@@ -77,7 +77,6 @@ export const recalculateChildDistribution = (
 ) => {
   let aboveChildAlreadyCalculated = !recalculateAll;
   const heights = [...Array(columns)].fill(0);
-  const newChildDistribution = [...Array(maxColumns)].map((): IChildColumn[] => []);
   const totalHeight = updatedChilds.reduce((a, b) => a + (b.key ? (childHeights[b.key] ?? b.height) : b.height), 0);
 
   updatedChilds.forEach(child => {
@@ -95,8 +94,6 @@ export const recalculateChildDistribution = (
           child.column = index;
         }
       }
-      newChildDistribution[child.column!].push(child);
     }
   });
-  return newChildDistribution;
 };

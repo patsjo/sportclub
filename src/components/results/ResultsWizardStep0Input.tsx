@@ -65,7 +65,7 @@ const ResultWizardStep0Input = observer(({ onMount }: IResultWizardStep0InputPro
         <DatePicker
           format={dateFormat}
           allowClear={false}
-          onChange={date => raceWizardModel.setStringValue('queryStartDate', date.format(dateFormat))}
+          onChange={date => raceWizardModel.setStringValue('queryStartDate', date?.format(dateFormat) ?? '')}
         />
       </FormItem>
       <FormItem
@@ -83,7 +83,7 @@ const ResultWizardStep0Input = observer(({ onMount }: IResultWizardStep0InputPro
         <DatePicker
           format={dateFormat}
           allowClear={false}
-          onChange={date => raceWizardModel.setStringValue('queryEndDate', date.format(dateFormat))}
+          onChange={date => raceWizardModel.setStringValue('queryEndDate', date?.format(dateFormat) ?? '')}
         />
       </FormItem>
       <FormItem name="queryIncludeExisting" label={t('results.QueryIncludeExisting')} valuePropName="checked">

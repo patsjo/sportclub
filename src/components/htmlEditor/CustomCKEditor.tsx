@@ -62,7 +62,7 @@ interface ICustomCKEditor {
 
 const CustomCKEditor = observer(({ data, isReadOnly, onReady }: ICustomCKEditor) => {
   const [currentEditor, setCurrentEditor] = useState<ClassicEditor>();
-  const toolbarContainer = useRef<StickyPanelView>();
+  const toolbarContainer = useRef<StickyPanelView>(null);
 
   useEffect(() => {
     if (currentEditor && toolbarContainer.current) {

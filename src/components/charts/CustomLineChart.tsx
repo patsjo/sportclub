@@ -1,4 +1,5 @@
 import { Typography } from 'antd';
+import { ParseKeys } from 'i18next';
 import { observer } from 'mobx-react';
 import { useTranslation } from 'react-i18next';
 import { CartesianGrid, Legend, Line, LineChart, Tooltip, XAxis, YAxis } from 'recharts';
@@ -38,7 +39,7 @@ const CustomLineChart = observer(
                 key={valueKey}
                 type="monotone"
                 dataKey={valueKey}
-                name={t(`chart.${valueKey}`) ?? undefined}
+                name={t(`chart.${valueKey}` as ParseKeys) ?? undefined}
                 stroke={
                   valueColors && valueColors.length > idx ? valueColors[idx] : paletteColors[idx % paletteColors.length]
                 }

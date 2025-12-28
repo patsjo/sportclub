@@ -61,7 +61,7 @@ const RenounceModal = observer(({ competitor, open, onClose }: IRenounceModalPro
       title={t('results.Renounce')}
       open={open}
       width="calc(100% - 80px)"
-      style={{ top: 40 }}
+      style={{ top: 40, maxWidth: 900 }}
       footer={[
         <Popconfirm
           key="confirmSaveButton"

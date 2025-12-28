@@ -18,7 +18,6 @@ import InvoiceWizardStep0Input from './InvoiceWizardStep0Input';
 import InvoiceWizardStep1ChooseRace from './InvoiceWizardStep1ChooseRace';
 import InvoiceWizardStep2EditRace from './InvoiceWizardStep2EditRace';
 
-const { Step } = Steps;
 const StyledFullWidth = styled.div`
   width: 100%;
   padding-bottom: 8px;
@@ -33,7 +32,7 @@ const InvoiceWizard = observer(() => {
   const [nextStepValid, setNextStepValid] = useState(true);
   const [contentOffsetHeight, setContentOffsetHeight] = useState(0);
   const stepsRef = useRef<HTMLDivElement>(null);
-  const { height: stepsHeight } = useSize(stepsRef, ['height'], 'offset');
+  const { height: stepsHeight } = useSize(stepsRef, false, true, 'offset');
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
@@ -162,11 +161,14 @@ const InvoiceWizard = observer(() => {
       >
         <StyledModalContent>
           <StyledFullWidth ref={stepsRef}>
-            <Steps current={wizardStep}>
-              <Step key="InvoiceWizardModalStep0" title={t('results.Step0Input')} />
-              <Step key="InvoiceWizardModalStep1" title={t('results.Step1ChooseRace')} />
-              <Step key="InvoiceWizardModalStep2" title={t('results.Step2EditRace')} />
-            </Steps>
+            <Steps
+              current={wizardStep}
+              items={[
+                { title: t('results.Step0Input') },
+                { title: t('results.Step1ChooseRace') },
+                { title: t('results.Step2EditRace') }
+              ]}
+            />
           </StyledFullWidth>
           {wizardStep === 0 ? <InvoiceWizardStep0Input /> : null}
           {wizardStep >= 1 && raceWizardModel.current.existInEventor ? (

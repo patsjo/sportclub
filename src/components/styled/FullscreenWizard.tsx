@@ -43,8 +43,8 @@ interface IFullScreenModalProps {
 const FullScreenWizard = ({ title, footer, children, onContentOffsetHeight }: IFullScreenModalProps) => {
   const footerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const { height: footerHeight } = useSize(footerRef, ['height'], 'client');
-  const { height: contentHeight } = useSize(contentRef, ['height'], 'offset');
+  const { height: footerHeight } = useSize(footerRef, false, true, 'client');
+  const { height: contentHeight } = useSize(contentRef, false, true, 'offset');
 
   useEffect(() => {
     if (onContentOffsetHeight && contentHeight != null) onContentOffsetHeight(contentHeight);

@@ -1,6 +1,6 @@
 import { FormInstance } from 'antd/lib/form';
 import { UploadFile } from 'antd/lib/upload/interface';
-import { TFunction } from 'i18next';
+import { ParseKeys, TFunction } from 'i18next';
 import { getFileType } from './fileHelper';
 
 export const dateFormat = 'YYYY-MM-DD';
@@ -114,8 +114,8 @@ export const hasErrors = (form: FormInstance): Promise<boolean> =>
       .catch(e => resolve(e.errorFields.length > 0));
   });
 
-export const errorRequiredField = (t: TFunction, i18nField: string): string =>
+export const errorRequiredField = (t: TFunction, i18nField: ParseKeys): string =>
   `${t('error.RequiredField')} ${t(i18nField).toLowerCase()}`;
 
-export const warningIncludeAll = (t: TFunction, i18nField: string): string =>
+export const warningIncludeAll = (t: TFunction, i18nField: ParseKeys): string =>
   `${t('error.WarningIncludeAll')} ${t(i18nField).toLowerCase()}`;

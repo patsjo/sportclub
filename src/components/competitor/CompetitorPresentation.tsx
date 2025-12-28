@@ -35,6 +35,7 @@ const StyledCard = styled(Card)`
   }
   &&& .ant-card-head-title {
     padding: 0;
+    line-height: 0;
   }
 `;
 
@@ -381,25 +382,27 @@ const CompetitorPresentation = observer(({ competitor, ranking }: ICompetitorPre
     Math.max(0, starsShape ? starsShape : 0);
 
   return totalStars > 0 ? (
-    <StyledCard title={<CompetitorTitle competitor={competitor} />} bordered={true} loading={false}>
-      <FiveStars key="starsRank" label={t('competitor.StarsRank')} stars={starsRank} />
-      <FiveStars key="starsImportant" label={t('competitor.StarsImportant')} stars={starsImportant} />
-      <FiveStars key="starsStability" label={t('competitor.StarsStability')} stars={starsStability} />
-      <FiveStars key="starsTechnical" label={t('competitor.StarsTechnical')} stars={starsTechnical} />
-      <FiveStars key="starsSpeed" label={t('competitor.StarsSpeed')} stars={starsSpeed} />
-      <FiveStars key="starsRelay" label={t('competitor.StarsRelay')} stars={starsRelay} />
-      <FiveStars key="starsNight" label={t('competitor.StarsNight')} stars={starsNight} />
-      <FiveStars key="starsShape" label={t('competitor.StarsShape')} stars={starsShape} />
-      <ContainerDiv>
-        <LabelDiv>{t('competitor.FavoriteDistance')}</LabelDiv>
-        <StarsDiv>
-          {favoriteDistance === undefined ? (
-            <Loader />
-          ) : (
-            <InfoDiv>{favoriteDistance > 0 ? `${favoriteDistance} m` : '-'}</InfoDiv>
-          )}
-        </StarsDiv>
-      </ContainerDiv>
+    <StyledCard title={<CompetitorTitle competitor={competitor} />} loading={false}>
+      <div style={{ display: 'inline-block' }}>
+        <FiveStars key="starsRank" label={t('competitor.StarsRank')} stars={starsRank} />
+        <FiveStars key="starsImportant" label={t('competitor.StarsImportant')} stars={starsImportant} />
+        <FiveStars key="starsStability" label={t('competitor.StarsStability')} stars={starsStability} />
+        <FiveStars key="starsTechnical" label={t('competitor.StarsTechnical')} stars={starsTechnical} />
+        <FiveStars key="starsSpeed" label={t('competitor.StarsSpeed')} stars={starsSpeed} />
+        <FiveStars key="starsRelay" label={t('competitor.StarsRelay')} stars={starsRelay} />
+        <FiveStars key="starsNight" label={t('competitor.StarsNight')} stars={starsNight} />
+        <FiveStars key="starsShape" label={t('competitor.StarsShape')} stars={starsShape} />
+        <ContainerDiv>
+          <LabelDiv>{t('competitor.FavoriteDistance')}</LabelDiv>
+          <StarsDiv>
+            {favoriteDistance === undefined ? (
+              <Loader />
+            ) : (
+              <InfoDiv>{favoriteDistance > 0 ? `${favoriteDistance} m` : '-'}</InfoDiv>
+            )}
+          </StarsDiv>
+        </ContainerDiv>
+      </div>
     </StyledCard>
   ) : null;
 });

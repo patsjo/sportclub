@@ -83,7 +83,7 @@ const DrawerRightMenu = observer(() => {
     (): NonNullable<MenuProps['items']> =>
       clubModel.modules.some(module => module.name === 'HTMLEditor')
         ? [
-            getMenuItem('menuItem#htmlEditor', 'edit', t('modules.HtmlEditor'), () => {
+            getMenuItem('menuItem#htmlEditor', 'edit', t('modules.HTMLEditor'), () => {
               globalStateModel.setHtmlEditor(navigate, '/page/new');
             }),
             getMenuItem('menuItem#createLink', 'edit', t('htmlEditor.MenuLink'), () => {
@@ -154,7 +154,17 @@ const DrawerRightMenu = observer(() => {
             )
           ]
         : [],
-    [clubModel, fileEditorForm, folderEditorForm, globalStateModel, messageApi, modal, sessionModel, t]
+    [
+      clubModel,
+      fileEditorForm,
+      folderEditorForm,
+      globalStateModel,
+      messageApi,
+      modal,
+      sessionModel.loggedIn,
+      sessionModel.isAdmin,
+      t
+    ]
   );
 
   const menuItemDivider: NonNullable<MenuProps['items']>[number] = useMemo(
@@ -231,7 +241,7 @@ const DrawerRightMenu = observer(() => {
       }
       placement="right"
       closable={false}
-      width={360}
+      size={360}
       open={globalStateModel.rightMenuVisible}
       styles={{
         header: { paddingLeft: 12, paddingRight: 18, paddingTop: 8, paddingBottom: 8 },

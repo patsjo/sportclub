@@ -55,7 +55,7 @@ interface IFadeOutItemProps {
   module: IModule;
   modalContent: React.ReactNode;
   modalColumns: number;
-  editFormContent?: React.ReactElement;
+  editFormContent?: React.ReactElement<{ open?: boolean; onClose?: () => void }>;
   paddingBottom?: number;
   deletePromise?: () => Promise<void>;
   onDelete?: () => void;
@@ -84,7 +84,7 @@ const FadeOutItem = observer(
     const [showModalItem, setShowModalItem] = useState(false);
     const [showEdit, setShowEdit] = useState(false);
     const fadeOutRef = useRef<HTMLDivElement>(null);
-    const { height } = useSize(fadeOutRef, ['height'], 'client');
+    const { height } = useSize(fadeOutRef, false, true, 'client');
 
     const openModal = () => {
       setShowModalItem(true);

@@ -1,5 +1,5 @@
 import { DownOutlined, FileTextOutlined, FileZipOutlined, PrinterOutlined, SettingOutlined } from '@ant-design/icons';
-import { Button, Dropdown, Menu, Modal, Progress, Spin } from 'antd';
+import { Button, Dropdown, MenuProps, Modal, Progress, Spin } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { styled } from 'styled-components';
@@ -57,36 +57,32 @@ const TablePrintSettingButtons = ({
     onAbortLoading();
   };
 
-  const printAllmenu = (
-    <Menu
-      items={[
-        {
-          key: 'allInOnePdf',
-          label: t('common.AllInOnePdf'),
-          icon: <PrinterOutlined />,
-          onClick: () => {
-            setLoading(true);
-            if (onPrintAll)
-              onPrintAll(settings, true)
-                .then(() => setLoading(false))
-                .catch(() => setLoading(false));
-          }
-        },
-        {
-          key: 'allDividedInZip',
-          label: t('common.AllDividedInZip'),
-          icon: <FileZipOutlined />,
-          onClick: () => {
-            setLoading(true);
-            if (onPrintAll)
-              onPrintAll(settings, false)
-                .then(() => setLoading(false))
-                .catch(() => setLoading(false));
-          }
-        }
-      ]}
-    />
-  );
+  const printAllmenuItems: MenuProps['items'] = [
+    {
+      key: 'allInOnePdf',
+      label: t('common.AllInOnePdf'),
+      icon: <PrinterOutlined />,
+      onClick: () => {
+        setLoading(true);
+        if (onPrintAll)
+          onPrintAll(settings, true)
+            .then(() => setLoading(false))
+            .catch(() => setLoading(false));
+      }
+    },
+    {
+      key: 'allDividedInZip',
+      label: t('common.AllDividedInZip'),
+      icon: <FileZipOutlined />,
+      onClick: () => {
+        setLoading(true);
+        if (onPrintAll)
+          onPrintAll(settings, false)
+            .then(() => setLoading(false))
+            .catch(() => setLoading(false));
+      }
+    }
+  ];
 
   return (
     <ButtonsContainer>
@@ -115,7 +111,7 @@ const TablePrintSettingButtons = ({
         }}
       />
       {onPrintAll && !disablePrintAll && !loading ? (
-        <Dropdown overlay={printAllmenu} placement="bottomLeft">
+        <Dropdown menu={{ items: printAllmenuItems }} placement="bottomLeft">
           <Button style={{ marginRight: 5 }} disabled={disablePrintAll} loading={loading}>
             {t('common.All')} <DownOutlined />
           </Button>

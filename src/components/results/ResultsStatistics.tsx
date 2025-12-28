@@ -17,7 +17,7 @@ const Row = styled.div`
 
 const ResultsStatistics = observer(() => {
   const ref = useRef<HTMLDivElement>(null);
-  const { width } = useSize(ref, ['width']);
+  const { width } = useSize(ref, true, false);
   const { clubModel } = useMobxStore();
   const [chartData, setChartData] = useState<ICustomChart[]>([]);
   const [loading, setLoading] = useState(true);

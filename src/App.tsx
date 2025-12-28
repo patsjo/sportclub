@@ -162,13 +162,14 @@ const App = () => {
   }, [scrollStickyPos]);
 
   useEffect(() => {
-    const htmlEditorModule = clubModel.modules.find(module => module.name === 'HTMLEditor');
-    const filesModule = clubModel.modules.find(module => module.name === 'Files');
-
-    document.title = clubModel.title;
-    globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, filesModule, sessionModel, messageApi);
     window.addEventListener('scroll', onScroll);
 
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+    };
+  }, [onScroll]);
+
+  useEffect(() => {
     if (sessionModel.username && sessionModel.username.length > 0) {
       PostJsonData<{ id: string; name: string; isAdmin: boolean; eventorPersonId: number }>(
         clubModel.loginUrl,
@@ -189,11 +190,15 @@ const App = () => {
           console.error(error);
         });
     }
+  }, [clubModel.loginUrl, sessionModel]);
 
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-    };
-  }, [clubModel.loginUrl, clubModel.modules, clubModel.title, globalStateModel, messageApi, onScroll, sessionModel]);
+  useEffect(() => {
+    const htmlEditorModule = clubModel.modules.find(module => module.name === 'HTMLEditor');
+    const filesModule = clubModel.modules.find(module => module.name === 'Files');
+
+    document.title = clubModel.title;
+    globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, filesModule, sessionModel, messageApi);
+  }, [clubModel.modules, clubModel.title, globalStateModel, messageApi, sessionModel]);
 
   const Header = clubModel.titleLogo ? (
     <Link to="/">

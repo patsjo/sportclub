@@ -1,9 +1,8 @@
 import { UploadOutlined } from '@ant-design/icons';
-import { message, Upload } from 'antd';
+import { DraggerProps, message, Upload } from 'antd';
 import ImgCrop from 'antd-img-crop';
 import { FormInstance } from 'antd/lib/form';
 import { RcFile, UploadChangeParam, UploadFile } from 'antd/lib/upload/interface';
-import { UploadRequestOption as RcCustomRequestOptions } from 'rc-upload/lib/interface';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { styled } from 'styled-components';
@@ -86,7 +85,7 @@ const UploadDragger = ({
   const { t } = useTranslation();
   const [files, setFiles] = useState<IFile[]>((form.getFieldValue(fieldName) as IFile[]) || []);
 
-  const addFile = useCallback(({ onSuccess }: RcCustomRequestOptions) => {
+  const addFile = useCallback(({ onSuccess }: Parameters<NonNullable<DraggerProps<Response>['customRequest']>>[0]) => {
     setTimeout(() => {
       const response = new Response(null, { status: 200 });
       const xhr = new XMLHttpRequest();
@@ -221,7 +220,10 @@ const UploadDragger = ({
   return (
     <FormItem name={fieldName} valuePropName="fileList" getValueFromEvent={onNormFiles}>
       {asThumbnail ? (
-        <ImgCrop quality={0.9} beforeCrop={file => validFile(file) && file.size <= maxByteSize && asThumbnail}>
+        <ImgCrop
+          quality={0.9}
+          beforeCrop={(file: RcFile) => validFile(file) && file.size <= maxByteSize && asThumbnail}
+        >
           <StyledUploadDragger
             type="drag"
             customRequest={addFile}

@@ -26,7 +26,9 @@ const StyledButton = styled(Button)`
   }
 `;
 
-const StyledContainer = styled.div``;
+const StyledContainer = styled.div`
+  max-width: 1000px;
+`;
 
 interface IHtmlEditorFormProps {
   iPageID: number;

@@ -1,5 +1,5 @@
 import { EditOutlined, UserOutlined } from '@ant-design/icons';
-import { Avatar, Button, message, Skeleton } from 'antd';
+import { Avatar, Button, Col, message, Row, Skeleton, theme } from 'antd';
 import { observer } from 'mobx-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -9,101 +9,50 @@ import { useMobxStore } from '../../utils/mobxStore';
 import { ICompetitor, ICompetitorInfo } from '../../utils/responseCompetitorInterfaces';
 import CompetitorPresentationModal from './CompetitorPresentationModal';
 
-const StyledAvatar = styled(Avatar)`
+const { useToken } = theme;
+
+interface IBorderRadiusProps {
+  'border-radius': number;
+}
+
+const StyledAvatar = styled(Avatar)<IBorderRadiusProps>`
   &&& {
     display: block;
-    float: left;
     background-color: #808080;
-    border-radius: 0px;
-    margin-right: 16px;
-    height: 92px;
-    width: 92px;
+    border-radius: ${props => props['border-radius']}px 0 0 0;
+    height: 128px;
+    width: 128px;
+    min-width: 128px;
   }
   &&& .anticon svg {
-    height: 88px;
-    width: 70px;
-  }
-
-  @media screen and (min-width: 800px) {
-    &&& {
-      height: 64px;
-      width: 64px;
-    }
-    &&& .anticon svg {
-      height: 60px;
-      width: 44px;
-    }
-  }
-  @media screen and (max-width: 400px) {
-    &&& {
-      height: 88px;
-      width: 88px;
-    }
-    &&& .anticon svg {
-      height: 84px;
-      width: 66px;
-    }
+    height: 128px;
+    width: 96px;
   }
 `;
 
-const StyledImage = styled.img`
+const StyledImage = styled.img<IBorderRadiusProps>`
   display: block;
-  float: left;
-  margin-right: 16px;
-  height: 92px;
-  width: 92px;
-
-  @media screen and (min-width: 800px) {
-    height: 64px;
-    width: 64px;
-  }
-  @media screen and (max-width: 400px) {
-    height: 88px;
-    width: 88px;
-  }
+  height: 128px;
+  width: 128px;
+  border-radius: ${props => props['border-radius']}px 0 0 0;
 `;
 
 const StyledTitle = styled.div`
   display: block;
   font-size: 24px;
   line-height: 36px;
-
-  @media screen and (min-width: 800px) {
-    float: left;
-    font-size: 32px;
-    line-height: 60px;
-  }
-  @media screen and (max-width: 400px) {
-    font-size: 20px;
-    line-height: 32px;
-  }
 `;
 
 const StyledAchievements = styled.div<{ canEdit: boolean }>`
-  display: block;
   font-size: 10px;
   font-style: italic;
   line-height: 12px;
-  padding-left: 15px;
   &&& > ul {
-    margin-bottom: 0;
-    padding-inline-start: 108px;
+    margin: 0;
+    padding-inline-start: 15px;
     padding-inline-end: 4px;
-    white-space: normal;
-  }
-
-  @media screen and (min-width: 800px) {
-    float: right;
     padding-right: ${props => (props.canEdit ? 42 : 6)}px;
-    padding-top: 4px;
-    &&& > ul {
-      padding-inline-start: 15px;
-    }
-  }
-  @media screen and (max-width: 400px) {
-    &&& > ul {
-      padding-inline-start: 104px;
-    }
+    white-space: normal;
   }
 `;
 
@@ -124,6 +73,9 @@ const CompetitorTitle = observer(({ competitor }: ICompetitorTitleProps) => {
   const [editModalIsOpen, setEditModalIsOpen] = useState(false);
   const [competitorInfo, setCompetitorInfo] = useState<ICompetitorInfo | undefined>();
   const canEdit = sessionModel.isAdmin || sessionModel.name === competitor.name;
+  const {
+    token: { borderRadius }
+  } = useToken();
 
   useEffect(() => {
     const url = clubModel.modules.find(module => module.name === 'Results')?.queryUrl;
@@ -146,37 +98,41 @@ const CompetitorTitle = observer(({ competitor }: ICompetitorTitleProps) => {
   }, [clubModel.modules, competitor.competitorId, sessionModel.authorizationHeader]);
 
   return (
-    <div>
-      {competitorInfo?.thumbnail ? (
-        <StyledImage src={competitorInfo.thumbnail} />
-      ) : (
-        <StyledAvatar icon={<UserOutlined />} />
-      )}
-      <StyledTitle>{competitor.name}</StyledTitle>
-      <StyledAchievements canEdit={canEdit}>
-        <div>{t('competitor.Achievements')}</div>
-        {competitorInfo ? (
-          <ul>
-            {competitorInfo.seniorAchievements ? (
-              <li>
-                {t('competitor.Senior')}: {competitorInfo.seniorAchievements}
-              </li>
-            ) : null}
-            {competitorInfo.juniorAchievements ? (
-              <li>
-                {t('competitor.Junior')}: {competitorInfo.juniorAchievements}
-              </li>
-            ) : null}
-            {competitorInfo.youthAchievements ? (
-              <li>
-                {t('competitor.Youth')}: {competitorInfo.youthAchievements}
-              </li>
-            ) : null}
-          </ul>
+    <Row align="top" gutter={15}>
+      <Col xs={24} flex="140px">
+        {competitorInfo?.thumbnail ? (
+          <StyledImage src={competitorInfo.thumbnail} border-radius={borderRadius} />
         ) : (
-          <Skeleton.Button active shape="round" />
+          <StyledAvatar shape="square" icon={<UserOutlined />} border-radius={borderRadius} />
         )}
-      </StyledAchievements>
+      </Col>
+      <Col xs={24} flex="1">
+        <StyledTitle>{competitor.name}</StyledTitle>
+        <StyledAchievements canEdit={canEdit}>
+          <div>{t('competitor.Achievements')}</div>
+          {competitorInfo ? (
+            <ul>
+              {competitorInfo.seniorAchievements ? (
+                <li>
+                  {t('competitor.Senior')}: {competitorInfo.seniorAchievements}
+                </li>
+              ) : null}
+              {competitorInfo.juniorAchievements ? (
+                <li>
+                  {t('competitor.Junior')}: {competitorInfo.juniorAchievements}
+                </li>
+              ) : null}
+              {competitorInfo.youthAchievements ? (
+                <li>
+                  {t('competitor.Youth')}: {competitorInfo.youthAchievements}
+                </li>
+              ) : null}
+            </ul>
+          ) : (
+            <Skeleton.Button active shape="round" />
+          )}
+        </StyledAchievements>
+      </Col>
       {canEdit ? <StyledButton icon={<EditOutlined />} onClick={() => setEditModalIsOpen(true)} /> : null}
       {editModalIsOpen && competitorInfo ? (
         <CompetitorPresentationModal
@@ -187,7 +143,7 @@ const CompetitorTitle = observer(({ competitor }: ICompetitorTitleProps) => {
           onChange={setCompetitorInfo}
         />
       ) : null}
-    </div>
+    </Row>
   );
 });
 

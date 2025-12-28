@@ -1,9 +1,8 @@
 import { observer } from 'mobx-react';
-import React from 'react';
 import InfiniteScroll from '../../utils/infinityScroll';
+import { useMobxStore } from '../../utils/mobxStore';
 import Columns from '../dashboard/columns/Columns';
 import useNews from './useNews';
-import { useMobxStore } from '../../utils/mobxStore';
 
 const News = observer(() => {
   const { globalStateModel } = useMobxStore();

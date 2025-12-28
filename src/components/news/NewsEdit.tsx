@@ -169,9 +169,9 @@ const NewsEdit = observer(({ newsObject, open, onClose, onChange }: INewsEditPro
               style={{ minWidth: 174 }}
               options={[
                 { value: 1, label: t('modules.News') },
-                { value: 2, label: t('modules.LongTimeNews') },
-                { value: 10, label: t('modules.Banner') },
-                { value: 3, label: t('modules.Educations') }
+                { value: 2, label: t('news.LongTimeNews') },
+                { value: 10, label: t('news.Banner') },
+                { value: 3, label: t('news.Educations') }
               ]}
             />
           </FormItem>

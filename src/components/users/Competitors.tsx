@@ -66,7 +66,7 @@ export const CompetitorTable = styled(Table)<{
   &&& .ant-table-row-level-1 > td > span.indent-level-1 {
     padding-left: 0 !important;
   }
-` as <T extends object>(props: ICompetitorTableProps<T>) => JSX.Element;
+` as <T extends object>(props: ICompetitorTableProps<T>) => React.ReactElement;
 
 interface ICompetitorTable extends PickRequired<IRaceCompetitor, 'firstName' | 'lastName'> {
   key: React.Key;

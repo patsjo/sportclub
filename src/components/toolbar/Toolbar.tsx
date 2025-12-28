@@ -34,7 +34,7 @@ const Toolbar = observer(() => {
           <ToolbarItem
             key={'toolbarItem#' + module.name + index}
             icon={(module.name + 'Icon') as MaterialIconsType}
-            name={t('modules.' + module.name)}
+            name={t(`modules.${module.name}`)}
             disabled={
               module.name !== 'News' &&
               module.name !== 'Eventor' &&

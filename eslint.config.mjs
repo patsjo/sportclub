@@ -3,6 +3,7 @@ import { FlatCompat } from "@eslint/eslintrc";
 import js from "@eslint/js";
 import typescriptEslint from "@typescript-eslint/eslint-plugin";
 import tsParser from "@typescript-eslint/parser";
+import i18next from 'eslint-plugin-i18next';
 import _import from "eslint-plugin-import";
 import jestDom from "eslint-plugin-jest-dom";
 import jsxA11Y from "eslint-plugin-jsx-a11y";
@@ -43,6 +44,7 @@ export default [{
     "plugin:@typescript-eslint/recommended",
 //    "plugin:storybook/recommended",
     "plugin:prettier/recommended",
+    "plugin:i18next/recommended"
 )), {
     plugins: {
         react: fixupPluginRules(react),
@@ -51,6 +53,7 @@ export default [{
         "@typescript-eslint": fixupPluginRules(typescriptEslint),
         import: fixupPluginRules(_import),
         "react-refresh": reactRefresh,
+        i18next: fixupPluginRules(i18next),
     },
 
     languageOptions: {
@@ -108,9 +111,10 @@ export default [{
             noSortAlphabetically: true,
         }],
         "react-refresh/only-export-components": "off",
-        "@typescript-eslint/no-unused-vars": "warn"
+        "@typescript-eslint/no-unused-vars": "warn",
+        "i18next/no-literal-string": "off"
     },
-}, ...compat.extends("plugin:jest-dom/recommended", "plugin:testing-library/react").map(config => ({
+    }, ...compat.extends("plugin:jest-dom/recommended", "plugin:testing-library/react").map(config => ({
     ...config,
     files: ["./src/**/*.test.ts?(x)"],
 })), {

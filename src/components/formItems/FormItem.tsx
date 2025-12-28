@@ -20,4 +20,4 @@ const FormItem = styled(Form.Item)`
   }
 ` as React.FC<FormItemProps>;
 
-export default FormItem as <TValues = never>(props: FormItemProps<TValues>) => JSX.Element;
+export default FormItem as <TValues = never>(props: FormItemProps<TValues>) => React.ReactElement;

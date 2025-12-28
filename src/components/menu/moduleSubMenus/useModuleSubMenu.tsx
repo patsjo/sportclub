@@ -99,7 +99,7 @@ export const useModuleSubMenu = () => {
                           fontSize={18}
                           marginRight={10}
                         />
-                        <span>{t('modules.' + module.name)}</span>
+                        <span>{t(`modules.${module.name}`)}</span>
                       </span>
                     ),
                     disabled:

@@ -218,7 +218,7 @@ const MonthlyCalendar = observer(() => {
   const startDate = dayjs(globalStateModel.startDate);
   const startMonday = startDate.clone().isoWeekday(1);
   const endSunday = startDate.clone().endOf('month').isoWeekday(7);
-  const days = [...Array(7)].map((_, i) => i);
+  const days = [...Array(7)].map((_, i) => i) as (0 | 1 | 2 | 3 | 4 | 5 | 6)[];
   const weeks = [...Array(endSunday.add(1, 'days').diff(startMonday, 'weeks'))].map((_, i) => i);
   const isCurrentMonth = (date: dayjs.Dayjs) => startDate.format('MM') === date.format('MM');
 
@@ -240,7 +240,7 @@ const MonthlyCalendar = observer(() => {
         {days.map(day => (
           <HeaderContainerCol key={day} span={day < 5 ? 3 : 4}>
             <DateContainer color={day === 6 ? 'red' : day === 5 ? 'grey' : 'black'}>
-              {t(`calendar.DayOfWeek${day + 1}`)}
+              {t(`calendar.DayOfWeek${(day + 1) as 1 | 2 | 3 | 4 | 5 | 6 | 7}`)}
             </DateContainer>
           </HeaderContainerCol>
         ))}

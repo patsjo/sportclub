@@ -1,5 +1,5 @@
 import useResizeObserver from '@react-hook/resize-observer';
-import { RefObject, useLayoutEffect, useMemo, useState } from 'react';
+import { RefObject, useLayoutEffect, useState } from 'react';
 
 type TypeOfSize = 'client' | 'offset';
 interface ISize {
@@ -10,13 +10,12 @@ interface ISize {
 const defaultSize: ISize = { height: undefined, width: undefined };
 
 export const useSize = (
-  target: RefObject<HTMLDivElement>,
-  observe?: ('width' | 'height')[],
+  target: RefObject<HTMLDivElement | null>,
+  observeWidth?: boolean,
+  observeHeight?: boolean,
   typeOfSize: TypeOfSize = 'client'
 ) => {
   const [size, setSize] = useState<ISize>(defaultSize);
-  const observeWidth = useMemo(() => !observe || observe.includes('width'), [observe]);
-  const observeHeight = useMemo(() => !observe || observe.includes('height'), [observe]);
 
   useLayoutEffect(() => {
     if (target.current) {

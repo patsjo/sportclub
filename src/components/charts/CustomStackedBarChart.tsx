@@ -1,4 +1,5 @@
 import { Typography } from 'antd';
+import { ParseKeys } from 'i18next';
 import { observer } from 'mobx-react';
 import { useTranslation } from 'react-i18next';
 import { Bar, BarChart, CartesianGrid, Legend, Tooltip, XAxis, YAxis } from 'recharts';
@@ -39,7 +40,7 @@ const CustomStackedBarChart = observer(
                 type="monotone"
                 dataKey={valueKey}
                 stackId={dataKey}
-                name={t(`chart.${valueKey}`) ?? undefined}
+                name={t(`chart.${valueKey}` as ParseKeys) ?? undefined}
                 fill={
                   valueColors && valueColors.length > idx ? valueColors[idx] : paletteColors[idx % paletteColors.length]
                 }

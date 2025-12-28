@@ -189,10 +189,10 @@ const OSMOrienteeringMap = observer(
     const map = useOpenLayersMap();
     const mapRef = useRef<HTMLDivElement>(null);
     const mapInfoRef = useRef<HTMLDivElement>(null);
-    const homeExtent = useRef<HomeExtent>();
+    const homeExtent = useRef<HomeExtent>(null);
     const highlight = useRef<boolean>(false);
-    const currentUids = useRef<string>();
-    const mapinfoControl = useRef<Control>();
+    const currentUids = useRef<string>(null);
+    const mapinfoControl = useRef<Control>(null);
     const [loaded, setLoaded] = useState(false);
     const [layerListVisible, setLayerListVisible] = useState(false);
     const [trackingText, setTrackingText] = useState<string>();
@@ -280,7 +280,7 @@ const OSMOrienteeringMap = observer(
           highlight.current = true;
         } else {
           highlightLayer.getSource()?.clear();
-          currentUids.current = undefined;
+          currentUids.current = null;
           highlight.current = false;
           text = undefined;
         }

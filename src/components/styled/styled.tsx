@@ -105,4 +105,4 @@ export const StyledTable = styled(Table)<{ minWidth?: number }>`
   &&& .ant-table-cell-ellipsis {
     max-width: 250px;
   }
-` as <T extends object>(props: IStyledTableProps<T>) => JSX.Element;
+` as <T extends object>(props: IStyledTableProps<T>) => React.ReactElement;

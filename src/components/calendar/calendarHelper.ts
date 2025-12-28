@@ -2,12 +2,12 @@ import dayjs from 'dayjs';
 import { TFunction } from 'i18next';
 
 const GetDayOfWeek = (date: dayjs.Dayjs, t: TFunction): string => {
-  const dayOfWeek = date.isoWeekday();
+  const dayOfWeek = date.isoWeekday() as 1 | 2 | 3 | 4 | 5 | 6 | 7;
   return t(`calendar.DayOfWeek${dayOfWeek}`);
 };
 
 export const GetMonthName = (date: dayjs.Dayjs, t: TFunction): string => {
-  const month = date.format('M');
+  const month = date.format('M') as '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | '11' | '12';
   const year = date.format('YYYY');
   return `${t(`calendar.Month${month}`)} - ${year}`;
 };

@@ -19,7 +19,6 @@ import { SpinnerDiv } from '../../styled/styled';
 import EventSelectorWizardStep0Input from './EventSelectorWizardStep0Input';
 import EventSelectorWizardStep1ChooseRace from './EventSelectorWizardStep1ChooseRace';
 
-const { Step } = Steps;
 const StyledFullWidth = styled.div`
   width: 100%;
   padding-bottom: 8px;
@@ -33,7 +32,7 @@ const EventSelectorWizard = observer(() => {
   const [nextStepValid, setNextStepValid] = useState(true);
   const [contentOffsetHeight, setContentOffsetHeight] = useState(0);
   const stepsRef = useRef<HTMLDivElement>(null);
-  const { height: stepsHeight } = useSize(stepsRef, ['height'], 'offset');
+  const { height: stepsHeight } = useSize(stepsRef, false, true, 'offset');
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
   const eventSelectorWizardModel = useMemo(() => new EventSelectorWizardModel(getLocalStorage()), []);
@@ -149,10 +148,10 @@ const EventSelectorWizard = observer(() => {
     >
       <StyledModalContent>
         <StyledFullWidth ref={stepsRef}>
-          <Steps current={wizardStep}>
-            <Step key="EventSelectorWizardModalStep0" title={t('results.Step0Input')} />
-            <Step key="EventSelectorWizardModalStep1" title={t('results.Step1ChooseRace')} />
-          </Steps>
+          <Steps
+            current={wizardStep}
+            items={[{ title: t('results.Step0Input') }, { title: t('results.Step1ChooseRace') }]}
+          />
         </StyledFullWidth>
         {wizardStep === 0 ? (
           <EventSelectorWizardStep0Input

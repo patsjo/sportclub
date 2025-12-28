@@ -44,7 +44,7 @@ const InfiniteScroll = observer(
     const [hasMore, setHasMore] = useState(true);
     const loadingRef = useRef(false);
     const divScrollRef = useRef<HTMLDivElement>(null);
-    const scrollComponent: React.RefObject<HTMLDivElement> = ref || divScrollRef;
+    const scrollComponent: React.RefObject<HTMLDivElement | null> = ref || divScrollRef;
 
     const eventListenerOptions = useCallback(
       (): EventListenerOptions => ({

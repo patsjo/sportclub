@@ -86,6 +86,7 @@ const NewsItem = observer(({ ref, newsObject }: INewsItemProps) => {
 
   return newsModule ? (
     <FadeOutItem
+      key={`news-fadeoutitem-${newsObject.id}`}
       ref={ref}
       module={newsModule}
       content={
