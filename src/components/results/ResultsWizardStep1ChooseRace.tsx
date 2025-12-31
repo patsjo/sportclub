@@ -99,6 +99,7 @@ const ResultWizardStep1ChooseRace = observer(
 
     useEffect(() => {
       const fetchData = async () => {
+        setLoaded(false);
         setTotal(5);
         setProcessed(0);
         setCurrentEvent(t('results.loadSavedResults'));
@@ -442,12 +443,13 @@ const ResultWizardStep1ChooseRace = observer(
         }
       };
 
-      fetchData().catch(console.error);
+      if (!loaded && visible) fetchData().catch(console.error);
     }, [
       clubModel.eventor,
       clubModel.eventorCorsProxy,
       clubModel.modules,
       clubModel.raceClubs,
+      loaded,
       onFailed,
       raceWizardModel.queryEndDate,
       raceWizardModel.queryForEventWithNoEntry,
@@ -456,7 +458,8 @@ const ResultWizardStep1ChooseRace = observer(
       raceWizardModel.selectedEventorId,
       raceWizardModel.selectedEventorRaceId,
       sessionModel.authorizationHeader,
-      t
+      t,
+      visible
     ]);
 
     useEffect(() => {
@@ -466,11 +469,18 @@ const ResultWizardStep1ChooseRace = observer(
           ? oldEvents.map(
               (e): IResultEvent => ({
                 ...e,
+                eventId:
+                  raceWizardModel.importedIds.find(imp => imp.prevEventId != null && imp.prevEventId === e.eventId)
+                    ?.eventId ?? e.eventId,
                 alreadySaved:
-                  e.alreadySaved || (e.eventorRaceId != null && raceWizardModel.importedIds.includes(e.eventorRaceId))
+                  e.alreadySaved ||
+                  (e.eventorRaceId != null &&
+                    raceWizardModel.importedIds.some(imp => imp.eventorRaceId === e.eventorRaceId))
               })
             )
-          : oldEvents.filter(e => !e.eventorRaceId || !raceWizardModel.importedIds.includes(e.eventorRaceId))
+          : oldEvents.filter(
+              e => !e.eventorRaceId || !raceWizardModel.importedIds.some(imp => imp.eventorRaceId === e.eventorRaceId)
+            )
       );
     }, [raceWizardModel.importedIds, raceWizardModel.importedIds.length, raceWizardModel.queryIncludeExisting]);
 

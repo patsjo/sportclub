@@ -398,7 +398,10 @@ const okorion: IMobxClubModelProps = {
   sports: ['Orientering'],
   eventor: {
     organisationId: 288,
-    districtOrganisationId: 7
+    districtOrganisationId: 7,
+    defaultOrganisationIdsNearbyAndClub: ['288', '310', '2698', '204', '284', '596', '540'],
+    defaultParentOrganisationIdsNational: [],
+    defaultParentOrganisationIdsDistrict: ['2', '7', '12', '16']
   },
   corsProxy: 'https://okorion.com/proxy.php?csurl=',
   eventorCorsProxy: 'https://okorion.com/eventorProxyWithCache.php',
@@ -451,7 +454,7 @@ const okorion: IMobxClubModelProps = {
         height: 103
       },
       url: 'https://www.ey.com/sv_se',
-      active: true
+      active: false
     },
     {
       name: 'eye do',
@@ -564,6 +567,16 @@ const okorion: IMobxClubModelProps = {
       active: true
     },
     {
+      name: 'Projektbyggaren ',
+      logo: {
+        url: 'https://okorion.com/images/sponsors/projektbyggaren.png',
+        width: 1623,
+        height: 201
+      },
+      url: 'https://projektbyggaren.se/',
+      active: true
+    },
+    {
       name: 'Roxtec',
       logo: {
         url: 'https://okorion.com/images/sponsors/roxtec.svg',
@@ -582,6 +595,16 @@ const okorion: IMobxClubModelProps = {
       },
       url: 'https://sokigo.com/',
       active: false
+    },
+    {
+      name: 'Sparbanken Eken',
+      logo: {
+        url: 'https://okorion.com/images/sponsors/sparbanken_eken.png',
+        width: 3307,
+        height: 715
+      },
+      url: 'https://www.sparbankeneken.se/',
+      active: true
     },
     {
       name: 'Stensborgs VVS',

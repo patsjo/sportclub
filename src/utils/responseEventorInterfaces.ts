@@ -219,6 +219,10 @@ export interface IEventorEventRace {
   EventCenterPosition: IEventorPosition;
 }
 
+export interface IEventorOrganisations {
+  Organisation: IEventorOrganisation[];
+}
+
 export interface IEventorOrganisation {
   OrganisationId: string;
   Name: string;
@@ -230,7 +234,7 @@ export interface IEventorOrganisation {
       value: string;
     };
   };
-  ParentOrganisation: {
+  ParentOrganisation?: {
     OrganisationId: string;
   };
   ModifyDate: IEventorDateTime;

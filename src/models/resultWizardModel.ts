@@ -152,7 +152,7 @@ export interface IRaceWizardProps {
   selectedIsRelay: boolean;
   raceEvent?: IRaceEventProps;
   raceWinnerResults: IWinnerResultProps[];
-  importedIds: number[];
+  importedIds: { eventId: number; eventorRaceId?: number; prevEventId?: number }[];
 }
 
 export interface IRaceWizard extends Omit<IRaceWizardProps, 'raceEvent' | 'raceWinnerResults'> {
@@ -178,7 +178,7 @@ export interface IRaceWizard extends Omit<IRaceWizardProps, 'raceEvent' | 'raceW
   setRaceEvent: (value: IRaceEventProps | null) => void;
   setRaceWinnerResults: (values: IWinnerResultProps[]) => void;
   addRaceWinnerResult: (value: Omit<IWinnerResultProps, 'secondsPerKilometer' | 'timePerKilometer'>) => void;
-  addImportedId: (id: number) => void;
+  addImportedRace: (event: IRaceEventProps, prevEventId: number | undefined) => void;
   raceWinnerResultOptions: IOption[];
 }
 
@@ -198,7 +198,7 @@ export class RaceWizard implements IRaceWizard {
   selectedIsRelay = false;
   raceEvent?: IRaceEvent;
   raceWinnerResults: IWinnerResult[] = [];
-  importedIds: number[] = [];
+  importedIds: { eventId: number; eventorRaceId?: number; prevEventId?: number }[] = [];
 
   constructor(options: Partial<IRaceWizardProps>) {
     if (options) Object.assign(this, options);
@@ -225,7 +225,7 @@ export class RaceWizard implements IRaceWizard {
       setRaceEvent: action.bound,
       setRaceWinnerResults: action.bound,
       addRaceWinnerResult: action.bound,
-      addImportedId: action.bound,
+      addImportedRace: action.bound,
       raceWinnerResultOptions: computed
     });
   }
@@ -276,8 +276,11 @@ export class RaceWizard implements IRaceWizard {
     this.raceWinnerResults = [...this.raceWinnerResults, newWinnerResult];
   }
 
-  addImportedId(id: number) {
-    this.importedIds = [...this.importedIds, id];
+  addImportedRace(event: IRaceEventProps, prevEventId: number | undefined) {
+    this.importedIds = [
+      ...this.importedIds,
+      { eventId: event.eventId, eventorRaceId: event.eventorRaceId ?? undefined, prevEventId }
+    ];
   }
 
   get raceWinnerResultOptions() {

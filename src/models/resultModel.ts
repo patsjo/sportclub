@@ -361,7 +361,7 @@ export class RaceClubs implements IRaceClubs {
     return (
       eventClassification?.classClassifications.map(
         (cc): IOption => ({
-          code: cc.classClassificationId.toString(),
+          code: cc.classClassificationId,
           description: cc.description
         })
       ) ?? []

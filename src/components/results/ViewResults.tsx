@@ -858,16 +858,16 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
           {isIndividual ? (
             <FormItem name="Competitor" label={t('results.Competitor')}>
               <FormSelect
-                showSearch
+                showSearch={{
+                  optionFilterProp: 'children',
+                  filterOption: (input, option) =>
+                    option!.label!.toString().toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }}
                 disabled={loading}
                 style={{ maxWidth: 600, width: '100%' }}
                 popupMatchSelectWidth={false}
                 options={
                   loading || !clubModel.raceClubs ? [] : (clubModel.raceClubs.selectedClub?.competitorsOptions ?? [])
-                }
-                optionFilterProp="children"
-                filterOption={(input, option) =>
-                  option!.label!.toString().toLowerCase().indexOf(input.toLowerCase()) >= 0
                 }
                 onChange={competitorId => updateCompetitor(year, competitorId)}
               />
@@ -875,15 +875,15 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
           ) : (
             <FormItem name="Club" label={t('results.Step1ChooseRace')}>
               <FormSelect
-                showSearch
+                showSearch={{
+                  optionFilterProp: 'children',
+                  filterOption: (input, option) =>
+                    option!.label!.toString().toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }}
                 disabled={loading}
                 style={{ maxWidth: 600, width: '100%' }}
                 popupMatchSelectWidth={false}
                 options={eventOptions}
-                optionFilterProp="children"
-                filterOption={(input, option) =>
-                  option!.label!.toString().toLowerCase().indexOf(input.toLowerCase()) >= 0
-                }
                 onChange={eventId => updateEvent(eventId)}
               />
             </FormItem>

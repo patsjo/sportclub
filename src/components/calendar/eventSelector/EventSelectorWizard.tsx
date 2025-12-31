@@ -13,6 +13,7 @@ import {
 import { IRaceClubsProps } from '../../../models/resultModel';
 import { PostJsonData } from '../../../utils/api';
 import { useMobxStore } from '../../../utils/mobxStore';
+import { IEventorOrganisation, IEventorOrganisations } from '../../../utils/responseEventorInterfaces';
 import { useSize } from '../../../utils/useSize';
 import FullScreenWizard from '../../styled/FullscreenWizard';
 import { SpinnerDiv } from '../../styled/styled';
@@ -31,11 +32,15 @@ const EventSelectorWizard = observer(() => {
   const [wizardStep, setWizardStep] = useState(-1);
   const [nextStepValid, setNextStepValid] = useState(true);
   const [contentOffsetHeight, setContentOffsetHeight] = useState(0);
+  const [eventorOrganisations, setEventorOrganisations] = useState<IEventorOrganisation[]>([]);
   const stepsRef = useRef<HTMLDivElement>(null);
   const { height: stepsHeight } = useSize(stepsRef, false, true, 'offset');
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
-  const eventSelectorWizardModel = useMemo(() => new EventSelectorWizardModel(getLocalStorage()), []);
+  const eventSelectorWizardModel = useMemo(
+    () => new EventSelectorWizardModel(getLocalStorage(clubModel.eventor)),
+    [clubModel.eventor]
+  );
   const navigate = useNavigate();
 
   const next = useCallback(() => {
@@ -100,22 +105,32 @@ const EventSelectorWizard = observer(() => {
   useEffect(() => {
     if (loaded) return;
     const url = clubModel.modules.find(module => module.name === 'Results')?.queryUrl;
-    if (!url) return;
+    if (!url || !clubModel.eventor?.organisationsUrl) return;
 
-    PostJsonData<IRaceClubsProps>(
+    const clubsPromise = PostJsonData<IRaceClubsProps>(
       url,
       {
         iType: 'CLUBS'
       },
       true,
       sessionModel.authorizationHeader
-    )
-      .then(clubsJson => {
+    );
+    const organisationsPromise = PostJsonData<IEventorOrganisations>(
+      clubModel.eventorCorsProxy,
+      {
+        csurl: encodeURIComponent(clubModel.eventor.organisationsUrl + '?includeProperties=false')
+      },
+      true
+    );
+
+    Promise.all([clubsPromise, organisationsPromise])
+      .then(([clubsJson, organisationsJson]) => {
         if (clubsJson) {
           clubModel.setRaceClubs(clubsJson);
           setWizardStep(0);
           setLoaded(true);
         }
+        setEventorOrganisations(organisationsJson?.Organisation ?? []);
       })
       .catch(e => {
         if (e?.message) message.error(e.message);
@@ -157,12 +172,14 @@ const EventSelectorWizard = observer(() => {
           <EventSelectorWizardStep0Input
             height={Math.max(228, contentOffsetHeight - (stepsHeight ?? 32))}
             eventSelectorWizardModel={eventSelectorWizardModel}
+            eventorOrganisations={eventorOrganisations}
           />
         ) : null}
         {wizardStep >= 1 ? (
           <EventSelectorWizardStep1ChooseRace
             height={Math.max(128, contentOffsetHeight - (stepsHeight ?? 32))}
             eventSelectorWizardModel={eventSelectorWizardModel}
+            eventorOrganisations={eventorOrganisations}
             visible={wizardStep === 1}
             onValidate={onValidate}
             onFailed={prev}

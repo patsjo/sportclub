@@ -23,8 +23,16 @@ const InvoiceWizardStep0Input = observer(({ onMount }: IInvoiceWizardStep0InputP
 
   useEffect(() => {
     if (form) {
-      form.validateFields();
-      onMount?.(form);
+      const run = async () => {
+        try {
+          await form.validateFields();
+          onMount?.(form);
+        } catch {
+          // validation failed — safe to ignore or handle
+        }
+      };
+
+      run();
     }
   }, [onMount, form]);
 

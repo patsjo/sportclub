@@ -10,6 +10,7 @@
 //# Date        By      Description                          #
 //# ----------  ------  ------------------------------------ #
 //# 2021-08-24  PatSjo  Initial version                      #
+//# 2025-12-30  PatSjo  Initial version                      #
 //############################################################
 
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/functions.php");
@@ -93,8 +94,7 @@ if (isset($input->noJsonConvert) && $input->noJsonConvert == true) {
 }
 
 // convert xml to json
-$response_content = str_replace(array("\n", "\r", "\t"), '', $response_content);
-$response_content = trim(str_replace('"', "'", $response_content));
+$response_content = trim(str_replace(array("\n", "\r", "\t"), '', $response_content));
 $response_content = str_replace('<eventor:', "<", $response_content);
 $response_content = str_replace('</eventor:', "</", $response_content);
 $simpleXml = simplexml_load_string($response_content);

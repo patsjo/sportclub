@@ -12,15 +12,15 @@ import MaterialIcon from '../materialIcon/MaterialIcon';
 import NewsEdit from './NewsEdit';
 
 interface IBannerHolderProps {
-  hasImage: boolean;
+  'has-image': boolean;
   theme: IThemeProps;
 }
 const BannerHolder = styled.div<IBannerHolderProps>`
-  background-color: ${props => (props.hasImage ? 'inherit' : props.theme.palette.primary.main)};
+  background-color: ${props => (props['has-image'] ? 'inherit' : props.theme.palette.primary.main)};
   border-radius: 8px;
-  color: ${props => (props.hasImage ? 'inherit' : props.theme.palette.primary.contrastText)};
-  padding: ${props => (props.hasImage ? '0' : '6px')};
-  text-align: ${props => (props.hasImage ? 'center' : 'inherit')};
+  color: ${props => (props['has-image'] ? 'inherit' : props.theme.palette.primary.contrastText)};
+  padding: ${props => (props['has-image'] ? '0' : '6px')};
+  text-align: ${props => (props['has-image'] ? 'center' : 'inherit')};
   margin-bottom: 4px;
 `;
 
@@ -119,7 +119,7 @@ const BannerItem = observer(({ ref, newsObject }: IBannerItemProps) => {
       paddingBottom={0}
       module={newsModule}
       content={
-        <BannerHolder hasImage={Image != null}>
+        <BannerHolder has-image={Image != null}>
           {Image ? Image : <NewsHeader>{newsObject.header}</NewsHeader>}
         </BannerHolder>
       }
@@ -153,7 +153,7 @@ const BannerItem = observer(({ ref, newsObject }: IBannerItemProps) => {
     />
   ) : (
     <a href={newsObject.link ? newsObject.link : undefined} target="_blank" rel="noopener noreferrer">
-      <BannerHolder hasImage={Image != null}>
+      <BannerHolder has-image={Image != null}>
         {Image ? Image : <NewsHeader>{newsObject.header}</NewsHeader>}
       </BannerHolder>
     </a>

@@ -49,6 +49,7 @@ const InvoiceWizardStep1ChooseRace = observer(
     useEffect(() => {
       const url = clubModel.modules.find(module => module.name === 'Results')?.queryUrl;
       if (!url) return;
+      if (loaded || !visible) return;
 
       const queryData = {
         iType: 'EVENTS',
@@ -94,11 +95,13 @@ const InvoiceWizardStep1ChooseRace = observer(
     }, [
       clubModel.modules,
       clubModel.raceClubs?.selectedClub?.clubId,
+      loaded,
       onFailed,
       raceWizardModel.queryEndDate,
       raceWizardModel.queryIncludeExisting,
       raceWizardModel.queryStartDate,
-      sessionModel.authorizationHeader
+      sessionModel.authorizationHeader,
+      visible
     ]);
 
     useEffect(() => {
@@ -108,10 +111,17 @@ const InvoiceWizardStep1ChooseRace = observer(
           ? oldEvents.map(
               (e): IInvoiceEvent => ({
                 ...e,
-                invoiceVerified: e.invoiceVerified || raceWizardModel.importedIds.includes(e.eventId)
+                eventId:
+                  raceWizardModel.importedIds.find(imp => imp.prevEventId != null && imp.prevEventId === e.eventId)
+                    ?.eventId ?? e.eventId,
+                invoiceVerified:
+                  e.invoiceVerified ||
+                  raceWizardModel.importedIds.some(imp => imp.prevEventId != null && imp.prevEventId === e.eventId)
               })
             )
-          : oldEvents.filter(e => !raceWizardModel.importedIds.includes(e.eventId))
+          : oldEvents.filter(
+              e => !raceWizardModel.importedIds.some(imp => imp.prevEventId != null && imp.prevEventId === e.eventId)
+            )
       );
     }, [raceWizardModel.importedIds, raceWizardModel.importedIds.length, raceWizardModel.queryIncludeExisting]);
 

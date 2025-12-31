@@ -520,7 +520,10 @@ const ResultsFees = observer(() => {
         <FormItem name="Competitor" label={`${t('results.Competitor')}/${t('users.FamilySelect')}`}>
           <FormSelect
             allowClear
-            showSearch
+            showSearch={{
+              optionFilterProp: 'children',
+              filterOption: (input, option) => option!.label!.toString().toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }}
             disabled={loading}
             style={{ maxWidth: 600, minWidth: 200 }}
             popupMatchSelectWidth={false}
@@ -532,8 +535,6 @@ const ResultsFees = observer(() => {
                     description: `${fee.firstName} ${fee.lastName}`
                   })) ?? [])
             }
-            optionFilterProp="children"
-            filterOption={(input, option) => option!.label!.toString().toLowerCase().indexOf(input.toLowerCase()) >= 0}
             onChange={key => setFee(JSON.parse(key))}
           />
         </FormItem>

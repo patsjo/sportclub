@@ -165,7 +165,7 @@ export interface ISponsorProps {
   active: boolean;
 }
 
-interface IEventorProps {
+export interface IEventorProps {
   url?: string;
   eventsUrl?: string;
   organisationUrl?: string;
@@ -182,12 +182,16 @@ interface IEventorProps {
   organisationId: number;
   districtOrganisationId: number;
   oRingenOrganisationId?: number;
+  defaultParentOrganisationIdsNational: string[];
+  defaultParentOrganisationIdsDistrict: string[];
+  defaultOrganisationIdsNearbyAndClub: string[];
 }
 
 class Eventor implements IEventorProps {
   url = 'https://eventor.orientering.se/Events';
   eventsUrl = 'https://eventor.orientering.se/api/events';
   organisationUrl = 'https://eventor.orientering.se/api/organisation/';
+  organisationsUrl = 'https://eventor.orientering.se/api/organisations';
   entryFeeUrl = 'https://eventor.orientering.se/api/entryfees/events/';
   entriesUrl = 'https://eventor.orientering.se/api/entries';
   startUrl = 'https://eventor.orientering.se/api/starts/organisation';
@@ -201,6 +205,9 @@ class Eventor implements IEventorProps {
   organisationId = 0;
   districtOrganisationId = 0;
   oRingenOrganisationId = 611;
+  defaultParentOrganisationIdsNational = [];
+  defaultParentOrganisationIdsDistrict = [];
+  defaultOrganisationIdsNearbyAndClub = [];
 
   constructor(options?: Partial<IEventorProps>) {
     if (options) Object.assign(this, options);

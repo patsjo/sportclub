@@ -23,8 +23,16 @@ const ResultWizardStep0Input = observer(({ onMount }: IResultWizardStep0InputPro
 
   useEffect(() => {
     if (form) {
-      form.validateFields();
-      onMount?.(form);
+      const run = async () => {
+        try {
+          await form.validateFields();
+          onMount?.(form);
+        } catch {
+          // validation failed — safe to ignore or handle
+        }
+      };
+
+      run();
     }
   }, [onMount, form]);
 

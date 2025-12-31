@@ -1,4 +1,4 @@
-import { DatePicker, Form, InputNumber } from 'antd';
+import { DatePicker, Form, InputNumber, Select, SelectProps } from 'antd';
 import { FormInstance } from 'antd/lib/form';
 import dayjs from 'dayjs';
 import { observer } from 'mobx-react';
@@ -9,6 +9,7 @@ import { IEventSelectorWizard, ILocalStorageEventSelectorWizard } from '../../..
 import { IGraphic } from '../../../models/graphic';
 import { dateFormat, errorRequiredField, warningIncludeAll } from '../../../utils/formHelper';
 import { useMobxStore } from '../../../utils/mobxStore';
+import { IEventorOrganisation } from '../../../utils/responseEventorInterfaces';
 import FormItem from '../../formItems/FormItem';
 import OSMOrienteeringMap from '../../map/OSMOrienteeringMap';
 
@@ -21,7 +22,7 @@ interface IMapContainerProps {
 const MapContainer = styled.div<IMapContainerProps>`
   float: right;
   height: ${({ height }) => height}px;
-  width: calc(100% - 300px);
+  width: calc(100% - 400px);
 `;
 
 const StyledFullWidth = styled.div`
@@ -33,27 +34,92 @@ interface IEventSelectorWizardStep0FormProps extends Omit<
   'queryStartDate' | 'queryEndDate'
 > {
   queryDateRange: [dayjs.Dayjs, dayjs.Dayjs];
+  eventorIds: string[];
 }
 
 interface IEventSelectorWizardStep0InputProps {
   eventSelectorWizardModel: IEventSelectorWizard;
+  eventorOrganisations: IEventorOrganisation[];
   height: number;
   onMount?: (form: FormInstance<IEventSelectorWizardStep0FormProps>) => void;
 }
 const EventSelectorWizardStep0Input = observer(
-  ({ eventSelectorWizardModel, height, onMount }: IEventSelectorWizardStep0InputProps) => {
+  ({ eventSelectorWizardModel, eventorOrganisations, height, onMount }: IEventSelectorWizardStep0InputProps) => {
     const { t } = useTranslation();
     const { clubModel } = useMobxStore();
     const [form] = Form.useForm<IEventSelectorWizardStep0FormProps>();
     const [mounted, setMounted] = useState(false);
     const formId = useMemo(() => 'eventSelectorWizardForm' + Math.floor(Math.random() * 10000000000000000), []);
+    const parentOrganisationIdsNationalOptions: SelectProps['options'] = useMemo(() => {
+      return eventorOrganisations
+        .filter(
+          org =>
+            org.OrganisationId === '650' ||
+            org.OrganisationId === '1' ||
+            (org.ParentOrganisation?.OrganisationId === '1' && org.OrganisationTypeId === '2')
+        )
+        .sort((a, b) =>
+          a.OrganisationId === '650'
+            ? -1
+            : a.OrganisationId === '1'
+              ? -1
+              : b.OrganisationId === '650'
+                ? 1
+                : b.OrganisationId === '1'
+                  ? 1
+                  : a.Name.localeCompare(b.Name)
+        )
+        .map(org => ({
+          value: org.OrganisationId,
+          label: org.Name
+        }));
+    }, [eventorOrganisations]);
+
+    const parentOrganisationIdsDistrictOptions: SelectProps['options'] = useMemo(() => {
+      return eventorOrganisations
+        .filter(org => org.ParentOrganisation?.OrganisationId === '1' && org.OrganisationTypeId === '2')
+        .sort((a, b) => a.Name.localeCompare(b.Name))
+        .map(org => ({
+          value: org.OrganisationId,
+          label: org.Name
+        }));
+    }, [eventorOrganisations]);
+
+    const organisationIdsNearbyAndClubOptions: SelectProps['options'] = useMemo(() => {
+      return eventorOrganisations
+        .filter(
+          org =>
+            (eventSelectorWizardModel.parentOrganisationIdsDistrict.length === 0 ||
+              eventSelectorWizardModel.parentOrganisationIdsDistrict.some(
+                district => district === org.ParentOrganisation?.OrganisationId
+              ) ||
+              eventSelectorWizardModel.organisationIdsNearbyAndClub.some(club => club === org.OrganisationId)) &&
+            org.OrganisationTypeId === '3'
+        )
+        .sort((a, b) => a.Name.localeCompare(b.Name))
+        .map(org => ({
+          value: org.OrganisationId,
+          label: org.Name
+        }));
+    }, [
+      eventSelectorWizardModel.parentOrganisationIdsDistrict,
+      eventSelectorWizardModel.organisationIdsNearbyAndClub,
+      eventorOrganisations
+    ]);
 
     useEffect(() => {
       if (!mounted && form) {
         setMounted(true);
-        // To disable next button at the beginning.
-        form.validateFields().then();
-        onMount?.(form);
+        const run = async () => {
+          try {
+            await form.validateFields();
+            onMount?.(form);
+          } catch {
+            // validation failed — safe to ignore or handle
+          }
+        };
+
+        run();
       }
     }, [mounted, onMount, form]);
 
@@ -142,8 +208,13 @@ const EventSelectorWizardStep0Input = observer(
             queryDateRange: [eventSelectorWizardModel.queryStartDate, eventSelectorWizardModel.queryEndDate],
             maxDistanceNational: eventSelectorWizardModel.maxDistanceNational,
             maxDistanceDistrict: eventSelectorWizardModel.maxDistanceDistrict,
-            maxDistanceNearbyAndClub: eventSelectorWizardModel.maxDistanceNearbyAndClub
+            maxDistanceNearbyAndClub: eventSelectorWizardModel.maxDistanceNearbyAndClub,
+            parentOrganisationIdsNational: eventSelectorWizardModel.parentOrganisationIdsNational,
+            parentOrganisationIdsDistrict: eventSelectorWizardModel.parentOrganisationIdsDistrict,
+            organisationIdsNearbyAndClub: eventSelectorWizardModel.organisationIdsNearbyAndClub,
+            eventorIds: []
           }}
+          styles={{ content: { paddingRight: 10 } }}
         >
           <FormItem
             name="queryDateRange"
@@ -230,6 +301,40 @@ const EventSelectorWizardStep0Input = observer(
               max={MaxDistance}
               step={10}
               onChange={(value: number | null) => eventSelectorWizardModel.setMaxDistanceNearbyAndClub(value ?? null)}
+            />
+          </FormItem>
+          <FormItem name="parentOrganisationIdsNational" label={t('results.parentOrganisationIdsNational')}>
+            <Select
+              allowClear
+              popupMatchSelectWidth={false}
+              mode="multiple"
+              options={parentOrganisationIdsNationalOptions}
+              onChange={(values: string[]) => eventSelectorWizardModel.setParentOrganisationIdsNational(values)}
+            />
+          </FormItem>
+          <FormItem name="parentOrganisationIdsDistrict" label={t('results.parentOrganisationIdsDistrict')}>
+            <Select
+              allowClear
+              popupMatchSelectWidth={false}
+              mode="multiple"
+              options={parentOrganisationIdsDistrictOptions}
+              onChange={(values: string[]) => eventSelectorWizardModel.setParentOrganisationIdsDistrict(values)}
+            />
+          </FormItem>
+          <FormItem name="organisationIdsNearbyAndClub" label={t('results.organisationIdsNearbyAndClub')}>
+            <Select
+              allowClear
+              popupMatchSelectWidth={false}
+              mode="multiple"
+              options={organisationIdsNearbyAndClubOptions}
+              onChange={(values: string[]) => eventSelectorWizardModel.setOrganisationIdsNearbyAndClub(values)}
+            />
+          </FormItem>
+          <FormItem name="eventorIds" label={t('results.includeEventorIds')}>
+            <Select
+              mode="tags"
+              style={{ width: '100%' }}
+              onChange={(values: string[]) => eventSelectorWizardModel.setEventorIds(values)}
             />
           </FormItem>
         </Form>

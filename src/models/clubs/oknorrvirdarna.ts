@@ -117,7 +117,10 @@ const varendgn: IMobxClubModelProps = {
   sports: ['Orientering'],
   eventor: {
     organisationId: 281,
-    districtOrganisationId: 2
+    districtOrganisationId: 2,
+    defaultOrganisationIdsNearbyAndClub: ['281', '584', '449', '450', '112', '182', '185'],
+    defaultParentOrganisationIdsNational: [],
+    defaultParentOrganisationIdsDistrict: ['2', '3', '7', '12', '16', '24']
   },
   corsProxy: 'https://oknorrvirdarna.se/proxy.php?csurl=',
   eventorCorsProxy: 'https://oknorrvirdarna.se/eventorProxyWithCache.php',

@@ -92,7 +92,6 @@ const Columns = ({ children }: IColumnsProps) => {
     setContainers(refs.current.filter(Boolean) as HTMLDivElement[]);
   }, []);
 
-  console.log('Columns render', { columns, childDistribution });
   return (
     <StyledColumns key="columns">
       {allColumns.map((_, i) => (

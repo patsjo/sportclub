@@ -39,7 +39,7 @@ const ColorOptionContent = styled.div<IColorOptionContentProps>`
   height: 18px;
   width: 30px;
   border: black 1px solid;
-  margin-top: 6px;
+  margin-top: 1px;
 `;
 
 export interface IExtendedRaceResult extends IRaceResultProps {
@@ -156,12 +156,12 @@ const EditResultIndividual = ({
             ]}
           >
             <FormSelect
-              showSearch
+              showSearch={{
+                optionFilterProp: 'children',
+                filterOption: (input, option) =>
+                  option!.label!.toString().toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }}
               disabled={true}
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option!.label!.toString().toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
               options={competitorsOptions}
               onChange={(code: number) => {
                 onChange({ competitorId: code == null ? -1 : code });
@@ -195,13 +195,14 @@ const EditResultIndividual = ({
                   sessionModel
                 )
                   .then(competitor => {
+                    if (!competitor) return;
                     const changes: Partial<IExtendedRaceResult> = {
-                      competitorId: competitor ? competitor.competitorId : -1,
+                      competitorId: competitor.competitorId,
                       feeToClub: GetCompetitorFee(paymentModel, result, age, classClassification)
                     };
                     onChange(changes);
                     form.setFieldsValue(changes);
-                    setAge(competitor ? GetAge(competitor.birthDay, raceDate) : null);
+                    setAge(GetAge(competitor.birthDay, raceDate));
                     form.validateFields(['competitorId', 'feeToClub']);
                   })
                   .catch(error => {
@@ -292,11 +293,7 @@ const EditResultIndividual = ({
             <FormSelect
               allowClear={true}
               options={
-                raceClubs.classClassificationOptions(
-                  result.deviantEventClassificationId
-                    ? (result.deviantEventClassificationId as EventClassificationIdTypes)
-                    : eventClassificationId
-                ) ?? []
+                raceClubs.classClassificationOptions(result.deviantEventClassificationId ?? eventClassificationId) ?? []
               }
               onChange={code => {
                 const classClassificationId = !code ? undefined : parseInt(code);

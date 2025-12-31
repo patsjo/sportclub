@@ -7,7 +7,7 @@ import { MouseEventHandler, useCallback, useEffect, useRef, useState } from 'rea
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { styled } from 'styled-components';
-import { IRaceClubsProps } from '../../models/resultModel';
+import { IRaceClubsProps, IRaceEventProps } from '../../models/resultModel';
 import { IRaceWizard, RaceWizard, getLocalStorage } from '../../models/resultWizardModel';
 import { PostJsonData } from '../../utils/api';
 import { useMobxStore } from '../../utils/mobxStore';
@@ -122,7 +122,7 @@ const ResultsWizard = observer(() => {
   }, [globalStateModel, navigate]);
 
   const save = useCallback(
-    (shouldClose = true, onSuccess = () => {}) => {
+    (shouldClose = true, onSuccess?: (event?: IRaceEventProps) => void) => {
       const { raceEvent } = raceWizardModel.current;
       const raceEventClassification = clubModel.raceClubs?.eventClassifications.find(
         ec => ec.eventClassificationId === raceEvent?.eventClassificationId
@@ -250,7 +250,7 @@ const ResultsWizard = observer(() => {
 
       const snapshot = toJS(raceEvent);
 
-      PostJsonData(
+      PostJsonData<IRaceEventProps>(
         saveUrl,
         {
           ...snapshot,
@@ -261,9 +261,9 @@ const ResultsWizard = observer(() => {
         true,
         sessionModel.authorizationHeader
       )
-        .then(() => {
+        .then(event => {
           setSaving(false);
-          onSuccess();
+          onSuccess?.(event);
           if (shouldClose) onClose();
         })
         .catch(e => {
@@ -282,9 +282,8 @@ const ResultsWizard = observer(() => {
   );
 
   const saveAndNextEvent = useCallback(() => {
-    save(false, () => {
-      if (raceWizardModel.current.raceEvent?.eventorRaceId != null)
-        raceWizardModel.current.addImportedId(raceWizardModel.current.raceEvent?.eventorRaceId);
+    save(false, (event?: IRaceEventProps) => {
+      if (event != null) raceWizardModel.current.addImportedRace(event, raceWizardModel.current.raceEvent?.eventId);
       raceWizardModel.current.setRaceEvent(null);
       raceWizardModel.current.setNumberValueOrNull('selectedEventId', null);
       raceWizardModel.current.setNumberValueOrNull('selectedEventorId', null);

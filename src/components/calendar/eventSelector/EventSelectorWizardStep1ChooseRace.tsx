@@ -8,9 +8,13 @@ import { IEventSelectorWizard } from '../../../models/eventSelectorWizardModel';
 import { PostJsonData } from '../../../utils/api';
 import { useMobxStore } from '../../../utils/mobxStore';
 import { ICalendarEvent } from '../../../utils/responseCalendarInterfaces';
-import { IEventorEvent, IEventorEventRace, IEventorEvents } from '../../../utils/responseEventorInterfaces';
+import {
+  IEventorEvent,
+  IEventorEventRace,
+  IEventorEvents,
+  IEventorOrganisation
+} from '../../../utils/responseEventorInterfaces';
 import { SpinnerDiv, StyledTable } from '../../styled/styled';
-import organisationJson from './eventorOrganisations2020';
 
 const flatten = (list: (IEventorEventRace[] | IEventorEventRace)[]): IEventorEventRace[] =>
   list.reduce(
@@ -44,13 +48,21 @@ interface IStateEvent {
 
 interface IEventSelectorWizardStep1ChooseRaceProps {
   eventSelectorWizardModel: IEventSelectorWizard;
+  eventorOrganisations: IEventorOrganisation[];
   height: number;
   visible: boolean;
   onFailed: () => void;
   onValidate: (valid: boolean) => void;
 }
 const EventSelectorWizardStep1ChooseRace = observer(
-  ({ eventSelectorWizardModel, height, visible, onFailed, onValidate }: IEventSelectorWizardStep1ChooseRaceProps) => {
+  ({
+    eventSelectorWizardModel,
+    eventorOrganisations,
+    height,
+    visible,
+    onFailed,
+    onValidate
+  }: IEventSelectorWizardStep1ChooseRaceProps) => {
     const { t } = useTranslation();
     const { clubModel, sessionModel } = useMobxStore();
     const [loaded, setLoaded] = useState(false);
@@ -73,7 +85,7 @@ const EventSelectorWizardStep1ChooseRace = observer(
         true,
         sessionModel.authorizationHeader
       );
-      const eventsPromise = PostJsonData<IEventorEvents>(
+      const events1Promise = PostJsonData<IEventorEvents>(
         clubModel.eventorCorsProxy,
         {
           csurl: encodeURIComponent(
@@ -87,14 +99,35 @@ const EventSelectorWizardStep1ChooseRace = observer(
         },
         true
       );
-
-      Promise.all([alreadySavedEventsPromise, eventsPromise])
-        .then(([alreadySavedEventsJson, eventsJson]) => {
-          if (eventsJson == null || eventsJson.Event == null) {
-            eventsJson = { Event: [] };
-          } else if (!Array.isArray(eventsJson.Event)) {
-            eventsJson.Event = [eventsJson.Event];
+      const events2Promise = eventSelectorWizardModel.eventorIds.length
+        ? PostJsonData<IEventorEvents>(
+            clubModel.eventorCorsProxy,
+            {
+              csurl: encodeURIComponent(
+                clubModel.eventor.eventsUrl +
+                  '?eventIds=' +
+                  eventSelectorWizardModel.eventorIds.join(',') +
+                  '&includeAttributes=true&includeOrganisationElement=true'
+              )
+            },
+            true
+          )
+        : new Promise((resolve: (value: IEventorEvents) => void) => resolve({ Event: [] }));
+      Promise.all([alreadySavedEventsPromise, events1Promise, events2Promise])
+        .then(([alreadySavedEventsJson, events1Json, events2Json]) => {
+          if (events1Json == null || events1Json.Event == null) {
+            events1Json = { Event: [] };
+          } else if (!Array.isArray(events1Json.Event)) {
+            events1Json.Event = [events1Json.Event];
           }
+          if (events2Json == null || events2Json.Event == null) {
+            events2Json = { Event: [] };
+          } else if (!Array.isArray(events2Json.Event)) {
+            events2Json.Event = [events2Json.Event];
+          }
+          const eventsJson: IEventorEvents = {
+            Event: [...(events1Json.Event as IEventorEvent[]), ...(events2Json.Event as IEventorEvent[])]
+          };
           let calendarEventId = -1;
           const events = flatten((eventsJson.Event as IEventorEvent[]).map(event => event.EventRace))
             .filter(eventRace => eventRace.EventRaceId != null)
@@ -118,8 +151,8 @@ const EventSelectorWizardStep1ChooseRace = observer(
               if (orgId && Array.isArray(orgId)) {
                 orgId = orgId.find(() => true);
               }
-              const org = orgId ? organisationJson.find(o => o.id === orgId) : undefined;
-              const organisationName = org ? org.name : '';
+              const org = orgId ? eventorOrganisations.find(o => o.OrganisationId === orgId) : undefined;
+              const organisationName = org ? org.Name : '';
               const savedCalendarEventId = alreadySaved ? alreadySaved.calendarEventId : calendarEventId--;
               const longitude = eventRace.EventCenterPosition
                 ? parseFloat(eventRace.EventCenterPosition['@attributes'].x)
@@ -140,6 +173,8 @@ const EventSelectorWizardStep1ChooseRace = observer(
                       : ', ' + eventRace.Name)
                 },
                 EventRaceId: eventRace.EventRaceId,
+                parentOrganisationId: org?.ParentOrganisation?.OrganisationId,
+                organisationId: org?.OrganisationId,
                 organisationName,
                 calendarEventId: savedCalendarEventId,
                 longitude,
@@ -154,20 +189,32 @@ const EventSelectorWizardStep1ChooseRace = observer(
             // EventClassificationId: 0 = International, 1 = championchip, 2 = National, 3 = District, 4 = Nearby, 5 = Club, 6 = International
             .filter(
               event =>
+                event.Event.EventRace.RaceDate.Date >= eventSelectorWizardModel.queryStartDate &&
+                event.Event.EventRace.RaceDate.Date <= eventSelectorWizardModel.queryEndDate &&
                 event.Event.EventStatusId !== '10' &&
                 event.Event.EventClassificationId &&
                 (event.calendarEventId > 0 ||
+                  eventSelectorWizardModel.eventorIds.includes(event.Event.EventRace.EventId) ||
                   ['0', '1', '6'].includes(event.Event.EventClassificationId) ||
                   (event.Event.EventClassificationId === '2' &&
                     (eventSelectorWizardModel.maxDistanceNational == null ||
+                      eventSelectorWizardModel.parentOrganisationIdsNational.some(
+                        parentOrgId => parentOrgId === event.parentOrganisationId
+                      ) ||
                       (event.distanceKm !== null &&
                         event.distanceKm <= eventSelectorWizardModel.maxDistanceNational))) ||
                   (event.Event.EventClassificationId === '3' &&
                     (eventSelectorWizardModel.maxDistanceDistrict == null ||
+                      eventSelectorWizardModel.parentOrganisationIdsDistrict.some(
+                        parentOrgId => parentOrgId === event.parentOrganisationId
+                      ) ||
                       (event.distanceKm !== null &&
                         event.distanceKm <= eventSelectorWizardModel.maxDistanceDistrict))) ||
                   (['4', '5'].includes(event.Event.EventClassificationId) &&
                     (eventSelectorWizardModel.maxDistanceNearbyAndClub == null ||
+                      eventSelectorWizardModel.organisationIdsNearbyAndClub.some(
+                        orgId => orgId === event.organisationId
+                      ) ||
                       (event.distanceKm !== null &&
                         event.distanceKm <= eventSelectorWizardModel.maxDistanceNearbyAndClub))))
             )
@@ -207,6 +254,7 @@ const EventSelectorWizardStep1ChooseRace = observer(
           onFailed?.();
         });
     }, [
+      eventorOrganisations,
       eventSelectorWizardModel.queryStartDate,
       eventSelectorWizardModel.queryEndDate,
       clubModel.modules,

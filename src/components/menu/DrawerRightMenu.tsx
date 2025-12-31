@@ -38,6 +38,8 @@ const StyledMenu = styled(Menu)`
 const DrawerRightMenu = observer(() => {
   const { t } = useTranslation();
   const { clubModel, globalStateModel, sessionModel } = useMobxStore();
+  const loggedIn = sessionModel.loggedIn;
+  const isAdmin = sessionModel.isAdmin;
   const [htmEditorLinkform] = Form.useForm<ISaveLinkRequest>();
   const [fileEditorForm] = Form.useForm<IFileUploadRequest>();
   const [folderEditorForm] = Form.useForm<IFolderResponse>();
@@ -60,7 +62,7 @@ const DrawerRightMenu = observer(() => {
             t,
             modal,
             globalStateModel,
-            sessionModel,
+            { ...sessionModel, loggedIn, isAdmin },
             clubModel,
             messageApi
           )
@@ -72,6 +74,8 @@ const DrawerRightMenu = observer(() => {
       globalStateModel,
       htmEditorLinkform,
       htmlEditorMenu,
+      isAdmin,
+      loggedIn,
       messageApi,
       modal,
       navigate,
@@ -134,7 +138,7 @@ const DrawerRightMenu = observer(() => {
               },
               false,
               1,
-              !sessionModel.loggedIn || !sessionModel.isAdmin
+              !loggedIn || !isAdmin
             ),
             getMenuItem(
               'menuItem#newFolder',
@@ -150,7 +154,7 @@ const DrawerRightMenu = observer(() => {
               },
               false,
               1,
-              !sessionModel.loggedIn || !sessionModel.isAdmin
+              !loggedIn || !isAdmin
             )
           ]
         : [],
@@ -161,8 +165,9 @@ const DrawerRightMenu = observer(() => {
       globalStateModel,
       messageApi,
       modal,
-      sessionModel.loggedIn,
-      sessionModel.isAdmin,
+      sessionModel,
+      loggedIn,
+      isAdmin,
       t
     ]
   );

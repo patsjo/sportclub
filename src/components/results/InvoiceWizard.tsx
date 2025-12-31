@@ -6,8 +6,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { styled } from 'styled-components';
-import { IRaceClubsProps } from '../../models/resultModel';
-import { RaceWizard, getLocalStorage } from '../../models/resultWizardModel';
+import { IRaceClubsProps, IRaceEventProps } from '../../models/resultModel';
+import { IRaceWizard, RaceWizard, getLocalStorage } from '../../models/resultWizardModel';
 import { PostJsonData } from '../../utils/api';
 import { useMobxStore } from '../../utils/mobxStore';
 import { ResultWizardStoreProvider } from '../../utils/resultWizardStore';
@@ -27,7 +27,7 @@ const StyledModalContent = styled.div``;
 const InvoiceWizard = observer(() => {
   const { t } = useTranslation();
   const { clubModel, globalStateModel, sessionModel } = useMobxStore();
-  const raceWizardModel = useRef(new RaceWizard(getLocalStorage()));
+  const raceWizardModel = useRef<IRaceWizard>(new RaceWizard(getLocalStorage()));
   const [wizardStep, setWizardStep] = useState(-1);
   const [nextStepValid, setNextStepValid] = useState(true);
   const [contentOffsetHeight, setContentOffsetHeight] = useState(0);
@@ -56,7 +56,7 @@ const InvoiceWizard = observer(() => {
   }, [globalStateModel, navigate]);
 
   const save = useCallback(
-    (shouldClose = true, onSuccess = () => {}) => {
+    (shouldClose = true, onSuccess?: (event?: IRaceEventProps) => void) => {
       const { raceEvent } = raceWizardModel.current;
       const resultsModule = clubModel.modules.find(module => module.name === 'Results');
       const saveUrl = raceEvent?.eventId === -1 ? resultsModule?.addUrl : resultsModule?.updateUrl;
@@ -66,7 +66,7 @@ const InvoiceWizard = observer(() => {
       setSaving(true);
       const snapshot = toJS(raceEvent);
 
-      PostJsonData(
+      PostJsonData<IRaceEventProps>(
         saveUrl,
         {
           ...snapshot,
@@ -77,9 +77,9 @@ const InvoiceWizard = observer(() => {
         true,
         sessionModel.authorizationHeader
       )
-        .then(() => {
+        .then(event => {
           setSaving(false);
-          onSuccess();
+          onSuccess?.(event);
           if (shouldClose) onClose();
         })
         .catch(e => {
@@ -91,9 +91,8 @@ const InvoiceWizard = observer(() => {
   );
 
   const saveAndNextEvent = useCallback(() => {
-    save(false, () => {
-      if (raceWizardModel.current.raceEvent?.eventId != null)
-        raceWizardModel.current.addImportedId(raceWizardModel.current.raceEvent?.eventId);
+    save(false, (event?: IRaceEventProps) => {
+      if (event != null) raceWizardModel.current.addImportedRace(event, raceWizardModel.current.raceEvent?.eventId);
       raceWizardModel.current.setRaceEvent(null);
       raceWizardModel.current.setNumberValueOrNull('selectedEventId', null);
       raceWizardModel.current.setNumberValueOrNull('selectedEventorId', null);

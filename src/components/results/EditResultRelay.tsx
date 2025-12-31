@@ -122,12 +122,12 @@ const EditResultRelay = ({
             ]}
           >
             <FormSelect
-              showSearch
+              showSearch={{
+                optionFilterProp: 'children',
+                filterOption: (input, option) =>
+                  option!.label!.toString().toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }}
               disabled={true}
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option!.label!.toString().toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
               options={competitorsOptions}
               onChange={(code: number) => {
                 onChange({ competitorId: code == null ? -1 : code });
@@ -161,8 +161,9 @@ const EditResultRelay = ({
                   sessionModel
                 )
                   .then(competitor => {
+                    if (!competitor) return;
                     const changes: Partial<IExtendedRaceTeamResult> = {
-                      competitorId: competitor ? competitor.competitorId : -1
+                      competitorId: competitor.competitorId
                     };
                     onChange(changes);
                     form.setFieldsValue(changes);

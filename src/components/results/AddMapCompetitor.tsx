@@ -109,13 +109,13 @@ const AddMapCompetitor = ({
             ]}
           >
             <FormSelect
-              showSearch
+              showSearch={{
+                optionFilterProp: 'children',
+                filterOption: (input, option) =>
+                  option!.label!.toString().toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }}
               style={{ minWidth: 174, maxWidth: 334 }}
               allowClear={true}
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option!.label!.toString().toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
               options={competitorsOptions}
               onChange={(code: number) => {
                 onChange({ competitorId: code == null ? -1 : code });
