@@ -1,4 +1,4 @@
-import { Ref } from 'react';
+import { Ref, RefObject, useLayoutEffect } from 'react';
 import { styled } from 'styled-components';
 
 interface IStyledColumnProps {
@@ -29,12 +29,33 @@ const StyledColumn = styled.div<IStyledColumnProps>`
 `;
 
 interface IColumnProps {
-  ref?: Ref<HTMLDivElement | null>;
+  ref: Ref<HTMLDivElement | null>;
+  columnRefs: RefObject<(HTMLDivElement | null)[]>;
   columns: number;
   index: number;
+  childKeyOrder: (string | number)[];
 }
-const Column = ({ ref, columns, index }: IColumnProps) => (
-  <StyledColumn ref={ref} className="parent" column={index} columns={columns} visible={index < columns} gap={24} />
-);
+const Column = ({ ref, columnRefs, columns, index, childKeyOrder }: IColumnProps) => {
+  useLayoutEffect(() => {
+    const root = columnRefs.current[index];
+    let previous: ChildNode | null = null;
+    if (!root) return;
+
+    for (const key of childKeyOrder) {
+      const el = root.querySelector(`[id="${key}"]`);
+      if (!el) continue;
+
+      if (el.previousSibling !== previous) {
+        root.insertBefore(el, previous?.nextSibling ?? root.firstChild);
+      }
+
+      previous = el;
+    }
+  }, [childKeyOrder, columnRefs, index]);
+
+  return (
+    <StyledColumn ref={ref} className="parent" column={index} columns={columns} visible={index < columns} gap={24} />
+  );
+};
 
 export default Column;

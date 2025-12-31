@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { styled } from 'styled-components';
 import Column from './Column';
 import ColumnItem from './ColumnItem';
@@ -44,8 +44,7 @@ interface IColumnsProps {
 const Columns = ({ children }: IColumnsProps) => {
   const allReactChildren = flatten(children).filter(child => child);
   const oldColumns = useRef(getColumns(getWidth()));
-  const refs = useRef<(HTMLDivElement | null)[]>([]);
-  const [containers, setContainers] = useState<HTMLElement[]>([]);
+  const columnRefs = useRef<(HTMLDivElement | null)[]>(allColumns.map(() => null));
   const [columns, setColumns] = useState(oldColumns.current);
   const [childHeights, setChildHeights] = useState<Record<string | number, number>>({});
   const [childDistribution, setChildDistribution] = useState<IChildColumn[]>([]);
@@ -88,27 +87,25 @@ const Columns = ({ children }: IColumnsProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allReactChildren.map(child => child?.key).join(','), JSON.stringify(childHeights), columns]);
 
-  useLayoutEffect(() => {
-    setContainers(refs.current.filter(Boolean) as HTMLDivElement[]);
-  }, []);
-
   return (
     <StyledColumns key="columns">
       {allColumns.map((_, i) => (
         <Column
           key={`column#${i}`}
           ref={el => {
-            refs.current[i] = el;
+            columnRefs.current[i] = el;
           }}
+          columnRefs={columnRefs}
           columns={columns}
           index={i}
+          childKeyOrder={childDistribution.filter(child => child.column === i).map(child => child.key)}
         />
       ))}
       {childDistribution.map(child => (
         <ColumnItem
           key={`columnItem#${child.key}`}
           childKey={child.key}
-          container={containers[child.column ?? 0]}
+          container={columnRefs.current?.[child.column ?? 0]}
           onHeightChange={onHeightChange}
         >
           {child.reactChild}

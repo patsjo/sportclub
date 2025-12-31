@@ -244,7 +244,15 @@ const EventSelectorWizardStep1ChooseRace = observer(
             );
 
           setEvents(events);
-          setSelectedRowKeys(events.map(event => event.calendarEventId).filter(id => id > 0));
+          setSelectedRowKeys(
+            events
+              .filter(
+                event =>
+                  event.calendarEventId > 0 ||
+                  eventSelectorWizardModel.eventorIds.some(id => id === event.eventorId?.toString())
+              )
+              .map(event => event.calendarEventId)
+          );
           setLoaded(true);
           eventSelectorWizardModel.setSelectedEvents(events.filter(event => event.calendarEventId > 0));
           onValidate(true);

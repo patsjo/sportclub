@@ -20,7 +20,13 @@ const ColumnItem = ({ childKey, onHeightChange, children, container }: IColumnIt
 
   if (!container) return null;
 
-  return createPortal(<div ref={ref}>{children}</div>, container, childKey);
+  return createPortal(
+    <div ref={ref} id={childKey?.toString()}>
+      {children}
+    </div>,
+    container,
+    childKey
+  );
 };
 
 export default ColumnItem;
