@@ -1,5 +1,4 @@
-import { Tree } from 'antd';
-import { DataNode } from 'antd/lib/tree';
+import { Tree, TreeProps } from 'antd';
 import { observer } from 'mobx-react';
 import { Collection, Map } from 'ol';
 import { Control } from 'ol/control';
@@ -37,10 +36,10 @@ const StyledControl = styled.div<IStyledControlProps>`
   }
 `;
 
-interface IDataNodeMap extends DataNode {
+type IDataNodeMap = NonNullable<TreeProps['treeData']>[number] & {
   visible: boolean;
   zoomExtent: number[];
-}
+};
 
 const getTreeData = (map: Map, mapLayers?: Collection<BaseLayer>): IDataNodeMap[] => {
   const nodes: IDataNodeMap[] = [];

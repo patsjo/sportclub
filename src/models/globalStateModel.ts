@@ -1,4 +1,4 @@
-import { MessageInstance } from 'antd/lib/message/interface';
+import { message } from 'antd';
 import { action, makeObservable, observable } from 'mobx';
 import { NavigateFunction } from 'react-router-dom';
 import { PostJsonData } from '../utils/api';
@@ -40,7 +40,7 @@ export interface IGlobalStateModel extends Omit<IGlobalStateModelProps, 'news'> 
     htmlEditorModule: IModule | undefined,
     filesModule: IModule | undefined,
     sessionModel: ISessionModel,
-    messageApi: MessageInstance
+    messageApi: ReturnType<typeof message.useMessage>[0]
   ) => Promise<void>;
 }
 
@@ -125,7 +125,7 @@ export class GlobalStateModel implements IGlobalStateModel {
     htmlEditorModule: IModule | undefined,
     filesModule: IModule | undefined,
     sessionModel: ISessionModel,
-    messageApi: MessageInstance
+    messageApi: ReturnType<typeof message.useMessage>[0]
   ) {
     try {
       const menusResponse = htmlEditorModule

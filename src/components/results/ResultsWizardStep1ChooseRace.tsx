@@ -1,5 +1,4 @@
-import { message, Progress, Spin } from 'antd';
-import { ColumnType, TableRowSelection } from 'antd/lib/table/interface';
+import { message, Progress, Spin, TableProps } from 'antd';
 import dayjs from 'dayjs';
 import { observer } from 'mobx-react';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -484,14 +483,14 @@ const ResultWizardStep1ChooseRace = observer(
       );
     }, [raceWizardModel.importedIds, raceWizardModel.importedIds.length, raceWizardModel.queryIncludeExisting]);
 
-    const rowSelection: TableRowSelection<IResultEvent> = {
+    const rowSelection: TableProps<IResultEvent>['rowSelection'] = {
       selectedRowKeys,
       fixed: true,
       onChange: onSelectChange,
       type: 'radio'
     };
 
-    const columns: ColumnType<IResultEvent>[] = [
+    const columns: TableProps<IResultEvent>['columns'] = [
       {
         title: t('results.Date'),
         dataIndex: 'date',

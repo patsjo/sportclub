@@ -1,9 +1,5 @@
 import { LinkOutlined } from '@ant-design/icons';
-import { Form, Input, Select, Switch } from 'antd';
-import { FormInstance } from 'antd/lib/form';
-import { MessageInstance } from 'antd/lib/message/interface';
-import { ModalFuncProps } from 'antd/lib/modal';
-import { HookAPI } from 'antd/lib/modal/useModal';
+import { Form, FormInstance, Input, message, Modal, ModalFuncProps, Select, Switch } from 'antd';
 import { TFunction } from 'i18next';
 import { styled } from 'styled-components';
 import { IGlobalStateModel } from '../../models/globalStateModel';
@@ -28,13 +24,13 @@ const HelpText = styled.div`
 
 export const FileEditorModal = async (
   t: TFunction,
-  modal: HookAPI,
+  modal: ReturnType<typeof Modal.useModal>[0],
   fileId: number,
   form: FormInstance<IFileUploadRequest>,
   globalStateModel: IGlobalStateModel,
   sessionModel: ISessionModel,
   clubModel: IMobxClubModel,
-  messageApi: MessageInstance
+  messageApi: ReturnType<typeof message.useMessage>[0]
 ): Promise<IFileResponse | null | undefined> => {
   const formId = 'fileEditorForm' + Math.floor(Math.random() * 1000000000000000);
   const filesModule = clubModel.modules.find(module => module.name === 'Files');

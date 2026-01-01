@@ -1,6 +1,5 @@
 import { DeleteTwoTone, EditTwoTone, PlusOutlined, UploadOutlined } from '@ant-design/icons';
-import { Table, Tag } from 'antd';
-import type { TableProps } from 'antd/lib/table';
+import { Table, TableProps, Tag } from 'antd';
 import { TFunction } from 'i18next';
 import { MouseEventHandler } from 'react';
 import { styled } from 'styled-components';

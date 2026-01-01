@@ -1,5 +1,4 @@
-import { message, Select, Spin, Tabs } from 'antd';
-import { ColumnType } from 'antd/lib/table';
+import { message, Select, Spin, TableProps, Tabs } from 'antd';
 import dayjs from 'dayjs';
 import { TFunction } from 'i18next';
 import { observer } from 'mobx-react';
@@ -86,8 +85,8 @@ const getColumns = <T extends Record<keyof HasNumberArray<T>, number[]>>(
   columnName: NumberArrayKeys<T>,
   nofColumns: number,
   isTotal = false
-): ColumnType<IColumnProps & T>[] => {
-  const cols: ColumnType<IColumnProps & T>[] = [];
+): TableProps<IColumnProps & T>['columns'] => {
+  const cols: TableProps<IColumnProps & T>['columns'] = [];
   cols.push({
     title: t('results.Position'),
     dataIndex: 'position',

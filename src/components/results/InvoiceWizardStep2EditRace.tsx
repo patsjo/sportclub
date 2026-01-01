@@ -1,5 +1,4 @@
-import { Col, DatePicker, Form, Input, InputNumber, message, Row, Spin, Table } from 'antd';
-import { ColumnType } from 'antd/lib/table';
+import { Col, DatePicker, Form, Input, InputNumber, message, Row, Spin, Table, TableProps } from 'antd';
 import dayjs from 'dayjs';
 import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
@@ -114,7 +113,7 @@ const InvoiceWizardStep2EditRace = observer(
         });
     }, [clubModel.modules, onFailed, onValidate, raceWizardModel, sessionModel.authorizationHeader]);
 
-    const baseColumns: ColumnType<IInvoiceRaceResult>[] = useMemo(
+    const baseColumns: TableProps<IInvoiceRaceResult>['columns'] = useMemo(
       () => [
         {
           title: t('results.Competitor'),
@@ -153,7 +152,7 @@ const InvoiceWizardStep2EditRace = observer(
       [clubModel.raceClubs?.selectedClub, t]
     );
 
-    const serviceFeeColumns: ColumnType<IInvoiceRaceResult>[] = useMemo(
+    const serviceFeeColumns: TableProps<IInvoiceRaceResult>['columns'] = useMemo(
       () => [
         {
           title: t('results.ServiceFeeToClub'),
@@ -225,7 +224,7 @@ const InvoiceWizardStep2EditRace = observer(
       ]
     );
 
-    const columns: ColumnType<IInvoiceRaceResult>[] = useMemo(
+    const columns: TableProps<IInvoiceRaceResult>['columns'] = useMemo(
       () =>
         isRelay
           ? [...baseColumns, ...serviceFeeColumns]

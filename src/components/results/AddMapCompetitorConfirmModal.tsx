@@ -1,5 +1,4 @@
-import { ModalFuncProps } from 'antd/lib/modal';
-import { HookAPI } from 'antd/lib/modal/useModal';
+import { Modal, ModalFuncProps } from 'antd';
 import { TFunction } from 'i18next';
 import { IMobxClubModel } from '../../models/mobxClubModel';
 import { IRaceCompetitor } from '../../models/resultModel';
@@ -8,7 +7,7 @@ import AddMapCompetitor, { IAddLinkCompetitor, INewCompetitorForm } from './AddM
 
 export const AddMapCompetitorConfirmModal = (
   t: TFunction,
-  modal: HookAPI,
+  modal: ReturnType<typeof Modal.useModal>[0],
   competitorId: number,
   personId: string | undefined,
   newCompetitor: INewCompetitorForm,

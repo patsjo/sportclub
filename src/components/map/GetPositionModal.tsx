@@ -1,5 +1,4 @@
-import { ModalFuncProps } from 'antd/lib/modal';
-import { HookAPI } from 'antd/lib/modal/useModal';
+import { Modal, ModalFuncProps } from 'antd';
 import { TFunction } from 'i18next';
 import { toLonLat } from 'ol/proj';
 import { Icon, Style } from 'ol/style';
@@ -12,7 +11,7 @@ import { mapProjection } from './useOpenLayersMap';
 
 export const GetPositionModal = (
   t: TFunction,
-  modal: HookAPI,
+  modal: ReturnType<typeof Modal.useModal>[0],
   longitude: number,
   latitude: number,
   exists: boolean,

@@ -1,4 +1,4 @@
-import { ColumnType } from 'antd/lib/table';
+import { TableProps } from 'antd';
 import JSZip from 'jszip';
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
@@ -20,11 +20,11 @@ export interface IPdfSettings {
   pageMargins: Margins;
 }
 
-export interface IPrintTableColumn<RecordType> extends ColumnType<RecordType> {
+export type IPrintTableColumn<RecordType> = NonNullable<TableProps<RecordType>['columns']>[number] & {
   key: string;
   selected: boolean;
   title: string;
-}
+};
 
 export interface IPrintTable<RecordType> {
   columns: IPrintTableColumn<RecordType>[];

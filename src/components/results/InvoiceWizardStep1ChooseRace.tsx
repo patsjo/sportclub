@@ -1,6 +1,4 @@
-import { message, Spin, Table } from 'antd';
-import { ColumnType } from 'antd/lib/table';
-import { TableRowSelection } from 'antd/lib/table/interface';
+import { message, Spin, Table, TableProps } from 'antd';
 import { observer } from 'mobx-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -125,13 +123,13 @@ const InvoiceWizardStep1ChooseRace = observer(
       );
     }, [raceWizardModel.importedIds, raceWizardModel.importedIds.length, raceWizardModel.queryIncludeExisting]);
 
-    const rowSelection: TableRowSelection<IInvoiceEvent> = {
+    const rowSelection: TableProps<IInvoiceEvent>['rowSelection'] = {
       selectedRowKeys,
       fixed: true,
       onChange: onSelectChange,
       type: 'radio'
     };
-    const columns: ColumnType<IInvoiceEvent>[] = [
+    const columns: TableProps<IInvoiceEvent>['columns'] = [
       {
         title: t('results.Date'),
         dataIndex: 'date',

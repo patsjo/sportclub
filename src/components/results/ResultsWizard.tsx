@@ -1,6 +1,5 @@
 import { LeftOutlined, PlusOutlined, RightOutlined } from '@ant-design/icons';
-import { Button, Modal, Popconfirm, Space, Spin, Steps, Switch, Typography, message } from 'antd';
-import { ModalFuncProps } from 'antd/lib/modal';
+import { Button, Modal, ModalFuncProps, Popconfirm, Space, Spin, Steps, Switch, Typography, message } from 'antd';
 import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
 import { MouseEventHandler, useCallback, useEffect, useRef, useState } from 'react';

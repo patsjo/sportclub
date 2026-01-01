@@ -1,5 +1,5 @@
 import { StarOutlined } from '@ant-design/icons';
-import { HookAPI } from 'antd/lib/modal/useModal';
+import { Modal } from 'antd';
 import { TFunction } from 'i18next';
 import { GenderType } from '../../utils/resultConstants';
 import { StyledTable } from '../styled/styled';
@@ -148,7 +148,7 @@ const columns = [
   }
 ];
 
-export const StarsInfoModal = (t: TFunction, modal: HookAPI, gender: GenderType) =>
+export const StarsInfoModal = (t: TFunction, modal: ReturnType<typeof Modal.useModal>[0], gender: GenderType) =>
   modal.info({
     title: `${t('competitor.Info')} - ${gender === 'MALE' ? t('results.Male') : t('results.FeMale')}`,
     icon: <StarOutlined />,

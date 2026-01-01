@@ -7,15 +7,15 @@ import {
   Input,
   message,
   Modal,
+  ModalFuncProps,
   Popconfirm,
   Row,
   Spin,
   Switch,
+  TableProps,
   Tag,
   Tooltip
 } from 'antd';
-import { ModalFuncProps } from 'antd/lib/modal';
-import { ColumnType } from 'antd/lib/table';
 import dayjs from 'dayjs';
 import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
@@ -1900,7 +1900,7 @@ const ResultWizardStep2EditRace = observer(
       sessionModel.authorizationHeader
     ]);
 
-    const columns: ColumnType<IExtendedRaceResult & { isValid?: boolean }>[] = [
+    const columns: TableProps<IExtendedRaceResult & { isValid?: boolean }>['columns'] = [
       {
         title: t('results.Edit'),
         dataIndex: 'edit',
@@ -2141,7 +2141,7 @@ const ResultWizardStep2EditRace = observer(
       }
     ];
 
-    const teamColumns: ColumnType<IExtendedRaceTeamResult & { isValid?: boolean }>[] = [
+    const teamColumns: TableProps<IExtendedRaceTeamResult & { isValid?: boolean }>['columns'] = [
       {
         title: t('results.Edit'),
         dataIndex: 'edit',

@@ -1,8 +1,5 @@
 import { CaretRightOutlined, FileOutlined, LinkOutlined, SettingOutlined } from '@ant-design/icons';
-import { MenuProps } from 'antd';
-import { FormInstance } from 'antd/lib/form';
-import { MessageInstance } from 'antd/lib/message/interface';
-import { HookAPI } from 'antd/lib/modal/useModal';
+import { FormInstance, MenuProps, message, Modal } from 'antd';
 import { TFunction } from 'i18next';
 import { IGlobalStateModel } from '../../models/globalStateModel';
 import { IMenu, IMenuItem } from '../../models/htmlEditorModel';
@@ -23,11 +20,11 @@ const getMenuItems = (
   htmEditorLinkform: FormInstance<ISaveLinkRequest>,
   fileEditorForm: FormInstance<IFileUploadRequest>,
   t: TFunction,
-  modal: HookAPI,
+  modal: ReturnType<typeof Modal.useModal>[0],
   globalStateModel: IGlobalStateModel,
   sessionModel: ISessionModel,
   clubModel: IMobxClubModel,
-  messageApi: MessageInstance
+  messageApi: ReturnType<typeof message.useMessage>[0]
 ): NonNullable<MenuProps['items']> =>
   items.map(item =>
     getMenuItem(
@@ -123,11 +120,11 @@ export const getHtmlEditorMenus = (
   fileEditorForm: FormInstance<IFileUploadRequest>,
   folderEditorForm: FormInstance<IFolderResponse>,
   t: TFunction,
-  modal: HookAPI,
+  modal: ReturnType<typeof Modal.useModal>[0],
   globalStateModel: IGlobalStateModel,
   sessionModel: ISessionModel,
   clubModel: IMobxClubModel,
-  messageApi: MessageInstance
+  messageApi: ReturnType<typeof message.useMessage>[0]
 ): NonNullable<MenuProps['items']> => [
   ...getMenuItems(
     menu.menuItems,

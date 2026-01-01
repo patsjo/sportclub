@@ -1,5 +1,4 @@
-import { Empty, message, Modal, ModalFuncProps, Popconfirm, Spin, Table } from 'antd';
-import { ColumnType } from 'antd/lib/table';
+import { Empty, message, Modal, ModalFuncProps, Popconfirm, Spin, Table, TableProps } from 'antd';
 import { observer } from 'mobx-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -258,7 +257,7 @@ const Competitors = observer(() => {
       });
   }, [clubModel, loaded, sessionModel.authorizationHeader, sessionModel.isAdmin]);
 
-  const columns: ColumnType<ICompetitorTable>[] = [
+  const columns: TableProps<ICompetitorTable>['columns'] = [
     {
       title: t('results.Edit'),
       dataIndex: 'edit',

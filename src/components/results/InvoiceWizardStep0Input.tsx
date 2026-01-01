@@ -1,5 +1,4 @@
-import { DatePicker, Form, Switch } from 'antd';
-import { FormInstance } from 'antd/lib/form';
+import { DatePicker, Form, FormInstance, Switch } from 'antd';
 import dayjs from 'dayjs';
 import { observer } from 'mobx-react';
 import { useEffect, useMemo } from 'react';

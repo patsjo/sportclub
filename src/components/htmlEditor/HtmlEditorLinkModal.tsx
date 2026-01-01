@@ -1,9 +1,5 @@
 import { LinkOutlined } from '@ant-design/icons';
-import { Form, Input } from 'antd';
-import { FormInstance } from 'antd/lib/form';
-import { MessageInstance } from 'antd/lib/message/interface';
-import { ModalFuncProps } from 'antd/lib/modal';
-import { HookAPI } from 'antd/lib/modal/useModal';
+import { Form, FormInstance, Input, message, Modal, ModalFuncProps } from 'antd';
 import { TFunction } from 'i18next';
 import { styled } from 'styled-components';
 import { IGlobalStateModel } from '../../models/globalStateModel';
@@ -22,7 +18,7 @@ const HelpText = styled.div`
 
 export const HtmlEditorLinkModal = (
   t: TFunction,
-  modal: HookAPI,
+  modal: ReturnType<typeof Modal.useModal>[0],
   linkId: number,
   menuPath: string,
   url: string,
@@ -30,7 +26,7 @@ export const HtmlEditorLinkModal = (
   globalStateModel: IGlobalStateModel,
   sessionModel: ISessionModel,
   clubModel: IMobxClubModel,
-  messageApi: MessageInstance
+  messageApi: ReturnType<typeof message.useMessage>[0]
 ) =>
   new Promise((resolve, reject) => {
     const formId = 'htmlEditorForm' + Math.floor(Math.random() * 1000000000000000);

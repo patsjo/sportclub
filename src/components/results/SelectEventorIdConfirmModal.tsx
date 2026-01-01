@@ -1,10 +1,11 @@
-import { Form, InputNumber } from 'antd';
-import { ModalFuncProps } from 'antd/lib/modal';
-import { HookAPI } from 'antd/lib/modal/useModal';
+import { Form, InputNumber, Modal, ModalFuncProps } from 'antd';
 import { TFunction } from 'i18next';
 import FormItem from '../formItems/FormItem';
 
-export const SelectEventorIdConfirmModal = (t: TFunction, modal: HookAPI): Promise<number | undefined> =>
+export const SelectEventorIdConfirmModal = (
+  t: TFunction,
+  modal: ReturnType<typeof Modal.useModal>[0]
+): Promise<number | undefined> =>
   new Promise(resolve => {
     let confirmObject: number | undefined;
     let confirmModal: {

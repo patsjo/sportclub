@@ -1,7 +1,5 @@
 import { SettingOutlined } from '@ant-design/icons';
-import { InputNumber, Radio, Switch, Table, Tabs } from 'antd';
-import { HookAPI } from 'antd/lib/modal/useModal';
-import { ColumnsType } from 'antd/lib/table';
+import { InputNumber, Modal, Radio, Switch, Table, TableProps, Tabs } from 'antd';
 import { TFunction } from 'i18next';
 import { styled } from 'styled-components';
 import { IPrintSettings, IPrintSettingsColumn } from '../../utils/responseInterfaces';
@@ -73,7 +71,7 @@ export const getLocalStorage = (
   return tableData;
 };
 
-const selectColumns: ColumnsType<IPrintSettingsColumn> = [
+const selectColumns: TableProps<IPrintSettingsColumn>['columns'] = [
   {
     dataIndex: 'selected',
     key: 'selected',
@@ -87,7 +85,7 @@ const selectColumns: ColumnsType<IPrintSettingsColumn> = [
 
 export const TableSettingModal = (
   t: TFunction,
-  modal: HookAPI,
+  modal: ReturnType<typeof Modal.useModal>[0],
   localStorageName: 'resultFees' | 'results',
   columns: IPrintSettingsColumn[]
 ): Promise<IPrintSettings> =>

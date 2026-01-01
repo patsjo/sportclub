@@ -1,5 +1,4 @@
-import { Empty, message, Modal, ModalFuncProps, Popconfirm, Spin } from 'antd';
-import { ColumnType } from 'antd/lib/table';
+import { Empty, message, Modal, ModalFuncProps, Popconfirm, Spin, TableProps } from 'antd';
 import { observer } from 'mobx-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -110,7 +109,7 @@ const Users = observer(() => {
       });
   }, [sessionModel.loggedIn, clubModel.modules, sessionModel.authorizationHeader]);
 
-  const columns: ColumnType<IUserTable>[] = [
+  const columns: TableProps<IUserTable>['columns'] = [
     {
       title: t('results.Edit'),
       dataIndex: 'edit',

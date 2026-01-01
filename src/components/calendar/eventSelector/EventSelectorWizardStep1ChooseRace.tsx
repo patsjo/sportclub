@@ -1,6 +1,4 @@
-import { message, Spin } from 'antd';
-import { ColumnType } from 'antd/lib/table';
-import { TableRowSelection } from 'antd/lib/table/interface';
+import { message, Spin, TableProps } from 'antd';
 import { observer } from 'mobx-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -295,11 +293,11 @@ const EventSelectorWizardStep1ChooseRace = observer(
       [onSelectChange, selectedRowKeys]
     );
 
-    const rowSelection: TableRowSelection<IStateEvent & { key: number }> = {
+    const rowSelection: TableProps<IStateEvent & { key: number }>['rowSelection'] = {
       selectedRowKeys,
       onChange: onSelectChange
     };
-    const columns: ColumnType<IStateEvent & { key: number }>[] = [
+    const columns: TableProps<IStateEvent & { key: number }>['columns'] = [
       {
         title: t('results.Date'),
         dataIndex: 'raceDate',

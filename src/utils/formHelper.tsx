@@ -1,5 +1,4 @@
-import { FormInstance } from 'antd/lib/form';
-import { UploadFile } from 'antd/lib/upload/interface';
+import { FormInstance, UploadFile } from 'antd';
 import { ParseKeys, TFunction } from 'i18next';
 import { getFileType } from './fileHelper';
 

@@ -1,4 +1,4 @@
-import { RcFile } from 'antd/lib/upload';
+import { UploadFile } from 'antd';
 
 export const getFileType = (file: { type?: string; name: string }): string => {
   if (file.type) {
@@ -19,7 +19,7 @@ export const getFileType = (file: { type?: string; name: string }): string => {
   return 'application/octet-stream';
 };
 
-export const fileAsUrl = (file: RcFile): Promise<string | null> => {
+export const fileAsUrl = (file: NonNullable<UploadFile['originFileObj']>): Promise<string | null> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {
@@ -42,7 +42,7 @@ export const fileAsUrl = (file: RcFile): Promise<string | null> => {
   });
 };
 
-export const fileAsBase64 = (file: RcFile | undefined): Promise<string | null> => {
+export const fileAsBase64 = (file: UploadFile['originFileObj']): Promise<string | null> => {
   if (!file) return new Promise(resolve => resolve(null));
   return new Promise((resolve, reject) => {
     const reader = new FileReader();

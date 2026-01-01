@@ -1,8 +1,6 @@
 import { UploadOutlined } from '@ant-design/icons';
-import { DraggerProps, message, Upload } from 'antd';
+import { DraggerProps, FormInstance, message, Upload, UploadFile, UploadProps } from 'antd';
 import ImgCrop from 'antd-img-crop';
-import { FormInstance } from 'antd/lib/form';
-import { RcFile, UploadChangeParam, UploadFile } from 'antd/lib/upload/interface';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { styled } from 'styled-components';
@@ -129,7 +127,7 @@ const UploadDragger = ({
   );
 
   const beforeUpload = useCallback(
-    (file: RcFile): BeforeUploadValueType | Promise<BeforeUploadValueType> => {
+    (file: NonNullable<UploadFile['originFileObj']>): BeforeUploadValueType | Promise<BeforeUploadValueType> => {
       const fileIsValid = validFile(file);
       const sizeIsValid = file.size <= maxByteSize;
       if (fileIsValid && sizeIsValid && asThumbnail) {
@@ -173,8 +171,8 @@ const UploadDragger = ({
     [fieldName, form, onChange]
   );
 
-  const onUploadChange = useCallback(
-    async ({ file, fileList }: UploadChangeParam<UploadFile>) => {
+  const onUploadChange = useCallback<NonNullable<UploadProps<UploadFile>['onChange']>>(
+    async ({ file, fileList }) => {
       const { setFieldsValue } = form;
       const fileIsValid = validFile(file);
       const sizeIsValid = file.size && file.size <= maxByteSize;
@@ -222,7 +220,9 @@ const UploadDragger = ({
       {asThumbnail ? (
         <ImgCrop
           quality={0.9}
-          beforeCrop={(file: RcFile) => validFile(file) && file.size <= maxByteSize && asThumbnail}
+          beforeCrop={(file: NonNullable<UploadFile['originFileObj']>) =>
+            validFile(file) && file.size <= maxByteSize && asThumbnail
+          }
         >
           <StyledUploadDragger
             type="drag"
