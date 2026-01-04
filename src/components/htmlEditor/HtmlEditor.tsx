@@ -10,7 +10,6 @@ import { styled } from 'styled-components';
 import { ICouncilModel, IGroupModel, IUserModel } from '../../models/userModel';
 import { PostJsonData } from '../../utils/api';
 import { errorRequiredField, hasErrors } from '../../utils/formHelper';
-import { getPageId } from '../../utils/htmlEditorMenuHelper';
 import { useMobxStore } from '../../utils/mobxStore';
 import { IHtmlPageGroupResponse, IHtmlPageResponse } from '../../utils/responseInterfaces';
 import FormItem from '../formItems/FormItem';
@@ -36,21 +35,16 @@ interface IHtmlEditorFormProps {
   iGroupIds: number[];
 }
 
-const HtmlEditor = observer(() => {
+interface IHtmlEditorProps {
+  pageIdFromLocation: number;
+}
+
+const HtmlEditor = observer(({ pageIdFromLocation }: IHtmlEditorProps) => {
   const [messageApi, contextHolder] = message.useMessage();
   const location = useLocation();
   const { clubModel, globalStateModel, sessionModel } = useMobxStore();
   const { t } = useTranslation();
   const [pageId, setPageId] = useState(-1);
-  const pageIdFromLocation = useMemo(
-    () =>
-      location.pathname === '/page/new'
-        ? -1
-        : globalStateModel.htmlEditorMenu
-          ? (getPageId(globalStateModel.htmlEditorMenu, decodeURI(location.pathname)) ?? -1000)
-          : undefined,
-    [globalStateModel.htmlEditorMenu, location.pathname]
-  );
   const [error, setError] = useState<string | undefined>();
   const [isReadOnly, setIsReadOnly] = useState(location.pathname !== '/page/new');
   const [isEditable, setEditable] = useState(location.pathname === '/page/new');
@@ -68,13 +62,6 @@ const HtmlEditor = observer(() => {
   const [currentEditor, setCurrentEditor] = useState<ClassicEditor>();
 
   useEffect(() => {
-    if (pageIdFromLocation === undefined) return;
-    else if (pageIdFromLocation === -1000) {
-      setError('404 - Page not found');
-      setLoading(false);
-      return;
-    }
-
     setError(undefined);
     setLoading(true);
     if (location.pathname === '/page/new' || !htmlEditorModule) {
@@ -212,7 +199,7 @@ const HtmlEditor = observer(() => {
           <Spin size="large" />
         </SpinnerDiv>
       ) : error ? (
-        <Alert showIcon message="Error" description={error} type="error" />
+        <Alert showIcon title="Error" description={error} type="error" />
       ) : (
         <StyledContainer>
           {!isReadOnly ? (

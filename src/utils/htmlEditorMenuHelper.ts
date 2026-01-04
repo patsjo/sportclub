@@ -1,4 +1,4 @@
-import { IMenu } from '../models/htmlEditorModel';
+import { IMenu, ISubMenu } from '../models/htmlEditorModel';
 import { IFolderResponse, IMenuResponse } from './responseInterfaces';
 
 interface ISplittedMenu {
@@ -14,7 +14,8 @@ const getMenuLevels = (
   splittedMenus: ISplittedMenu[],
   foldersResponse: IFolderResponse[],
   level: number,
-  parentFolderId: number | undefined
+  parentFolderId: number | undefined,
+  parentMenuPath: string = '/'
 ): IMenu => ({
   menuItems: splittedMenus
     .filter(m => m.menuPaths.length === level)
@@ -37,6 +38,7 @@ const getMenuLevels = (
       const menuPath = `/${m.menuPaths.slice(0, level).join('/')}`;
       const menuFolder = foldersResponse.find(folder => folder.menuPath === menuPath);
       return {
+        menuPath,
         subMenus: getMenuLevels(
           splittedMenus.filter(m2 => m2.menuPaths.length > level && m.menuPaths[level - 1] === m2.menuPaths[level - 1]),
           foldersResponse,
@@ -54,7 +56,14 @@ const getMenuLevels = (
       foldersResponse
         .filter(folder => folder.parentFolderId === parentFolderId)
         .map(folder => ({
-          subMenus: getMenuLevels([], foldersResponse, level + 1, folder.folderId),
+          menuPath: `${parentMenuPath}${folder.folderName}`,
+          subMenus: getMenuLevels(
+            [],
+            foldersResponse,
+            level + 1,
+            folder.folderId,
+            `${parentMenuPath}${folder.folderName}/`
+          ),
           description: folder.folderName,
           level: level,
           folderId: folder.folderId,
@@ -92,7 +101,9 @@ export const getPageId = (menu: IMenu, menuPath: string, level = 0): number | nu
   if (!menu) {
     return null;
   }
-  let menuItem = menu.menuItems?.find(m => m.menuPath === menuPath);
+  let menuItem = menu.menuItems?.find(
+    m => m.menuPath.toLocaleLowerCase().replace(/\s+/g, '') === menuPath.toLocaleLowerCase().replace(/\s+/g, '')
+  );
   if (menuItem) {
     return menuItem.pageId;
   }
@@ -118,4 +129,38 @@ export const getPageId = (menu: IMenu, menuPath: string, level = 0): number | nu
     return menuItem.pageId;
   }
   return null;
+};
+
+export const getSubMenu = (menu: IMenu, menuPath: string, level = 0): ISubMenu | undefined => {
+  if (!menu) {
+    return undefined;
+  }
+  let subMenu = menu.subMenus?.find(
+    m => m.menuPath.toLocaleLowerCase().replace(/\s+/g, '') === menuPath.toLocaleLowerCase().replace(/\s+/g, '')
+  );
+  if (subMenu) {
+    return subMenu;
+  }
+  const menuPaths = menuPath.replace(/^[\s/]+|[\s/]+$/g, '').split('/');
+  if (Array.isArray(menuPaths) && menuPaths.length > level + 1) {
+    let subMenu = menu.subMenus?.find(m => m.description === menuPaths[level]);
+    if (subMenu) {
+      return getSubMenu(subMenu.subMenus, menuPath, level + 1);
+    }
+    subMenu = menu.subMenus?.find(
+      m =>
+        m.description.toLocaleLowerCase().replace(/\s+/g, '') ===
+        menuPaths[level].toLocaleLowerCase().replace(/\s+/g, '')
+    );
+    if (subMenu) {
+      return getSubMenu(subMenu.subMenus, menuPath, level + 1);
+    }
+  }
+  subMenu = menu.subMenus?.find(
+    m => m.menuPath.toLocaleLowerCase().replace(/\s+/g, '') === menuPath.toLocaleLowerCase().replace(/\s+/g, '')
+  );
+  if (subMenu) {
+    return subMenu;
+  }
+  return undefined;
 };

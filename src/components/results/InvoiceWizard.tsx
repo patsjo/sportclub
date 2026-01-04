@@ -43,8 +43,15 @@ const InvoiceWizard = observer(() => {
   }, []);
 
   const prev = useCallback(() => {
+    const nextStep = wizardStep - 1;
+    if (nextStep === 1) {
+      raceWizardModel.current.setRaceEvent(null);
+      raceWizardModel.current.setNumberValueOrNull('selectedEventId', null);
+      raceWizardModel.current.setNumberValueOrNull('selectedEventorId', null);
+      raceWizardModel.current.setNumberValueOrNull('selectedEventorRaceId', null);
+    }
     setNextStepValid(wizardStep === 1 || (wizardStep === 2 && raceWizardModel.current.selectedEventId != null));
-    setWizardStep(oldStep => oldStep - 1);
+    setWizardStep(nextStep);
   }, [wizardStep]);
 
   const onValidate = useCallback((valid: boolean) => {

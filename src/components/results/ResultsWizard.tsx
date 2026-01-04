@@ -93,11 +93,13 @@ const ResultsWizard = observer(() => {
   );
 
   const prev = useCallback(() => {
-    let nextStep = wizardStep - 1;
-    if (nextStep === 1 && !raceWizardModel.current.existInEventor) {
-      nextStep--;
-    }
-    if (nextStep === 0) {
+    const nextStep = wizardStep - 1;
+    if (nextStep === 1) {
+      raceWizardModel.current.setRaceEvent(null);
+      raceWizardModel.current.setNumberValueOrNull('selectedEventId', null);
+      raceWizardModel.current.setNumberValueOrNull('selectedEventorId', null);
+      raceWizardModel.current.setNumberValueOrNull('selectedEventorRaceId', null);
+    } else if (nextStep === 0) {
       raceWizardModel.current.setBooleanValue('existInEventor', true);
       raceWizardModel.current.setNumberValueOrNull('selectedEventId', -1);
       raceWizardModel.current.setNumberValueOrNull('selectedEventorId', null);

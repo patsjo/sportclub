@@ -101,11 +101,11 @@ const ResultWizardStep3Ranking = observer(({ saving, onValidate }: IResultWizard
       {['OL', 'SKIO', 'MTBO'].includes(raceWizardModel.raceEvent.sportCode) ? (
         <>
           {raceWizardModel.raceEvent?.validRanking ? (
-            <Alert showIcon message={raceWizardModel.raceEvent?.rankingBaseDescription} type="success" />
+            <Alert showIcon title={raceWizardModel.raceEvent?.rankingBaseDescription} type="success" />
           ) : (
             <Alert
               showIcon
-              message={
+              title={
                 <>
                   <Row gutter={8}>
                     <Col span={24}>

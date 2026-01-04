@@ -9,7 +9,8 @@ export interface IMenuItem {
   createdByUserId?: number;
 }
 
-interface ISubMenu {
+export interface ISubMenu {
+  menuPath: string;
   subMenus: IMenu;
   description: string;
   level: number;

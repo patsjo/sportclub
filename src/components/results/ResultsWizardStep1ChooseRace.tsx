@@ -414,9 +414,9 @@ const ResultWizardStep1ChooseRace = observer(
                 (e): IResultEvent => ({
                   ...e,
                   key: JSON.stringify({
-                    selectedEventorId: e.eventorId,
+                    selectedEventorId: e.eventorId ?? -1,
                     selectedEventorRaceId: e.eventorRaceId,
-                    selectedEventId: e.eventId,
+                    selectedEventId: e.eventId ?? -1,
                     alreadySaved: true,
                     existInEventor: e.eventorId > 0,
                     isRelay: e.isRelay
@@ -465,18 +465,32 @@ const ResultWizardStep1ChooseRace = observer(
       setSelectedRowKeys([]);
       setEvents(oldEvents =>
         raceWizardModel.queryIncludeExisting
-          ? oldEvents.map(
-              (e): IResultEvent => ({
-                ...e,
-                eventId:
-                  raceWizardModel.importedIds.find(imp => imp.prevEventId != null && imp.prevEventId === e.eventId)
-                    ?.eventId ?? e.eventId,
-                alreadySaved:
-                  e.alreadySaved ||
-                  (e.eventorRaceId != null &&
-                    raceWizardModel.importedIds.some(imp => imp.eventorRaceId === e.eventorRaceId))
-              })
-            )
+          ? oldEvents
+              .map(
+                (e): IResultEvent => ({
+                  ...e,
+                  eventId:
+                    raceWizardModel.importedIds.find(imp => imp.prevEventId != null && imp.prevEventId === e.eventId)
+                      ?.eventId ?? e.eventId,
+                  alreadySaved:
+                    e.alreadySaved ||
+                    (e.eventorRaceId != null &&
+                      raceWizardModel.importedIds.some(imp => imp.eventorRaceId === e.eventorRaceId))
+                })
+              )
+              .map(
+                (e): IResultEvent => ({
+                  ...e,
+                  key: JSON.stringify({
+                    selectedEventorId: e.eventorId ?? -1,
+                    selectedEventorRaceId: e.eventorRaceId,
+                    selectedEventId: e.eventId ?? -1,
+                    alreadySaved: e.alreadySaved,
+                    existInEventor: e.eventorId > 0,
+                    isRelay: e.isRelay
+                  })
+                })
+              )
           : oldEvents.filter(
               e => !e.eventorRaceId || !raceWizardModel.importedIds.some(imp => imp.eventorRaceId === e.eventorRaceId)
             )
