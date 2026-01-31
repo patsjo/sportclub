@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 64" width="42" height="64"> 
+    <rect x="0" y="0" width="4" height="64" fill="#000000"/>
+    <path d="M2 0 L41 16 L2 32 Z" fill="#ffffff" stroke="#000000" stroke-width="1" />
+    <clipPath id="flagClip">
+        <path d="M2 0 L41 16 L2 32 Z" />
+    </clipPath>
+    <g clip-path="url(#flagClip)">
+        <rect x="2" y="0" width="8" height="8" fill="#000000"/>
+        <rect x="18" y="0" width="8" height="8" fill="#000000"/>
+        <rect x="10" y="8" width="8" height="8" fill="#000000"/>
+        <rect x="26" y="8" width="8" height="8" fill="#000000"/>
+        <rect x="2" y="16" width="8" height="8" fill="#000000"/>
+        <rect x="18" y="16" width="8" height="8" fill="#000000"/>
+        <rect x="34" y="16" width="8" height="8" fill="#000000"/>
+        <rect x="10" y="24" width="8" height="8" fill="#000000"/>
+    </g>
+</svg>

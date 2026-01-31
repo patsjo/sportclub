@@ -14,6 +14,8 @@ const varendgn: IMobxClubModelProps = {
   map: {
     center: [14.5900805, 57.1636313],
     defaultZoomLevel: 12,
+    saveUrl: 'https://oknorrvirdarna.se/map/tracks/save.php',
+    queryUrl: 'https://oknorrvirdarna.se/map/tracks/jsonMapTracksQuery.php',
     layers: []
   },
   loginUrl: 'https://oknorrvirdarna.se/log_in.php',

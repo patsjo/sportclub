@@ -14,6 +14,8 @@ const varendgn: IMobxClubModelProps = {
   map: {
     center: [14.85774, 56.91077],
     defaultZoomLevel: 12,
+    saveUrl: 'https://varendgn.se/map/tracks/save.php',
+    queryUrl: 'https://varendgn.se/map/tracks/jsonMapTracksQuery.php',
     layers: []
   },
   loginUrl: 'https://varendgn.se/log_in.php',

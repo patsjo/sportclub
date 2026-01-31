@@ -13,6 +13,8 @@ const okorion: IMobxClubModelProps = {
   map: {
     center: [15.82939, 56.20045],
     defaultZoomLevel: 16,
+    saveUrl: 'https://okorion.com/map/tracks/save.php',
+    queryUrl: 'https://okorion.com/map/tracks/jsonMapTracksQuery.php',
     layers: [
       {
         type: 'group',

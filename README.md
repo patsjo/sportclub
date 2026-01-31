@@ -1,4 +1,4 @@
-# sportclub 2.0
+# sportclub 2.1
 
 This is a react app for sports like orienteering or any other sport, with the following key functionality:
 
@@ -6,6 +6,7 @@ This is a react app for sports like orienteering or any other sport, with the fo
 - News
 - Calendar with map connection
 - Maps
+- Editable tracks with nice markings (and customized if wanted)
 - Results with statistics, club/personal list, invoice verification, send invoice to members, and much more
 - Member presentation, Stars, where we present each runners personal skils
 - Integration to the swedish orienteering fedartion system Eventor (import results)
@@ -34,6 +35,8 @@ It's free to use this as you like, but I will be happy if:
 - [Njurunda OK](https://njurundaok.se/)
 
 ![OK Orion](readme/okorion.png)
+![Map tracks](readme/map-tracks.png)
+![Edit map tracks](readme/map-tracks-edit.png)
 ![OK Norrvirdarna](readme/oknorrvirdarna.png)
 ![Värend GN](readme/varendgn.png)
 ![Njurunda OK](readme/njurundaok.png)

@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import { styled } from 'styled-components';
 import { useMobxStore } from '../../utils/mobxStore';
+import MapTracksLayers from './MapTracksLayers';
 import OSMOrienteeringMap from './OSMOrienteeringMap';
 
 const MapContainer = styled.div`
@@ -11,7 +13,11 @@ const MapContainer = styled.div`
 `;
 
 const Maps = () => {
-  const { clubModel } = useMobxStore();
+  const { globalStateModel, clubModel } = useMobxStore();
+
+  useEffect(() => {
+    globalStateModel.setGraphics(['calendar', 'event'], []);
+  }, [globalStateModel]);
 
   return (
     <MapContainer>
@@ -23,7 +29,9 @@ const Maps = () => {
         containerId="mapOnly"
         mapCenter={clubModel.map?.center}
         defaultExtent={clubModel.map?.fullExtent}
-      />
+      >
+        <MapTracksLayers />
+      </OSMOrienteeringMap>
     </MapContainer>
   );
 };

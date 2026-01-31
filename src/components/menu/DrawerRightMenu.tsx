@@ -1,4 +1,5 @@
 import { Button, Col, Drawer, Form, Menu, MenuProps, message, Modal, Row, Spin, Typography } from 'antd';
+import i18next from 'i18next';
 import { observer } from 'mobx-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -188,9 +189,14 @@ const DrawerRightMenu = observer(() => {
         loginMenuItem,
         menuItemDivider,
         ...allModuleMenuItems,
-        clubModel.map?.layers.length
+        clubModel.map
           ? getMenuItem('menuItem#maps', 'map', t('modules.Maps'), () => {
               globalStateModel.setDashboard(navigate, `/${t('modules.Maps').toLowerCase()}`);
+            })
+          : null,
+        clubModel.map
+          ? getMenuItem('menuItem#mapTracks', 'map-tracks', t('map.Tracks'), () => {
+              globalStateModel.setDashboard(navigate, i18next.language === 'sv-SE' ? '/spårkartor' : '/maps/tracks');
             })
           : null,
         menuItemDivider,
@@ -212,7 +218,7 @@ const DrawerRightMenu = observer(() => {
       ].filter(item => item !== null),
     [
       allModuleMenuItems,
-      clubModel.map?.layers.length,
+      clubModel.map,
       clubModel.oldUrl,
       clubModel.sponsors,
       editHtmlEditorMenuItems,

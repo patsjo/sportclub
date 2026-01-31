@@ -1,10 +1,12 @@
 import { Tree, TreeProps } from 'antd';
 import { observer } from 'mobx-react';
-import { Collection, Map } from 'ol';
+import { Map } from 'ol';
+import { CollectionEvent } from 'ol/Collection';
 import { Control } from 'ol/control';
 import BaseLayer from 'ol/layer/Base';
 import GroupLayer from 'ol/layer/Group';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { unByKey } from 'ol/Observable';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { styled } from 'styled-components';
 import LayerListItem from './LayerListItem';
 
@@ -41,7 +43,7 @@ type IDataNodeMap = NonNullable<TreeProps['treeData']>[number] & {
   zoomExtent: number[];
 };
 
-const getTreeData = (map: Map, mapLayers?: Collection<BaseLayer>): IDataNodeMap[] => {
+const getTreeData = (map: Map, mapLayers?: BaseLayer[]): IDataNodeMap[] => {
   const nodes: IDataNodeMap[] = [];
 
   mapLayers?.forEach(mapLayer => {
@@ -52,16 +54,16 @@ const getTreeData = (map: Map, mapLayers?: Collection<BaseLayer>): IDataNodeMap[
       title: layerProps.title,
       zoomExtent: layerProps.zoomExtent
     };
-    if (layerProps.type === 'group') {
+    if (layerProps.type === 'group' || layerProps.type === 'track-group') {
       nodes.push({
         key: layerProps.id,
         title: <LayerListItem title={layerProps.title ?? 'Unknown'} map={map} zoomExtent={layerProps.zoomExtent} />,
         checkable: true,
-        children: getTreeData(map, (mapLayer as GroupLayer).getLayers()),
+        children: getTreeData(map, (mapLayer as GroupLayer).getLayers().getArray()),
         visible: mapLayer.getVisible(),
         zoomExtent: layerProps.zoomExtent
       });
-    } else if (layerProps.type === 'base-tile') {
+    } else if (layerProps.type === 'base-tile' || layerProps.type === 'track') {
       nodes.push({
         key: layerProps.id,
         title: <LayerListItem title={layerProps.title ?? 'Unknown'} map={map} zoomExtent={layerProps.zoomExtent} />,
@@ -81,10 +83,15 @@ interface ILayerListProps {
 }
 
 const LayerList = observer(({ map, visible }: ILayerListProps) => {
-  const [mapLayers, setMapLayers] = useState<Collection<BaseLayer>>();
+  const [mapLayers, setMapLayers] = useState<BaseLayer[]>();
   const treeData = useMemo(() => (map ? getTreeData(map, mapLayers) : []), [map, mapLayers]);
   const [checkedKeys, setCheckedKeys] = useState<React.Key[]>([]);
-  const layerListRef = useRef<HTMLDivElement>(null);
+  const layerListRef = useRef<HTMLDivElement | null>(null);
+  const [layerListEl, setLayerListEl] = useState<HTMLDivElement | null>(null);
+  const setLayerListRef = useCallback((el: HTMLDivElement | null) => {
+    layerListRef.current = el;
+    setLayerListEl(el);
+  }, []);
 
   const onCheck = (
     checkedKeys:
@@ -101,25 +108,46 @@ const LayerList = observer(({ map, visible }: ILayerListProps) => {
     setCheckedKeys(keys);
   };
 
+  const onLayerAdd = useCallback(
+    (evt: CollectionEvent<BaseLayer>) => {
+      if (map) {
+        setMapLayers([...map.getLayers().getArray()]);
+        setCheckedKeys(
+          map
+            .getAllLayers()
+            .filter(l => l.getProperties().id && l.getVisible())
+            .map(l => l.getProperties().id) ?? []
+        );
+        const layer = evt.element;
+        if ((layer as GroupLayer).getLayers) (layer as GroupLayer).getLayers().on('add', onLayerAdd);
+      }
+    },
+    [map]
+  );
+
   useEffect(() => {
-    if (map && layerListRef.current && !mapLayers) {
-      setMapLayers(map.getLayers());
-      setCheckedKeys(
-        map
-          .getAllLayers()
-          .filter(l => l.getProperties().id && l.getVisible())
-          .map(l => l.getProperties().id) ?? []
-      );
+    if (!map) return;
+    const onAddKey = map.getLayers().on('add', onLayerAdd);
+
+    return () => {
+      unByKey([onAddKey]);
+    };
+  }, [map, onLayerAdd]);
+
+  useEffect(() => {
+    if (map && layerListEl) {
       const layerListTreeControl = new Control({
-        element: layerListRef.current
+        element: layerListEl
       });
       map.addControl(layerListTreeControl);
+      return () => {
+        map.removeControl(layerListTreeControl);
+      };
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map, mapLayers, layerListRef.current]);
+  }, [map, layerListEl]);
 
   return (
-    <StyledControl ref={layerListRef} visible={visible}>
+    <StyledControl ref={setLayerListRef} visible={visible}>
       <Tree checkable selectable={false} treeData={treeData} checkedKeys={checkedKeys} onCheck={onCheck} />
     </StyledControl>
   );

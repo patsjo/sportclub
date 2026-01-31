@@ -1,6 +1,7 @@
 import { observer } from 'mobx-react';
 import { MapBrowserEvent } from 'ol';
 import Feature from 'ol/Feature';
+import Map from 'ol/Map';
 import { Control, FullScreen, ZoomToExtent } from 'ol/control';
 import { Options } from 'ol/control/ZoomToExtent';
 import { Extent, buffer, getSize } from 'ol/extent';
@@ -15,11 +16,12 @@ import * as wgs84Sphere from 'ol/sphere';
 import { Fill, Icon, Stroke, Style } from 'ol/style';
 import CircleStyle from 'ol/style/Circle';
 import { getUid } from 'ol/util';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { ReactNode, useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { styled } from 'styled-components';
 import { IGraphic } from '../../models/graphic';
 import { IExtentProps } from '../../models/mobxClubModel';
+import { MapStoreProvider } from '../../utils/mapStore';
 import { useMobxStore } from '../../utils/mobxStore';
 import LayerList from './LayerList';
 import { LayerListControl } from './LayerListControl';
@@ -158,6 +160,7 @@ const getMapLength = (point: number[], units: number) =>
     : 0;
 
 interface IOSMOrienteeringMapProps {
+  children?: ReactNode;
   containerId: string;
   height: string;
   width: string;
@@ -168,10 +171,12 @@ interface IOSMOrienteeringMapProps {
   mapCenter?: number[];
   onClick?: (graphicsLayer: VectorLayer, graphic: Feature<Point>) => void;
   onHighlightClick?: (graphic: Feature<Point>) => void;
+  onLoaded?: (map: Map) => void;
 }
 
 const OSMOrienteeringMap = observer(
   ({
+    children,
     containerId,
     height,
     width,
@@ -181,7 +186,8 @@ const OSMOrienteeringMap = observer(
     useDefaultGraphicsAsHome = false,
     mapCenter,
     onClick,
-    onHighlightClick = undefined
+    onHighlightClick = undefined,
+    onLoaded = undefined
   }: IOSMOrienteeringMapProps) => {
     const { globalStateModel, clubModel } = useMobxStore();
     const { t } = useTranslation();
@@ -381,6 +387,20 @@ const OSMOrienteeringMap = observer(
       onMapClick,
       onMapPointerMove
     ]);
+
+    React.useEffect(() => {
+      if (map && mapRef.current && mapInfoRef.current && loaded && defaultExtent) {
+        const xyMin = fromLonLat([defaultExtent.xmin, defaultExtent.ymin], mapProjection);
+        const xyMax = fromLonLat([defaultExtent.xmax, defaultExtent.ymax], mapProjection);
+        const extent = [...xyMin, ...xyMax];
+        const size = extent && getSize(extent);
+        if (extent && size)
+          map.getView().fit(buffer(extent, Math.min(...size) * 0.2), {
+            maxZoom: 16,
+            duration: 800
+          });
+      }
+    }, [map, defaultExtent, loaded]);
 
     React.useEffect(() => {
       const zoomGraphics = defaultGraphics?.filter(
@@ -585,15 +605,26 @@ const OSMOrienteeringMap = observer(
       defaultExtent
     ]);
 
+    React.useEffect(() => {
+      onLoaded?.(map);
+    }, [onLoaded, map]);
+
     return (
-      <MapDiv key="map" height={height} width={width}>
-        <Loader />
-        <MapContainerDiv ref={mapRef} key={containerId} id={containerId} />
-        <MapInfo ref={mapInfoRef} key={`${containerId}#orienteeringMapInfo`} id={`${containerId}#orienteeringMapInfo`}>
-          <MapInfoText id={`${containerId}#orienteeringMapInfoText`} />
-        </MapInfo>
-        <LayerList map={map} visible={layerListVisible} />
-      </MapDiv>
+      <MapStoreProvider store={map}>
+        <MapDiv key="map" height={height} width={width}>
+          <Loader />
+          <MapContainerDiv ref={mapRef} key={containerId} id={containerId} />
+          <MapInfo
+            ref={mapInfoRef}
+            key={`${containerId}#orienteeringMapInfo`}
+            id={`${containerId}#orienteeringMapInfo`}
+          >
+            <MapInfoText id={`${containerId}#orienteeringMapInfoText`} />
+          </MapInfo>
+          <LayerList map={map} visible={layerListVisible} />
+          {children}
+        </MapDiv>
+      </MapStoreProvider>
     );
   }
 );

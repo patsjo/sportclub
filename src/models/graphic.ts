@@ -6,6 +6,11 @@ interface IPointGeometry {
   latitude: number;
 }
 
+export interface ILineStringGeometry {
+  type: 'line';
+  path: { longitude: number; latitude: number }[];
+}
+
 export interface ICircleGeometry {
   type: 'circle';
   center: number[];

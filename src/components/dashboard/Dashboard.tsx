@@ -7,6 +7,7 @@ import { useMobxStore } from '../../utils/mobxStore';
 import WeeklyCalendar from '../calendar/weekly/WeeklyCalendar';
 import useEventorEntries from '../eventor/useEventorEntries';
 import ShowFacebookTimeline from '../facebook/ShowFacebookTimeline';
+import MapTracksLayers from '../map/MapTracksLayers';
 import OSMOrienteeringMap from '../map/OSMOrienteeringMap';
 import { mapProjection } from '../map/useOpenLayersMap';
 import useBanners from '../news/useBanners';
@@ -60,7 +61,9 @@ const Dashboard = observer(() => {
                   win.focus();
                 }
               }}
-            />
+            >
+              <MapTracksLayers />
+            </OSMOrienteeringMap>
           </ChildContainer>
         ) : null}
         {newsItems.slice(2, 5)}

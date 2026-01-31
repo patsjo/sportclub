@@ -331,6 +331,8 @@ interface IMapProps {
   defaultZoomLevel?: number;
   minZoomLevel?: number;
   maxZoomLevel?: number;
+  saveUrl: string;
+  queryUrl: string;
   layers: IAnyLayerProps[];
 }
 
@@ -348,6 +350,8 @@ class MapModel implements IMapModel {
   defaultZoomLevel = 0;
   minZoomLevel = 2;
   maxZoomLevel = 17;
+  saveUrl = '';
+  queryUrl = '';
   layers: IAnyLayer[] = [];
 
   constructor(options: Partial<IMapProps>) {

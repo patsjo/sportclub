@@ -16,6 +16,7 @@ import {
   MenuFoldOutlined,
   MenuOutlined,
   MenuUnfoldOutlined,
+  NodeIndexOutlined,
   OrderedListOutlined,
   PicRightOutlined,
   PictureOutlined,
@@ -45,6 +46,7 @@ export type MaterialIconsType =
   | 'frown'
   | 'loading'
   | 'map'
+  | 'map-tracks'
   | 'menu-fold'
   | 'menu-unfold'
   | 'plus'
@@ -91,6 +93,8 @@ const MaterialIcon = ({ icon, fontSize, marginRight }: IMaterialIconProps) => {
       return <FrownOutlined style={{ verticalAlign: 'middle', fontSize: fontSize }} />;
     case 'map':
       return <GlobalOutlined style={{ verticalAlign: 'middle', fontSize: fontSize }} />;
+    case 'map-tracks':
+      return <NodeIndexOutlined style={{ verticalAlign: 'middle', fontSize: fontSize }} />;
     case 'menu-fold':
       return <MenuFoldOutlined style={{ verticalAlign: 'middle', fontSize: fontSize }} />;
     case 'menu-unfold':

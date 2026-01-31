@@ -5,6 +5,7 @@ import { styled } from 'styled-components';
 
 const Dashboard = lazy(() => import('./components/dashboard/Dashboard'));
 const Maps = lazy(() => import('./components/map/Maps'));
+const MapTracks = lazy(() => import('./components/map/MapTracks'));
 const News = lazy(() => import('./components/news/News'));
 const UsersAndCompetitors = lazy(() => import('./components/users/UsersAndCompetitors'));
 const League = lazy(() => import('./components/results/League'));
@@ -42,6 +43,8 @@ const AppContent = observer(() => {
     <ContentArea>
       <Routes>
         <Route path="/" element={<Dashboard key="dashboard" />} />
+        <Route path="/maps/tracks" element={<MapTracks />} />
+        <Route path="/spårkartor" element={<MapTracks />} />
         <Route path="/maps" element={<Maps />} />
         <Route path="/kartor" element={<Maps />} />
         <Route path="/news" element={<News key="news" />} />
