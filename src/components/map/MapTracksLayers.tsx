@@ -61,6 +61,7 @@ const MapTracksLayers = ({ onLoad }: IMapTracksLayersProps) => {
         ?.map(
           g =>
             new GroupLayer({
+              zIndex: 1000000 - g.minOrder,
               properties: {
                 type: 'track-group',
                 id: `track-group-${g.trackCenter}`,
@@ -68,9 +69,10 @@ const MapTracksLayers = ({ onLoad }: IMapTracksLayersProps) => {
                 zoomExtent: getExtent(g.tracks.map(t => t.line)),
                 defaultVisible: g.tracks.some(t => t.showByDefault)
               },
-              layers: g.tracks.reverse().map(
+              layers: g.tracks.map(
                 track =>
                   new VectorLayer({
+                    zIndex: 1000000 - track.orderBy,
                     properties: {
                       type: 'track',
                       id: `track-${track.trackId}`,

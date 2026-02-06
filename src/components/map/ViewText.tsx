@@ -21,7 +21,8 @@ const ViewText = ({ value, endValue, smallEndValue, type = 'normal' }: IViewText
       italic
       style={{
         fontSize: type === 'header' ? 16 : type === 'description' ? 10 : 12,
-        fontWeight: 'normal'
+        fontWeight: 'normal',
+        verticalAlign: 5
       }}
     >
       {smallEndValue ? ` (${smallEndValue})` : ''}

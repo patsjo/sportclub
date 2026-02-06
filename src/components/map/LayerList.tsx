@@ -3,6 +3,7 @@ import { observer } from 'mobx-react';
 import { Map } from 'ol';
 import { CollectionEvent } from 'ol/Collection';
 import { Control } from 'ol/control';
+import { EventsKey } from 'ol/events';
 import BaseLayer from 'ol/layer/Base';
 import GroupLayer from 'ol/layer/Group';
 import { unByKey } from 'ol/Observable';
@@ -85,7 +86,8 @@ interface ILayerListProps {
 const LayerList = observer(({ map, visible }: ILayerListProps) => {
   const [mapLayers, setMapLayers] = useState<BaseLayer[]>();
   const treeData = useMemo(() => (map ? getTreeData(map, mapLayers) : []), [map, mapLayers]);
-  const [checkedKeys, setCheckedKeys] = useState<React.Key[]>([]);
+  const [allIds, setAllIds] = useState<React.Key[]>([]);
+  const [checkedIds, setCheckedIds] = useState<React.Key[]>([]);
   const layerListRef = useRef<HTMLDivElement | null>(null);
   const [layerListEl, setLayerListEl] = useState<HTMLDivElement | null>(null);
   const setLayerListRef = useCallback((el: HTMLDivElement | null) => {
@@ -94,28 +96,34 @@ const LayerList = observer(({ map, visible }: ILayerListProps) => {
   }, []);
 
   const onCheck = (
-    checkedKeys:
+    checked:
       | {
           checked: React.Key[];
           halfChecked: React.Key[];
         }
       | React.Key[]
   ) => {
-    const keys = checkedKeys as React.Key[];
+    const keys = checked as React.Key[];
     const allMapLayers = map?.getAllLayers()?.filter(l => l.getProperties().id) ?? [];
 
     allMapLayers.forEach(l => l.setVisible(keys.includes(l.getProperties().id)));
-    setCheckedKeys(keys);
+    setCheckedIds(keys);
   };
 
   const onLayerAdd = useCallback(
     (evt: CollectionEvent<BaseLayer>) => {
       if (map) {
         setMapLayers([...map.getLayers().getArray()]);
-        setCheckedKeys(
+        setCheckedIds(
           map
             .getAllLayers()
             .filter(l => l.getProperties().id && l.getVisible())
+            .map(l => l.getProperties().id) ?? []
+        );
+        setAllIds(
+          map
+            .getAllLayers()
+            .filter(l => l.getProperties().id)
             .map(l => l.getProperties().id) ?? []
         );
         const layer = evt.element;
@@ -135,6 +143,23 @@ const LayerList = observer(({ map, visible }: ILayerListProps) => {
   }, [map, onLayerAdd]);
 
   useEffect(() => {
+    if (!map) return;
+    const keys: EventsKey[] = [];
+    const allMapLayers = map.getAllLayers()?.filter(l => l.getProperties().id?.startsWith('track-')) ?? [];
+    allIds.forEach(id => {
+      const layer = allMapLayers.find(l => l.getProperties().id === id);
+      if (!layer) return;
+      const key = layer.on('change:visible', () =>
+        setCheckedIds(old => (layer.getVisible() ? [...old, id] : old.filter(oldId => oldId !== id)))
+      );
+      keys.push(key);
+    });
+    return () => {
+      unByKey(keys);
+    };
+  }, [map, allIds]);
+
+  useEffect(() => {
     if (map && layerListEl) {
       const layerListTreeControl = new Control({
         element: layerListEl
@@ -148,7 +173,7 @@ const LayerList = observer(({ map, visible }: ILayerListProps) => {
 
   return (
     <StyledControl ref={setLayerListRef} visible={visible}>
-      <Tree checkable selectable={false} treeData={treeData} checkedKeys={checkedKeys} onCheck={onCheck} />
+      <Tree checkable selectable={false} treeData={treeData} checkedKeys={checkedIds} onCheck={onCheck} />
     </StyledControl>
   );
 });

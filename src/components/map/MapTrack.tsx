@@ -9,6 +9,7 @@ import {
 import {
   Button,
   Card,
+  Checkbox,
   Col,
   ColorPicker,
   ColorPickerProps,
@@ -65,6 +66,7 @@ interface IMapTracksProps {
   }[];
   editable: boolean;
   map: Map | undefined;
+  visibleTrackIds: string[];
   remove: (trackId: string | string[], index: number | number[]) => void;
   moveUp: (index: number) => void;
   moveDown: (index: number) => void;
@@ -72,6 +74,8 @@ interface IMapTracksProps {
   setEditingSvg: (svg: string | undefined) => void;
   setEditingIndex: (index: number | null) => void;
   setEditTrackIds: (updateFn: (oldIds: string[]) => string[]) => void;
+  toggleLayerVisibility: (trackId: string) => void;
+  toggleGroupLayerVisibility: (trackCenter: string, checked: boolean) => void;
 }
 
 const MapTrack = ({
@@ -80,19 +84,46 @@ const MapTrack = ({
   defaultTrackMarkings,
   editable,
   map,
+  visibleTrackIds,
   remove,
   moveUp,
   moveDown,
   setSvgModalVisible,
   setEditingSvg,
   setEditingIndex,
-  setEditTrackIds
+  setEditTrackIds,
+  toggleLayerVisibility,
+  toggleGroupLayerVisibility
 }: IMapTracksProps) => {
   const { t } = useTranslation();
   const tracks = Form.useWatch('tracks', form);
   const trackId = Form.useWatch(['tracks', field.name, 'trackId'], form);
-  const prevTrackCenter = field.name > 0 ? tracks?.[field.name - 1].trackCenter : undefined;
   const trackCenter = Form.useWatch(['tracks', field.name, 'trackCenter'], form);
+  const prevTrackCenter = field.name > 0 ? tracks?.[field.name - 1].trackCenter : undefined;
+  const layerVisible = useMemo(
+    () => !editable && visibleTrackIds.includes(`track-${trackId}`),
+    [editable, trackId, visibleTrackIds]
+  );
+  const layerGroupVisible = useMemo(
+    () =>
+      !editable &&
+      (tracks ?? [])
+        .filter(t => t.trackCenter === trackCenter)
+        .reduce(
+          (acc, t, index) =>
+            acc === 'indeterminate'
+              ? acc
+              : visibleTrackIds.includes(`track-${t.trackId}`)
+                ? acc === true || index === 0
+                  ? true
+                  : 'indeterminate'
+                : acc === false
+                  ? false
+                  : 'indeterminate',
+          false as boolean | 'indeterminate'
+        ),
+    [editable, tracks, trackCenter, visibleTrackIds]
+  );
   const line = Form.useWatch(['tracks', field.name, 'line'], form);
   const svgString = Form.useWatch(['tracks', field.name, 'symbolSvg'], form);
   const lineString = line
@@ -163,15 +194,28 @@ const MapTrack = ({
   }, [line, map]);
 
   return (
-    <div style={{ marginLeft: 20 }}>
+    <div style={{ marginLeft: 4, marginBottom: 8 }}>
       {!editable && prevTrackCenter !== trackCenter ? (
-        <Title
-          level={2}
-          ellipsis={{ expandable: false, tooltip: false, rows: 1 }}
-          style={{ margin: 0, marginBottom: 10 }}
-        >
-          {trackCenter}
-        </Title>
+        <Row wrap={false} style={{ margin: 0 }}>
+          <Col flex="auto">
+            <Title
+              underline
+              level={3}
+              ellipsis={{ expandable: false, tooltip: false, rows: 1 }}
+              style={{ marginTop: 0, fontWeight: 'bold', marginBottom: 8, paddingBottom: 0 }}
+            >
+              {trackCenter}
+            </Title>
+          </Col>
+          <Col flex="50px">
+            <Checkbox
+              checked={layerGroupVisible === true}
+              indeterminate={layerGroupVisible === 'indeterminate'}
+              style={{ transform: 'translateX(20px) translateY(8px) scale(2.0)' }}
+              onChange={({ target: { checked } }) => toggleGroupLayerVisibility(trackCenter, checked)}
+            />
+          </Col>
+        </Row>
       ) : null}
       <Card
         styles={{
@@ -180,7 +224,12 @@ const MapTrack = ({
         }}
         variant={editable ? undefined : 'borderless'}
       >
-        <Space wrap={false} size="small" style={{ position: 'absolute', right: 6, top: 6, zIndex: 1000 }}>
+        <Space
+          wrap={false}
+          vertical={!editable}
+          size="small"
+          style={{ position: 'absolute', right: 6, top: 6, zIndex: 1000 }}
+        >
           {editable ? (
             <Switch
               checkedChildren={t('map.editableInMap')}
@@ -215,10 +264,17 @@ const MapTrack = ({
             />
           ) : null}
           {editable ? <Button type="link" size="small" icon={<CopyOutlined />} onClick={copyTrack} /> : null}
+          {!editable ? (
+            <Checkbox
+              checked={layerVisible}
+              style={{ transform: 'translateX(8px) scale(2.0)' }}
+              onChange={() => toggleLayerVisibility(trackId)}
+            />
+          ) : null}
           <Button
             type={editable ? 'link' : 'default'}
-            size={editable ? 'small' : 'large'}
-            icon={<SearchOutlined style={{ fontSize: editable ? 12 : 24 }} />}
+            size={editable ? 'small' : 'middle'}
+            icon={<SearchOutlined style={{ fontSize: editable ? 12 : 18 }} />}
             onClick={onZoomToTrack}
           />
           {editable ? (
@@ -233,7 +289,7 @@ const MapTrack = ({
           ) : null}
         </Space>
         <Row wrap={false}>
-          <Col flex="100px">
+          <Col flex={editable ? '100px' : '60px'}>
             <Flex vertical>
               {editable ? (
                 <Button
@@ -260,9 +316,9 @@ const MapTrack = ({
                 <img
                   src={`data:image/svg+xml;utf8,${encodeURIComponent(svgString)}`}
                   alt={t('map.EditSvg')}
-                  width="80"
-                  height="80"
-                  style={{ alignSelf: 'center' }}
+                  width="60"
+                  height="60"
+                  style={{ alignSelf: 'left' }}
                 />
               ) : (
                 <StopOutlined style={{ alignSelf: 'center', cursor: 'pointer', fontSize: 56, padding: 6 }} />
@@ -280,7 +336,7 @@ const MapTrack = ({
               ) : null}
             </Flex>
           </Col>
-          <Col flex="auto">
+          <Col flex="auto" style={{ maxWidth: 'calc(100% - 140px)' }}>
             <FormItem name={[field.name, 'trackId']} style={{ display: 'none' }}>
               <Input type="hidden" />
             </FormItem>

@@ -5,8 +5,8 @@ import { useSize } from '../../utils/useSize';
 
 const Title = Typography.Title;
 
-const FullScreenContainer = styled.div`
-  height: calc(100vh - 92px);
+const FullScreenContainer = styled.div<{ height: string }>`
+  height: ${props => props.height};
   width: 100%;
   overflow: hidden;
 `;
@@ -37,10 +37,17 @@ interface IFullScreenModalProps {
   title: ReactNode;
   footer: ReactNode;
   children: ReactNode;
+  height?: string;
   onContentOffsetHeight?: (height: number) => void;
 }
 
-const FullScreenWizard = ({ title, footer, children, onContentOffsetHeight }: IFullScreenModalProps) => {
+const FullScreenWizard = ({
+  title,
+  footer,
+  children,
+  height = 'calc(100vh - 92px)',
+  onContentOffsetHeight
+}: IFullScreenModalProps) => {
   const footerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const { height: footerHeight } = useSize(footerRef, false, true, 'client');
@@ -51,7 +58,7 @@ const FullScreenWizard = ({ title, footer, children, onContentOffsetHeight }: IF
   }, [contentHeight, onContentOffsetHeight]);
 
   return (
-    <FullScreenContainer>
+    <FullScreenContainer height={height}>
       <TitleContainer>
         <Title level={2} ellipsis={{ expandable: false, tooltip: false, rows: 1 }} style={{ margin: 0 }}>
           {title}

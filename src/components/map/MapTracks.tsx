@@ -1,13 +1,16 @@
 import { Button, Form, Input, message, Modal, Space, Splitter } from 'antd';
 import Map from 'ol/Map';
+import { unByKey } from 'ol/Observable';
+import { EventsKey } from 'ol/events';
 import { toLonLat } from 'ol/proj';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { styled } from 'styled-components';
 import { v4 as uuidv4 } from 'uuid';
 import { IExtentProps } from '../../models/mobxClubModel';
 import { PostJsonData } from '../../utils/api';
 import { useMobxStore } from '../../utils/mobxStore';
+import { useSize } from '../../utils/useSize';
 import FullScreenWizard from '../styled/FullscreenWizard';
 import EditableMapTracksLayer from './EditableMapTracksLayer';
 import MapTrack, { IMapTracksFormProps } from './MapTrack';
@@ -26,16 +29,23 @@ import dimondUpperLeftWhite from './trackMarkings/dimondUpperLeftWhite.svg?raw';
 import { mapProjection } from './useOpenLayersMap';
 
 const MapContainer = styled.div`
-  height: 100%;
+  height: calc(100vh - 88px);
   width: 100%;
 `;
 
 const ContentArea = styled.div`
-  & {
+  &&& {
     margin-top: 20px;
     margin-left: 20px;
     margin-right: 0px;
     overflow: hidden;
+  }
+`;
+const StyledSplitter = styled(Splitter)<{ vertical: boolean }>`
+  &&& .map-panel {
+    flex-basis: 100% !important;
+    margin-left: ${props => (props.vertical ? '0' : '6px')};
+    margin-top: ${props => (props.vertical ? '6px' : '0')};
   }
 `;
 
@@ -43,6 +53,8 @@ const MapTracks = () => {
   const { t } = useTranslation();
   const { globalStateModel, clubModel, sessionModel } = useMobxStore();
   const [form] = Form.useForm<IMapTracksFormProps>();
+  const ref = useRef<HTMLDivElement>(null);
+  const { width, height } = useSize(ref, true, true);
   const tracks = Form.useWatch('tracks', form);
   const [map, setMap] = useState<Map>();
   const [loadedValues, setLoadedValues] = useState<IMapTracksFormProps['tracks']>();
@@ -54,6 +66,8 @@ const MapTracks = () => {
   const [editingSvg, setEditingSvg] = useState<string | undefined>(undefined);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editTrackIds, setEditTrackIds] = useState<string[]>([]);
+  const [layerTrackIds, setLayerTrackIds] = useState<string[]>([]);
+  const [visibleTrackIds, setVisibleTrackIds] = useState<string[]>([]);
   const initialValues = useMemo(
     () =>
       loadedValues
@@ -109,6 +123,7 @@ const MapTracks = () => {
     ],
     [t]
   );
+  const isVertical = useMemo(() => width !== undefined && width < 700, [width]);
 
   const onRemove = useCallback(
     (trackId: string | string[], index: number | number[], removeFn: (index: number | number[]) => void) => {
@@ -117,6 +132,35 @@ const MapTracks = () => {
       setRemovedTrackIds(prev => [...prev, ...idsToRemove]);
     },
     []
+  );
+
+  const toggleGroupLayerVisibility = useCallback(
+    (trackCenter: string, checked: boolean) => {
+      if (!map || !trackCenter) return;
+      const groupLayerId = `track-group-${trackCenter}`;
+      const allMapLayers = map.getAllLayers()?.filter(l => l.getProperties().id) ?? [];
+      const groupLayer = allMapLayers.find(l => l.getProperties().id === groupLayerId);
+      if (groupLayer) groupLayer.setVisible(checked);
+      (tracks ?? [])
+        .filter(t => t.trackCenter === trackCenter)
+        .forEach(track => {
+          const layerId = `track-${track.trackId}`;
+          const layer = allMapLayers.find(l => l.getProperties().id === layerId);
+          if (layer) layer.setVisible(checked);
+        });
+    },
+    [map, tracks]
+  );
+
+  const toggleLayerVisibility = useCallback(
+    (trackId: string) => {
+      if (!map || !trackId) return;
+      const layerId = `track-${trackId}`;
+      const allMapLayers = map.getAllLayers()?.filter(l => l.getProperties().id) ?? [];
+      const layer = allMapLayers.find(l => l.getProperties().id === layerId);
+      if (layer) layer.setVisible(!layer.getVisible());
+    },
+    [map]
   );
 
   const move = useCallback(
@@ -187,6 +231,39 @@ const MapTracks = () => {
   );
 
   useEffect(() => {
+    if (!map) return;
+    const allMapLayers = map.getLayers();
+    const keys = allMapLayers.on(['add', 'remove'], () => {
+      const allMapLayers = map.getAllLayers()?.filter(l => l.getProperties().id?.startsWith('track-')) ?? [];
+      setLayerTrackIds(old => (old.length === allMapLayers.length ? old : allMapLayers.map(l => l.getProperties().id)));
+    });
+    return () => {
+      unByKey(keys);
+    };
+  }, [map]);
+
+  useEffect(() => {
+    if (!map || editable) return;
+    const keys: EventsKey[] = [];
+    const visibleIds: string[] = [];
+    const allMapLayers = map.getAllLayers()?.filter(l => l.getProperties().id?.startsWith('track-')) ?? [];
+    layerTrackIds.forEach(trackId => {
+      const layer = allMapLayers.find(l => l.getProperties().id === trackId);
+      if (!layer) return;
+      const key = layer.on('change:visible', () =>
+        setVisibleTrackIds(old => (layer.getVisible() ? [...old, trackId] : old.filter(id => id !== trackId)))
+      );
+      keys.push(key);
+      if (layer.getVisible()) visibleIds.push(trackId);
+    });
+    setVisibleTrackIds(visibleIds);
+    return () => {
+      unByKey(keys);
+      setVisibleTrackIds([]);
+    };
+  }, [map, layerTrackIds, editable]);
+
+  useEffect(() => {
     if (form && initialValues) form.setFieldsValue({ tracks: initialValues });
     globalStateModel.setGraphics(['calendar', 'event'], []);
   }, [form, globalStateModel, initialValues]);
@@ -200,14 +277,24 @@ const MapTracks = () => {
 
   return (
     <Form form={form} layout="vertical" initialValues={initialValues}>
-      <MapContainer>
+      <MapContainer ref={ref}>
         <Form.List name="tracks">
           {(fields, { add, remove }) => (
-            <Splitter style={{ position: 'absolute', top: 64, left: 0, height: 'calc(100vh - 64px)', width: '100vw' }}>
-              <Splitter.Panel collapsible defaultSize={700} min={400} max={1000} style={{ marginRight: 6 }}>
+            <StyledSplitter
+              vertical={isVertical}
+              style={{ position: 'absolute', top: 64, left: 0, height: 'calc(100vh - 64px)', width: '100vw' }}
+            >
+              <Splitter.Panel
+                collapsible
+                defaultSize="35%"
+                min={400}
+                max={1000}
+                style={{ minWidth: 400, minHeight: 400, marginRight: 6, marginBottom: 6 }}
+              >
                 <ContentArea>
                   <FullScreenWizard
                     title={t('map.Tracks')}
+                    height="100%"
                     footer={
                       editable
                         ? [
@@ -230,7 +317,12 @@ const MapTracks = () => {
                           ]
                         : sessionModel.isAdmin
                           ? [
-                              <Button key="editButton" type="primary" onClick={() => setEditable(true)}>
+                              <Button
+                                key="editButton"
+                                disabled={!width || !height || width < 1200 || height < 800}
+                                type="primary"
+                                onClick={() => setEditable(true)}
+                              >
                                 {t('common.Edit')}
                               </Button>
                             ]
@@ -245,6 +337,7 @@ const MapTracks = () => {
                           form={form}
                           field={field}
                           defaultTrackMarkings={defaultTrackMarkings}
+                          visibleTrackIds={visibleTrackIds}
                           editable={editable}
                           remove={(trackId: string | string[], index: number | number[]) =>
                             onRemove(trackId, index, remove)
@@ -255,6 +348,8 @@ const MapTracks = () => {
                           setEditingSvg={setEditingSvg}
                           setEditingIndex={setEditingIndex}
                           setEditTrackIds={setEditTrackIds}
+                          toggleLayerVisibility={toggleLayerVisibility}
+                          toggleGroupLayerVisibility={toggleGroupLayerVisibility}
                         />
                       ))}
                     </Space>
@@ -284,7 +379,7 @@ const MapTracks = () => {
                   </FullScreenWizard>
                 </ContentArea>
               </Splitter.Panel>
-              <Splitter.Panel collapsible style={{ marginLeft: 6 }}>
+              <Splitter.Panel collapsible className="map-panel">
                 <OSMOrienteeringMap
                   key="mapOnly"
                   useAllWidgets
@@ -320,7 +415,7 @@ const MapTracks = () => {
                   )}
                 </OSMOrienteeringMap>
               </Splitter.Panel>
-            </Splitter>
+            </StyledSplitter>
           )}
         </Form.List>
       </MapContainer>
