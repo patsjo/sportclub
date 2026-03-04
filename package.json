@@ -30,7 +30,7 @@
     "@react-hook/resize-observer": "2.0.2",
     "antd": "6.1.2",
     "antd-img-crop": "4.27.0",
-    "ckeditor5": "47.3.0",
+    "ckeditor5": "47.6.0",
     "copy-to-clipboard": "3.3.3",
     "dayjs": "1.11.19",
     "i18next": "25.7.3",
