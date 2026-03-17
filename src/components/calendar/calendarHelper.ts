@@ -23,15 +23,14 @@ const GetGaussEasterSunday = (year: number): dayjs.Dayjs => {
   const N = (4 + k - q) % 7;
   const d = (19 * a + M) % 30;
   const e = (2 * b + 4 * c + 6 * d + N) % 7;
-  const easterSunday = dayjs(`${year.toString()}-03-22`, 'YYYY-MM-DD');
-  easterSunday.add(d + e, 'days');
+  let easterSunday = dayjs(`${year.toString()}-03-22`, 'YYYY-MM-DD').add(d + e, 'days');
 
   if (d === 29 && e === 6) {
-    easterSunday.add(-7, 'days');
+    easterSunday = easterSunday.add(-7, 'days');
   }
 
   if (d === 28 && e === 6 && (11 * M + 11) % 30 < 19) {
-    easterSunday.add(-7, 'days');
+    easterSunday = easterSunday.add(-7, 'days');
   }
   return easterSunday;
 };
