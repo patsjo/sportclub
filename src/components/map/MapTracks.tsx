@@ -392,6 +392,7 @@ const MapTracks = () => {
                 >
                   {editable ? (
                     <EditableMapTracksLayer
+                      key="editableTracks"
                       tracks={tracks}
                       editTrackIds={editTrackIds}
                       onDrawComplete={geometry =>
@@ -411,7 +412,7 @@ const MapTracks = () => {
                       }
                     />
                   ) : (
-                    <MapTracksLayers onLoad={setLoadedValues} />
+                    <MapTracksLayers key="nonEditableTracks" onLoad={setLoadedValues} />
                   )}
                 </OSMOrienteeringMap>
               </Splitter.Panel>

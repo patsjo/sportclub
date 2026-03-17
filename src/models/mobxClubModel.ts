@@ -284,6 +284,7 @@ class MapGroupLayer implements IMapGroupLayer {
   title = '';
   visible = true;
   layers: IAnyLayer[] = [];
+  private _fullExtentCache?: IExtentProps;
 
   constructor(options: PickRequired<IMapGroupLayerProps, 'id' | 'title'>) {
     if (options) {
@@ -307,19 +308,30 @@ class MapGroupLayer implements IMapGroupLayer {
   }
 
   get fullExtent(): IExtentProps {
-    const extent: IExtentProps = {
+    const newExtent: IExtentProps = {
       xmin: 99999999999999,
       ymin: 99999999999999,
       xmax: -99999999999999,
       ymax: -99999999999999
     };
     this.layers.forEach(layer => {
-      if (extent.xmin > layer.fullExtent.xmin) extent.xmin = layer.fullExtent.xmin;
-      if (extent.ymin > layer.fullExtent.ymin) extent.ymin = layer.fullExtent.ymin;
-      if (extent.xmax < layer.fullExtent.xmax) extent.xmax = layer.fullExtent.xmax;
-      if (extent.ymax < layer.fullExtent.ymax) extent.ymax = layer.fullExtent.ymax;
+      if (newExtent.xmin > layer.fullExtent.xmin) newExtent.xmin = layer.fullExtent.xmin;
+      if (newExtent.ymin > layer.fullExtent.ymin) newExtent.ymin = layer.fullExtent.ymin;
+      if (newExtent.xmax < layer.fullExtent.xmax) newExtent.xmax = layer.fullExtent.xmax;
+      if (newExtent.ymax < layer.fullExtent.ymax) newExtent.ymax = layer.fullExtent.ymax;
     });
-    return extent;
+
+    if (
+      this._fullExtentCache &&
+      this._fullExtentCache.xmin === newExtent.xmin &&
+      this._fullExtentCache.ymin === newExtent.ymin &&
+      this._fullExtentCache.xmax === newExtent.xmax &&
+      this._fullExtentCache.ymax === newExtent.ymax
+    ) {
+      return this._fullExtentCache;
+    }
+    this._fullExtentCache = newExtent;
+    return newExtent;
   }
 }
 
@@ -353,6 +365,7 @@ class MapModel implements IMapModel {
   saveUrl = '';
   queryUrl = '';
   layers: IAnyLayer[] = [];
+  private _fullExtentCache?: IExtentProps;
 
   constructor(options: Partial<IMapProps>) {
     if (options) {
@@ -381,19 +394,30 @@ class MapModel implements IMapModel {
   }
 
   get fullExtent(): IExtentProps {
-    const extent: IExtentProps = {
+    const newExtent: IExtentProps = {
       xmin: 99999999999999,
       ymin: 99999999999999,
       xmax: -99999999999999,
       ymax: -99999999999999
     };
     this.layers.forEach(layer => {
-      if (extent.xmin > layer.fullExtent.xmin) extent.xmin = layer.fullExtent.xmin;
-      if (extent.ymin > layer.fullExtent.ymin) extent.ymin = layer.fullExtent.ymin;
-      if (extent.xmax < layer.fullExtent.xmax) extent.xmax = layer.fullExtent.xmax;
-      if (extent.ymax < layer.fullExtent.ymax) extent.ymax = layer.fullExtent.ymax;
+      if (newExtent.xmin > layer.fullExtent.xmin) newExtent.xmin = layer.fullExtent.xmin;
+      if (newExtent.ymin > layer.fullExtent.ymin) newExtent.ymin = layer.fullExtent.ymin;
+      if (newExtent.xmax < layer.fullExtent.xmax) newExtent.xmax = layer.fullExtent.xmax;
+      if (newExtent.ymax < layer.fullExtent.ymax) newExtent.ymax = layer.fullExtent.ymax;
     });
-    return extent;
+
+    if (
+      this._fullExtentCache &&
+      this._fullExtentCache.xmin === newExtent.xmin &&
+      this._fullExtentCache.ymin === newExtent.ymin &&
+      this._fullExtentCache.xmax === newExtent.xmax &&
+      this._fullExtentCache.ymax === newExtent.ymax
+    ) {
+      return this._fullExtentCache;
+    }
+    this._fullExtentCache = newExtent;
+    return newExtent;
   }
 }
 

@@ -53,7 +53,7 @@ const getAngleAtDistance = (line: LineString, distance: number): number | null =
   return Math.atan2(y2 - y1, x2 - x1);
 };
 
-const lineToMultiPointByResolution = (line: LineString, resolution: number, pixelSpacing: number = 40): MultiPoint => {
+const lineToMultiPointByResolution = (line: LineString, resolution: number, pixelSpacing: number = 60): MultiPoint => {
   const spacing = pixelSpacing * resolution;
   const length = line.getLength();
 
@@ -97,7 +97,7 @@ const lineToPointArrayByKm = (
   return items;
 };
 const iconCache: Record<string, Icon> = {};
-const lineStyleCache: Record<string, Style> = {};
+const lineStyleCache: Record<string, Style[]> = {};
 export const styleFunction = (feature: FeatureLike, resolution: number): Style | Style[] => {
   if (resolution > maxResolutionForTracks) return [];
   let symbolSvg = feature.get('symbolSvg') as string | undefined;
@@ -110,14 +110,33 @@ export const styleFunction = (feature: FeatureLike, resolution: number): Style |
   }
 
   const lineColor = feature.get('lineColor') as string;
-  if (!lineStyleCache[lineColor])
-    lineStyleCache[lineColor] = new Style({
-      stroke: new Stroke({
-        color: lineColor,
-        width: 6,
-        lineDash: [0, 8]
+  const key = `${lineColor}_${resolution > maxSymbolMarkingResolution ? 'noSymbol' : 'withSymbol'}`;
+  if (!lineStyleCache[key] && resolution > maxSymbolMarkingResolution)
+    lineStyleCache[key] = [
+      new Style({
+        stroke: new Stroke({
+          color: lineColor,
+          width: 3
+        })
       })
-    });
+    ];
+  else if (!lineStyleCache[key])
+    lineStyleCache[key] = [
+      new Style({
+        stroke: new Stroke({
+          color: lineColor,
+          width: 3,
+          offset: -4
+        })
+      }),
+      new Style({
+        stroke: new Stroke({
+          color: lineColor,
+          width: 3,
+          offset: 4
+        })
+      })
+    ];
 
   let kmStyles: Style[] = [];
   const geomForKm = (feature.getGeometry && feature.getGeometry()) as LineString | undefined;
@@ -172,7 +191,7 @@ export const styleFunction = (feature: FeatureLike, resolution: number): Style |
         ];
 
   if (!symbolSvg || resolution > maxSymbolMarkingResolution)
-    return [lineStyleCache[lineColor], ...finishStyle, ...kmStyles];
+    return [...lineStyleCache[key], ...finishStyle, ...kmStyles];
 
   const iconUrl = `data:image/svg+xml;utf8,${encodeURIComponent(symbolSvg)}`;
 
@@ -183,7 +202,7 @@ export const styleFunction = (feature: FeatureLike, resolution: number): Style |
     });
   }
   return [
-    lineStyleCache[lineColor],
+    ...lineStyleCache[key],
     new Style({
       image: iconCache[iconUrl],
       geometry: f => {
@@ -250,12 +269,12 @@ const EditableMapTracksLayer = ({
                 symbolSvg: track.symbolSvg,
                 trackCenter: track.trackCenter,
                 name: track.name,
-                lineColor: getFillColorFromSvg(track.symbolSvg),
+                lineColor: editTrackIds?.includes(track.trackId) ? '#a0a0a0' : getFillColorFromSvg(track.symbolSvg),
                 orderBy: track.orderBy
               })
           )
       }),
-    [tracks]
+    [tracks, editTrackIds]
   );
   const modify = useMemo(
     () =>
