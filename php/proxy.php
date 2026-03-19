@@ -172,7 +172,6 @@ if($response == false || curl_errno($ch))
     echo '<HTML><TITLE>ERROR</TITLE><BODY>Error: ' . curl_error($ch) . '</BODY></HTML>';
     die(0);
 }
-curl_close($ch);
 // split response to header and content
 list($response_headers, $response_content) = preg_split('/(\r\n){2}/', $response, 2);
 if($responseStatusCode != 200)

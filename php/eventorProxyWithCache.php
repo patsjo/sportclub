@@ -10,7 +10,7 @@
 //# Date        By      Description                          #
 //# ----------  ------  ------------------------------------ #
 //# 2021-08-24  PatSjo  Initial version                      #
-//# 2025-12-30  PatSjo  Initial version                      #
+//# 2026-03-08  PatSjo  PHP 8.5 fixes                        #
 //############################################################
 
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/functions.php");
@@ -79,7 +79,6 @@ if($response == false || curl_errno($ch))
 {
     trigger_error('Proxy error: ' . curl_error($ch), E_USER_ERROR);
 }
-curl_close($ch);
 
 // split response to header and content
 list($response_headers, $response_content) = preg_split('/(\r\n){2}/', $response, 2);

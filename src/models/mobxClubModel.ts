@@ -308,6 +308,14 @@ class MapGroupLayer implements IMapGroupLayer {
   }
 
   get fullExtent(): IExtentProps {
+    if (this.layers.length === 0) {
+      return {
+        xmin: 0,
+        ymin: 0,
+        xmax: 0,
+        ymax: 0
+      };
+    }
     const newExtent: IExtentProps = {
       xmin: 99999999999999,
       ymin: 99999999999999,
@@ -394,6 +402,14 @@ class MapModel implements IMapModel {
   }
 
   get fullExtent(): IExtentProps {
+    if (this.layers.length === 0) {
+      return {
+        xmin: 0,
+        ymin: 0,
+        xmax: 0,
+        ymax: 0
+      };
+    }
     const newExtent: IExtentProps = {
       xmin: 99999999999999,
       ymin: 99999999999999,

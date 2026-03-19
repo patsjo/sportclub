@@ -19,6 +19,7 @@
 //# 2005-12-31  PatSjo  Changes from ASP to PHP              #
 //# 2020-11-04  PatSjo  Adjust for eventor login             #
 //# 2021-08-21  PatSjo  Remove HTML functions                #
+//# 2026-03-08  PatSjo  PHP 8.5 fixes                        #
 //############################################################
 
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/functions.php");
@@ -183,7 +184,6 @@ function getAuthenticatePerson()
   {
     return null;
   }
-  curl_close($ch);
 
   // split response to header and content
   list($response_headers, $response_content) = preg_split('/(\r\n){2}/', $response, 2);

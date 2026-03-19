@@ -98,7 +98,12 @@ const MapTracks = () => {
         return { xmin: extent[0], ymin: extent[1], xmax: extent[2], ymax: extent[3] };
       }
     }
-    return clubModel.map?.fullExtent;
+    return clubModel.map?.fullExtent.xmin &&
+      clubModel.map?.fullExtent.ymin &&
+      clubModel.map?.fullExtent.xmax &&
+      clubModel.map?.fullExtent.ymax
+      ? clubModel.map?.fullExtent
+      : undefined;
   }, [clubModel.map?.fullExtent, initialValues]);
   const defaultTrackMarkings = useMemo(
     () => [

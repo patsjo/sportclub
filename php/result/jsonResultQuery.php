@@ -28,7 +28,7 @@ cors();
 
 global $user_id;
 setUserID();
-$isCoach = $user_id > 0 && ValidGroup($cCOACH_GROUP_ID);
+$isCoach = $user_id > 0 && (ValidGroup($cCOACH_GROUP_ID) || ValidGroup($cADMIN_GROUP_ID));
 
 // Takes raw data from the request
 $json = file_get_contents('php://input');
