@@ -1289,7 +1289,7 @@ const ResultWizardStep2EditRace = observer(
                   .map(leg => {
                     const courses =
                       classResult.Course?.filter(r => r['@attributes'].raceNumber === eventRace?.RaceNumber) ?? [];
-                    const course = courses.find((c, idx) => leg === idx + 1 || courses.length === idx + 1);
+                    const course = courses.find((c, idx) => leg === idx + 1);
                     const startedlegMembers = teamResults
                       .map(tr =>
                         (tr.TeamMemberResult ?? []).filter(

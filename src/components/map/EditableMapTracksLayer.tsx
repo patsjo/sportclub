@@ -10,7 +10,7 @@ import VectorLayer from 'ol/layer/Vector';
 import { fromLonLat, toLonLat } from 'ol/proj';
 import VectorSource from 'ol/source/Vector';
 import { getLength } from 'ol/sphere.js';
-import { Fill, Icon, Stroke, Style, Text } from 'ol/style';
+import { Circle as CircleStyle, Fill, Icon, Stroke, Style, Text } from 'ol/style';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ILineStringGeometry } from '../../models/graphic';
 import { useMapStore } from '../../utils/mapStore';
@@ -18,6 +18,7 @@ import { IMapTracksFormProps } from './MapTrack';
 import finishSvg from './trackMarkings/finish.svg?raw';
 import { mapProjection } from './useOpenLayersMap';
 
+const maxWhitespaceResolution = 3;
 const maxKmMarkingResolution = 25;
 const maxSymbolMarkingResolution = 75;
 const maxResolutionForTracks = 250;
@@ -98,6 +99,33 @@ const lineToPointArrayByKm = (
 };
 const iconCache: Record<string, Icon> = {};
 const lineStyleCache: Record<string, Style[]> = {};
+
+const recolorSvg = (svgString: string | undefined, color: string): string | undefined => {
+  if (!svgString) return undefined;
+  // replace fill="#xxxx" and fill='#xxxx'
+  let out = svgString.replace(/fill=["']#([^"']+)["']/g, `fill="${color}"`);
+  // replace style="...fill:#xxxx..."
+  out = out.replace(/style=["']([^"']*)["']/g, (m, styleContent) => {
+    const newStyle = styleContent.replace(/fill:\s*#([0-9a-fA-F]+)/g, `fill: ${color}`);
+    return `style="${newStyle}"`;
+  });
+  return out;
+};
+const colorWithTransparency = (hex: string | undefined, transparentFraction = 0.75): string => {
+  const fallback = '#aa00aa';
+  if (!hex) hex = fallback;
+  // normalize #rrggbb or #rrggbbaa
+  const m = /^#([0-9a-fA-F]{6})([0-9a-fA-F]{2})?$/.exec(hex);
+  if (!m) return hex;
+  const rgb = m[1];
+  const alphaHex = m[2];
+  const existingOpacity = alphaHex ? parseInt(alphaHex, 16) / 255 : 1;
+  const targetOpacity = 1 - transparentFraction; // e.g. 0.25 for 75% transparent
+  const newOpacity = Math.min(existingOpacity, targetOpacity);
+  const newAlpha = Math.round(newOpacity * 255);
+  const newAlphaHex = newAlpha.toString(16).padStart(2, '0');
+  return `#${rgb}${newAlphaHex}`;
+};
 export const styleFunction = (feature: FeatureLike, resolution: number): Style | Style[] => {
   if (resolution > maxResolutionForTracks) return [];
   let symbolSvg = feature.get('symbolSvg') as string | undefined;
@@ -108,9 +136,8 @@ export const styleFunction = (feature: FeatureLike, resolution: number): Style |
       .replace(/<svg\s+([^>]*?)\s+height=['"].*?['"]\s*([^>]*?)>/g, '<svg $1 $2>')
       .replace(/<svg([^>]*)/, '<svg$1 width="24" height="24"');
   }
-
   const lineColor = feature.get('lineColor') as string;
-  const key = `${lineColor}_${resolution > maxSymbolMarkingResolution ? 'noSymbol' : 'withSymbol'}`;
+  const key = `${lineColor}_${resolution > maxSymbolMarkingResolution ? 'noSymbol' : resolution <= maxWhitespaceResolution ? 'withSymbolAndWhitespace' : 'withSymbol'}`;
   if (!lineStyleCache[key] && resolution > maxSymbolMarkingResolution)
     lineStyleCache[key] = [
       new Style({
@@ -120,23 +147,44 @@ export const styleFunction = (feature: FeatureLike, resolution: number): Style |
         })
       })
     ];
-  else if (!lineStyleCache[key])
-    lineStyleCache[key] = [
+  else if (!lineStyleCache[key]) {
+    lineStyleCache[key] = [];
+    if (resolution <= maxWhitespaceResolution) {
+      lineStyleCache[key] = [
+        new Style({
+          stroke: new Stroke({
+            color: '#ffffffc0',
+            width: 10,
+            offset: -10
+          })
+        }),
+        new Style({
+          stroke: new Stroke({
+            color: '#ffffffc0',
+            width: 10,
+            offset: 10
+          })
+        })
+      ];
+    }
+
+    lineStyleCache[key].push(
       new Style({
         stroke: new Stroke({
           color: lineColor,
           width: 3,
-          offset: -4
+          offset: -5
         })
       }),
       new Style({
         stroke: new Stroke({
           color: lineColor,
           width: 3,
-          offset: 4
+          offset: 5
         })
       })
-    ];
+    );
+  }
 
   let kmStyles: Style[] = [];
   const geomForKm = (feature.getGeometry && feature.getGeometry()) as LineString | undefined;
@@ -170,13 +218,14 @@ export const styleFunction = (feature: FeatureLike, resolution: number): Style |
     ];
   }
 
+  const finishSvgForFeature = (feature as FeatureLike).get('finishSvg') as string | undefined;
   const finishStyle =
     resolution > maxSymbolMarkingResolution
       ? []
       : [
           new Style({
             image: new Icon({
-              src: `data:image/svg+xml;utf8,${encodeURIComponent(finishSvg)}`,
+              src: `data:image/svg+xml;utf8,${encodeURIComponent(finishSvgForFeature ?? finishSvg)}`,
               scale: 1,
               anchor: [0, 1]
             }),
@@ -250,56 +299,103 @@ const EditableMapTracksLayer = ({
 }: IEditableMapTracksLayerProps) => {
   const [canSnap, setCanSnap] = useState(true);
   const map = useMapStore();
-  const source = useMemo(
+  const baseSource = useMemo(() => new VectorSource<Feature<LineString>>({ wrapX: false }), []);
+  const editSource = useMemo(() => new VectorSource<Feature<LineString>>({ wrapX: false }), []);
+  const editFeaturesCollection = useMemo(() => new Collection<Feature<LineString>>(), []);
+
+  useEffect(() => {
+    baseSource.clear();
+    editSource.clear();
+    const items = tracks?.slice().reverse() ?? [];
+    for (const track of items) {
+      const isEdit = !!editTrackIds?.includes(track.trackId);
+      const baseFill = getFillColorFromSvg(track.symbolSvg);
+      const nonEditLineColor = colorWithTransparency(baseFill, 0.75);
+      const feat = new Feature<LineString>({
+        geometry: new LineString(
+          track.line.path.map(coordinate => fromLonLat([coordinate.longitude, coordinate.latitude], mapProjection))
+        ),
+        trackId: track.trackId,
+        symbolSvg: isEdit ? track.symbolSvg : recolorSvg(track.symbolSvg, nonEditLineColor),
+        trackCenter: track.trackCenter,
+        name: track.name,
+        lineColor: isEdit ? getFillColorFromSvg(track.symbolSvg) : nonEditLineColor,
+        orderBy: track.orderBy
+      });
+      // recolor finish flag per-feature for non-edit tracks
+      if (!isEdit) {
+        feat.set('finishSvg', recolorSvg(finishSvg, nonEditLineColor));
+      }
+      if (isEdit) editSource.addFeature(feat);
+      else baseSource.addFeature(feat);
+    }
+    // sync collection used by Modify interaction
+    editFeaturesCollection.clear();
+    editFeaturesCollection.extend(editSource.getFeatures());
+  }, [tracks, editTrackIds, baseSource, editSource, editFeaturesCollection]);
+
+  const vertexStyle = useMemo(
     () =>
-      new VectorSource<Feature<LineString>>({
-        wrapX: false,
-        features: tracks
-          ?.slice()
-          .reverse()
-          .map(
-            track =>
-              new Feature<LineString>({
-                geometry: new LineString(
-                  track.line.path.map(coordinate =>
-                    fromLonLat([coordinate.longitude, coordinate.latitude], mapProjection)
-                  )
-                ),
-                trackId: track.trackId,
-                symbolSvg: track.symbolSvg,
-                trackCenter: track.trackCenter,
-                name: track.name,
-                lineColor: editTrackIds?.includes(track.trackId) ? '#a0a0a0' : getFillColorFromSvg(track.symbolSvg),
-                orderBy: track.orderBy
-              })
-          )
+      new Style({
+        image: new CircleStyle({
+          radius: 6,
+          fill: new Fill({ color: '#ffffff' }),
+          stroke: new Stroke({ color: '#000000', width: 2 })
+        })
       }),
-    [tracks, editTrackIds]
+    []
   );
+
+  const vertexSource = useMemo(() => new VectorSource<Feature<Point>>({ wrapX: false }), []);
+  const vertexLayer = useMemo(
+    () => new VectorLayer({ source: vertexSource, style: vertexStyle }),
+    [vertexSource, vertexStyle]
+  );
+
+  const updateVertexSource = useCallback(() => {
+    vertexSource.clear();
+    const editFeats = editSource.getFeatures();
+    for (const f of editFeats) {
+      const geom = f.getGeometry() as LineString | undefined;
+      if (!geom) continue;
+      const coords = geom.getCoordinates();
+      for (const c of coords) {
+        const p = new Feature<Point>({ geometry: new Point(c), trackId: f.get('trackId') });
+        vertexSource.addFeature(p);
+      }
+    }
+  }, [editSource, vertexSource]);
+
+  useEffect(() => {
+    const onAdd = () => updateVertexSource();
+    const onRemove = () => updateVertexSource();
+    const onChange = () => updateVertexSource();
+    editSource.on('addfeature', onAdd);
+    editSource.on('removefeature', onRemove);
+    editSource.on('changefeature', onChange);
+    updateVertexSource();
+    return () => {
+      editSource.un('addfeature', onAdd);
+      editSource.un('removefeature', onRemove);
+      editSource.un('changefeature', onChange);
+    };
+  }, [editSource, updateVertexSource]);
+
   const modify = useMemo(
     () =>
       new Modify({
-        features: new Collection(source.getFeatures().filter(f => editTrackIds?.includes(f.get('trackId'))))
+        features: editFeaturesCollection,
+        style: vertexStyle
       }),
-    [source, editTrackIds]
+    [editFeaturesCollection, vertexStyle]
   );
-  const draw = useMemo(
-    () =>
-      new Draw({
-        source: source,
-        type: 'LineString'
-      }),
-    [source]
-  );
-  const snap = useMemo(() => (canSnap ? new Snap({ source: source }) : undefined), [source, canSnap]);
-  const graphicsLayer = useMemo(
-    () =>
-      new VectorLayer({
-        source: source,
-        style: styleFunction
-      }),
-    [source]
-  );
+
+  const draw = useMemo(() => new Draw({ source: editSource, type: 'LineString' }), [editSource]);
+  const snapBase = useMemo(() => (canSnap ? new Snap({ source: baseSource }) : undefined), [baseSource, canSnap]);
+  const snapEdit = useMemo(() => (canSnap ? new Snap({ source: editSource }) : undefined), [editSource, canSnap]);
+
+  const baseLayer = useMemo(() => new VectorLayer({ source: baseSource, style: styleFunction }), [baseSource]);
+  const editLayer = useMemo(() => new VectorLayer({ source: editSource, style: styleFunction }), [editSource]);
 
   const onDrawEnd = useCallback(
     (event: DrawEvent) => {
@@ -358,10 +454,13 @@ const EditableMapTracksLayer = ({
           draw.removeLastPoint();
         }
       };
-      map.addLayer(graphicsLayer);
+      map.addLayer(baseLayer);
+      map.addLayer(editLayer);
+      map.addLayer(vertexLayer);
       map.addInteraction(modify);
       map.addInteraction(draw);
-      if (snap) map.addInteraction(snap);
+      if (snapBase) map.addInteraction(snapBase);
+      if (snapEdit) map.addInteraction(snapEdit);
       document.addEventListener('keydown', onKeydown);
       drawEndKey = draw.on('drawend', onDrawEnd);
       modifyEndKey = modify.on('modifyend', onModifyEnd);
@@ -370,13 +469,16 @@ const EditableMapTracksLayer = ({
         if (drawEndKey) draw.removeEventListener('drawend', drawEndKey.listener);
         if (modifyEndKey) modify.removeEventListener('modifyend', modifyEndKey.listener);
         document.removeEventListener('keydown', onKeydown);
-        if (snap) map.removeInteraction(snap);
+        if (snapBase) map.removeInteraction(snapBase);
+        if (snapEdit) map.removeInteraction(snapEdit);
         map.removeInteraction(draw);
         map.removeInteraction(modify);
-        map.removeLayer(graphicsLayer);
+        map.removeLayer(vertexLayer);
+        map.removeLayer(editLayer);
+        map.removeLayer(baseLayer);
       };
     }
-  }, [graphicsLayer, modify, map, draw, snap, onDrawEnd, onModifyEnd]);
+  }, [baseLayer, editLayer, modify, map, draw, snapBase, snapEdit, onDrawEnd, onModifyEnd, vertexLayer]);
 
   return null;
 };

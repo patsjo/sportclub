@@ -67,7 +67,7 @@ const StyledLogo = styled.img`
 `;
 
 interface IStyledTitleLogoProps {
-  maxWidth: number;
+  maxwidth: number;
 }
 const StyledTitleLogo = styled.img<IStyledTitleLogoProps>`
   & {
@@ -76,13 +76,13 @@ const StyledTitleLogo = styled.img<IStyledTitleLogoProps>`
     display: inline-flex;
     cursor: pointer;
   }
-  @media screen and (max-width: ${({ maxWidth }) => maxWidth}px) {
+  @media screen and (max-width: ${({ maxwidth }) => maxwidth}px) {
     display: none !important;
   }
 `;
 
 interface IStyledHeaderProps {
-  maxWidth: number;
+  maxwidth: number;
 }
 const StyledHeader = styled.div<IStyledHeaderProps>`
   & {
@@ -94,10 +94,10 @@ const StyledHeader = styled.div<IStyledHeaderProps>`
     white-space: nowrap;
     display: inline-flex;
     overflow: hidden;
-    width: calc(100% - 190px - ${({ maxWidth }) => maxWidth}px);
+    width: calc(100% - 190px - ${({ maxwidth }) => maxwidth}px);
   }
   @media screen and (max-width: 719px) {
-    width: calc(100% - ${({ maxWidth }) => maxWidth}px);
+    width: calc(100% - ${({ maxwidth }) => maxwidth}px);
   }
 `;
 
@@ -206,12 +206,12 @@ const App = () => {
         src={clubModel.titleLogo.url}
         width={titleWidth}
         height={24}
-        maxWidth={76 + logoWidth + titleWidth}
+        maxwidth={76 + logoWidth + titleWidth}
       />
     </Link>
   ) : (
     <Link to="/">
-      <StyledHeader maxWidth={76 + logoWidth}>
+      <StyledHeader maxwidth={76 + logoWidth}>
         <StyledEllipsis>{clubModel.title}</StyledEllipsis>
       </StyledHeader>
     </Link>

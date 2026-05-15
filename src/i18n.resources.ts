@@ -158,11 +158,14 @@ export const resources = {
         cirkleRightWhite: 'Circle right white',
         cirkleLowerRightWhite: 'Circle lower right white',
         cirkleLeftWhite: 'Circle left white',
+        createTrackByStartDrawInMap: 'Create track by start draw in map',
         defaultPalette: 'Default palette',
         editableInMap: 'Editable in map',
         notEditableInMap: 'Not editable in map',
         showTrackByDefault: 'Show track by default',
-        hideTrackByDefault: 'Hide track by default'
+        hideTrackByDefault: 'Hide track by default',
+        uploadGpx: 'Upload GPX file',
+        gpxImported: 'GPX file imported'
       },
       modules: {
         Home: 'Home',
@@ -606,11 +609,14 @@ export const resources = {
         cirkleRightWhite: 'Cirkel, höger vit',
         cirkleLowerRightWhite: 'Cirkel, nedre höger vit',
         cirkleLeftWhite: 'Cirkel vänster vit',
+        createTrackByStartDrawInMap: 'Skapa spår genom att börja rita i kartan',
         defaultPalette: 'Standardpalett',
         editableInMap: 'Redigerbar i kartan',
         notEditableInMap: 'Inte redigerbar i kartan',
         showTrackByDefault: 'Visa spår som standard',
-        hideTrackByDefault: 'Dölj spår som standard'
+        hideTrackByDefault: 'Dölj spår som standard',
+        uploadGpx: 'Ladda upp GPX fil',
+        gpxImported: 'GPX fil importerad'
       },
       modules: {
         Home: 'Startsida',
@@ -886,7 +892,7 @@ export const resources = {
         yellow: 'Gul',
         orange: 'Orange',
         red: 'Röd',
-        purple: 'Lila',
+        purple: 'Violett',
         blue: 'Blå',
         black: 'Svart',
         championchips: 'VM, EM, NOM, Världscup, SM (ej SM-ultralång, Veteranmästerskap)',

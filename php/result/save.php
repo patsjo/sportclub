@@ -16,6 +16,7 @@
 //# 2021-05-20  PatSjo  Added COMPETITOR_INFO                #
 //# 2021-08-21  PatSjo  Change to JSON in and out            #
 //# 2022-04-17  PatSjo  Added exclude competitor             #
+//# 2026-05-11  PatSjo  Bugfix for family ID                 #
 //############################################################
 
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/db.php");
@@ -167,8 +168,11 @@ elseif ($input->iType == "COMPETITOR")
   $input->iLastName = stripslashes($input->iLastName);
   $input->iGender = stripslashes($input->iGender);
   $input->iBirthDay = string2Date($input->iBirthDay);
+  if (!isset($input->iFamilyId) || is_null($input->iFamilyId) || $input->iFamilyId == "null" || $input->iFamilyId == -1) {
+    $input->iFamilyId = null;
+  }
 
-  if (isset($input->iFamilyId) && isset($input->iFamilyName) && !is_null($input->iFamilyName) && (is_null($input->iFamilyId) || $input->iFamilyId == "null" || $input->iFamilyId == -1)) {
+  if (is_null($input->iFamilyId) && isset($input->iFamilyName) && !is_null($input->iFamilyName)) {
     $query = sprintf("INSERT INTO RACE_FAMILIES " .
                    "(" .
                    "  FAMILY_NAME" .

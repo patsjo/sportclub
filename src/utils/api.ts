@@ -72,7 +72,7 @@ export async function PostJsonData<T>(url = '', data = {}, throwError = true, re
       },
       // redirect: "follow", // manual, *follow, error
       // referrer: "no-referrer", // no-referrer, *client
-      body: JSON.stringify(data) // body data type must match "Content-Type" header
+      body: JSON.stringify(data, (_, value) => (value === undefined ? null : value)) // body data type must match "Content-Type" header
     },
     throwError,
     retries
@@ -98,7 +98,7 @@ export async function DownloadData(
     },
     // redirect: "follow", // manual, *follow, error
     // referrer: "no-referrer", // no-referrer, *client
-    body: JSON.stringify(data) // body data type must match "Content-Type" header
+    body: JSON.stringify(data, (_, value) => (value === undefined ? null : value)) // body data type must match "Content-Type" header
   });
 
   if (!response) {

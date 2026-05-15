@@ -178,8 +178,8 @@ export const GetFees = (entryFees: IEventorEntryFee[], entryFeeIds: string[], co
   const competitorEntryFees = entryFees.filter(
     fee =>
       entryFeeIds.includes(fee.EntryFeeId) &&
-      (!fee.FromDateOfBirth || dayjs(competitorBirthday, 'yyyy-mm-dd').isSameOrAfter(fee.FromDateOfBirth.Date)) &&
-      (!fee.ToDateOfBirth || dayjs(competitorBirthday, 'yyyy-mm-dd').isSameOrBefore(fee.ToDateOfBirth.Date))
+      (!fee.FromDateOfBirth || dayjs(competitorBirthday, 'YYYY-MM-DD').isSameOrAfter(fee.FromDateOfBirth.Date)) &&
+      (!fee.ToDateOfBirth || dayjs(competitorBirthday, 'YYYY-MM-DD').isSameOrBefore(fee.ToDateOfBirth.Date))
   );
   if (competitorEntryFees == null || competitorEntryFees.length === 0) {
     return fees;

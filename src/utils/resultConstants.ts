@@ -3,7 +3,7 @@ import { IOption } from './formHelper';
 
 export type AwardTypes = 'G' | 'S' | 'B' | 'UM' | 'UE' | 'UG' | 'US' | 'UB' | 'UJ';
 export type DistanceTypes = 'Sprint' | 'Middle' | 'Long' | 'UltraLong';
-export type DifficultyTypes = 'Grön' | 'Vit' | 'Gul' | 'Orange' | 'Röd' | 'Lila' | 'Blå' | 'Svart';
+export type DifficultyTypes = 'Grön' | 'Vit' | 'Gul' | 'Orange' | 'Röd' | 'Violett' | 'Blå' | 'Svart';
 export type EventClassificationIdTypes = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I';
 export type FailedReasonTypes = 'EJ START' | 'UTGÅTT' | 'FULLFÖ' | 'GODK';
 export type LightConditionTypes = 'Day' | 'Night' | 'Dusk' | 'Dawn';
@@ -19,12 +19,12 @@ export const difficulties: Record<string, DifficultyTypes> = {
   yellow: 'Gul',
   orange: 'Orange',
   red: 'Röd',
-  purple: 'Lila',
+  purple: 'Violett',
   blue: 'Blå',
   black: 'Svart'
 };
 
-export const difficultiesArray: DifficultyTypes[] = ['Grön', 'Vit', 'Gul', 'Orange', 'Röd', 'Lila', 'Blå', 'Svart'];
+export const difficultiesArray: DifficultyTypes[] = ['Grön', 'Vit', 'Gul', 'Orange', 'Röd', 'Violett', 'Blå', 'Svart'];
 
 export const failedReasons: Record<string, FailedReasonTypes> = {
   NotStarted: 'EJ START',

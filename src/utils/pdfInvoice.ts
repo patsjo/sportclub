@@ -54,7 +54,7 @@ const getSwishLogo = (info: ISwishProps): Promise<string | null> =>
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(info)
+      body: JSON.stringify(info, (_, value) => (value === undefined ? null : value))
     })
       .then(response => response.blob())
       .then(blob => {

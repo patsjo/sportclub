@@ -1,4 +1,5 @@
-import { Button, Form, Input, message, Modal, Space, Splitter } from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
+import { Alert, Button, Form, Input, message, Modal, Space, Splitter, Upload } from 'antd';
 import Map from 'ol/Map';
 import { unByKey } from 'ol/Observable';
 import { EventsKey } from 'ol/events';
@@ -9,6 +10,7 @@ import { styled } from 'styled-components';
 import { v4 as uuidv4 } from 'uuid';
 import { IExtentProps } from '../../models/mobxClubModel';
 import { PostJsonData } from '../../utils/api';
+import { parseGpx } from '../../utils/gpxUtils';
 import { useMobxStore } from '../../utils/mobxStore';
 import { useSize } from '../../utils/useSize';
 import FullScreenWizard from '../styled/FullscreenWizard';
@@ -197,6 +199,7 @@ const MapTracks = () => {
     if (initialValues) form.setFieldsValue({ tracks: initialValues });
     else form.resetFields();
     setEditable(false);
+    setEditTrackIds([]);
   }, [form, initialValues]);
   const onSave = useCallback(
     async (values: IMapTracksFormProps) => {
@@ -220,6 +223,7 @@ const MapTracks = () => {
           setRemovedTrackIds([]);
         }
         setEditable(false);
+        setEditTrackIds([]);
       } catch (e) {
         if (e && (e as { message: string }).message) message.error((e as { message: string }).message);
       } finally {
@@ -335,6 +339,38 @@ const MapTracks = () => {
                     }
                   >
                     <Space vertical style={{ display: 'flex' }}>
+                      {editable ? (
+                        <>
+                          <Alert showIcon title={t('map.createTrackByStartDrawInMap')} type="info" />
+                          <Upload
+                            accept=".gpx"
+                            showUploadList={false}
+                            fileList={[]}
+                            style={{ width: '100%' }}
+                            beforeUpload={async file => {
+                              try {
+                                const geometry = await parseGpx(file);
+                                add({
+                                  trackId: uuidv4(),
+                                  line: geometry,
+                                  symbolSvg: undefined,
+                                  showByDefault: false,
+                                  orderBy: tracks?.length ?? 0
+                                });
+                                message.success(t('map.gpxImported'));
+                              } catch (e) {
+                                if (e && (e as { message: string }).message)
+                                  message.error((e as { message: string }).message);
+                              }
+                              return false;
+                            }}
+                          >
+                            <Button block type="dashed" size="large" icon={<UploadOutlined />}>
+                              {t('map.uploadGpx')}
+                            </Button>
+                          </Upload>
+                        </>
+                      ) : null}
                       {fields.map(field => (
                         <MapTrack
                           key={`map-track-${form.getFieldValue(['tracks', field.name, 'trackId'])}`}
