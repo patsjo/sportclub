@@ -47,7 +47,7 @@
     "react-slideshow-image": "4.3.2",
     "recharts": "3.6.0",
     "styled-components": "6.1.19",
-    "uuid": "13.0.0"
+    "uuid": "14.0.0"
   },
   "devDependencies": {
     "@eslint/compat": "2.0.0",
