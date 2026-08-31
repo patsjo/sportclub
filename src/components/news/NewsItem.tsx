@@ -9,6 +9,7 @@ import { IChildContainerProps } from '../dashboard/columns/mapNodesToColumns';
 import FadeOutItem from '../fadeOutItem/FadeOutItem';
 import MaterialIcon from '../materialIcon/MaterialIcon';
 import NewsEdit from './NewsEdit';
+import NewsImages from './NewsImages';
 
 const ContentHolder = styled.div``;
 
@@ -74,15 +75,33 @@ interface INewsItemProps extends IChildContainerProps {
 const NewsItem = observer(({ ref, newsObject }: INewsItemProps) => {
   const { globalStateModel, clubModel, sessionModel } = useMobxStore();
   const newsModule = React.useMemo(() => clubModel.modules.find(module => module.name === 'News'), [clubModel.modules]);
-  const Image = React.useMemo(() => getImage(200, NewsImage, newsObject, clubModel), [clubModel, newsObject]);
-  const ImageBig = React.useMemo(() => getImage(400, NewsImage, newsObject, clubModel), [clubModel, newsObject]);
+  const Image = React.useMemo(
+    () => getImage(200, NewsImage, newsObject.files[0], clubModel),
+    [clubModel, newsObject.files]
+  );
+  // One image keeps floating beside the text, several images are shown as a gallery
+  const ImagesBig = React.useMemo(
+    () =>
+      newsObject.files.length > 1 ? (
+        <NewsImages files={newsObject.files} maxSize={240} />
+      ) : (
+        getImage(400, NewsImage, newsObject.files[0], clubModel)
+      ),
+    [clubModel, newsObject.files]
+  );
 
-  const FileDownload =
-    newsObject && (!newsObject.imageWidth || !newsObject.imageHeight) && newsObject.fileId ? (
-      <FloatRightAnchor href={clubModel.attachmentUrl + newsObject.fileId} target="_blank">
+  const FileDownloads = newsObject.files
+    .filter(file => !file.imageWidth || !file.imageHeight)
+    .map(file => (
+      <FloatRightAnchor
+        key={`newsFile#${file.fileId}`}
+        href={clubModel.attachmentUrl + file.fileId}
+        title={file.fileName ?? undefined}
+        target="_blank"
+      >
         <MaterialIcon icon="download" fontSize={24} />
       </FloatRightAnchor>
-    ) : null;
+    ));
 
   return newsModule ? (
     <FadeOutItem
@@ -92,7 +111,7 @@ const NewsItem = observer(({ ref, newsObject }: INewsItemProps) => {
       content={
         <ContentHolder>
           <NewsHeader>
-            {FileDownload}
+            {FileDownloads}
             {newsObject.header}
           </NewsHeader>
           <NewsTime>{newsObject.modificationDate}</NewsTime>
@@ -105,11 +124,11 @@ const NewsItem = observer(({ ref, newsObject }: INewsItemProps) => {
       modalContent={
         <ContentHolder>
           <NewsHeader>
-            {FileDownload}
+            {FileDownloads}
             {newsObject.header}
           </NewsHeader>
           <NewsTime>{newsObject.modificationDate}</NewsTime>
-          {ImageBig}
+          {ImagesBig}
           <NewsIntroduction>{newsObject.introduction}</NewsIntroduction>
           <NewsText>{newsObject.text}</NewsText>
           {newsObject.link ? (
@@ -122,7 +141,7 @@ const NewsItem = observer(({ ref, newsObject }: INewsItemProps) => {
           <NewsBy>{newsObject.modifiedBy}</NewsBy>
         </ContentHolder>
       }
-      modalColumns={4}
+      modalColumns={newsObject.files.length > 1 ? 1 : 4}
       editFormContent={
         <NewsEdit newsObject={newsObject} onChange={updatedNewsObject => newsObject.setValues(updatedNewsObject)} />
       }

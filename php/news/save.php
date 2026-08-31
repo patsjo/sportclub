@@ -7,9 +7,13 @@
 //# -------------------------------------------------------- #
 //# Parameters: iNewsID (Values: 0 If a new news)            #
 //#             iNewsTypeID, iRubrik, iLank, iInledning      #
-//#             iTexten, iExpireDate, iFileData              #
-//#             iFileID (Values: 0 = No image, -1 = New,     #
-//#                              > 0 Keep old image          #
+//#             iTexten, iExpireDate                         #
+//#             iFiles (Array, one entry per file, in the    #
+//#                     order they should be shown)          #
+//#             iFileID (Values: -1 = New file,              #
+//#                                > 0 Keep old file)        #
+//#             iFileData, iMimeType, iFileSize, iFileName   #
+//#                 (Only needed when iFileID = -1)          #
 //# -------------------------------------------------------- #
 //# Modification History:                                    #
 //# =====================                                    #
@@ -21,11 +25,13 @@
 //# 2005-08-28  PatSjo  Changes from Access to MySQL         #
 //# 2006-01-04  PatSjo  Changes from ASP to PHP              #
 //# 2021-08-21  PatSjo  Change to JSON in and out            #
+//# 2026-08-30  JohBla  Allow many files/images per news     #
 //############################################################
 
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/db.php");
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/users.php");
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/functions.php");
+include_once($_SERVER["DOCUMENT_ROOT"] . "/include/news.php");
 
 cors();
 ValidLogin();
@@ -37,10 +43,6 @@ header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); // Date in the past
 $json = file_get_contents('php://input');
 // Converts it into a PHP object
 $input = json_decode($json);
-
-$image_width            = 0;
-$image_height           = 0;
-$is_new_file_uploaded   = false;
 
 if(!isset($input->iNewsID))
 {
@@ -63,43 +65,54 @@ if (strlen($input->iLank) > 150)
 $input->iInledning = stripslashes($input->iInledning);
 $input->iTexten = stripslashes($input->iTexten);
 $input->iExpireDate = string2Date($input->iExpireDate);
-if(!isset($input->iFileID))
+
+if (isset($input->iFiles) && is_array($input->iFiles))
 {
-  trigger_error('Felaktig parameter "iFileID"', E_USER_ERROR);
+  $files = $input->iFiles;
+}
+else if (isset($input->iFileID) && $input->iFileID != 0)
+{
+  //# Older clients send one single file, not an array #
+  $file = new stdClass();
+  $file->iFileID   = $input->iFileID;
+  $file->iFileData = isset($input->iFileData) ? $input->iFileData : null;
+  $file->iMimeType = isset($input->iMimeType) ? $input->iMimeType : null;
+  $file->iFileSize = isset($input->iFileSize) ? $input->iFileSize : null;
+  $file->iFileName = isset($input->iFileName) ? $input->iFileName : null;
+  $files = array($file);
+}
+else
+{
+  $files = array();
 }
 
-if ($input->iFileID == -1) // New File to upload
+foreach ($files as $file)
 {
-  $is_new_file_uploaded = true;
-  if (!isset($input->iFileData) || !isset($input->iMimeType) || !isset($input->iFileSize) || !isset($input->iFileName))
+  if (!isset($file->iFileID))
+  {
+    trigger_error('Felaktig parameter "iFileID"', E_USER_ERROR);
+  }
+  if ($file->iFileID != -1) // Keep an already uploaded file
+  {
+    continue;
+  }
+
+  if (!isset($file->iFileData) || !isset($file->iMimeType) || !isset($file->iFileSize) || !isset($file->iFileName))
   {
     trigger_error('Felaktig parameter "Filnamn", fil saknas.', E_USER_ERROR);
   }
-  if (strlen($input->iFileName) > 255)
+  if (strlen($file->iFileName) > 255)
   {
     trigger_error('Felaktig parameter "Filnamn", fler �n 255 tecken.', E_USER_ERROR);
   }
-
-  if ($input->iFileSize <= 0)
+  if ($file->iFileSize <= 0)
   {
     trigger_error('Ny bild/fil vald, men ingen fil skickad.', E_USER_ERROR);
   }
-  if ($input->iFileSize > 10000000) // Don't allow bigger than 10MB
+  if ($file->iFileSize > 10000000) // Don't allow bigger than 10MB
   {
     trigger_error('Bild/fil �r st�rre �n 10MB.', E_USER_ERROR);
   }
-
-  $decoded_filedata = base64_decode($input->iFileData);
-  $input->iFileData = \db\mysql_real_escape_string($decoded_filedata);
-  if (!strlen($input->iFileData))
-  {
-    trigger_error('Kunde ej l�sa den uppladdade bilden/filen.', E_USER_ERROR);
-  }
-  
-  $cache_file = $_SERVER["DOCUMENT_ROOT"] . '/cache/' . $input->iFileName;
-  file_put_contents($cache_file, $decoded_filedata, LOCK_EX);
-  list($image_width, $image_height, $image_type, $image_attr) = @getimagesize('file://' . $cache_file);
-  unlink($cache_file);
 }
 
 $iUpdateModificationDate = $input->iUpdateModificationDate;
@@ -107,71 +120,41 @@ $iUpdateModificationDate = $input->iUpdateModificationDate;
 OpenDatabase();
 $now = date("Y-m-d G:i:s"); // MySQL DATETIME
 
-if (($input->iNewsID > 0) && (($input->iFileID == 0) || ($input->iFileID == -1))) // No file or New File
+$old_file_ids = $input->iNewsID > 0 ? getNewsFileIds($input->iNewsID) : array();
+
+//###########################################################
+//# Upload the new files first, the first file of the news   #
+//# is also stored in news.file_id to stay backward          #
+//# compatible with clients only showing one image.          #
+//###########################################################
+$file_ids = array();
+$image_width = 0;
+$image_height = 0;
+
+foreach ($files as $file)
 {
-  $old_file_id = 0;
-  $query = sprintf("SELECT file_id FROM news WHERE id = %d", $input->iNewsID);
-  ($result = \db\mysql_query($query)) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
-  while ($row = \db\mysql_fetch_assoc($result))
+  if ($file->iFileID == -1) // New file to upload
   {
-    $old_file_id = $row['file_id'];
+    list($file_id, $file_image_width, $file_image_height) = insertNewsFile($file, $user_id, $now);
   }
-  \db\mysql_free_result($result);
-
-  if ($old_file_id > 0) // There is a file to delete
+  else
   {
-    //########################
-    //# folder_id = 1 = NEWS #
-    //########################
-
-    $query = sprintf("DELETE FROM files WHERE folder_id = 1 AND file_id = %d", $old_file_id);
-    \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
+    $file_id = intval($file->iFileID);
+    list($file_image_width, $file_image_height) = getNewsFileImageSize($file_id);
   }
+
+  if (count($file_ids) == 0)
+  {
+    $image_width = $file_image_width;
+    $image_height = $file_image_height;
+  }
+  array_push($file_ids, $file_id);
 }
 
-if ($input->iFileID == -1) // New File
-{
-  //########################
-  //# folder_id = 1 = NEWS #
-  //########################
-
-  $query = sprintf("INSERT INTO files " .
-                   "(" .
-                   "  file_name, folder_id, file_size, file_blob, mime_type, image_width, image_height, " .
-                   "  allowed_group_id, cre_by_user_id, cre_date" .
-                   ")" .
-                   " VALUES " .
-                   "(" .
-                   "  '%s', %d, %d, '%s', '%s', %d, %d, " .
-                   "  %d, %d, '%s'" .
-                   ")",
-                   \db\mysql_real_escape_string($input->iFileName),
-                   1,
-                   $input->iFileSize,
-                   $input->iFileData,
-                   \db\mysql_real_escape_string($input->iMimeType),
-                   $image_width,
-                   $image_height,
-                   0,
-                   $user_id,
-                   $now);
-
-  \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
-
-  $input->iFileID = \db\mysql_insert_id();
-        
-  if ($input->iFileID == 0)
-  {
-    trigger_error("Can't get the 'file_id' auto_increment value", E_USER_ERROR);
-  }
-}
+$main_file_id = count($file_ids) > 0 ? $file_ids[0] : 0;
 
 if ($input->iNewsID == 0)
 {
-  //########################
-  //# folder_id = 1 = NEWS #
-  //########################
-
   $query = sprintf("INSERT INTO news " .
                    "(" .
                    "  rubrik, lank, inledning, texten, news_type_id, expire_date, file_id, " .
@@ -188,7 +171,7 @@ if ($input->iNewsID == 0)
                    \db\mysql_real_escape_string($input->iTexten),
                    $input->iNewsTypeID,
                    Date("Y-m-d G:i:s", $input->iExpireDate),
-                   $input->iFileID,
+                   $main_file_id,
                    $image_width,
                    $image_height,
                    $user_id,
@@ -202,178 +185,68 @@ if ($input->iNewsID == 0)
 }
 else
 {
-  if ($is_new_file_uploaded)
+  if ($iUpdateModificationDate)
   {
-    if ($iUpdateModificationDate)
-    {
-      $query = sprintf("UPDATE news " .
-                      "SET " .
-                      "  rubrik = '%s'," .
-                      "  lank = '%s'," .
-                      "  inledning = '%s'," .
-                      "  texten = '%s'," .
-                      "  news_type_id = %d," .
-                      "  expire_date = '%s'," .
-                      "  file_id = %d," .
-                      "  image_width = %d," .
-                      "  image_height = %d," .
-                      "  mod_by_user_id = %d," .
-                      "  mod_date = '%s' " .
-                      "WHERE id = %d",
-                      \db\mysql_real_escape_string($input->iRubrik),
-                      \db\mysql_real_escape_string($input->iLank),
-                      \db\mysql_real_escape_string($input->iInledning),
-                      \db\mysql_real_escape_string($input->iTexten),
-                      $input->iNewsTypeID,
-                      Date("Y-m-d G:i:s", $input->iExpireDate),
-                      $input->iFileID,
-                      $image_width,
-                      $image_height,
-                      $user_id,
-                      $now,
-                      $input->iNewsID);
-    }
-    else
-    {
-      $query = sprintf("UPDATE news " .
-                      "SET " .
-                      "  rubrik = '%s'," .
-                      "  lank = '%s'," .
-                      "  inledning = '%s'," .
-                      "  texten = '%s'," .
-                      "  news_type_id = %d," .
-                      "  expire_date = '%s'," .
-                      "  file_id = %d," .
-                      "  image_width = %d," .
-                      "  image_height = %d," .
-                      "  mod_by_user_id = %d " .
-                      "WHERE id = %d",
-                      \db\mysql_real_escape_string($input->iRubrik),
-                      \db\mysql_real_escape_string($input->iLank),
-                      \db\mysql_real_escape_string($input->iInledning),
-                      \db\mysql_real_escape_string($input->iTexten),
-                      $input->iNewsTypeID,
-                      Date("Y-m-d G:i:s", $input->iExpireDate),
-                      $input->iFileID,
-                      $image_width,
-                      $image_height,
-                      $user_id,
-                      $input->iNewsID);
-    }
-  }
-  else if ($input->iFileID == 0) // There is no file
-  {
-    if ($iUpdateModificationDate)
-    {
-      $query = sprintf("UPDATE news " .
-                      "SET " .
-                      "  rubrik = '%s'," .
-                      "  lank = '%s'," .
-                      "  inledning = '%s'," .
-                      "  texten = '%s'," .
-                      "  news_type_id = %d," .
-                      "  expire_date = '%s'," .
-                      "  file_id = %d," .
-                      "  image_width = %d," .
-                      "  image_height = %d," .
-                      "  mod_by_user_id = %d," .
-                      "  mod_date = '%s' " .
-                      "WHERE id = %d",
-                      \db\mysql_real_escape_string($input->iRubrik),
-                      \db\mysql_real_escape_string($input->iLank),
-                      \db\mysql_real_escape_string($input->iInledning),
-                      \db\mysql_real_escape_string($input->iTexten),
-                      $input->iNewsTypeID,
-                      Date("Y-m-d G:i:s", $input->iExpireDate),
-                      $input->iFileID,
-                      0,
-                      0,
-                      $user_id,
-                      $now,
-                      $input->iNewsID);
-    }
-    else
-    {
-      $query = sprintf("UPDATE news " .
-                      "SET " .
-                      "  rubrik = '%s'," .
-                      "  lank = '%s'," .
-                      "  inledning = '%s'," .
-                      "  texten = '%s'," .
-                      "  news_type_id = %d," .
-                      "  expire_date = '%s'," .
-                      "  file_id = %d," .
-                      "  image_width = %d," .
-                      "  image_height = %d," .
-                      "  mod_by_user_id = %d " .
-                      "WHERE id = %d",
-                      \db\mysql_real_escape_string($input->iRubrik),
-                      \db\mysql_real_escape_string($input->iLank),
-                      \db\mysql_real_escape_string($input->iInledning),
-                      \db\mysql_real_escape_string($input->iTexten),
-                      $input->iNewsTypeID,
-                      Date("Y-m-d G:i:s", $input->iExpireDate),
-                      $input->iFileID,
-                      0,
-                      0,
-                      $user_id,
-                      $input->iNewsID);
-    }
+    $query = sprintf("UPDATE news " .
+                    "SET " .
+                    "  rubrik = '%s'," .
+                    "  lank = '%s'," .
+                    "  inledning = '%s'," .
+                    "  texten = '%s'," .
+                    "  news_type_id = %d," .
+                    "  expire_date = '%s'," .
+                    "  file_id = %d," .
+                    "  image_width = %d," .
+                    "  image_height = %d," .
+                    "  mod_by_user_id = %d," .
+                    "  mod_date = '%s' " .
+                    "WHERE id = %d",
+                    \db\mysql_real_escape_string($input->iRubrik),
+                    \db\mysql_real_escape_string($input->iLank),
+                    \db\mysql_real_escape_string($input->iInledning),
+                    \db\mysql_real_escape_string($input->iTexten),
+                    $input->iNewsTypeID,
+                    Date("Y-m-d G:i:s", $input->iExpireDate),
+                    $main_file_id,
+                    $image_width,
+                    $image_height,
+                    $user_id,
+                    $now,
+                    $input->iNewsID);
   }
   else
   {
-    if ($iUpdateModificationDate)
-    {
-      $query = sprintf("UPDATE news " .
-                      "SET " .
-                      "  rubrik = '%s'," .
-                      "  lank = '%s'," .
-                      "  inledning = '%s'," .
-                      "  texten = '%s'," .
-                      "  news_type_id = %d," .
-                      "  expire_date = '%s'," .
-                      "  file_id = %d," .
-                      "  mod_by_user_id = %d," .
-                      "  mod_date = '%s' " .
-                      "WHERE id = %d",
-                      \db\mysql_real_escape_string($input->iRubrik),
-                      \db\mysql_real_escape_string($input->iLank),
-                      \db\mysql_real_escape_string($input->iInledning),
-                      \db\mysql_real_escape_string($input->iTexten),
-                      $input->iNewsTypeID,
-                      Date("Y-m-d G:i:s", $input->iExpireDate),
-                      $input->iFileID,
-                      $user_id,
-                      $now,
-                      $input->iNewsID);
-    }
-    else
-    {
-      $query = sprintf("UPDATE news " .
-                      "SET " .
-                      "  rubrik = '%s'," .
-                      "  lank = '%s'," .
-                      "  inledning = '%s'," .
-                      "  texten = '%s'," .
-                      "  news_type_id = %d," .
-                      "  expire_date = '%s'," .
-                      "  file_id = %d," .
-                      "  mod_by_user_id = %d " .
-                      "WHERE id = %d",
-                      \db\mysql_real_escape_string($input->iRubrik),
-                      \db\mysql_real_escape_string($input->iLank),
-                      \db\mysql_real_escape_string($input->iInledning),
-                      \db\mysql_real_escape_string($input->iTexten),
-                      $input->iNewsTypeID,
-                      Date("Y-m-d G:i:s", $input->iExpireDate),
-                      $input->iFileID,
-                      $user_id,
-                      $input->iNewsID);
-    }
+    $query = sprintf("UPDATE news " .
+                    "SET " .
+                    "  rubrik = '%s'," .
+                    "  lank = '%s'," .
+                    "  inledning = '%s'," .
+                    "  texten = '%s'," .
+                    "  news_type_id = %d," .
+                    "  expire_date = '%s'," .
+                    "  file_id = %d," .
+                    "  image_width = %d," .
+                    "  image_height = %d," .
+                    "  mod_by_user_id = %d " .
+                    "WHERE id = %d",
+                    \db\mysql_real_escape_string($input->iRubrik),
+                    \db\mysql_real_escape_string($input->iLank),
+                    \db\mysql_real_escape_string($input->iInledning),
+                    \db\mysql_real_escape_string($input->iTexten),
+                    $input->iNewsTypeID,
+                    Date("Y-m-d G:i:s", $input->iExpireDate),
+                    $main_file_id,
+                    $image_width,
+                    $image_height,
+                    $user_id,
+                    $input->iNewsID);
   }
 
   \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
 }
+
+saveNewsFiles($input->iNewsID, $file_ids);
+deleteNewsFiles($old_file_ids, $file_ids);
 
 $sql = "SELECT * FROM news INNER JOIN users ON (news.mod_by_user_id = users.user_id) LEFT OUTER JOIN files ON (news.file_id = files.file_id) WHERE id = " . $input->iNewsID;
 $result = \db\mysql_query($sql);
@@ -381,7 +254,8 @@ if (!$result)
 {
   trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
 }
-  
+
+$x = null;
 if (\db\mysql_num_rows($result) > 0) {
     while($row = \db\mysql_fetch_assoc($result)) {
       $x = new stdClass();
@@ -400,10 +274,18 @@ if (\db\mysql_num_rows($result) > 0) {
       $x->header                = $row['rubrik'];
       $x->modificationDate      = $row['mod_date'];
       $x->modifiedBy            = $row['first_name'] . " " . $row['last_name'];
+      $x->files                 = array();
     }
 }
+\db\mysql_free_result($result);
+
+if (!is_null($x))
+{
+  addNewsFiles(array($x->id => $x));
+}
+
 CloseDatabase();
-  
+
 header("Access-Control-Allow-Credentials: true");
 header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);
 header("Access-Control-Allow-Headers: *");

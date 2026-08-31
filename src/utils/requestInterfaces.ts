@@ -1,6 +1,13 @@
 import { IFile } from './formHelper';
 import { IFileResponse } from './responseInterfaces';
 
+export interface INewsFileRequest {
+  iFileID: number;
+  iFileData?: string | null;
+  iMimeType?: string | null;
+  iFileSize?: number | null;
+  iFileName?: string | null;
+}
 export interface INewsEditRequest {
   iNewsID: number;
   iNewsTypeID: number;
@@ -10,11 +17,7 @@ export interface INewsEditRequest {
   iTexten: string;
   iExpireDate: string;
   iUpdateModificationDate: boolean;
-  iFileID: number;
-  iFileData?: string | null;
-  iMimeType?: string | null;
-  iFileSize?: number | null;
-  iFileName?: string | null;
+  iFiles: INewsFileRequest[];
 }
 export interface ICompetitorInfoRequest {
   iCompetitorId: number;

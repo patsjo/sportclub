@@ -11,11 +11,13 @@
 //# Date        By      Description                          #
 //# ----------  ------  ------------------------------------ #
 //# 2018-12-27  PatSjo  Initial version                      #
+//# 2026-08-30  JohBla  Return all files for each news       #
 //############################################################
 
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/db.php");
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/functions.php");
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/users.php");
+include_once($_SERVER["DOCUMENT_ROOT"] . "/include/news.php");
 
 cors();
 
@@ -109,6 +111,7 @@ if (!$result)
 }
 
 $rows = array();
+$newsById = array();
 if (\db\mysql_num_rows($result) > 0) {
     while($row = \db\mysql_fetch_assoc($result)) {
       $x = new stdClass();
@@ -127,9 +130,15 @@ if (\db\mysql_num_rows($result) > 0) {
       $x->header                = $row['rubrik'];
       $x->modificationDate      = $row['mod_date'];
       $x->modifiedBy            = is_null($row['user_id']) ? '' : $row['first_name'] . " " . $row['last_name'];
+      $x->files                 = array();
       array_push($rows, $x);
+      $newsById[$x->id] = $x;
     }
 }
+\db\mysql_free_result($result);
+
+addNewsFiles($newsById);
+
 CloseDatabase();
 
 header("Access-Control-Allow-Credentials: true");
@@ -140,7 +149,5 @@ if (isset($_SERVER['HTTP_ORIGIN']))
 header("Access-Control-Allow-Headers: *");
 header("Content-Type: application/json");
 echo json_encode($rows);
-
-\db\mysql_free_result($result);
 
 ?>

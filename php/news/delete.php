@@ -16,11 +16,13 @@
 //# 2005-08-28  PatSjo  Changes from Access to MySQL         #
 //# 2014-04-20  PatSjo  Changes from ASP to PHP              #
 //# 2021-08-21  PatSjo  Change to JSON in and out            #
+//# 2026-08-30  JohBla  Delete all files of the news         #
 //############################################################
 
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/db.php");
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/users.php");
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/functions.php");
+include_once($_SERVER["DOCUMENT_ROOT"] . "/include/news.php");
 
 cors();
 ValidLogin();
@@ -32,8 +34,6 @@ header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); // Date in the past
 $json = file_get_contents('php://input');
 // Converts it into a PHP object
 $input = json_decode($json);
-
-$file_id = 0;
 
 if(!isset($input->iNewsID))
 {
@@ -47,19 +47,14 @@ if (!(ValidGroup($cADMIN_GROUP_ID)))
 
 OpenDatabase();
 
-$sql = "SELECT file_id FROM news WHERE id = " . $input->iNewsID;
+$file_ids = getNewsFileIds($input->iNewsID);
 
-$result = \db\mysql_query($sql);
-if (!$result)
+$sql = "DELETE FROM news_files WHERE news_id = " . $input->iNewsID;
+
+if (!\db\mysql_query($sql))
 {
   trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
 }
-
-while ($row = \db\mysql_fetch_assoc($result))
-{
-  $file_id              = is_null($row['file_id']) ? 0 : intval($row['file_id']);
-}
-\db\mysql_free_result($result);
 
 $sql = "DELETE FROM news WHERE id = " . $input->iNewsID;
 
@@ -68,19 +63,7 @@ if (!\db\mysql_query($sql))
   trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
 }
 
-if ($file_id > 0) //There is a file to delete
-{
-  //########################
-  //# folder_id = 1 = NEWS #
-  //########################
-
-  $sql = "DELETE FROM files WHERE folder_id = 1 AND file_id = " . $file_id;
-
-  if (!\db\mysql_query($sql))
-  {
-    trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
-  }
-}
+deleteNewsFiles($file_ids);
 
 CloseDatabase();
 ?>
