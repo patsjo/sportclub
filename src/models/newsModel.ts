@@ -1,5 +1,14 @@
 import { action, makeObservable, observable } from 'mobx';
 
+export interface INewsFileProps {
+  fileId: number;
+  fileName?: string | null;
+  fileSize?: number | null;
+  fileType?: string | null;
+  imageHeight?: number | null;
+  imageWidth?: number | null;
+}
+
 export interface INewsItemProps {
   id: number;
   newsTypeId: number;
@@ -14,11 +23,13 @@ export interface INewsItemProps {
   fileType?: string | null;
   imageHeight?: number | null;
   imageWidth?: number | null;
+  files?: INewsFileProps[] | null;
   modificationDate: string;
   modifiedBy: string;
 }
 
-export interface INewsItem extends INewsItemProps {
+export interface INewsItem extends Omit<INewsItemProps, 'files'> {
+  files: INewsFileProps[];
   setValues: (values: Partial<INewsItemProps>) => void;
 }
 
@@ -36,11 +47,13 @@ export class NewsItem implements INewsItem {
   fileType?: string | null;
   imageHeight?: number | null;
   imageWidth?: number | null;
+  files: INewsFileProps[] = [];
   modificationDate = '';
   modifiedBy = '';
 
   constructor(options: INewsItemProps) {
     if (options) Object.assign(this, options);
+    this.useMainFileAsFallback();
     makeObservable(this, {
       id: observable,
       newsTypeId: observable,
@@ -63,6 +76,25 @@ export class NewsItem implements INewsItem {
 
   setValues(values: Partial<INewsItemProps>) {
     Object.assign(this, values);
+    this.useMainFileAsFallback();
+  }
+
+  // News saved before it was possible to add several files only has the main file
+  private useMainFileAsFallback() {
+    if (Array.isArray(this.files) && this.files.length > 0) return;
+
+    this.files = this.fileId
+      ? [
+          {
+            fileId: this.fileId,
+            fileName: this.fileName,
+            fileSize: this.fileSize,
+            fileType: this.fileType,
+            imageHeight: this.imageHeight,
+            imageWidth: this.imageWidth
+          }
+        ]
+      : [];
   }
 }
 

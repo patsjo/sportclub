@@ -30,3 +30,15 @@ CREATE TABLE news (
   CONSTRAINT FK_NEWS_NEWSTYPE FOREIGN KEY (news_type_id)
   REFERENCES news_type(news_type_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE news_files (
+  news_id int(10) UNSIGNED NOT NULL,
+  file_id int(10) UNSIGNED NOT NULL,
+  order_field int(6) UNSIGNED NOT NULL DEFAULT 0,
+  PRIMARY KEY (news_id, file_id),
+  INDEX IDX_NEWS_FILES_FILE (file_id),
+  CONSTRAINT FK_NEWS_FILES_NEWS FOREIGN KEY (news_id)
+  REFERENCES news(id) ON DELETE CASCADE,
+  CONSTRAINT FK_NEWS_FILES_FILE FOREIGN KEY (file_id)
+  REFERENCES files(file_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -9,7 +9,7 @@ import { PostJsonData } from '../../utils/api';
 import { fileAsBase64, getFileType } from '../../utils/fileHelper';
 import { dateFormat, errorRequiredField, hasErrors, IFile, maxByteSize } from '../../utils/formHelper';
 import { useMobxStore } from '../../utils/mobxStore';
-import { INewsEditRequest } from '../../utils/requestInterfaces';
+import { INewsEditRequest, INewsFileRequest } from '../../utils/requestInterfaces';
 import FormItem from '../formItems/FormItem';
 import UploadDragger from '../formItems/UploadDragger';
 
@@ -23,7 +23,7 @@ const StyledModal = styled(Modal)`
 `;
 const StyledModalContent = styled.div``;
 
-interface INewsEditForm extends Omit<INewsEditRequest, 'iFileData'> {
+interface INewsEditForm extends Omit<INewsEditRequest, 'iFiles'> {
   iFiles: IFile[];
 }
 
@@ -59,27 +59,25 @@ const NewsEdit = observer(({ newsObject, open, onClose, onChange }: INewsEditPro
 
       try {
         setSaving(true);
-        if (!Array.isArray(formValues.iFiles)) {
-          formValues.iFiles = [];
+        const formFiles = Array.isArray(formValues.iFiles) ? formValues.iFiles : [];
+        const iFiles: INewsFileRequest[] = [];
+        for (const file of formFiles) {
+          if (file.isOriginalFile) {
+            iFiles.push({ iFileID: parseInt(file.uid) });
+          } else {
+            iFiles.push({
+              iFileID: -1,
+              iFileData: await fileAsBase64(file.originFileObj),
+              iMimeType: getFileType(file),
+              iFileSize: file.size,
+              iFileName: file.name
+            });
+          }
         }
         const values: INewsEditRequest = {
           ...formValues,
-          iMimeType: null,
-          iFileSize: null,
-          iFileData: null
+          iFiles
         };
-        if (formValues.iFiles.length === 0) {
-          values.iFileID = 0;
-        } else if (formValues.iFiles[0].isOriginalFile) {
-          values.iFileID = parseInt(formValues.iFiles[0].uid);
-        } else {
-          values.iFileID = -1;
-          values.iFileData = await fileAsBase64(formValues.iFiles[0].originFileObj);
-          values.iMimeType = getFileType(formValues.iFiles[0]);
-          values.iFileSize = formValues.iFiles[0].size;
-          values.iFileName = formValues.iFiles[0].name;
-        }
-        (values as Partial<typeof values> & { iFiles: undefined }).iFiles = undefined;
         const newsObjectResponse = await PostJsonData<INewsItemProps>(
           saveUrl,
           {
@@ -143,21 +141,16 @@ const NewsEdit = observer(({ newsObject, open, onClose, onChange }: INewsEditPro
             iTexten: newsObject.text,
             iExpireDate: newsObject.expireDate,
             iUpdateModificationDate: true,
-            iFileID: newsObject.fileId,
-            iFileData: null,
-            iFiles:
-              newsObject.fileId !== 0
-                ? [
-                    {
-                      uid: newsObject.fileId?.toString(),
-                      name: newsObject.fileName,
-                      type: newsObject.fileType,
-                      size: newsObject.fileSize,
-                      status: 'done',
-                      isOriginalFile: true
-                    }
-                  ]
-                : []
+            iFiles: newsObject.files.map(file => ({
+              uid: file.fileId.toString(),
+              name: file.fileName,
+              type: file.fileType,
+              size: file.fileSize,
+              status: 'done',
+              isOriginalFile: true,
+              url: clubModel.attachmentUrl + file.fileId,
+              thumbUrl: file.imageWidth && file.imageHeight ? clubModel.attachmentUrl + file.fileId : undefined
+            }))
           }}
           onValuesChange={() => hasErrors(form).then(notValid => setValid(!notValid))}
         >
@@ -219,13 +212,7 @@ const NewsEdit = observer(({ newsObject, open, onClose, onChange }: INewsEditPro
           >
             <DatePicker format={dateFormat} />
           </FormItem>
-          <UploadDragger form={form} fieldName="iFiles" maxByteSize={maxByteSize} multiple={false} />
-          <FormItem name="iFileID">
-            <Input type="hidden" />
-          </FormItem>
-          <FormItem name="iFileData">
-            <Input type="hidden" />
-          </FormItem>
+          <UploadDragger form={form} fieldName="iFiles" maxByteSize={maxByteSize} multiple={true} />
           <FormItem name="iUpdateModificationDate" label={t('news.UpdateModificationDate')} valuePropName="checked">
             <Switch />
           </FormItem>
