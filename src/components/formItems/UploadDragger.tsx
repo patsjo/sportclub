@@ -68,6 +68,8 @@ interface IUploadDraggerProps {
   multiple: boolean;
   asThumbnail?: boolean;
   allowedFileTypes?: string[];
+  label?: string;
+  extra?: React.ReactNode;
   onChange?: (fileList: UploadFile[]) => Promise<void>;
 }
 
@@ -78,6 +80,8 @@ const UploadDragger = ({
   multiple,
   asThumbnail,
   allowedFileTypes,
+  label,
+  extra,
   onChange
 }: IUploadDraggerProps) => {
   const { t } = useTranslation();
@@ -171,7 +175,7 @@ const UploadDragger = ({
     [fieldName, form, onChange]
   );
 
-  const onUploadChange = useCallback<NonNullable<UploadProps<UploadFile>['onChange']>>(
+  const onUploadChange = useCallback<NonNullable<UploadProps['onChange']>>(
     async ({ file, fileList }) => {
       const { setFieldsValue } = form;
       const fileIsValid = validFile(file);
@@ -216,7 +220,7 @@ const UploadDragger = ({
     ) : null;
 
   return (
-    <FormItem name={fieldName} valuePropName="fileList" getValueFromEvent={onNormFiles}>
+    <FormItem name={fieldName} label={label} extra={extra} valuePropName="fileList" getValueFromEvent={onNormFiles}>
       {asThumbnail ? (
         <ImgCrop
           quality={0.9}

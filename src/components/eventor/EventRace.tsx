@@ -134,26 +134,24 @@ const EventRace = observer(({ header, date, eventObject, ref }: IEventRaceProps)
           const competitors = editResultJson.results
             .filter(result => !result.failedReason)
             .sort((a, b) => (a.position! > b.position! ? 1 : a.position! < b.position! ? -1 : 0))
-            .map(
-              (result): IEventDashboardCompetitor => ({
-                key: `eventResultID#${eventObject.eventId}-${result.resultId}`,
-                className: result.className,
-                firstName: result.firstName!,
-                lastName: result.lastName!,
-                result: {
-                  numberOfStarts: result.nofStartsInClass!,
-                  position: result.position!,
-                  time: FormatTime(result.competitorTime)!,
-                  timeDiff: TimeDiff(
-                    result.winnerTime === result.competitorTime && result.secondTime
-                      ? result.secondTime
-                      : result.winnerTime,
-                    result.competitorTime,
-                    true
-                  )
-                }
-              })
-            );
+            .map((result): IEventDashboardCompetitor => ({
+              key: `eventResultID#${eventObject.eventId}-${result.resultId}`,
+              className: result.className,
+              firstName: result.firstName!,
+              lastName: result.lastName!,
+              result: {
+                numberOfStarts: result.nofStartsInClass!,
+                position: result.position!,
+                time: FormatTime(result.competitorTime)!,
+                timeDiff: TimeDiff(
+                  result.winnerTime === result.competitorTime && result.secondTime
+                    ? result.secondTime
+                    : result.winnerTime,
+                  result.competitorTime,
+                  true
+                )
+              }
+            }));
 
           setCompetitors(competitors);
           setShowResult(true);

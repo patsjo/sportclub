@@ -1,18 +1,9 @@
-import { action, computed, makeObservable, observable } from 'mobx';
+import { actionBound, computed, makeObservable, observable } from 'mobx';
 import { IRaceClubs, IRaceClubsProps, RaceClubs } from './resultModel';
 import { PickRequired } from './typescriptPartial';
 
 type ModuleNameTypes =
-  | 'News'
-  | 'Calendar'
-  | 'Stars'
-  | 'ScoringBoard'
-  | 'Eventor'
-  | 'Results'
-  | 'Users'
-  | 'Photo'
-  | 'HTMLEditor'
-  | 'Files';
+  'News' | 'Calendar' | 'Stars' | 'ScoringBoard' | 'Eventor' | 'Results' | 'Users' | 'Photo' | 'HTMLEditor' | 'Files';
 
 interface ILeagueProps {
   rankingLeagueAgeLimit: number;
@@ -534,7 +525,7 @@ export class MobxClubModel implements IMobxClubModel {
       facebookUrl: observable,
       invoice: observable,
       clubInfo: observable,
-      setRaceClubs: action.bound
+      setRaceClubs: actionBound
     });
   }
 

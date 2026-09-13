@@ -85,18 +85,16 @@ const Competitors = observer(() => {
   const { t } = useTranslation();
   const { clubModel, sessionModel } = useMobxStore();
   const [loaded, setLoaded] = useState(!sessionModel.isAdmin);
-  const [saving, setSaving] = useState(false);
+  const [, setSaving] = useState(false);
   const [modal, contextHolder] = Modal.useModal();
 
   const familyOptions = useMemo(
     () =>
       clubModel.raceClubs?.selectedClub?.families
-        .map(
-          (f): IOption => ({
-            code: f.familyId,
-            description: f.familyName
-          })
-        )
+        .map((f): IOption => ({
+          code: f.familyId,
+          description: f.familyName
+        }))
         .sort((a, b) =>
           a.description
             .substring(a.description.indexOf(' ') + 1)
@@ -108,17 +106,15 @@ const Competitors = observer(() => {
 
   const familesAndCompetitors = useMemo(() => {
     const families =
-      clubModel.raceClubs?.selectedClub?.families.map(
-        (f): ICompetitorTable => ({
-          key: `family${f.familyId}`,
-          isFamily: true,
-          firstName: t('users.Family'),
-          lastName: f.familyName,
-          children: clubModel.raceClubs?.selectedClub?.competitors
-            ?.filter(c => c.familyId === f.familyId)
-            ?.map((c): ICompetitorTable => ({ key: `competitor${c.competitorId}`, ...c }))
-        })
-      ) ?? [];
+      clubModel.raceClubs?.selectedClub?.families.map((f): ICompetitorTable => ({
+        key: `family${f.familyId}`,
+        isFamily: true,
+        firstName: t('users.Family'),
+        lastName: f.familyName,
+        children: clubModel.raceClubs?.selectedClub?.competitors
+          ?.filter(c => c.familyId === f.familyId)
+          ?.map((c): ICompetitorTable => ({ key: `competitor${c.competitorId}`, ...c }))
+      })) ?? [];
     const competitors =
       clubModel.raceClubs?.selectedClub?.competitors
         ?.filter(c => c.familyId == null)

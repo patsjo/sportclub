@@ -107,36 +107,32 @@ const WeeklyCalendar = observer(() => {
         if (!activitiesJson || !eventsJson || !domainsJson) return;
         const activityGraphics = activitiesJson
           .filter(act => act.longitude && act.latitude)
-          .map(
-            (act): IGraphic => ({
-              geometry: {
-                type: 'point',
-                longitude: act.longitude!,
-                latitude: act.latitude!
-              },
-              attributes: {
-                type: 'calendar',
-                name: act.header,
-                time: act.date + (act.time === '00:00' ? '' : ` ${act.time}`)
-              }
-            })
-          );
+          .map((act): IGraphic => ({
+            geometry: {
+              type: 'point',
+              longitude: act.longitude!,
+              latitude: act.latitude!
+            },
+            attributes: {
+              type: 'calendar',
+              name: act.header,
+              time: act.date + (act.time === '00:00' ? '' : ` ${act.time}`)
+            }
+          }));
         const eventGraphics = eventsJson
           .filter(event => event.longitude && event.latitude)
-          .map(
-            (event): IGraphic => ({
-              geometry: {
-                type: 'point',
-                longitude: event.longitude,
-                latitude: event.latitude
-              },
-              attributes: {
-                type: 'event',
-                name: `${event.organiserName}, ${event.name}`,
-                time: event.date + (event.time === '00:00' ? '' : ` ${event.time}`)
-              }
-            })
-          );
+          .map((event): IGraphic => ({
+            geometry: {
+              type: 'point',
+              longitude: event.longitude,
+              latitude: event.latitude
+            },
+            attributes: {
+              type: 'event',
+              name: `${event.organiserName}, ${event.name}`,
+              time: event.date + (event.time === '00:00' ? '' : ` ${event.time}`)
+            }
+          }));
         if (isMounted) {
           globalStateModel.setGraphics(['calendar', 'event'], [...activityGraphics, ...eventGraphics]);
           setDomains(domainsJson);

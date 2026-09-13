@@ -22,6 +22,10 @@ const StyledModal = styled(Modal)`
   }
 `;
 const StyledModalContent = styled.div``;
+const StyledUploadContainer = styled.div`
+  margin-top: 16px;
+  margin-bottom: 8px;
+`;
 
 interface INewsEditForm extends Omit<INewsEditRequest, 'iFiles'> {
   iFiles: IFile[];
@@ -212,7 +216,16 @@ const NewsEdit = observer(({ newsObject, open, onClose, onChange }: INewsEditPro
           >
             <DatePicker format={dateFormat} />
           </FormItem>
-          <UploadDragger form={form} fieldName="iFiles" maxByteSize={maxByteSize} multiple={true} />
+          <StyledUploadContainer>
+            <UploadDragger
+              form={form}
+              fieldName="iFiles"
+              maxByteSize={maxByteSize}
+              multiple={true}
+              label={t('news.Attachments')}
+              extra={t('news.AttachmentsInfo')}
+            />
+          </StyledUploadContainer>
           <FormItem name="iUpdateModificationDate" label={t('news.UpdateModificationDate')} valuePropName="checked">
             <Switch />
           </FormItem>

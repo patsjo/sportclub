@@ -223,23 +223,21 @@ const EventSelectorWizardStep1ChooseRace = observer(
                   ? -1
                   : 0
             )
-            .map(
-              (event): IStateEvent => ({
-                calendarEventId: event.calendarEventId,
-                eventorId: event.Event.EventId ? parseInt(event.Event.EventId) : undefined,
-                eventorRaceId: event.EventRaceId ? parseInt(event.EventRaceId) : undefined,
-                name: event.Event.Name,
-                organiserName: event.organisationName,
-                raceDate: event.Event.EventRace.RaceDate.Date,
-                raceTime:
-                  event.Event.EventRace.RaceDate.Clock === '00:00:00'
-                    ? ''
-                    : event.Event.EventRace.RaceDate.Clock.substr(0, 5),
-                longitude: event.longitude,
-                latitude: event.latitude,
-                distanceKm: event.distanceKm
-              })
-            );
+            .map((event): IStateEvent => ({
+              calendarEventId: event.calendarEventId,
+              eventorId: event.Event.EventId ? parseInt(event.Event.EventId) : undefined,
+              eventorRaceId: event.EventRaceId ? parseInt(event.EventRaceId) : undefined,
+              name: event.Event.Name,
+              organiserName: event.organisationName,
+              raceDate: event.Event.EventRace.RaceDate.Date,
+              raceTime:
+                event.Event.EventRace.RaceDate.Clock === '00:00:00'
+                  ? ''
+                  : event.Event.EventRace.RaceDate.Clock.substr(0, 5),
+              longitude: event.longitude,
+              latitude: event.latitude,
+              distanceKm: event.distanceKm
+            }));
 
           setEvents(events);
           setSelectedRowKeys(

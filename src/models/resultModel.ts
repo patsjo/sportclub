@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { action, computed, makeObservable, observable } from 'mobx';
+import { actionBound, computed, makeObservable, observable } from 'mobx';
 import { INewCompetitorForm } from '../components/results/AddMapCompetitor';
 import { PostJsonData } from '../utils/api';
 import { INumberOption, IOption, datetimeFormat } from '../utils/formHelper';
@@ -23,10 +23,6 @@ interface IRaceFamilyProps {
   familyName: string;
 }
 
-interface ISaveRaceFamilyProps extends IRaceFamilyProps {
-  competitorIds: number[];
-}
-
 export interface IRaceFamily extends IRaceFamilyProps {
   setValues: (values: Partial<IRaceFamilyProps>) => void;
 }
@@ -40,7 +36,7 @@ class RaceFamily implements IRaceFamily {
     makeObservable(this, {
       familyId: observable,
       familyName: observable,
-      setValues: action.bound
+      setValues: actionBound
     });
   }
 
@@ -98,10 +94,10 @@ class RaceCompetitor implements IRaceCompetitor {
       startDate: observable,
       endDate: observable,
       eventorCompetitorIds: observable,
-      addEventorId: action.bound,
-      renounce: action.bound,
-      regretRenounce: action.bound,
-      setValues: action.bound,
+      addEventorId: actionBound,
+      renounce: actionBound,
+      regretRenounce: actionBound,
+      setValues: actionBound,
       fullName: computed
     });
   }
@@ -217,10 +213,10 @@ class RaceClub implements IRaceClubProps {
       eventorOrganisationId: observable,
       competitors: observable,
       families: observable,
-      addCompetitor: action.bound,
-      updateCompetitors: action.bound,
-      addFamily: action.bound,
-      deleteFamily: action.bound,
+      addCompetitor: actionBound,
+      updateCompetitors: actionBound,
+      addFamily: actionBound,
+      deleteFamily: actionBound,
       competitorsOptions: computed
     });
   }
@@ -277,12 +273,10 @@ class RaceClub implements IRaceClubProps {
             ? 1
             : -1
       )
-      .map(
-        (competitor): INumberOption => ({
-          code: competitor.competitorId,
-          description: `${competitor.fullName} (${competitor.birthDay})`
-        })
-      );
+      .map((competitor): INumberOption => ({
+        code: competitor.competitorId,
+        description: `${competitor.fullName} (${competitor.birthDay})`
+      }));
   }
 }
 
@@ -328,8 +322,8 @@ export class RaceClubs implements IRaceClubs {
       classLevels: observable,
       sports: observable,
       selectedClub: observable,
-      setSelectedClub: action.bound,
-      setSelectedClubByEventorId: action.bound,
+      setSelectedClub: actionBound,
+      setSelectedClubByEventorId: actionBound,
       eventClassificationOptions: computed,
       clubOptions: computed,
       sportOptions: computed
@@ -359,12 +353,10 @@ export class RaceClubs implements IRaceClubs {
       ec => ec.eventClassificationId === eventClassificationId
     );
     return (
-      eventClassification?.classClassifications.map(
-        (cc): IOption => ({
-          code: cc.classClassificationId,
-          description: cc.description
-        })
-      ) ?? []
+      eventClassification?.classClassifications.map((cc): IOption => ({
+        code: cc.classClassificationId,
+        description: cc.description
+      })) ?? []
     );
   }
 
@@ -535,15 +527,15 @@ class RaceTeamResult implements IRaceTeamResult {
       technicalRanking: observable,
       serviceFeeToClub: observable,
       serviceFeeDescription: observable,
-      setDeviantEventClassificationId: action.bound,
-      setDifficulty: action.bound,
-      setFailedReason: action.bound,
-      setTeamFailedReason: action.bound,
-      setDeviantRaceLightCondition: action.bound,
-      setStringValue: action.bound,
-      setStringValueOrNull: action.bound,
-      setNumberValue: action.bound,
-      setNumberValueOrNull: action.bound,
+      setDeviantEventClassificationId: actionBound,
+      setDifficulty: actionBound,
+      setFailedReason: actionBound,
+      setTeamFailedReason: actionBound,
+      setDeviantRaceLightCondition: actionBound,
+      setStringValue: actionBound,
+      setStringValueOrNull: actionBound,
+      setNumberValue: actionBound,
+      setNumberValueOrNull: actionBound,
       valid: computed
     });
   }
@@ -820,16 +812,16 @@ class RaceResult implements IRaceResult {
       speedRanking: observable,
       technicalRanking: observable,
       isAwardTouched: observable,
-      setAward: action.bound,
-      setDeviantEventClassificationId: action.bound,
-      setDifficulty: action.bound,
-      setFailedReason: action.bound,
-      setStringValue: action.bound,
-      setStringValueOrNull: action.bound,
-      setNumberValue: action.bound,
-      setNumberValueOrNull: action.bound,
-      setIsAwardTouched: action.bound,
-      setCalculatedAward: action.bound,
+      setAward: actionBound,
+      setDeviantEventClassificationId: actionBound,
+      setDifficulty: actionBound,
+      setFailedReason: actionBound,
+      setStringValue: actionBound,
+      setStringValueOrNull: actionBound,
+      setNumberValue: actionBound,
+      setNumberValueOrNull: actionBound,
+      setIsAwardTouched: actionBound,
+      setCalculatedAward: actionBound,
       valid: computed
     });
   }
@@ -1042,18 +1034,18 @@ export class RaceEvent implements IRaceEvent {
       longitude: observable,
       latitude: observable,
       invoiceVerified: observable,
-      setEventClassificationId: action.bound,
-      setPaymentModel: action.bound,
-      setRaceDistance: action.bound,
-      setRaceLightCondition: action.bound,
-      setSportCode: action.bound,
-      setStringValueOrNull: action.bound,
-      setBooleanValue: action.bound,
-      setNumberValueOrNull: action.bound,
-      addResult: action.bound,
-      removeResult: action.bound,
-      addTeamResult: action.bound,
-      removeTeamResult: action.bound,
+      setEventClassificationId: actionBound,
+      setPaymentModel: actionBound,
+      setRaceDistance: actionBound,
+      setRaceLightCondition: actionBound,
+      setSportCode: actionBound,
+      setStringValueOrNull: actionBound,
+      setBooleanValue: actionBound,
+      setNumberValueOrNull: actionBound,
+      addResult: actionBound,
+      removeResult: actionBound,
+      addTeamResult: actionBound,
+      removeTeamResult: actionBound,
       valid: computed,
       validRanking: computed
     });

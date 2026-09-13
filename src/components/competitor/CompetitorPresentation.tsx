@@ -346,16 +346,14 @@ const CompetitorPresentation = observer(({ competitor, ranking }: ICompetitorPre
         const results = c?.results ?? [];
         const teamResults = c?.teamResults ?? [];
         const allResults = [...results, ...teamResults]
-          .map(
-            (r): IAllViewResult => ({
-              ...r,
-              levelRanking: ['A', 'B', 'C', 'D'].includes(r.eventClassificationId)
-                ? 0
-                : ['E', 'F'].includes(r.eventClassificationId)
-                  ? 10
-                  : 20
-            })
-          )
+          .map((r): IAllViewResult => ({
+            ...r,
+            levelRanking: ['A', 'B', 'C', 'D'].includes(r.eventClassificationId)
+              ? 0
+              : ['E', 'F'].includes(r.eventClassificationId)
+                ? 10
+                : 20
+          }))
           .filter(r => r.ranking != null);
         setStarsImportant(getStarsImportant(allResults));
         setStarsStability(getStarsStability(allResults));

@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { action, computed, makeObservable, observable } from 'mobx';
+import { actionBound, computed, makeObservable, observable } from 'mobx';
 import { IOption } from '../utils/formHelper';
 import { DifficultyTypes, PaymentModelTypes, difficulties, payments } from '../utils/resultConstants';
 import { ConvertSecondsWithFractionsToTime, GetSecondsWithFractionsPerKiloMeter } from '../utils/resultHelper';
@@ -103,9 +103,9 @@ class WinnerResult implements IWinnerResult {
       winnerTime: observable,
       secondsPerKilometer: observable,
       timePerKilometer: observable,
-      setLengthInMeter: action.bound,
-      setDifficulty: action.bound,
-      setWinnerTime: action.bound
+      setLengthInMeter: actionBound,
+      setDifficulty: actionBound,
+      setWinnerTime: actionBound
     });
   }
 
@@ -218,14 +218,14 @@ export class RaceWizard implements IRaceWizard {
       raceEvent: observable,
       raceWinnerResults: observable,
       importedIds: observable,
-      setStringValue: action.bound,
-      setBooleanValue: action.bound,
-      setNumberValue: action.bound,
-      setNumberValueOrNull: action.bound,
-      setRaceEvent: action.bound,
-      setRaceWinnerResults: action.bound,
-      addRaceWinnerResult: action.bound,
-      addImportedRace: action.bound,
+      setStringValue: actionBound,
+      setBooleanValue: actionBound,
+      setNumberValue: actionBound,
+      setNumberValueOrNull: actionBound,
+      setRaceEvent: actionBound,
+      setRaceWinnerResults: actionBound,
+      addRaceWinnerResult: actionBound,
+      addImportedRace: actionBound,
       raceWinnerResultOptions: computed
     });
   }

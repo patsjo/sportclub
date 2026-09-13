@@ -255,8 +255,8 @@ const HtmlEditor = observer(({ pageIdFromLocation }: IHtmlEditorProps) => {
           {pageId > 0 ? (
             <StyledButton
               icon={<CopyOutlined />}
-              onClick={() => {
-                copy(`${window.location.origin}/${menuPath.startsWith('/') ? menuPath.substr(1) : menuPath}`);
+              onClick={async () => {
+                await copy(`${window.location.origin}/${menuPath.startsWith('/') ? menuPath.substr(1) : menuPath}`);
                 message.success(
                   `${t('htmlEditor.CopyUrl')}: ${window.location.origin}/${
                     menuPath.startsWith('/') ? menuPath.substr(1) : menuPath

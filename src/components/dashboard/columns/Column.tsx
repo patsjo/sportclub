@@ -1,4 +1,4 @@
-import { Ref, RefObject, useLayoutEffect } from 'react';
+import { Ref, useLayoutEffect } from 'react';
 import { styled } from 'styled-components';
 
 interface IStyledColumnProps {
@@ -30,14 +30,14 @@ const StyledColumn = styled.div<IStyledColumnProps>`
 
 interface IColumnProps {
   ref: Ref<HTMLDivElement | null>;
-  columnRefs: RefObject<(HTMLDivElement | null)[]>;
+  element: HTMLDivElement | null;
   columns: number;
   index: number;
   childKeyOrder: (string | number)[];
 }
-const Column = ({ ref, columnRefs, columns, index, childKeyOrder }: IColumnProps) => {
+const Column = ({ ref, element, columns, index, childKeyOrder }: IColumnProps) => {
   useLayoutEffect(() => {
-    const root = columnRefs.current[index];
+    const root = element;
     let previous: ChildNode | null = null;
     if (!root) return;
 
@@ -51,7 +51,7 @@ const Column = ({ ref, columnRefs, columns, index, childKeyOrder }: IColumnProps
 
       previous = el;
     }
-  }, [childKeyOrder, columnRefs, index]);
+  }, [childKeyOrder, element]);
 
   return (
     <StyledColumn ref={ref} className="parent" column={index} columns={columns} visible={index < columns} gap={24} />

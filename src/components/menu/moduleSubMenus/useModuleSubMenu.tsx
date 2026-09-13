@@ -86,31 +86,26 @@ export const useModuleSubMenu = () => {
     () =>
       clubModel.modules
         .filter(module => module.name !== 'HTMLEditor')
-        .map(
-          (module, index): NonNullable<MenuProps['items']> =>
-            module.hasSubMenus
-              ? [
-                  {
-                    key: 'subMenu#' + module.name + index,
-                    label: (
-                      <span>
-                        <MaterialIcon
-                          icon={(module.name + 'Icon') as MaterialIconsType}
-                          fontSize={18}
-                          marginRight={10}
-                        />
-                        <span>{t(`modules.${module.name}`)}</span>
-                      </span>
-                    ),
-                    disabled:
-                      module.name !== 'Calendar' &&
-                      module.name !== 'News' &&
-                      module.name !== 'Eventor' &&
-                      module.name !== 'Results',
-                    children: getModuleMenuItems(module)
-                  }
-                ]
-              : getModuleMenuItems(module)
+        .map((module, index): NonNullable<MenuProps['items']> =>
+          module.hasSubMenus
+            ? [
+                {
+                  key: 'subMenu#' + module.name + index,
+                  label: (
+                    <span>
+                      <MaterialIcon icon={(module.name + 'Icon') as MaterialIconsType} fontSize={18} marginRight={10} />
+                      <span>{t(`modules.${module.name}`)}</span>
+                    </span>
+                  ),
+                  disabled:
+                    module.name !== 'Calendar' &&
+                    module.name !== 'News' &&
+                    module.name !== 'Eventor' &&
+                    module.name !== 'Results',
+                  children: getModuleMenuItems(module)
+                }
+              ]
+            : getModuleMenuItems(module)
         )
         .flat(),
     [clubModel.modules, getModuleMenuItems, t]

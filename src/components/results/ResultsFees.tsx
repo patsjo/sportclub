@@ -129,26 +129,24 @@ const ResultsFees = observer(() => {
       }) ?? [];
 
     const families =
-      clubModel.raceClubs?.selectedClub?.families.map(
-        (f): IFeesTable => ({
-          key: `family${f.familyId}`,
-          familyId: f.familyId,
-          isFamily: true,
-          firstName: t('users.Family'),
-          lastName: f.familyName,
-          originalFee: competitors
-            ?.filter(c => c.familyId === f.familyId)
-            ?.reduce((prev, curr) => prev + curr.originalFee, 0),
-          lateFee: competitors?.filter(c => c.familyId === f.familyId)?.reduce((prev, curr) => prev + curr.lateFee, 0),
-          feeToClub: competitors
-            ?.filter(c => c.familyId === f.familyId)
-            ?.reduce((prev, curr) => prev + curr.feeToClub, 0),
-          serviceFeeToClub: competitors
-            ?.filter(c => c.familyId === f.familyId)
-            ?.reduce((prev, curr) => prev + curr.serviceFeeToClub, 0),
-          children: competitors?.filter(c => c.familyId === f.familyId).sort(feesSort)
-        })
-      ) ?? [];
+      clubModel.raceClubs?.selectedClub?.families.map((f): IFeesTable => ({
+        key: `family${f.familyId}`,
+        familyId: f.familyId,
+        isFamily: true,
+        firstName: t('users.Family'),
+        lastName: f.familyName,
+        originalFee: competitors
+          ?.filter(c => c.familyId === f.familyId)
+          ?.reduce((prev, curr) => prev + curr.originalFee, 0),
+        lateFee: competitors?.filter(c => c.familyId === f.familyId)?.reduce((prev, curr) => prev + curr.lateFee, 0),
+        feeToClub: competitors
+          ?.filter(c => c.familyId === f.familyId)
+          ?.reduce((prev, curr) => prev + curr.feeToClub, 0),
+        serviceFeeToClub: competitors
+          ?.filter(c => c.familyId === f.familyId)
+          ?.reduce((prev, curr) => prev + curr.serviceFeeToClub, 0),
+        children: competitors?.filter(c => c.familyId === f.familyId).sort(feesSort)
+      })) ?? [];
 
     return [...families, ...competitors.filter(c => !c.familyId)]?.sort(feesSort);
   }, [feesResponse, clubModel.raceClubs, t]);

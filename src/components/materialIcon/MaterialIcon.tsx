@@ -30,6 +30,9 @@ import {
 } from '@ant-design/icons';
 import React from 'react';
 import { styled } from 'styled-components';
+// Served from our own origin: Eventor sits behind a Cloudflare bot challenge
+// that blocks hot-linking this icon cross-origin.
+import eventorIcon from '../../images/eventorIcon.png';
 
 const StyledImg = styled.img`
   vertical-align: middle;
@@ -138,7 +141,7 @@ const MaterialIcon = ({ icon, fontSize, marginRight }: IMaterialIconProps) => {
     case 'EventorIcon':
       return (
         <StyledImg
-          src="https://eventor.orientering.se/Content/Images/FederationWebsiteIcon.png"
+          src={eventorIcon}
           width={fontSize}
           height={fontSize}
           alt="SOFT"

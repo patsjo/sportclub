@@ -372,7 +372,7 @@ const getPdfDocDefinition = async (
     if (generatePdfStatus.abortLoading) throw new Error();
     setProcessed(oldValue => oldValue + 1);
   }
-  pdfMake.tableLayouts = {
+  pdfMake.setTableLayouts({
     borderLayout: {
       hLineWidth: function (i, node) {
         return i === 0 || i === node.table.body.length ? 1 : 0; // Border only at the top and bottom of the table
@@ -391,7 +391,7 @@ const getPdfDocDefinition = async (
       paddingTop: () => 3,
       paddingBottom: () => 3
     }
-  };
+  });
   return docDefinition;
 };
 

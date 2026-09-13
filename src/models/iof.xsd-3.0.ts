@@ -200,12 +200,7 @@ export interface ICompetitorListType extends IBaseMessageElement {
 type IContact = string;
 
 export type ContactTypeType =
-  | 'PhoneNumber'
-  | 'MobilePhoneNumber'
-  | 'FaxNumber'
-  | 'EmailAddress'
-  | 'WebAddress'
-  | 'Other';
+  'PhoneNumber' | 'MobilePhoneNumber' | 'FaxNumber' | 'EmailAddress' | 'WebAddress' | 'Other';
 
 /** Defines a control, without any relationship to a particular course. */
 interface IControl {
@@ -303,11 +298,7 @@ interface ICourseControl {
 }
 
 type CourseControlSpecialInstructionType =
-  | 'None'
-  | 'TapedRoute'
-  | 'FunnelTapedRoute'
-  | 'MandatoryCrossingPoint'
-  | 'MandatoryOutOfBoundsAreaPassage';
+  'None' | 'TapedRoute' | 'FunnelTapedRoute' | 'MandatoryCrossingPoint' | 'MandatoryOutOfBoundsAreaPassage';
 
 export interface ICourseDataType extends IBaseMessageElement {
   /** The event that the course data belongs to. */
@@ -538,15 +529,7 @@ interface IOrganisationServiceRequest {
 }
 
 type OrganisationTypeType =
-  | 'IOF'
-  | 'IOFRegion'
-  | 'NationalFederation'
-  | 'NationalRegion'
-  | 'Club'
-  | 'School'
-  | 'Company'
-  | 'Military'
-  | 'Other';
+  'IOF' | 'IOFRegion' | 'NationalFederation' | 'NationalRegion' | 'Club' | 'School' | 'Company' | 'Military' | 'Other';
 
 interface IOverallResult {
   /** The position in the result list for the person or team that the result belongs to. This element should only be present when the Status element is set to OK. */
@@ -799,12 +782,7 @@ interface IRaceClass {
 
 /** The status of a certain race in the class. */
 export type RaceClassStatus =
-  | 'StartTimesNotAllocated'
-  | 'StartTimesAllocated'
-  | 'NotUsed'
-  | 'Completed'
-  | 'Invalidated'
-  | 'InvalidatedNoFee';
+  'StartTimesNotAllocated' | 'StartTimesAllocated' | 'NotUsed' | 'Completed' | 'Invalidated' | 'InvalidatedNoFee';
 
 /** This element defines all the control and course information for a race. */
 interface IRaceCourseData {
