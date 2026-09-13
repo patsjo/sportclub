@@ -1,53 +1,9 @@
 import { Coordinate } from 'ol/coordinate';
-import LineString from 'ol/geom/LineString';
 import { fromLonLat, toLonLat } from 'ol/proj';
-import { getDistance } from 'ol/sphere';
 import { ILineStringGeometry } from '../models/graphic';
 
 const areEqual = (a: ILineStringGeometry['path'][number], b: ILineStringGeometry['path'][number]): boolean =>
   a.latitude === b.latitude && a.longitude === b.longitude;
-
-const getClosestDistanceToLine = (point: Coordinate, lineStart: Coordinate, lineEnd: Coordinate): number => {
-  const line = new LineString([lineStart, lineEnd]);
-  const closestPoint = line.getClosestPoint(point);
-  return getDistance(point, closestPoint);
-};
-
-const reducePointsPreCalculation = (
-  points: Coordinate[],
-  epsilon: number,
-  start: number,
-  end: number,
-  keep: boolean[]
-): void => {
-  if (end <= start + 2) return;
-
-  for (let i = start + 2; i < end; i++) {
-    const distances = points.slice(start + 1, i - 1).map(p => getClosestDistanceToLine(p, points[start], points[i]));
-    const maxDistance = Math.max(...distances);
-    if (maxDistance > epsilon) {
-      keep[i - 1] = true;
-      reducePointsPreCalculation(points, epsilon, i - 1, end, keep);
-      break;
-    }
-  }
-};
-
-const reducePoints = (
-  points: ILineStringGeometry['path'],
-  toleranceMeters: number = 1
-): ILineStringGeometry['path'] => {
-  if (points.length <= 2) return [...points];
-
-  const keep = new Array<boolean>(points.length).fill(false);
-  keep[0] = true;
-  keep[points.length - 1] = true;
-  const projectedPoints = points.map(p => fromLonLat([p.longitude, p.latitude]));
-
-  reducePointsPreCalculation(projectedPoints, toleranceMeters, 0, points.length - 1, keep);
-
-  return points.filter((_, i) => keep[i]);
-};
 
 /**
  * Detects portions of the path that run within `toleranceMeters` of a

@@ -889,30 +889,26 @@ export const GetSplitTimes = (
         pr.Result.SplitTime.filter(st => st.Time).length > 0;
       return ok && !didNotStart && !misPunch && pr.Person?.PersonId && hasSplitTimes;
     })
-    .map(
-      (pr): ISplitTimes => ({
-        personId: pr.Person.PersonId,
-        splitTimes: (pr.Result?.SplitTime && Array.isArray(pr.Result?.SplitTime)
-          ? pr.Result.SplitTime
-          : ([] as IEventorSplitTime[])
-        )
-          .filter(st => st.Time)
-          .map((st): { controlCode: string; sequence: number; time: number } => ({
-            controlCode: st.ControlCode,
-            sequence: parseInt(st['@attributes'].sequence),
-            time: ConvertTimeToSeconds(st.Time)
-          }))
-          .filter((st, i, stArray) => i === 0 || st.controlCode !== stArray[i - 1].controlCode)
-          .map(
-            (st, i, stArray): ISplitTime => ({
-              controlCode: `${i === 0 ? 'S' : stArray[i - 1].controlCode}-${st.controlCode}`,
-              controlOrder: st.sequence,
-              time: i === 0 ? st.time : st.time - stArray[i - 1].time
-            })
-          )
-          .sort((a, b) => (a.controlCode > b.controlCode ? 1 : b.controlCode > a.controlCode ? -1 : 0))
-      })
-    );
+    .map((pr): ISplitTimes => ({
+      personId: pr.Person.PersonId,
+      splitTimes: (pr.Result?.SplitTime && Array.isArray(pr.Result?.SplitTime)
+        ? pr.Result.SplitTime
+        : ([] as IEventorSplitTime[])
+      )
+        .filter(st => st.Time)
+        .map((st): { controlCode: string; sequence: number; time: number } => ({
+          controlCode: st.ControlCode,
+          sequence: parseInt(st['@attributes'].sequence),
+          time: ConvertTimeToSeconds(st.Time)
+        }))
+        .filter((st, i, stArray) => i === 0 || st.controlCode !== stArray[i - 1].controlCode)
+        .map((st, i, stArray): ISplitTime => ({
+          controlCode: `${i === 0 ? 'S' : stArray[i - 1].controlCode}-${st.controlCode}`,
+          controlOrder: st.sequence,
+          time: i === 0 ? st.time : st.time - stArray[i - 1].time
+        }))
+        .sort((a, b) => (a.controlCode > b.controlCode ? 1 : b.controlCode > a.controlCode ? -1 : 0))
+    }));
   return { splitTimes, ...GetBestSplitTimes(splitTimes) };
 };
 
@@ -927,27 +923,23 @@ export const GetIOFSplitTimes = (
       const hasSplitTimes = Array.isArray(pr.Result?.SplitTime) && pr.Result?.SplitTime.filter(st => st.Time).length;
       return ok && !didNotStart && !misPunch && pr.Person?.Id?.length && hasSplitTimes;
     })
-    .map(
-      (pr): ISplitTimes => ({
-        personId: pr.Person.Id!.find(() => true) ?? '',
-        splitTimes: (pr.Result?.SplitTime && Array.isArray(pr.Result?.SplitTime) ? pr.Result.SplitTime : [])
-          .filter(st => st.Time)
-          .map((st, idx): { controlCode: string; sequence: number; time: number } => ({
-            controlCode: st.ControlCode,
-            sequence: idx + 1,
-            time: st.Time ?? 0
-          }))
-          .filter((st, i, stArray) => i === 0 || st.controlCode !== stArray[i - 1].controlCode)
-          .map(
-            (st, i, stArray): ISplitTime => ({
-              controlCode: `${i === 0 ? 'S' : stArray[i - 1].controlCode}-${st.controlCode}`,
-              controlOrder: st.sequence,
-              time: i === 0 ? st.time : st.time - stArray[i - 1].time
-            })
-          )
-          .sort((a, b) => (a.controlCode > b.controlCode ? 1 : b.controlCode > a.controlCode ? -1 : 0))
-      })
-    );
+    .map((pr): ISplitTimes => ({
+      personId: pr.Person.Id!.find(() => true) ?? '',
+      splitTimes: (pr.Result?.SplitTime && Array.isArray(pr.Result?.SplitTime) ? pr.Result.SplitTime : [])
+        .filter(st => st.Time)
+        .map((st, idx): { controlCode: string; sequence: number; time: number } => ({
+          controlCode: st.ControlCode,
+          sequence: idx + 1,
+          time: st.Time ?? 0
+        }))
+        .filter((st, i, stArray) => i === 0 || st.controlCode !== stArray[i - 1].controlCode)
+        .map((st, i, stArray): ISplitTime => ({
+          controlCode: `${i === 0 ? 'S' : stArray[i - 1].controlCode}-${st.controlCode}`,
+          controlOrder: st.sequence,
+          time: i === 0 ? st.time : st.time - stArray[i - 1].time
+        }))
+        .sort((a, b) => (a.controlCode > b.controlCode ? 1 : b.controlCode > a.controlCode ? -1 : 0))
+    }));
   return { splitTimes, ...GetBestSplitTimes(splitTimes) };
 };
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { styled } from 'styled-components';
 import Column from './Column';
 import ColumnItem from './ColumnItem';
@@ -43,11 +43,27 @@ interface IColumnsProps {
 }
 const Columns = ({ children }: IColumnsProps) => {
   const allReactChildren = flatten(children).filter(child => child);
-  const oldColumns = useRef(getColumns(getWidth()));
-  const columnRefs = useRef<(HTMLDivElement | null)[]>(allColumns.map(() => null));
-  const [columns, setColumns] = useState(oldColumns.current);
+  const [columns, setColumns] = useState(() => getColumns(getWidth()));
+  const oldColumns = useRef(columns);
+  // The columns' DOM nodes are the portal targets for the items, so they are
+  // held as state: reading them while rendering a ref would be too early.
+  const [columnElements, setColumnElements] = useState<(HTMLDivElement | null)[]>(() => allColumns.map(() => null));
   const [childHeights, setChildHeights] = useState<Record<string | number, number>>({});
   const [childDistribution, setChildDistribution] = useState<IChildColumn[]>([]);
+
+  const setColumnElementRefs = useMemo(
+    () =>
+      allColumns.map(
+        index => (element: HTMLDivElement | null) =>
+          setColumnElements(previous => {
+            if (previous[index] === element) return previous;
+            const next = [...previous];
+            next[index] = element;
+            return next;
+          })
+      ),
+    []
+  );
 
   const onHeightChange = useCallback((key: string | number, height: number) => {
     setChildHeights(oldHeights => {
@@ -92,10 +108,8 @@ const Columns = ({ children }: IColumnsProps) => {
       {allColumns.map((_, i) => (
         <Column
           key={`column#${i}`}
-          ref={el => {
-            columnRefs.current[i] = el;
-          }}
-          columnRefs={columnRefs}
+          ref={setColumnElementRefs[i]}
+          element={columnElements[i]}
           columns={columns}
           index={i}
           childKeyOrder={childDistribution.filter(child => child.column === i).map(child => child.key)}
@@ -105,7 +119,7 @@ const Columns = ({ children }: IColumnsProps) => {
         <ColumnItem
           key={`columnItem#${child.key}`}
           childKey={child.key}
-          container={columnRefs.current?.[child.column ?? 0]}
+          container={columnElements[child.column ?? 0]}
           onHeightChange={onHeightChange}
         >
           {child.reactChild}

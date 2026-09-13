@@ -1,5 +1,5 @@
 import { message } from 'antd';
-import { action, makeObservable, observable } from 'mobx';
+import { actionBound, makeObservable, observable } from 'mobx';
 import { NavigateFunction } from 'react-router-dom';
 import { PostJsonData } from '../utils/api';
 import { getMenus } from '../utils/htmlEditorMenuHelper';
@@ -73,13 +73,13 @@ export class GlobalStateModel implements IGlobalStateModel {
       news: observable,
       graphics: observable,
       htmlEditorMenu: observable,
-      setRightMenuVisible: action.bound,
-      setDashboard: action.bound,
-      setValues: action.bound,
-      setHtmlEditor: action.bound,
-      setGraphics: action.bound,
-      setHtmlEditorMenu: action.bound,
-      fetchHtmlEditorMenu: action.bound
+      setRightMenuVisible: actionBound,
+      setDashboard: actionBound,
+      setValues: actionBound,
+      setHtmlEditor: actionBound,
+      setGraphics: actionBound,
+      setHtmlEditorMenu: actionBound,
+      fetchHtmlEditorMenu: actionBound
     });
   }
 

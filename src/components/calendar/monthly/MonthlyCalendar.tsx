@@ -165,24 +165,22 @@ const MonthlyCalendar = observer(() => {
         setDomains(domainsJson);
         setActivities([
           ...activitiesJson,
-          ...eventsJson.map(
-            (event): ICalendarActivity => ({
-              isEvent: true,
-              activityId: `event#${event.calendarEventId}`,
-              date: event.date,
-              time: event.time === '00:00' ? '' : event.time,
-              header: event.organiserName,
-              place: event.name,
-              url: `https://eventor.orientering.se/Events/Show/${event.eventorId}`,
-              latitude: event.latitude,
-              longitude: event.longitude,
-              activityDurationMinutes: 0,
-              description: event.name,
-              groupId: 0,
-              repeatingGid: null,
-              repeatingModified: false
-            })
-          )
+          ...eventsJson.map((event): ICalendarActivity => ({
+            isEvent: true,
+            activityId: `event#${event.calendarEventId}`,
+            date: event.date,
+            time: event.time === '00:00' ? '' : event.time,
+            header: event.organiserName,
+            place: event.name,
+            url: `https://eventor.orientering.se/Events/Show/${event.eventorId}`,
+            latitude: event.latitude,
+            longitude: event.longitude,
+            activityDurationMinutes: 0,
+            description: event.name,
+            groupId: 0,
+            repeatingGid: null,
+            repeatingModified: false
+          }))
         ]);
         setLoaded(true);
       })

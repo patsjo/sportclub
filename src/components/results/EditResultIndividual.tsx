@@ -1,5 +1,5 @@
 import { Col, Form, Input, InputNumber, Modal, Row, Select } from 'antd';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { styled } from 'styled-components';
 import { IMobxClubModel } from '../../models/mobxClubModel';
@@ -89,12 +89,12 @@ const EditResultIndividual = ({
 }: IEditResultIndividualProps) => {
   const { t } = useTranslation();
   const [form] = Form.useForm<IRaceResultForm>();
-  const formId = useMemo(() => 'editResultIndividual' + Math.floor(Math.random() * 1000000000000000), []);
-  eventClassificationId = result.deviantEventClassificationId
+  const formId = useId();
+  const effectiveEventClassificationId: EventClassificationIdTypes = result.deviantEventClassificationId
     ? (result.deviantEventClassificationId as EventClassificationIdTypes)
     : eventClassificationId;
   const [raceEventClassification, setRaceEventClassification] = useState(
-    clubModel.raceClubs?.eventClassifications.find(ec => ec.eventClassificationId === eventClassificationId)
+    clubModel.raceClubs?.eventClassifications.find(ec => ec.eventClassificationId === effectiveEventClassificationId)
   );
   const competitor = useMemo(
     () => clubModel.raceClubs?.selectedClub?.competitorById(result.competitorId),
@@ -115,19 +115,24 @@ const EditResultIndividual = ({
         : null,
     [age, isSprint, meetsAwardRequirements, raceClubs, raceEventClassification, result]
   );
-  if (!isAwardTouched && result.award !== calculatedAward) {
-    result.award = calculatedAward;
-  }
+  const effectiveAward = isAwardTouched ? result.award : calculatedAward;
   const initialValues: IRaceResultForm = useMemo(
     () => ({
       ...result,
+      award: effectiveAward,
       competitorId: !result.competitorId || result.competitorId === -1 ? undefined : result.competitorId,
       missingTime: result.missingTime != null ? result.missingTime.substring(0, 8) : null,
       totalFeeToClub: (result.feeToClub ?? 0) + (result.serviceFeeToClub ?? 0),
-      eventClassificationId: eventClassificationId
+      eventClassificationId: effectiveEventClassificationId
     }),
-    [eventClassificationId, result]
+    [effectiveAward, effectiveEventClassificationId, result]
   );
+
+  useEffect(() => {
+    if (!isAwardTouched && result.award !== calculatedAward) {
+      onChange({ award: calculatedAward });
+    }
+  }, [calculatedAward, isAwardTouched, onChange, result]);
 
   useEffect(() => {
     setTimeout(() => {
@@ -265,7 +270,7 @@ const EditResultIndividual = ({
                     classClassificationId: GetClassClassificationId(
                       result.deviantEventClassificationId
                         ? (result.deviantEventClassificationId as EventClassificationIdTypes)
-                        : eventClassificationId,
+                        : effectiveEventClassificationId,
                       classLevel,
                       raceClubs.eventClassifications
                     ),
@@ -293,7 +298,9 @@ const EditResultIndividual = ({
             <FormSelect
               allowClear={true}
               options={
-                raceClubs.classClassificationOptions(result.deviantEventClassificationId ?? eventClassificationId) ?? []
+                raceClubs.classClassificationOptions(
+                  result.deviantEventClassificationId ?? effectiveEventClassificationId
+                ) ?? []
               }
               onChange={code => {
                 const classClassificationId = !code ? undefined : parseInt(code);
@@ -796,18 +803,18 @@ const EditResultIndividual = ({
               allowClear={true}
               options={raceClubs.eventClassificationOptions.map(option => ({
                 ...option,
-                disabled: option.code === eventClassificationId
+                disabled: option.code === effectiveEventClassificationId
               }))}
               onChange={(code?: EventClassificationIdTypes) => {
                 const changes: Partial<IExtendedRaceResult> = { deviantEventClassificationId: code };
                 const shortClassName = GetClassShortName(result.className);
                 const classLevel = GetClassLevel(raceClubs.classLevels, shortClassName);
                 changes.classClassificationId = GetClassClassificationId(
-                  code ? (code as EventClassificationIdTypes) : eventClassificationId,
+                  code ? (code as EventClassificationIdTypes) : effectiveEventClassificationId,
                   classLevel,
                   raceClubs.eventClassifications
                 );
-                const newEventClassificationId = code ? code : eventClassificationId;
+                const newEventClassificationId = code ? code : effectiveEventClassificationId;
                 const raceEventClassification = raceClubs.eventClassifications.find(
                   ec => ec.eventClassificationId === newEventClassificationId
                 );

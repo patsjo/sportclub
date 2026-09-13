@@ -374,13 +374,11 @@ const InvoiceWizardStep2EditRace = observer(
         {isRelay ? (
           <StyledTable
             columns={columns}
-            dataSource={raceWizardModel.raceEvent.teamResults.map(
-              (result): IInvoiceRaceResult => ({
-                ...toJS(result),
-                key: result.teamResultId.toString(),
-                serviceFeeToClub: result.serviceFeeToClub ?? 0
-              })
-            )}
+            dataSource={raceWizardModel.raceEvent.teamResults.map((result): IInvoiceRaceResult => ({
+              ...toJS(result),
+              key: result.teamResultId.toString(),
+              serviceFeeToClub: result.serviceFeeToClub ?? 0
+            }))}
             pagination={{ pageSize: Math.trunc((height - 186) / 42), hideOnSinglePage: true, showSizeChanger: false }}
             scroll={{ x: true }}
             size="middle"
@@ -401,13 +399,11 @@ const InvoiceWizardStep2EditRace = observer(
         ) : (
           <StyledTable
             columns={columns}
-            dataSource={raceWizardModel.raceEvent.results.map(
-              (result): IInvoiceRaceResult => ({
-                ...toJS(result),
-                key: result.resultId.toString(),
-                serviceFeeToClub: result.serviceFeeToClub ?? 0
-              })
-            )}
+            dataSource={raceWizardModel.raceEvent.results.map((result): IInvoiceRaceResult => ({
+              ...toJS(result),
+              key: result.resultId.toString(),
+              serviceFeeToClub: result.serviceFeeToClub ?? 0
+            }))}
             pagination={{ pageSize: Math.trunc((height - 186) / 42), hideOnSinglePage: true, showSizeChanger: false }}
             scroll={{ x: true }}
             size="middle"

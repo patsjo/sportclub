@@ -1,4 +1,4 @@
-import { action, makeObservable, observable } from 'mobx';
+import { actionBound, makeObservable, observable } from 'mobx';
 
 export interface INewsFileProps {
   fileId: number;
@@ -70,7 +70,7 @@ export class NewsItem implements INewsItem {
       imageWidth: observable,
       modificationDate: observable,
       modifiedBy: observable,
-      setValues: action.bound
+      setValues: actionBound
     });
   }
 
@@ -128,10 +128,10 @@ export class NewsModel implements INewsModel {
       newsItems: observable,
       limit: observable,
       offset: observable,
-      reset: action.bound,
-      addNewsItemToTop: action.bound,
-      addNewsItemsToBottom: action.bound,
-      removeNewsItem: action.bound
+      reset: actionBound,
+      addNewsItemToTop: actionBound,
+      addNewsItemsToBottom: actionBound,
+      removeNewsItem: actionBound
     });
   }
 

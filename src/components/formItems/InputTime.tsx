@@ -1,5 +1,5 @@
 import { Input, InputRef } from 'antd';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 
 type ValidTimeTypes = 'HH:mm:ss' | 'HH:mm' | 'mm:ss' | 'mm:ss.SSS';
 
@@ -208,6 +208,13 @@ const InputTime = ({ format, disabled, allowClear, allowNegativeTime, style, val
   const selectionEndRef = useRef<number | null>(null);
   const placeholder = useMemo(() => `Ex: ${format.replace(/([A-Z]|[a-z])/g, '0')}`, [format]);
   const [innerValue, setInnerValue] = useState(valueToInnerValue(value, format));
+  const [synced, setSynced] = useState({ format, value });
+
+  // Re-derive the edited text whenever the committed value or format changes.
+  if (synced.value !== value || synced.format !== format) {
+    setSynced({ format, value });
+    setInnerValue(valueToInnerValue(value, format));
+  }
 
   const onInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -280,10 +287,6 @@ const InputTime = ({ format, disabled, allowClear, allowNegativeTime, style, val
     },
     [allowNegativeTime, format, innerValue]
   );
-
-  useEffect(() => {
-    setInnerValue(valueToInnerValue(value, format));
-  }, [format, value]);
 
   return (
     <Input

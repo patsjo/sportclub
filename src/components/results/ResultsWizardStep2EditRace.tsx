@@ -473,6 +473,10 @@ const ResultWizardStep2EditRace = observer(
                           const totalOk = totalPersonResult.Status === 'OK';
                           const totalValid = totalOk && !totalDidNotStart && !totalMisPunch;
 
+                          // Deliberately not stored for Eventor imports: the raceResult below keeps
+                          // resultMultiDay null. Kept in place because the IOF import path builds the
+                          // same value and does save it.
+                          // eslint-disable-next-line @typescript-eslint/no-unused-vars
                           resultMultiDay = {
                             multiDayResultId: -1 - 10000 * i - j,
                             stage: totalEventRace?.RaceNumber ?? 1,

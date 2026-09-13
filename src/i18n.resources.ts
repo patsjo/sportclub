@@ -184,8 +184,10 @@ export const resources = {
       news: {
         Add: 'Add',
         Banner: 'Banner',
+        Attachments: 'Add images/attachments',
+        AttachmentsInfo: 'Several images can be attached to the same news item, they are shown as an image gallery.',
         Edit: 'Edit news',
-        ExpireDate: 'Sista dag som nyheten visas',
+        ExpireDate: 'Last day the news is shown',
         Educations: 'Educations',
         Header: 'Header',
         Link: 'Link',
@@ -635,6 +637,8 @@ export const resources = {
       news: {
         Add: 'Lägg till',
         Banner: 'Banner',
+        Attachments: 'Lägg till bilder/bilagor',
+        AttachmentsInfo: 'Flera bilder kan bifogas samma nyhet, de visas då som ett bildgalleri.',
         Edit: 'Redigera nyhet',
         Educations: 'Utbildningar',
         ExpireDate: 'Sista dag som nyheten visas',

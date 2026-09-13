@@ -12,7 +12,7 @@ import {
   TDocumentDefinitions
 } from 'pdfmake/interfaces';
 
-pdfMake.vfs = pdfFonts.vfs;
+pdfMake.addVirtualFileSystem(pdfFonts);
 
 export interface IPdfSettings {
   pageSize: PageSize;
@@ -155,7 +155,7 @@ const getPdfDocDefinition = <T extends object>(
       if (Array.isArray(docDefinition.content)) docDefinition.content.push(getTableContent(table));
     });
   });
-  pdfMake.tableLayouts = {
+  pdfMake.setTableLayouts({
     compactHorizontalLines: {
       hLineWidth: (i, node) => {
         if (i === 0 || i === node.table.body.length) {
@@ -176,7 +176,7 @@ const getPdfDocDefinition = <T extends object>(
         return Array.isArray(node.table.widths) && i === node.table.widths.length - 1 ? 0 : 3;
       }
     }
-  };
+  });
   return docDefinition;
 };
 
@@ -194,11 +194,7 @@ export const getPdf = async <T extends object>(
 };
 
 export const getBase64 = (pdfDocument: pdfMake.TCreatedPdf): Promise<string> => {
-  return new Promise(resolve => {
-    pdfDocument.getBase64(data => {
-      resolve(data);
-    });
-  });
+  return pdfDocument.getBase64();
 };
 
 export const getZip = async <T extends object>(

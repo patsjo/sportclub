@@ -2,9 +2,8 @@ import { UploadOutlined } from '@ant-design/icons';
 import { Alert, Button, Form, Input, message, Modal, Space, Splitter, Upload } from 'antd';
 import Map from 'ol/Map';
 import { unByKey } from 'ol/Observable';
-import { EventsKey } from 'ol/events';
 import { toLonLat } from 'ol/proj';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { useTranslation } from 'react-i18next';
 import { styled } from 'styled-components';
 import { v4 as uuidv4 } from 'uuid';
@@ -69,7 +68,32 @@ const MapTracks = () => {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editTrackIds, setEditTrackIds] = useState<string[]>([]);
   const [layerTrackIds, setLayerTrackIds] = useState<string[]>([]);
-  const [visibleTrackIds, setVisibleTrackIds] = useState<string[]>([]);
+  const getTrackLayers = useCallback(
+    () => map?.getAllLayers()?.filter(l => l.getProperties().id?.startsWith('track-')) ?? [],
+    [map]
+  );
+  const subscribeToTrackVisibility = useCallback(
+    (onStoreChange: () => void) => {
+      if (!map || editable) return () => undefined;
+      const keys = getTrackLayers()
+        .filter(layer => layerTrackIds.includes(layer.getProperties().id))
+        .map(layer => layer.on('change:visible', onStoreChange));
+      return () => unByKey(keys);
+    },
+    [editable, getTrackLayers, layerTrackIds, map]
+  );
+  const getVisibleTrackIdsSnapshot = useCallback(() => {
+    if (!map || editable) return '';
+    const layers = getTrackLayers();
+    return layerTrackIds
+      .filter(trackId => layers.find(layer => layer.getProperties().id === trackId)?.getVisible())
+      .join(',');
+  }, [editable, getTrackLayers, layerTrackIds, map]);
+  const visibleTrackIdsKey = useSyncExternalStore(subscribeToTrackVisibility, getVisibleTrackIdsSnapshot);
+  const visibleTrackIds = useMemo(
+    () => (visibleTrackIdsKey ? visibleTrackIdsKey.split(',') : []),
+    [visibleTrackIdsKey]
+  );
   const initialValues = useMemo(
     () =>
       loadedValues
@@ -201,11 +225,11 @@ const MapTracks = () => {
     setEditable(false);
     setEditTrackIds([]);
   }, [form, initialValues]);
+  const saveUrl = clubModel.map?.saveUrl;
   const onSave = useCallback(
     async (values: IMapTracksFormProps) => {
       setSaving(true);
       try {
-        const saveUrl = clubModel.map?.saveUrl;
         if (!saveUrl) return;
         const json = await PostJsonData<IMapTracksFormProps & { removedTrackIds: string[] }>(
           saveUrl,
@@ -230,13 +254,7 @@ const MapTracks = () => {
         setSaving(false);
       }
     },
-    [
-      clubModel.map?.saveUrl,
-      removedTrackIds,
-      sessionModel.authorizationHeader,
-      sessionModel.password,
-      sessionModel.username
-    ]
+    [removedTrackIds, saveUrl, sessionModel.authorizationHeader, sessionModel.password, sessionModel.username]
   );
 
   useEffect(() => {
@@ -250,27 +268,6 @@ const MapTracks = () => {
       unByKey(keys);
     };
   }, [map]);
-
-  useEffect(() => {
-    if (!map || editable) return;
-    const keys: EventsKey[] = [];
-    const visibleIds: string[] = [];
-    const allMapLayers = map.getAllLayers()?.filter(l => l.getProperties().id?.startsWith('track-')) ?? [];
-    layerTrackIds.forEach(trackId => {
-      const layer = allMapLayers.find(l => l.getProperties().id === trackId);
-      if (!layer) return;
-      const key = layer.on('change:visible', () =>
-        setVisibleTrackIds(old => (layer.getVisible() ? [...old, trackId] : old.filter(id => id !== trackId)))
-      );
-      keys.push(key);
-      if (layer.getVisible()) visibleIds.push(trackId);
-    });
-    setVisibleTrackIds(visibleIds);
-    return () => {
-      unByKey(keys);
-      setVisibleTrackIds([]);
-    };
-  }, [map, layerTrackIds, editable]);
 
   useEffect(() => {
     if (form && initialValues) form.setFieldsValue({ tracks: initialValues });

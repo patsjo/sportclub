@@ -107,23 +107,19 @@ const InvoiceWizardStep1ChooseRace = observer(
       setEvents(oldEvents =>
         raceWizardModel.queryIncludeExisting
           ? oldEvents
-              .map(
-                (e): IInvoiceEvent => ({
-                  ...e,
-                  eventId:
-                    raceWizardModel.importedIds.find(imp => imp.prevEventId != null && imp.prevEventId === e.eventId)
-                      ?.eventId ?? e.eventId,
-                  invoiceVerified:
-                    e.invoiceVerified ||
-                    raceWizardModel.importedIds.some(imp => imp.prevEventId != null && imp.prevEventId === e.eventId)
-                })
-              )
-              .map(
-                (e): IInvoiceEvent => ({
-                  ...e,
-                  key: e.eventId.toString()
-                })
-              )
+              .map((e): IInvoiceEvent => ({
+                ...e,
+                eventId:
+                  raceWizardModel.importedIds.find(imp => imp.prevEventId != null && imp.prevEventId === e.eventId)
+                    ?.eventId ?? e.eventId,
+                invoiceVerified:
+                  e.invoiceVerified ||
+                  raceWizardModel.importedIds.some(imp => imp.prevEventId != null && imp.prevEventId === e.eventId)
+              }))
+              .map((e): IInvoiceEvent => ({
+                ...e,
+                key: e.eventId.toString()
+              }))
           : oldEvents.filter(
               e => !raceWizardModel.importedIds.some(imp => imp.prevEventId != null && imp.prevEventId === e.eventId)
             )

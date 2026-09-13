@@ -1,4 +1,4 @@
-import { action, computed, makeObservable, observable } from 'mobx';
+import { actionBound, computed, makeObservable, observable } from 'mobx';
 
 const switchCharacters = (str: string): string => {
   let retVal = '';
@@ -110,10 +110,10 @@ export class SessionModel implements ISessionModel {
       isAdmin: observable,
       eventorPersonId: observable,
       canReadLocalStorage: observable,
-      setLogin: action.bound,
-      setSuccessfullyLogin: action.bound,
-      setFailedLogin: action.bound,
-      setLogout: action.bound,
+      setLogin: actionBound,
+      setSuccessfullyLogin: actionBound,
+      setFailedLogin: actionBound,
+      setLogout: actionBound,
       authorizationHeader: computed
     });
   }

@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { action, makeObservable, observable } from 'mobx';
+import { actionBound, makeObservable, observable } from 'mobx';
 import { IEventorProps } from './mobxClubModel';
 
 export interface ILocalStorageEventSelectorWizard {
@@ -138,16 +138,16 @@ export class EventSelectorWizard implements IEventSelectorWizard {
       parentOrganisationIdsDistrict: observable,
       organisationIdsNearbyAndClub: observable,
       eventorIds: observable,
-      setQueryStartDate: action.bound,
-      setQueryEndDate: action.bound,
-      setMaxDistanceNational: action.bound,
-      setMaxDistanceDistrict: action.bound,
-      setMaxDistanceNearbyAndClub: action.bound,
-      setParentOrganisationIdsNational: action.bound,
-      setParentOrganisationIdsDistrict: action.bound,
-      setOrganisationIdsNearbyAndClub: action.bound,
-      setEventorIds: action.bound,
-      setSelectedEvents: action.bound
+      setQueryStartDate: actionBound,
+      setQueryEndDate: actionBound,
+      setMaxDistanceNational: actionBound,
+      setMaxDistanceDistrict: actionBound,
+      setMaxDistanceNearbyAndClub: actionBound,
+      setParentOrganisationIdsNational: actionBound,
+      setParentOrganisationIdsDistrict: actionBound,
+      setOrganisationIdsNearbyAndClub: actionBound,
+      setEventorIds: actionBound,
+      setSelectedEvents: actionBound
     });
   }
 
