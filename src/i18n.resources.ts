@@ -165,7 +165,8 @@ export const resources = {
         showTrackByDefault: 'Show track by default',
         hideTrackByDefault: 'Hide track by default',
         uploadGpx: 'Upload GPX file',
-        gpxImported: 'GPX file imported'
+        gpxImported: 'GPX file imported',
+        requireLogin: 'You must be logged in to see the map.'
       },
       modules: {
         Home: 'Home',
@@ -618,7 +619,8 @@ export const resources = {
         showTrackByDefault: 'Visa spår som standard',
         hideTrackByDefault: 'Dölj spår som standard',
         uploadGpx: 'Ladda upp GPX fil',
-        gpxImported: 'GPX fil importerad'
+        gpxImported: 'GPX fil importerad',
+        requireLogin: 'Du måste vara inloggad för att se kartan.'
       },
       modules: {
         Home: 'Startsida',

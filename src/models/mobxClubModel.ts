@@ -344,11 +344,16 @@ interface IMapProps {
   maxZoomLevel?: number;
   saveUrl: string;
   queryUrl: string;
+  requireLogin?: boolean;
   layers: IAnyLayerProps[];
 }
 
-interface IMapModel extends Omit<IMapProps, 'layers' | 'defaultZoomLevel' | 'minZoomLevel' | 'maxZoomLevel'> {
+interface IMapModel extends Omit<
+  IMapProps,
+  'layers' | 'defaultZoomLevel' | 'minZoomLevel' | 'maxZoomLevel' | 'requireLogin'
+> {
   layers: IAnyLayer[];
+  requireLogin: boolean;
   fullExtent: IExtentProps;
   defaultZoomLevel: number;
   minZoomLevel: number;
@@ -363,13 +368,15 @@ class MapModel implements IMapModel {
   maxZoomLevel = 17;
   saveUrl = '';
   queryUrl = '';
+  requireLogin = false;
   layers: IAnyLayer[] = [];
   private _fullExtentCache?: IExtentProps;
 
   constructor(options: Partial<IMapProps>) {
     if (options) {
-      const { layers, ...rest } = options;
+      const { layers, requireLogin, ...rest } = options;
       Object.assign(this, rest);
+      if (requireLogin != null) this.requireLogin = requireLogin;
       if (layers)
         this.layers = layers.map(l =>
           l.type === 'base-tile'
@@ -383,6 +390,7 @@ class MapModel implements IMapModel {
       defaultZoomLevel: observable,
       minZoomLevel: observable,
       maxZoomLevel: observable,
+      requireLogin: observable,
       layers: observable,
       fullExtent: computed
     });
