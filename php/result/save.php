@@ -17,11 +17,13 @@
 //# 2021-08-21  PatSjo  Change to JSON in and out            #
 //# 2022-04-17  PatSjo  Added exclude competitor             #
 //# 2026-05-11  PatSjo  Bugfix for family ID                 #
+//# 2026-11-04  PatSjo  Link race to cup races (iCupRaceIds) #
 //############################################################
 
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/db.php");
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/users.php");
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/functions.php");
+include_once($_SERVER["DOCUMENT_ROOT"] . "/include/cup.php");
 
 cors();
 
@@ -550,6 +552,14 @@ elseif ($input->iType == "EVENT")
     \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
     $result->teamResultId = \db\mysql_insert_id();
   }
+
+  // Link the race to cup races and save the club members cup results.
+  // iCupRaceIds missing = keep the links the race already has.
+  syncCupRacesForEvent(
+    intval($eventId),
+    intval($x->eventId),
+    (isset($input->iCupRaceIds) && is_array($input->iCupRaceIds)) ? $input->iCupRaceIds : NULL
+  );
 }
 elseif ($input->iType == "EVENT_VERIFY")
 {

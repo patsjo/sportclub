@@ -7,6 +7,7 @@ import {
   DownloadOutlined,
   EditOutlined,
   EuroOutlined,
+  FlagOutlined,
   FrownOutlined,
   GlobalOutlined,
   HomeOutlined,
@@ -69,7 +70,8 @@ export type MaterialIconsType =
   | 'PhotoIcon'
   | 'ScoringBoardIcon'
   | 'StarsIcon'
-  | 'EventorIcon';
+  | 'EventorIcon'
+  | 'CupIcon';
 
 interface IMaterialIconProps {
   icon: MaterialIconsType | React.ReactElement;
@@ -136,6 +138,8 @@ const MaterialIcon = ({ icon, fontSize, marginRight }: IMaterialIconProps) => {
       return <TrophyOutlined style={{ verticalAlign: 'middle', fontSize: fontSize }} />;
     case 'StarsIcon':
       return <StarOutlined style={{ verticalAlign: 'middle', fontSize: fontSize }} />;
+    case 'CupIcon':
+      return <FlagOutlined style={{ verticalAlign: 'middle', fontSize: fontSize }} />;
     case 'loading':
       return <LoadingOutlined style={{ verticalAlign: 'middle', fontSize: fontSize }} />;
     case 'EventorIcon':

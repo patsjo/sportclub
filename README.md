@@ -1,4 +1,4 @@
-# sportclub 2.1
+# sportclub 2.4
 
 This is a react app for sports like orienteering or any other sport, with the following key functionality:
 
@@ -10,10 +10,42 @@ This is a react app for sports like orienteering or any other sport, with the fo
 - Results with statistics, club/personal list, invoice verification, send invoice to members, and much more
 - Member presentation, Stars, where we present each runners personal skils
 - Integration to the swedish orienteering fedartion system Eventor (import results)
+- Cups, with their own page and theme, seasons, races from Eventor, point systems, standings and race reports (see [Cups](#cups))
 - Create/Edit custom webpages (user friendly, and can include images, tables and much more styling), and connect them into the menu
 - Create/Edit external links into the menu
 - Upload files, and connect them into the menu
 - Administrate members
+
+## Cups
+
+Administrate club cups, e.g. a night cup or a youth cup, where every cup gets its own page.
+
+![Cup with the halloween theme](readme/cup-nattcup.png)
+
+- **Own page and theme** - every cup has its own address (`/cup/nattcupen`) and a comic book / graphic novel theme: Night, Halloween, Youth, Winter, Summer, Spring and Autumn. The colors of the cup can be changed, the club colors are available as presets. A race can have its own theme, and on the cup page the theme of the next race is used (e.g. a halloween premiere).
+- **Seasons** - limited in time, all races must be within the dates of the season. The cup page shows the season closest in time.
+- **Races** - chosen from Eventor (also the total result after a stage instead of the stage result), or added manually.
+- **Categories of classes** - e.g. All, Youth classes, Beginners, with class patterns like `H1*`, one standing per class or one for the whole category, the order of the classes, and age limits (counted as in the orienteering classes, the year the season starts minus the year of birth).
+- **Point systems** - points per position (20, 17, 15, ...), fixed points for the winner, based on the number of starters, run to 1000, time behind the winner or percent of the winner time. Lowest points, points for not approved and decimals.
+- **Participants** - only the club members or everyone. With only club members, the positions for the points can be among everyone in the class or only among the club members. Participants from other clubs are only saved in the cup, never in the result tables of the club.
+- **Counting** - max number of races counted in the season, and extra points for every additional finished race.
+- **Results** - in first hand from the results the club already has imported. A race in the result import can be linked to one or more cup races, and the results are then saved to the cups automatically. Results can also be fetched from Eventor (all participants), or added and changed manually.
+- **Standings** - a podium for the top three, a column per race with the counted points, and the same person is recognized over the whole season (also when entered on site without an Eventor id).
+- **Reports with images** - for every race and for the whole season.
+- **Eventor links** - entry for the next races, and the results for the finished races.
+- **Menu and toolbar** - every cup in the menu, and optionally as a button in the toolbar. The night themes give a black toolbar with the club logo in grayscale.
+
+To use the cups, add the `Cup` module to your club config file:
+
+```ts
+{
+  name: 'Cup',
+  addUrl: 'https://yourclub.com/cup/save.php',
+  deleteUrl: 'https://yourclub.com/cup/delete.php',
+  updateUrl: 'https://yourclub.com/cup/save.php',
+  queryUrl: 'https://yourclub.com/cup/jsonCupQuery.php'
+}
+```
 
 ## License
 
@@ -94,7 +126,7 @@ and the following seetings:
 1. You need a webhost that's supporting
    - PHP
    - MySql with InnoDB
-2. Create all tables (within "mysql" folder)
+2. Create all tables (within "mysql" folder). Create the cup tables (`cupTables.sql`) after the file and result tables, they refer to them. If you already have a database, run the patches in "mysql/patches" that you haven't run yet (e.g. `sportclub_patch_2.4.sql` and `sportclub_patch_2.5.sql` for the cups).
 3. Copy all php scripts (within "php" folder) to your public html root folder
 4. If you **not** using https://eventor.orientering.se/ as authorization provider (used by all orienteering clubs in sweden), you may need to update the following login files.
    - php/log_in.php

@@ -7,6 +7,7 @@ import { useMobxStore } from '../../../utils/mobxStore';
 import MaterialIcon, { MaterialIconsType } from '../../materialIcon/MaterialIcon';
 import { getMenuItem } from '../MenuItem';
 import { useCalendarSubMenus } from './useCalendarSubMenus';
+import { useCupSubMenus } from './useCupSubMenus';
 import { useNewsSubMenus } from './useNewsSubMenus';
 import { useResultsSubMenus } from './useResultsSubMenus';
 
@@ -17,6 +18,7 @@ export const useModuleSubMenu = () => {
   const { addCalendarModal, calendarMenuItems } = useCalendarSubMenus();
   const { addNewsModal, newsMenuItems } = useNewsSubMenus();
   const { renounceModal, resultsMenuItems } = useResultsSubMenus();
+  const { cupMenuItems } = useCupSubMenus();
 
   const getModuleMenuItems = useCallback(
     (module: IModule): NonNullable<MenuProps['items']> => {
@@ -66,6 +68,8 @@ export const useModuleSubMenu = () => {
           return newsMenuItems;
         case 'Results':
           return resultsMenuItems;
+        case 'Cup':
+          return cupMenuItems;
         default:
           return [];
       }
@@ -73,6 +77,7 @@ export const useModuleSubMenu = () => {
     [
       calendarMenuItems,
       clubModel.eventor,
+      cupMenuItems,
       globalStateModel,
       navigate,
       newsMenuItems,
@@ -101,7 +106,8 @@ export const useModuleSubMenu = () => {
                     module.name !== 'Calendar' &&
                     module.name !== 'News' &&
                     module.name !== 'Eventor' &&
-                    module.name !== 'Results',
+                    module.name !== 'Results' &&
+                    module.name !== 'Cup',
                   children: getModuleMenuItems(module)
                 }
               ]

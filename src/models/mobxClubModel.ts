@@ -3,7 +3,17 @@ import { IRaceClubs, IRaceClubsProps, RaceClubs } from './resultModel';
 import { PickRequired } from './typescriptPartial';
 
 type ModuleNameTypes =
-  'News' | 'Calendar' | 'Stars' | 'ScoringBoard' | 'Eventor' | 'Results' | 'Users' | 'Photo' | 'HTMLEditor' | 'Files';
+  | 'News'
+  | 'Calendar'
+  | 'Stars'
+  | 'ScoringBoard'
+  | 'Eventor'
+  | 'Results'
+  | 'Users'
+  | 'Photo'
+  | 'HTMLEditor'
+  | 'Files'
+  | 'Cup';
 
 interface ILeagueProps {
   rankingLeagueAgeLimit: number;

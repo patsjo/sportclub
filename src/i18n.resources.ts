@@ -1,8 +1,11 @@
+import { cupEn, cupSv } from './i18n.cup';
+
 export const defaultNS = 'translation';
 
 export const resources = {
   en: {
     translation: {
+      cup: cupEn,
       common: {
         Menu: 'Menu',
         Close: 'Close',
@@ -173,6 +176,7 @@ export const resources = {
         News: 'News',
         Calendar: 'Calendar',
         ScoringBoard: 'Club leagues',
+        Cup: 'Cups',
         Stars: 'Stars',
         Eventor: 'Eventor',
         Results: 'Results',
@@ -456,6 +460,7 @@ export const resources = {
   },
   sv: {
     translation: {
+      cup: cupSv,
       common: {
         Menu: 'Meny',
         Close: 'Stäng',
@@ -626,6 +631,7 @@ export const resources = {
         News: 'Nyheter',
         Calendar: 'Kalender',
         ScoringBoard: 'Klubbligor',
+        Cup: 'Cuper',
         Stars: 'Stjärnorna',
         Eventor: 'Eventor',
         Results: 'Resultat',

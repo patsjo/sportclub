@@ -1,4 +1,5 @@
 import { Layout, message, Spin } from 'antd';
+import { observer } from 'mobx-react';
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, BrowserRouter as Router } from 'react-router-dom';
 import { styled, ThemeProvider } from 'styled-components';
@@ -31,11 +32,14 @@ const StickyHolder = styled.div<IStickyHolderProps>`
   z-index: 1000;
 `;
 
-const LayoutHeader = styled(Layout.Header)<{ theme: IThemeProps }>`
+const LayoutHeader = styled(Layout.Header)<{ theme: IThemeProps; $dark?: boolean }>`
   &&& {
     line-height: unset;
-    color: ${props => props.theme.palette.primary.contrastText};
-    background-color: ${props => props.theme.palette.primary.main};
+    color: ${props => (props.$dark ? '#ffffff' : props.theme.palette.primary.contrastText)};
+    background-color: ${props => (props.$dark ? '#000000' : props.theme.palette.primary.main)};
+    transition:
+      background-color 0.3s,
+      color 0.3s;
     padding-left: 10px;
     padding-right: 10px;
     display: flex;
@@ -51,13 +55,15 @@ const LayoutHeader = styled(Layout.Header)<{ theme: IThemeProps }>`
       0px 1px 10px 0px rgba(0, 0, 0, 0.12);
   }
 `;
-const LayoutContent = styled(Layout.Content)`
+const LayoutContent = styled(Layout.Content)<{ $fullWidth?: boolean }>`
   &&& {
-    max-width: 2000px;
+    max-width: ${({ $fullWidth }) => ($fullWidth ? 'none' : '2000px')};
   }
 `;
-const StyledLogo = styled.img`
+const StyledLogo = styled.img<{ $grayscale?: boolean }>`
   &&& {
+    filter: ${({ $grayscale }) => ($grayscale ? 'grayscale(1)' : 'none')};
+    transition: filter 0.3s;
     margin-top: 10px;
     margin-bottom: -20px;
     margin-right: 10px;
@@ -69,8 +75,9 @@ const StyledLogo = styled.img`
 interface IStyledTitleLogoProps {
   maxwidth: number;
 }
-const StyledTitleLogo = styled.img<IStyledTitleLogoProps>`
+const StyledTitleLogo = styled.img<IStyledTitleLogoProps & { $grayscale?: boolean }>`
   & {
+    filter: ${({ $grayscale }) => ($grayscale ? 'grayscale(1)' : 'none')};
     margin-top: 10px;
     margin-bottom: 10px;
     display: inline-flex;
@@ -109,7 +116,8 @@ const StyledEllipsis = styled.div`
   }
 `;
 
-const App = () => {
+// observer, so the toolbar follows globalStateModel.darkHeader
+const App = observer(() => {
   const [messageApi, contextHolder] = message.useMessage();
   const scrollTop = useRef(0);
   const [scrollStickyPos, setScrollStickyPos] = useState(0);
@@ -203,6 +211,7 @@ const App = () => {
   const Header = clubModel.titleLogo ? (
     <Link to="/">
       <StyledTitleLogo
+        $grayscale={globalStateModel.darkHeader}
         src={clubModel.titleLogo.url}
         width={titleWidth}
         height={24}
@@ -237,15 +246,20 @@ const App = () => {
           <Router>
             <StyledLayout>
               <StickyHolder top={scrollStickyPos}>
-                <LayoutHeader>
+                <LayoutHeader $dark={globalStateModel.darkHeader}>
                   <Link to="/">
-                    <StyledLogo src={clubModel.logo.url} width={logoWidth} height={logoHeight} />
+                    <StyledLogo
+                      $grayscale={globalStateModel.darkHeader}
+                      src={clubModel.logo.url}
+                      width={logoWidth}
+                      height={logoHeight}
+                    />
                   </Link>
                   {Header}
                   <Toolbar />
                 </LayoutHeader>
               </StickyHolder>
-              <LayoutContent>
+              <LayoutContent $fullWidth={globalStateModel.fullWidthPage}>
                 <AppContent />
               </LayoutContent>
             </StyledLayout>
@@ -254,6 +268,6 @@ const App = () => {
       </ThemeProvider>
     </MobxStoreProvider>
   );
-};
+});
 
 export default App;

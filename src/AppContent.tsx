@@ -18,6 +18,8 @@ const WeeklyCalendar = lazy(() => import('./components/calendar/weekly/WeeklyCal
 const MonthlyCalendar = lazy(() => import('./components/calendar/monthly/MonthlyCalendar'));
 const EventSelector = lazy(() => import('./components/calendar/eventSelector/EventSelectorWizard'));
 const AllSponsors = lazy(() => import('./components/sponsors/AllSponsors'));
+const CupList = lazy(() => import('./components/cup/CupList'));
+const CupPage = lazy(() => import('./components/cup/CupPage'));
 const OtherRoutes = lazy(() => import('./components/routes/OhterRoutes'));
 const AllCompetitorsPresentation = lazy(() => import('./components/competitor/AllCompetitorsPresentation'));
 
@@ -72,6 +74,9 @@ const AppContent = observer(() => {
         <Route path="/results/fees" element={<ResultsFees key="resultsFees" />} />
         <Route path="/results/statistics" element={<ResultsStatistics key="resultsStatistics" />} />
         <Route path="/results" element={<ViewResults key="clubViewResult" isIndividual={false} />} />
+        <Route path="/cups" element={<CupList key="cupList" />} />
+        <Route path="/cup/:slug/race/:cupRaceId" element={<CupPage />} />
+        <Route path="/cup/:slug" element={<CupPage />} />
         <Route path="/sponsors" element={<AllSponsors key="individualViewResult" />} />
         <Route path="/*" element={<OtherRoutes key="otherRoutes" />} />
       </Routes>

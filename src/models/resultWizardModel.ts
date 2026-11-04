@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+import { ICupRaceForEventProps } from './cupModel';
 import { actionBound, computed, makeObservable, observable } from 'mobx';
 import { IOption } from '../utils/formHelper';
 import { DifficultyTypes, PaymentModelTypes, difficulties, payments } from '../utils/resultConstants';
@@ -153,6 +154,10 @@ export interface IRaceWizardProps {
   raceEvent?: IRaceEventProps;
   raceWinnerResults: IWinnerResultProps[];
   importedIds: { eventId: number; eventorRaceId?: number; prevEventId?: number }[];
+  /** The cup races the race is linked to, undefined = keep the links the race already has */
+  cupRaceIds?: number[];
+  /** The cup races the race can be linked to */
+  cupRacesForEvent?: ICupRaceForEventProps[];
 }
 
 export interface IRaceWizard extends Omit<IRaceWizardProps, 'raceEvent' | 'raceWinnerResults'> {
@@ -179,6 +184,8 @@ export interface IRaceWizard extends Omit<IRaceWizardProps, 'raceEvent' | 'raceW
   setRaceWinnerResults: (values: IWinnerResultProps[]) => void;
   addRaceWinnerResult: (value: Omit<IWinnerResultProps, 'secondsPerKilometer' | 'timePerKilometer'>) => void;
   addImportedRace: (event: IRaceEventProps, prevEventId: number | undefined) => void;
+  setCupRaceIds: (cupRaceIds: number[] | undefined) => void;
+  setCupRacesForEvent: (cupRaces: ICupRaceForEventProps[] | undefined) => void;
   raceWinnerResultOptions: IOption[];
 }
 
@@ -199,6 +206,8 @@ export class RaceWizard implements IRaceWizard {
   raceEvent?: IRaceEvent;
   raceWinnerResults: IWinnerResult[] = [];
   importedIds: { eventId: number; eventorRaceId?: number; prevEventId?: number }[] = [];
+  cupRaceIds?: number[];
+  cupRacesForEvent?: ICupRaceForEventProps[];
 
   constructor(options: Partial<IRaceWizardProps>) {
     if (options) Object.assign(this, options);
@@ -218,6 +227,10 @@ export class RaceWizard implements IRaceWizard {
       raceEvent: observable,
       raceWinnerResults: observable,
       importedIds: observable,
+      cupRaceIds: observable,
+      setCupRaceIds: actionBound,
+      cupRacesForEvent: observable,
+      setCupRacesForEvent: actionBound,
       setStringValue: actionBound,
       setBooleanValue: actionBound,
       setNumberValue: actionBound,
@@ -262,6 +275,8 @@ export class RaceWizard implements IRaceWizard {
 
   setRaceEvent(value: IRaceEventProps | null) {
     this.raceEvent = value == null ? undefined : new RaceEvent(value);
+    this.cupRaceIds = undefined;
+    this.cupRacesForEvent = undefined;
     setLocalStorage(this);
   }
 
@@ -281,6 +296,14 @@ export class RaceWizard implements IRaceWizard {
       ...this.importedIds,
       { eventId: event.eventId, eventorRaceId: event.eventorRaceId ?? undefined, prevEventId }
     ];
+  }
+
+  setCupRaceIds(cupRaceIds: number[] | undefined) {
+    this.cupRaceIds = cupRaceIds;
+  }
+
+  setCupRacesForEvent(cupRaces: ICupRaceForEventProps[] | undefined) {
+    this.cupRacesForEvent = cupRaces;
   }
 
   get raceWinnerResultOptions() {

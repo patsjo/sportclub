@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { styled } from 'styled-components';
 import { useMobxStore } from '../../utils/mobxStore';
+import { useCups } from '../cup/useCup';
 import { MaterialIconsType } from '../materialIcon/MaterialIcon';
 import DrawerRightMenu from '../menu/DrawerRightMenu';
 import ToolbarItem from './ToolbarItem';
@@ -26,6 +27,7 @@ const Toolbar = observer(() => {
   const { t } = useTranslation();
   const { clubModel, globalStateModel } = useMobxStore();
   const navigate = useNavigate();
+  const { cups } = useCups(false);
 
   return (
     <ToolbarHolder>
@@ -64,6 +66,16 @@ const Toolbar = observer(() => {
             }}
           />
         ))}
+        {(cups ?? [])
+          .filter(cup => cup.showInToolbar)
+          .map(cup => (
+            <ToolbarItem
+              key={'toolbarItem#cup' + cup.cupId}
+              icon="CupIcon"
+              name={cup.name}
+              onClick={() => globalStateModel.setDashboard(navigate, '/cup/' + cup.slug)}
+            />
+          ))}
       </WideToolbarHolder>
       <ToolbarItem
         icon={globalStateModel.rightMenuVisible ? 'menu-unfold' : 'menu-fold'}

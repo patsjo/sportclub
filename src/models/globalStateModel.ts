@@ -18,6 +18,8 @@ interface IGlobalStateModelProps {
   news?: INewsModelProps;
   graphics: IGraphic[];
   htmlEditorMenu?: IMenu;
+  darkHeader: boolean;
+  fullWidthPage: boolean;
 }
 
 export interface IGlobalStateModel extends Omit<IGlobalStateModelProps, 'news'> {
@@ -36,6 +38,8 @@ export interface IGlobalStateModel extends Omit<IGlobalStateModelProps, 'news'> 
   setHtmlEditor: (navigate: NavigateFunction, path: string) => void;
   setGraphics: (types: GraphicAttributeTypesType[], graphics: IGraphic[]) => Promise<void>;
   setHtmlEditorMenu: (menu: IMenu) => void;
+  setDarkHeader: (value: boolean) => void;
+  setFullWidthPage: (value: boolean) => void;
   fetchHtmlEditorMenu: (
     htmlEditorModule: IModule | undefined,
     filesModule: IModule | undefined,
@@ -52,6 +56,8 @@ export class GlobalStateModel implements IGlobalStateModel {
   news?: INewsModel;
   graphics: IGraphic[] = [];
   htmlEditorMenu?: IMenu;
+  darkHeader = false;
+  fullWidthPage = false;
   updateGraphics: (graphics: IGraphic[]) => Promise<void> = async () => {
     console.warn('globalStateModel.updateGraphics not set.');
   };
@@ -73,6 +79,10 @@ export class GlobalStateModel implements IGlobalStateModel {
       news: observable,
       graphics: observable,
       htmlEditorMenu: observable,
+      darkHeader: observable,
+      setDarkHeader: actionBound,
+      fullWidthPage: observable,
+      setFullWidthPage: actionBound,
       setRightMenuVisible: actionBound,
       setDashboard: actionBound,
       setValues: actionBound,
@@ -115,6 +125,14 @@ export class GlobalStateModel implements IGlobalStateModel {
     );
     this.graphics = [...this.graphics, ...graphics];
     await this.updateGraphics(this.graphics);
+  }
+
+  setDarkHeader(value: boolean) {
+    this.darkHeader = value;
+  }
+
+  setFullWidthPage(value: boolean) {
+    this.fullWidthPage = value;
   }
 
   setHtmlEditorMenu(menu: IMenu) {

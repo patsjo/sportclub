@@ -34,6 +34,8 @@ import { SpinnerDiv, StyledIcon } from '../styled/styled';
 import { ConfirmOverwriteOrEdit } from './ConfirmOverwriteOrEditPromise';
 import EditResultIndividual, { IExtendedRaceResult } from './EditResultIndividual';
 import EditResultRelay, { IExtendedRaceTeamResult } from './EditResultRelay';
+import { useCupEventorImport } from '../cup/useCupEventorImport';
+import ResultsWizardCupRaces from './ResultsWizardCupRaces';
 import ResultWizardStep0Input from './ResultsWizardStep0Input';
 import ResultWizardStep1ChooseRace from './ResultsWizardStep1ChooseRace';
 import ResultWizardStep1ChooseRaceRerun from './ResultsWizardStep1ChooseRaceRerun';
@@ -121,6 +123,8 @@ const ResultsWizard = observer(() => {
   const onClose = useCallback(() => {
     globalStateModel.setDashboard(navigate, '/');
   }, [globalStateModel, navigate]);
+
+  const importCupResultsFromEventor = useCupEventorImport();
 
   const save = useCallback(
     (shouldClose = true, onSuccess?: (event?: IRaceEventProps) => void) => {
@@ -256,13 +260,35 @@ const ResultsWizard = observer(() => {
         {
           ...snapshot,
           iType: 'EVENT',
+          iCupRaceIds: raceWizardModel.current.cupRaceIds ? [...raceWizardModel.current.cupRaceIds] : undefined,
           username: sessionModel.username,
           password: sessionModel.password
         },
         true,
         sessionModel.authorizationHeader
       )
-        .then(event => {
+        .then(async event => {
+          // Cups with all participants: the participants from other clubs are fetched from Eventor
+          // and saved only in the cup, the club members were saved from the result above
+          const wizard = raceWizardModel.current;
+          const linkedIds =
+            wizard.cupRaceIds ?? (wizard.cupRacesForEvent ?? []).filter(r => r.linked).map(r => r.cupRaceId);
+          const eventorId = event?.eventorId ?? snapshot.eventorId;
+          const allParticipantRaces = (wizard.cupRacesForEvent ?? []).filter(
+            r => linkedIds.includes(r.cupRaceId) && r.participants === 'ALL'
+          );
+          if (eventorId && allParticipantRaces.length) {
+            await importCupResultsFromEventor(
+              allParticipantRaces.map(r => ({
+                cupRaceId: r.cupRaceId,
+                eventorId,
+                eventorRaceId: event?.eventorRaceId ?? snapshot.eventorRaceId ?? null,
+                useTotalResult: r.useTotalResult,
+                categories: r.categories,
+                seasonYear: r.seasonYear
+              }))
+            );
+          }
           setSaving(false);
           onSuccess?.(event);
           if (shouldClose) onClose();
@@ -275,6 +301,7 @@ const ResultsWizard = observer(() => {
     [
       clubModel.modules,
       clubModel.raceClubs?.eventClassifications,
+      importCupResultsFromEventor,
       onClose,
       sessionModel.authorizationHeader,
       sessionModel.password,
@@ -587,6 +614,7 @@ const ResultsWizard = observer(() => {
               onFailed={prev}
             />
           ) : null}
+          {wizardStep === 3 && !saving ? <ResultsWizardCupRaces /> : null}
           {wizardStep === 3 ? <ResultWizardStep3Ranking saving={saving} onValidate={onValidate} /> : null}
           {!loaded ? (
             <SpinnerDiv>
