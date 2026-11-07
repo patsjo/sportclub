@@ -1,5 +1,5 @@
 import { Col, Form, Input, InputNumber, Modal, Row, Select } from 'antd';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { styled } from 'styled-components';
 import { IMobxClubModel } from '../../models/mobxClubModel';
@@ -17,6 +17,7 @@ import {
   failedReasons,
   raceLightConditionOptions
 } from '../../utils/resultConstants';
+import { GetLiveloxLeg, ILiveloxClass } from '../../utils/liveloxHelper';
 import { GetClassClassificationId, GetClassLevel, GetClassShortName } from '../../utils/resultHelper';
 import FormItem from '../formItems/FormItem';
 import { FormSelect } from '../formItems/FormSelect';
@@ -56,6 +57,8 @@ interface IEditResultRelayProps {
   results: IRaceTeamResult[];
   competitorsOptions: INumberOption[];
   autoUpdateResultWithSameClass: boolean;
+  /** The course lengths of every leg in Livelox, by class name */
+  liveloxClasses?: Map<string, ILiveloxClass>;
   onChange: (changes: Partial<IExtendedRaceTeamResult>) => void;
   onChangeAll: (changes: Partial<IExtendedRaceTeamResult>) => void;
   onValidate: (valid: boolean) => void;
@@ -70,6 +73,7 @@ const EditResultRelay = ({
   results,
   competitorsOptions,
   autoUpdateResultWithSameClass,
+  liveloxClasses,
   onChange,
   onChangeAll,
   onValidate
@@ -100,6 +104,67 @@ const EditResultRelay = ({
       if (form) hasErrors(form).then((notValid: boolean) => onValidate(!notValid));
     }, 0);
   }, [form, onValidate]);
+
+  /** A new course length, also for the winner of the leg, which the ranking is based on */
+  const changeLength = (value: number | null) => {
+    onChange({ lengthInMeter: value });
+    if (autoUpdateResultWithSameClass) {
+      onChangeAll({ lengthInMeter: value });
+    }
+    const raceWinnerResult = raceWizardModel.raceWinnerResults.find(
+      wr => wr.className === `${result.className} - ${result.stage}`
+    );
+    if (raceWinnerResult && value) raceWinnerResult.setLengthInMeter(value);
+    if (
+      !raceWinnerResult &&
+      result.className &&
+      result.stage &&
+      value &&
+      result.winnerTime?.length === timeFormat.length
+    )
+      raceWizardModel.addRaceWinnerResult({
+        id: raceWizardModel.raceWinnerResults.length,
+        personName: 'Unknown',
+        className: `${result.className} - ${result.stage}`,
+        difficulty: result.difficulty,
+        lengthInMeter: value,
+        winnerTime: result.winnerTime
+      });
+  };
+
+  // The leg Livelox was last asked about, the leg the result had to begin with is not asked about
+  const liveloxAskedStage = useRef<number | null>(result.stage);
+  /**
+   * The leg is changed, e.g. from 8 (the leg in Eventor) to 23 (the real leg of 25manna). Livelox has the length of
+   * every leg, the user is asked whether to use it. Asked when the field is left, not while typing "23".
+   */
+  const askLiveloxLength = () => {
+    const stage: number | null = form.getFieldValue('stage');
+    if (!stage || stage === liveloxAskedStage.current) return;
+    liveloxAskedStage.current = stage;
+    const className: string | undefined = form.getFieldValue('className');
+    const leg = GetLiveloxLeg(className ? liveloxClasses?.get(className) : undefined, stage, 'name');
+    const current: number | null | undefined = form.getFieldValue('lengthInMeter');
+    const length = leg?.lengthInMeter;
+    if (!leg || !length || length === current) return;
+    modal.confirm({
+      title: t('results.LiveloxUseLengthTitle'),
+      content: t('results.LiveloxUseLength', {
+        count: leg.nofCourses,
+        length: length.toLocaleString('sv-SE'),
+        leg: leg.name,
+        className,
+        current: current ? `${current.toLocaleString('sv-SE')} m` : '–'
+      }),
+      okText: t('common.Yes'),
+      cancelText: t('common.No'),
+      onOk: () => {
+        changeLength(length);
+        form.setFieldsValue({ lengthInMeter: length });
+        form.validateFields(['lengthInMeter']);
+      }
+    });
+  };
 
   return raceClubs ? (
     <Form
@@ -297,6 +362,8 @@ const EditResultRelay = ({
               max={1000}
               step={1}
               style={{ width: '100%' }}
+              onBlur={askLiveloxLength}
+              onPressEnter={askLiveloxLength}
               onChange={(value: number | null) => {
                 const changes: Partial<IExtendedRaceTeamResult> = {
                   stage: value as number
@@ -454,37 +521,7 @@ const EditResultRelay = ({
               }
             ]}
           >
-            <InputNumber
-              min={10}
-              max={100000}
-              step={100}
-              style={{ width: '100%' }}
-              onChange={(value: number | null) => {
-                onChange({ lengthInMeter: value });
-                if (autoUpdateResultWithSameClass) {
-                  onChangeAll({ lengthInMeter: value });
-                }
-                const raceWinnerResult = raceWizardModel.raceWinnerResults.find(
-                  wr => wr.className === `${result.className} - ${result.stage}`
-                );
-                if (raceWinnerResult && value) raceWinnerResult.setLengthInMeter(value);
-                if (
-                  !raceWinnerResult &&
-                  result.className &&
-                  result.stage &&
-                  value &&
-                  result.winnerTime?.length === timeFormat.length
-                )
-                  raceWizardModel.addRaceWinnerResult({
-                    id: raceWizardModel.raceWinnerResults.length,
-                    personName: 'Unknown',
-                    className: `${result.className} - ${result.stage}`,
-                    difficulty: result.difficulty,
-                    lengthInMeter: value,
-                    winnerTime: result.winnerTime
-                  });
-              }}
-            />
+            <InputNumber min={10} max={100000} step={100} style={{ width: '100%' }} onChange={changeLength} />
           </FormItem>
         </Col>
       </Row>

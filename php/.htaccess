@@ -9,6 +9,11 @@
   RewriteEngine on 
   RewriteBase /
 
+  # A large result list from Eventor (e.g. O-Ringen) takes minutes. On LiteSpeed these keep the
+  # proxy running when the connection is closed, and without the time limit of the connection.
+  # Other servers only get two environment variables nobody reads.
+  RewriteRule ^eventorProxyWithCache\.php$ - [E=noabort:1,E=noconntimeout:1]
+
   #Rewrite everything to https
   RewriteCond %{HTTPS} !=on
   RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]

@@ -301,11 +301,19 @@ function getCupDbRaceResults($cupRaceId, $eventId, $eventorId, $eventorRaceId, $
     return $rows;
   }
 
-  $failedReason = $useTotalResult ? "COALESCE(MD.TOTAL_FAILED_REASON, R.FAILED_REASON)" : "R.FAILED_REASON";
-  $time         = $useTotalResult ? "COALESCE(MD.TOTAL_TIME, R.COMPETITOR_TIME)" : "R.COMPETITOR_TIME";
-  $winnerTime   = $useTotalResult ? "COALESCE(MD.TOTAL_WINNER_TIME, R.WINNER_TIME)" : "R.WINNER_TIME";
-  $position     = $useTotalResult ? "COALESCE(MD.TOTAL_POSITION, R.POSITION)" : "R.POSITION";
-  $nofStarts    = $useTotalResult ? "COALESCE(MD.TOTAL_NOF_STARTS_IN_CLASS, R.NOF_STARTS_IN_CLASS)" : "R.NOF_STARTS_IN_CLASS";
+  // With a total result the whole total counts, the stage only when there is no total. Taken column by column
+  // (COALESCE) a runner approved in the total has no failed reason there (NULL), the failed reason of the stage
+  // took its place, and e.g. "FULLFÖ" of the stage left the total without time and position.
+  $total = function ($totalColumn, $stageColumn) use ($useTotalResult) {
+    return $useTotalResult
+      ? "(CASE WHEN MD.RESULT_ID IS NOT NULL THEN " . $totalColumn . " ELSE " . $stageColumn . " END)"
+      : $stageColumn;
+  };
+  $failedReason = $total("MD.TOTAL_FAILED_REASON", "R.FAILED_REASON");
+  $time         = $total("MD.TOTAL_TIME", "R.COMPETITOR_TIME");
+  $winnerTime   = $total("MD.TOTAL_WINNER_TIME", "R.WINNER_TIME");
+  $position     = $total("MD.TOTAL_POSITION", "R.POSITION");
+  $nofStarts    = $total("MD.TOTAL_NOF_STARTS_IN_CLASS", "R.NOF_STARTS_IN_CLASS");
 
   $sql = "SELECT R.RESULT_ID, R.COMPETITOR_ID, C.FIRST_NAME, C.LAST_NAME, YEAR(C.BIRTHDAY) AS BIRTH_YEAR, R.CLASS_NAME, " .
          "  (SELECT MIN(CE.EVENTOR_COMPETITOR_ID) FROM RACE_COMPETITORS_EVENTOR CE WHERE CE.COMPETITOR_ID = R.COMPETITOR_ID) AS EVENTOR_PERSON_ID, " .

@@ -1,4 +1,5 @@
-import { message, Progress, Spin, TableProps } from 'antd';
+import { LeftOutlined, ReloadOutlined } from '@ant-design/icons';
+import { Alert, Button, Spin, TableProps } from 'antd';
 import dayjs from 'dayjs';
 import { observer } from 'mobx-react';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -21,12 +22,7 @@ import {
 import { IEventViewResultResponse } from '../../utils/responseInterfaces';
 import { useResultWizardStore } from '../../utils/resultWizardStore';
 import { SpinnerDiv, StyledTable } from '../styled/styled';
-
-const stringFormat = (value: string, ...args: string[]) => {
-  return value.replace(/{(\d+)}/g, function (match, number) {
-    return typeof args[number] != 'undefined' ? args[number] : match;
-  });
-};
+import { ExpandableDetails, LoadProgress, useLoadProgress } from './LoadProgress';
 
 const flatten = (list: (IEventorEventRace[] | IEventorEventRace)[]): IEventorEventRace[] =>
   list.reduce(
@@ -65,9 +61,10 @@ const ResultWizardStep1ChooseRace = observer(
     const [loaded, setLoaded] = useState(false);
     const [events, setEvents] = useState<IResultEvent[]>([]);
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>();
-    const [processed, setProcessed] = useState(0);
-    const [total, setTotal] = useState(5);
-    const [currentEvent, setCurrentEvent] = useState<string | null>(null);
+    // What the load is doing and how far it has come, an error is shown with the choice to go back or load again
+    const { tasks: loadTasks, startedAt: loadStartedAt, api: progress } = useLoadProgress();
+    const [loadError, setLoadError] = useState<string>();
+    const [reloadCount, setReloadCount] = useState(0);
 
     const onSelectChange = useCallback(
       (keys: React.Key[]) => {
@@ -99,11 +96,18 @@ const ResultWizardStep1ChooseRace = observer(
     useEffect(() => {
       const fetchData = async () => {
         setLoaded(false);
-        setTotal(5);
-        setProcessed(0);
-        setCurrentEvent(t('results.loadSavedResults'));
+        setLoadError(undefined);
         const url = clubModel.modules.find(module => module.name === 'Results')?.queryUrl;
         if (!url || !clubModel.raceClubs || !clubModel.eventor) return;
+        const loadCompetitors = raceWizardModel.queryForEventWithNoEntry && raceWizardModel.selectedEventorId == null;
+        progress.reset([
+          { key: 'saved', title: t('results.LoadTaskSavedEvents') },
+          { key: 'entries', title: t('results.LoadTaskClubEntries') },
+          ...(raceWizardModel.selectedEventorId != null ? [{ key: 'event', title: t('results.LoadTaskEvent') }] : []),
+          ...(loadCompetitors ? [{ key: 'competitors', title: t('results.LoadTaskCompetitors') }] : []),
+          { key: 'oringen', title: t('results.LoadTaskOringen') },
+          { key: 'process', title: t('results.LoadTaskEvents') }
+        ]);
 
         const queryData =
           raceWizardModel.selectedEventorId == null
@@ -120,14 +124,15 @@ const ResultWizardStep1ChooseRace = observer(
               };
 
         try {
+          progress.start('saved');
           const alreadySavedEventsJson = await PostJsonData<IEventViewResultResponse[]>(
             url,
             queryData,
             true,
             sessionModel.authorizationHeader
           );
-          setProcessed(prev => prev + 1);
-          setCurrentEvent(t('results.loadEntries'));
+          progress.finish('saved', t('results.LoadNofEvents', { count: alreadySavedEventsJson?.length ?? 0 }));
+          progress.start('entries');
           const entriesJson = await PostJsonData<IEventorEntries>(
             clubModel.eventorCorsProxy,
             {
@@ -154,12 +159,17 @@ const ResultWizardStep1ChooseRace = observer(
             },
             true
           );
-          setProcessed(prev => prev + 1);
-          setCurrentEvent(t('results.loadEvent'));
+          progress.finish(
+            'entries',
+            t('results.LoadNofEntries', {
+              count: Array.isArray(entriesJson?.Entry) ? entriesJson.Entry.length : entriesJson?.Entry ? 1 : 0
+            })
+          );
 
           const noEntriesJson: { Event: IEventorEvent[] } = { Event: [] };
 
           if (raceWizardModel.selectedEventorId != null) {
+            progress.start('event');
             const eventsJson = await PostJsonData<IEventorEvents>(
               clubModel.eventorCorsProxy,
               {
@@ -175,11 +185,11 @@ const ResultWizardStep1ChooseRace = observer(
             if (Array.isArray(eventsJson?.Event)) {
               eventsJson.Event.forEach(e => noEntriesJson.Event.push(e));
             } else if (eventsJson?.Event != null) noEntriesJson.Event.push(eventsJson.Event);
+            progress.finish('event');
           }
-          setProcessed(prev => prev + 1);
 
-          if (raceWizardModel.queryForEventWithNoEntry && raceWizardModel.selectedEventorId == null) {
-            setCurrentEvent(t('results.loadCompetitors'));
+          if (loadCompetitors) {
+            progress.start('competitors');
             const competitorListJson = await PostJsonData<IEventorCompetitors>(
               clubModel.eventorCorsProxy,
               {
@@ -193,14 +203,14 @@ const ResultWizardStep1ChooseRace = observer(
             );
 
             if (competitorListJson && Array.isArray(competitorListJson.Competitor)) {
-              setTotal(prev => prev + (competitorListJson.Competitor as IEventorCompetitor[]).length);
+              const competitorList = competitorListJson.Competitor as IEventorCompetitor[];
               const competitorsJsons: IEventorCompetitorResult[] = [];
-              for (const c of competitorListJson.Competitor) {
-                setCurrentEvent(
-                  stringFormat(
-                    t('results.loadCompetitor'),
-                    `${c.Person?.PersonName?.Given} ${c.Person?.PersonName?.Family}`
-                  )
+              for (const [index, c] of competitorList.entries()) {
+                progress.progress(
+                  'competitors',
+                  index,
+                  competitorList.length,
+                  `${c.Person?.PersonName?.Given} ${c.Person?.PersonName?.Family}`
                 );
                 const competitorResults = await PostJsonData<IEventorCompetitorResult>(
                   clubModel.eventorCorsProxy,
@@ -219,7 +229,6 @@ const ResultWizardStep1ChooseRace = observer(
                 );
                 if (competitorResults) competitorsJsons.push(competitorResults);
                 await new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * 200)));
-                setProcessed(prev => prev + 1);
               }
 
               competitorsJsons.forEach(c => {
@@ -287,7 +296,8 @@ const ResultWizardStep1ChooseRace = observer(
             }
           }
 
-          setCurrentEvent(t('results.loadOringenEvents'));
+          if (loadCompetitors) progress.finish('competitors');
+          progress.start('oringen');
           const oringenEventsJson = await PostJsonData<IEventorEvents>(
             clubModel.eventorCorsProxy,
             {
@@ -304,8 +314,8 @@ const ResultWizardStep1ChooseRace = observer(
             },
             true
           );
-          setProcessed(prev => prev + 1);
-          setCurrentEvent(t('results.calculateResults'));
+          progress.finish('oringen');
+          progress.start('process');
 
           let entries: IEventorEntry[] = [];
           let oringenEvents: IEventorEvent[] = [];
@@ -431,12 +441,19 @@ const ResultWizardStep1ChooseRace = observer(
             events = [...events, ...alreadySavedEventsNotInEventor];
           }
           events = events.sort((a, b) => (a.date > b.date ? 1 : a.date < b.date ? -1 : 0));
+          progress.finish('process', t('results.LoadNofEvents', { count: events.length }));
           setEvents(events);
           setSelectedRowKeys(undefined);
           setLoaded(true);
         } catch (e) {
-          if (e && (e as { message: string }).message) message.error((e as { message: string }).message);
-          onFailed?.();
+          const errorMessage =
+            e instanceof Error
+              ? e.message
+              : typeof e === 'string'
+                ? e
+                : ((e as { message?: string } | undefined)?.message ?? t('results.LoadRaceUnknownError'));
+          progress.fail(errorMessage);
+          setLoadError(errorMessage);
         }
       };
 
@@ -447,7 +464,8 @@ const ResultWizardStep1ChooseRace = observer(
       clubModel.modules,
       clubModel.raceClubs,
       loaded,
-      onFailed,
+      progress,
+      reloadCount,
       raceWizardModel.queryEndDate,
       raceWizardModel.queryForEventWithNoEntry,
       raceWizardModel.queryIncludeExisting,
@@ -556,12 +574,34 @@ const ResultWizardStep1ChooseRace = observer(
           };
         }}
       />
-    ) : visible && total > 0 ? (
-      <SpinnerDiv>
-        <Progress type="circle" percent={(100 * processed) / total} format={() => `${processed}/${total}`} />
-        <div>{currentEvent}...</div>
-        <Spin size="large" />
-      </SpinnerDiv>
+    ) : visible && loadError ? (
+      <Alert
+        showIcon
+        type="error"
+        title={t('results.LoadEventsFailed')}
+        description={
+          <>
+            <div>{loadError}</div>
+            <ExpandableDetails>
+              <LoadProgress embedded title={null} tasks={loadTasks} />
+            </ExpandableDetails>
+          </>
+        }
+        action={
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {onFailed ? (
+              <Button icon={<LeftOutlined />} onClick={onFailed}>
+                {t('common.Previous')}
+              </Button>
+            ) : null}
+            <Button type="primary" icon={<ReloadOutlined />} onClick={() => setReloadCount(count => count + 1)}>
+              {t('results.LoadRaceAgain')}
+            </Button>
+          </div>
+        }
+      />
+    ) : visible && loadTasks.length > 0 ? (
+      <LoadProgress title={t('results.LoadingEvents')} tasks={loadTasks} startedAt={loadStartedAt} />
     ) : visible ? (
       <SpinnerDiv>
         <Spin size="large" />

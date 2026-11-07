@@ -55,6 +55,8 @@ const ResultsWizard = observer(() => {
   const raceWizardModel = useRef<IRaceWizard>(new RaceWizard(getLocalStorage()));
   const [wizardStep, setWizardStep] = useState(0);
   const [nextStepValid, setNextStepValid] = useState(true);
+  // The race in the edit step is loaded, the buttons for editing are hidden while loading or on errors
+  const [editRaceReady, setEditRaceReady] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
   const [contentOffsetHeight, setContentOffsetHeight] = useState(0);
@@ -388,7 +390,7 @@ const ResultsWizard = observer(() => {
       <FullScreenWizard
         title={t('results.Add')}
         footer={[
-          wizardStep === 2 ? (
+          wizardStep === 2 && editRaceReady ? (
             <Space>
               <Switch checked={autoUpdateResultWithSameClass} onChange={setAutoUpdateResultWithSameClass} />
               <Typography.Text onClick={() => setAutoUpdateResultWithSameClass(oldValue => !oldValue)}>
@@ -396,7 +398,7 @@ const ResultsWizard = observer(() => {
               </Typography.Text>
             </Space>
           ) : null,
-          wizardStep === 2 ? (
+          wizardStep === 2 && editRaceReady ? (
             <Popconfirm
               title={t('common.Confirm')}
               okText={t('common.Yes')}
@@ -414,7 +416,7 @@ const ResultsWizard = observer(() => {
               {t('common.Previous')}
             </Button>
           ),
-          wizardStep === 2 ? (
+          wizardStep === 2 && editRaceReady ? (
             <Button
               onClick={() => {
                 const resultObject: IExtendedRaceResult = {
@@ -550,20 +552,24 @@ const ResultsWizard = observer(() => {
               <RightOutlined />
             </Button>
           ) : null,
-          <Button
-            key={wizardStep === 0 && ctrlAltDown ? 'recalculateButton' : wizardStep === 3 ? 'saveButton' : 'nextButton'}
-            type="primary"
-            disabled={!loaded || !nextStepValid}
-            loading={saving}
-            onClick={e => (wizardStep === 3 ? save(true) : next(e))}
-          >
-            {wizardStep === 0 && ctrlAltDown
-              ? t('common.Recalculate')
-              : wizardStep === 3
-                ? t('common.Save')
-                : t('common.Next')}
-            {wizardStep === 3 ? null : <RightOutlined />}
-          </Button>,
+          wizardStep === 2 && !editRaceReady ? null : (
+            <Button
+              key={
+                wizardStep === 0 && ctrlAltDown ? 'recalculateButton' : wizardStep === 3 ? 'saveButton' : 'nextButton'
+              }
+              type="primary"
+              disabled={!loaded || !nextStepValid}
+              loading={saving}
+              onClick={e => (wizardStep === 3 ? save(true) : next(e))}
+            >
+              {wizardStep === 0 && ctrlAltDown
+                ? t('common.Recalculate')
+                : wizardStep === 3
+                  ? t('common.Save')
+                  : t('common.Next')}
+              {wizardStep === 3 ? null : <RightOutlined />}
+            </Button>
+          ),
           wizardStep >= 2 ? (
             <Popconfirm
               title={t('common.Confirm')}
@@ -612,6 +618,7 @@ const ResultsWizard = observer(() => {
               visible={wizardStep === 2}
               onValidate={onValidate}
               onFailed={prev}
+              onReadyChange={setEditRaceReady}
             />
           ) : null}
           {wizardStep === 3 && !saving ? <ResultsWizardCupRaces /> : null}

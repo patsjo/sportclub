@@ -16,6 +16,9 @@
 //#                 iEventorRaceId, iUseTotalResult, iTheme) #
 //#                 A race the club already has imported is  #
 //#                 linked and its results saved directly.   #
+//#   RACE_USE_TOTAL_RESULT  iCupRaceId, iUseTotalResult,    #
+//#                 only that, the linked results are saved  #
+//#                 again (stage or total after the stage)   #
 //#   RACE_RESULTS  iCupRaceId, iResults (array), replaces   #
 //#                 all results for the race                 #
 //#   EVENTOR_RESULTS  iCupRaceId, iResults, all participants  #
@@ -226,6 +229,24 @@ elseif ($input->iType == "RACES")
     $linked->eventId = linkCupRaceToSavedEvent(intval($cupRaceId));
     array_push($rows, $linked);
   }
+}
+elseif ($input->iType == "RACE_USE_TOTAL_RESULT")
+{
+  // Only whether the stage or the total after the stage counts, from the result import. The rest of the race is
+  // left as it is, the import does not know it all (e.g. the theme).
+  if (!isset($input->iCupRaceId))
+  {
+    cupError('Felaktig parameter "iCupRaceId"');
+  }
+  $cupRaceId = intval($input->iCupRaceId);
+  $useTotalResult = isset($input->iUseTotalResult) && $input->iUseTotalResult;
+  cupQuery(sprintf("UPDATE CUP_RACE SET USE_TOTAL_RESULT = %s WHERE CUP_RACE_ID = %d",
+                   cupSqlBool($useTotalResult), $cupRaceId));
+  // The results of a race the club has saved are saved again, by the stage or the total
+  $linked = new stdClass();
+  $linked->cupRaceId = $cupRaceId;
+  $linked->eventId = linkCupRaceToSavedEvent($cupRaceId);
+  $rows = array($linked);
 }
 elseif ($input->iType == "RACE_RESULTS")
 {

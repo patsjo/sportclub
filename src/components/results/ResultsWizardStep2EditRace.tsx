@@ -1,25 +1,35 @@
-import { ExclamationCircleOutlined, GlobalOutlined } from '@ant-design/icons';
 import {
+  ExclamationCircleOutlined,
+  GlobalOutlined,
+  ImportOutlined,
+  LeftOutlined,
+  ReloadOutlined
+} from '@ant-design/icons';
+import {
+  Alert,
   Button,
+  Card,
   Col,
   DatePicker,
   Form,
   Input,
-  message,
+  InputNumber,
   Modal,
   ModalFuncProps,
   Popconfirm,
   Row,
+  Select,
   Spin,
   Switch,
   TableProps,
   Tag,
-  Tooltip
+  Tooltip,
+  Typography
 } from 'antd';
 import dayjs from 'dayjs';
 import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   IRace,
@@ -37,9 +47,25 @@ import {
   IRaceTeamResultProps
 } from '../../models/resultModel';
 import { IWinnerResultProps } from '../../models/resultWizardModel';
-import { PostJsonData } from '../../utils/api';
+import { IFetchProgress, PostJsonData, PostJsonDataWithProgress } from '../../utils/api';
 import { dateFormat, errorRequiredField, shortTimeFormat } from '../../utils/formHelper';
 import { correctPhpEventorProxyXmlResponseForResult } from '../../utils/iofXsd30ResponseHelper';
+import {
+  ApplyLiveloxLengths,
+  ChooseLiveloxEvent,
+  EventorEventUrl,
+  FetchLiveloxEvent,
+  FetchLiveloxEventIds,
+  FindLiveloxEvent,
+  GetLiveloxClassesByName,
+  ILiveloxClass,
+  ILiveloxEvent,
+  LiveloxEventIdFromLink,
+  LiveloxEventUrl,
+  LiveloxProxyUrl,
+  LiveloxSearchTexts,
+  LiveloxSearchUrl
+} from '../../utils/liveloxHelper';
 import { useMobxStore } from '../../utils/mobxStore';
 import {
   IEventorClassResult,
@@ -84,7 +110,7 @@ import {
   GetFees,
   GetIOFRelaySplitTimes,
   GetIOFSplitTimes,
-  GetLength,
+  GetCourseLengths,
   GetMissingTime,
   GetRelaySplitTimes,
   GetSecondsWithFractionsPerKiloMeter,
@@ -94,6 +120,20 @@ import {
   TimeDiff,
   WinnerTime
 } from '../../utils/resultHelper';
+import {
+  CalculateTotalAfterStage,
+  FetchTotalResultsPage,
+  FetchWinSplitsResults,
+  FindCompetitorByName,
+  FindTotalClass,
+  FindTotalPerson,
+  IsClubOrganisation,
+  SplitClubNames,
+  StageFromName,
+  TotalLengthInMeter,
+  WinSplitsDatabaseId
+} from '../../utils/resultSources';
+import { IEventViewResultResponse } from '../../utils/responseInterfaces';
 import { useResultWizardStore } from '../../utils/resultWizardStore';
 import FormItem from '../formItems/FormItem';
 import { FormSelect } from '../formItems/FormSelect';
@@ -101,8 +141,21 @@ import InputTime from '../formItems/InputTime';
 import { GetPositionModal } from '../map/GetPositionModal';
 import { MissingTag, NoWrap, SpinnerDiv, StyledIcon, StyledTable } from '../styled/styled';
 import { AddMapCompetitorConfirmModal } from './AddMapCompetitorConfirmModal';
+import {
+  ExpandableDetails,
+  ILoadWarning,
+  LoadProgress,
+  loadWarningShort,
+  LoadWarningList,
+  toLoadWarning,
+  useLoadProgress
+} from './LoadProgress';
 import EditResultIndividual, { IExtendedRaceResult } from './EditResultIndividual';
 import EditResultRelay, { IExtendedRaceTeamResult } from './EditResultRelay';
+
+// The host closes a request after about 100 seconds. The proxy goes on with the work, and the next
+// attempt waits for it, so a large result list (e.g. O-Ringen) needs a few attempts.
+const STREAM_ATTEMPTS = 8;
 
 interface IResultWizardStep2EditRaceProps {
   height: number;
@@ -110,17 +163,172 @@ interface IResultWizardStep2EditRaceProps {
   autoUpdateResultWithSameClass: boolean;
   onValidate: (valid: boolean) => void;
   onFailed: (e: unknown) => void;
+  /** True when the race is loaded without errors, the buttons for editing are hidden until then */
+  onReadyChange?: (ready: boolean) => void;
 }
 const ResultWizardStep2EditRace = observer(
-  ({ height, visible, autoUpdateResultWithSameClass, onValidate, onFailed }: IResultWizardStep2EditRaceProps) => {
+  ({
+    height,
+    visible,
+    autoUpdateResultWithSameClass,
+    onValidate,
+    onFailed,
+    onReadyChange
+  }: IResultWizardStep2EditRaceProps) => {
     const { t } = useTranslation();
     const { globalStateModel, clubModel, sessionModel } = useMobxStore();
     const { raceWizardModel } = useResultWizardStore();
     const [form] = Form.useForm<IRaceEventProps>();
     const formId = useMemo(() => 'resultsWizardFormStep2EditRace' + Math.floor(Math.random() * 1000000000000000), []);
     const [loaded, setLoaded] = useState(false);
+    // Shown in the step instead of a flash message, with the choice to go back or load again
+    const [loadError, setLoadError] = useState<string>();
+    const [loadWarnings, setLoadWarnings] = useState<ILoadWarning[]>([]);
+    const [reloadCount, setReloadCount] = useState(0);
+    // What the load is doing, and how far it has come
+    const { tasks: loadTasks, startedAt: loadStartedAt, api: progress } = useLoadProgress();
+    // The number of starters in the whole event, from the classes in Eventor. A large event (e.g. O-Ringen)
+    // takes long, then the steps show how far they have come.
+    const nofStarters = useRef(0);
+    const nofClasses = useRef(0);
+    // The starters before each class of a result list, counted once per list
+    const startersBeforeClass = useRef(new WeakMap<object, number[]>());
+    // The classes and starters calculated, told when the calculation is done
+    const calculated = useRef({ classes: 0, starters: 0, relay: false });
+    /** How far the processing of the results has come, by classes and starters, and time for the browser to show it */
+    const reportClassProgress = useCallback(
+      async (
+        classResults: ReadonlyArray<{ PersonResult?: unknown; TeamResult?: unknown }>,
+        index: number,
+        relay = false
+      ) => {
+        let before = startersBeforeClass.current.get(classResults);
+        if (!before) {
+          const count = (value: unknown) => (value == null ? 0 : Array.isArray(value) ? value.length : 1);
+          before = [0];
+          for (const classResult of classResults)
+            before.push(before[before.length - 1] + count(classResult.PersonResult) + count(classResult.TeamResult));
+          startersBeforeClass.current.set(classResults, before);
+        }
+        const total = before[classResults.length];
+        calculated.current = { classes: index + 1, starters: before[index + 1], relay };
+        progress.progress(
+          'calculate',
+          before[index],
+          total,
+          t(relay ? 'results.LoadClassProgressRelay' : 'results.LoadClassProgress', {
+            index: index + 1,
+            classes: classResults.length,
+            done: before[index].toLocaleString('sv-SE'),
+            total: total.toLocaleString('sv-SE')
+          }),
+          'percent'
+        );
+        if (index % 5 === 0) await new Promise(resolve => setTimeout(resolve, 0));
+      },
+      [progress, t]
+    );
+    const ready = loaded && !loadError;
+    useEffect(() => {
+      onReadyChange?.(ready);
+    }, [onReadyChange, ready]);
+    useEffect(() => () => onReadyChange?.(false), [onReadyChange]);
     const [isRelay, setIsRelay] = useState(raceWizardModel.selectedIsRelay);
     const [modal, contextHolder] = Modal.useModal();
+    // The classes of Eventor, to find the classes in Livelox by their id
+    const eventClassesRef = useRef<IEventorEventClass[]>([]);
+    // The number of the race in the event (1 for a race of one day), to find the race in Livelox
+    const raceNumberRef = useRef<number | undefined>(undefined);
+    // The course lengths of every class and relay leg in Livelox, and how many results got their length from it
+    const [livelox, setLivelox] = useState<{
+      event: ILiveloxEvent;
+      classes: Map<string, ILiveloxClass>;
+      updated: number;
+    }>();
+    // A relay, or results without a course length, Livelox may have the lengths
+    const [liveloxNeeded, setLiveloxNeeded] = useState(false);
+    const [liveloxLink, setLiveloxLink] = useState('');
+    const [liveloxLoading, setLiveloxLoading] = useState(false);
+    const [liveloxError, setLiveloxError] = useState<string>();
+
+    /** Fees, awards and class classifications of the imported results */
+    const calculateFeesAndAwards = useCallback(
+      (eventIsRelay: boolean) => {
+        if (!raceWizardModel.overwrite || !clubModel.raceClubs || !raceWizardModel.raceEvent) return;
+        if (!eventIsRelay && clubModel.raceClubs.selectedClub) {
+          CalculateCompetitorsFee(
+            raceWizardModel.raceEvent,
+            clubModel.raceClubs.selectedClub,
+            clubModel.raceClubs.eventClassifications
+          );
+          CalculateAllAwards(clubModel.raceClubs, raceWizardModel.raceEvent);
+          CalculateAllClassClassificationId(clubModel.raceClubs, raceWizardModel.raceEvent);
+          raceWizardModel.raceEvent.results.forEach(result => {
+            if (result.missingTime?.substr(-5) !== ManuallyEditedMissingTimePostfix) {
+              result.setStringValueOrNull('missingTime', result.missingTime);
+            }
+          });
+        } else {
+          raceWizardModel.raceEvent.teamResults.forEach(teamResult => {
+            if (teamResult.missingTime?.substr(-5) !== ManuallyEditedMissingTimePostfix) {
+              teamResult.setStringValueOrNull('missingTime', teamResult.missingTime);
+            }
+          });
+        }
+      },
+      [clubModel.raceClubs, raceWizardModel]
+    );
+
+    /** The course lengths of Livelox in the results, returns the number of results that got a length */
+    const applyLiveloxLengths = useCallback(
+      (classes: Map<string, ILiveloxClass>, relay: boolean) =>
+        raceWizardModel.raceEvent
+          ? ApplyLiveloxLengths(
+              classes,
+              relay,
+              raceWizardModel.raceEvent.results,
+              raceWizardModel.raceEvent.teamResults,
+              raceWizardModel.raceWinnerResults
+            )
+          : 0,
+      [raceWizardModel]
+    );
+
+    /** The link to Livelox pasted by the user, when it could not be read from the race in Eventor */
+    const loadLivelox = useCallback(
+      async (link: string) => {
+        setLiveloxError(undefined);
+        const liveloxEventId = LiveloxEventIdFromLink(link);
+        const liveloxProxy = LiveloxProxyUrl(clubModel.eventorCorsProxy);
+        if (!liveloxEventId) {
+          setLiveloxError(t('results.LiveloxInvalidLink'));
+          return;
+        }
+        if (!liveloxProxy) return;
+        setLiveloxLoading(true);
+        try {
+          const event = await FetchLiveloxEvent(liveloxProxy, liveloxEventId);
+          const classes = GetLiveloxClassesByName(event, eventClassesRef.current);
+          const updated = applyLiveloxLengths(classes, isRelay);
+          setLivelox({ event, classes, updated });
+          setLoadWarnings(warnings =>
+            warnings.map(warning =>
+              warning.key === 'livelox'
+                ? { ...warning, resolvedBy: t('results.LiveloxResolvedByLink', { name: event.name }) }
+                : warning
+            )
+          );
+          onValidate(!!raceWizardModel.raceEvent?.valid);
+        } catch (error) {
+          setLiveloxError(
+            `${t('results.LiveloxLoadFailed')}: ${error instanceof Error ? error.message : String(error)}`
+          );
+        } finally {
+          setLiveloxLoading(false);
+        }
+      },
+      [applyLiveloxLengths, clubModel.eventorCorsProxy, isRelay, onValidate, raceWizardModel, t]
+    );
 
     const onChooseMapPosition = useCallback(() => {
       const longitude = raceWizardModel.raceEvent?.longitude;
@@ -154,7 +362,7 @@ const ResultWizardStep2EditRace = observer(
         entriesJson: IEventorEntries | undefined,
         entryFeeJson: IEventorEntryFees | undefined,
         classJson: IEventorEventClasses | undefined,
-        lengthHtmlJson: string,
+        courseLengths: Map<string, number>,
         eventIsRelay: boolean
       ) => {
         // 0 = International, 1 = championchip, 2 = National, 3 = District, 4 = Nearby, 5 = Club, 6 = International
@@ -204,12 +412,15 @@ const ResultWizardStep2EditRace = observer(
         let eventRace: IEventorEventRace | undefined;
         if (resultJson != null) {
           if (Array.isArray(resultJson.Event.EventRace)) {
-            eventRace = resultJson.Event.EventRace.find(
+            const raceIndex = resultJson.Event.EventRace.findIndex(
               eventRace => eventRace.EventRaceId === raceWizardModel.selectedEventorRaceId?.toString()
             );
+            eventRace = raceIndex >= 0 ? resultJson.Event.EventRace[raceIndex] : undefined;
+            raceNumberRef.current = raceIndex >= 0 ? raceIndex + 1 : undefined;
             resultJson.Event.Name = resultJson.Event.Name + ', ' + eventRace?.Name;
           } else {
             eventRace = resultJson.Event.EventRace;
+            raceNumberRef.current = 1;
           }
           if (eventRace) {
             const raceLightCondition = eventRace['@attributes']?.raceLightCondition;
@@ -266,6 +477,7 @@ const ResultWizardStep2EditRace = observer(
           if (!eventIsRelay) {
             for (let i = 0; i < classResults.length; i++) {
               const classResult = classResults[i];
+              await reportClassProgress(classResults, i);
               let currentClass: IEventorEventClass | undefined;
               if (eventClasses != null) {
                 currentClass = eventClasses.find(
@@ -313,7 +525,9 @@ const ResultWizardStep2EditRace = observer(
                 const { splitTimes, bestSplitTimes, secondBestSplitTimes } = GetSplitTimes(personResults);
                 const shortClassName = GetClassShortName(currentClass?.ClassShortName);
                 const classLevel = GetClassLevel(clubModel.raceClubs!.classLevels, shortClassName);
-                const lengthInMeter = currentClass ? GetLength(lengthHtmlJson, currentClass.Name) : null;
+                const lengthInMeter = currentClass
+                  ? (courseLengths.get(currentClass.EventClassId) ?? courseLengths.get(currentClass.Name) ?? null)
+                  : null;
                 const winnerResult = personResults.find(personResult => personResult.Result?.ResultPosition === '1');
 
                 if (
@@ -563,6 +777,7 @@ const ResultWizardStep2EditRace = observer(
           } else if (eventIsRelay && raceWizardModel.overwrite) {
             for (let i = 0; i < classResults.length; i++) {
               const classResult = classResults[i];
+              await reportClassProgress(classResults, i, true);
               let currentClass: IEventorEventClass | undefined;
               let nofStartsInClass: number | null = null;
               let numberOfLegs: number | null = null;
@@ -865,7 +1080,7 @@ const ResultWizardStep2EditRace = observer(
           raceWizardModel.setRaceEvent(raceEvent);
         }
       },
-      [clubModel, raceWizardModel, sessionModel, t, modal]
+      [clubModel, raceWizardModel, sessionModel, t, modal, reportClassProgress]
     );
 
     const handleIOFResults = useCallback(
@@ -876,8 +1091,14 @@ const ResultWizardStep2EditRace = observer(
         entriesJson: IEventorEntries | undefined,
         entryFeeJson: IEventorEntryFees | undefined,
         classJson: IEventorEventClasses | undefined,
-        eventIsRelay: boolean
+        eventIsRelay: boolean,
+        /** A source other than Eventor (e.g. WinSplits): one race, the club and its runners are found by name */
+        externalSource?: { clubNames: string[]; raceNumber?: number }
       ) => {
+        const isClubOrganisation = (organisation?: { Id?: string; Name?: string } | null) =>
+          externalSource
+            ? IsClubOrganisation(organisation?.Name, externalSource.clubNames)
+            : organisation?.Id == clubModel.eventor?.organisationId;
         let eventClassificationId: EventClassificationIdTypes = 'F';
         if (iofResults?.Event.Classification != null) {
           switch (iofResults.Event.Classification) {
@@ -915,14 +1136,18 @@ const ResultWizardStep2EditRace = observer(
         let raceEvent: IRaceEventProps | undefined = !raceWizardModel.overwrite ? editResultJson : undefined;
         let eventRace: IRace | undefined;
         if (iofResults != null) {
-          eventRace = iofResults.Event.Race?.find(
-            eventRace => eventRace.Extensions.EventRaceId == raceWizardModel.selectedEventorRaceId
-          );
+          eventRace = externalSource
+            ? (iofResults.Event.Race?.find(race => race.RaceNumber === externalSource.raceNumber) ??
+              iofResults.Event.Race?.[0])
+            : iofResults.Event.Race?.find(
+                eventRace => eventRace.Extensions.EventRaceId == raceWizardModel.selectedEventorRaceId
+              );
+          raceNumberRef.current = eventRace?.RaceNumber;
           if (eventRace?.Name && iofResults.Event.Race && iofResults.Event.Race.length > 1)
             iofResults.Event.Name = iofResults.Event.Name + ', ' + eventRace?.Name;
 
           if (eventRace) {
-            const raceLightCondition = eventRace.Extensions.LightCondition;
+            const raceLightCondition = eventRace.Extensions?.LightCondition;
             raceEvent = {
               eventId: raceWizardModel.selectedEventId ?? -1,
               eventorId: raceWizardModel.selectedEventorId,
@@ -971,6 +1196,7 @@ const ResultWizardStep2EditRace = observer(
           if (!eventIsRelay) {
             for (let i = 0; i < classResults.length; i++) {
               const classResult = classResults[i];
+              await reportClassProgress(classResults, i);
               let currentClass:
                 | {
                     ClassShortName: string;
@@ -1047,8 +1273,9 @@ const ResultWizardStep2EditRace = observer(
                   const clubPersonResults = personResults.filter(
                     personResult =>
                       (raceWizardModel.queryForCompetitorWithNoClub && !personResult.Organisation?.Id) ||
-                      personResult?.Organisation?.Id == clubModel.eventor?.organisationId ||
-                      (personResult.Organisation?.Id == clubModel.eventor?.districtOrganisationId &&
+                      isClubOrganisation(personResult?.Organisation) ||
+                      (!externalSource &&
+                        personResult.Organisation?.Id == clubModel.eventor?.districtOrganisationId &&
                         clubModel.raceClubs?.selectedClub?.competitorByEventorId(
                           parseInt(personResult.Person.Id?.find(() => true) as string)
                         ) != null)
@@ -1056,8 +1283,17 @@ const ResultWizardStep2EditRace = observer(
 
                   for (let j = 0; j < clubPersonResults.length; j++) {
                     const personResult = clubPersonResults[j];
-                    const personId = personResult.Person.Id?.find(() => true);
-                    let competitor: IRaceCompetitor | undefined;
+                    // The id the split times are kept by. Another source than Eventor has no ids of Eventor, it
+                    // must never be stored as one.
+                    const splitPersonId = personResult.Person.Id?.find(() => true);
+                    const personId = externalSource ? undefined : splitPersonId;
+                    let competitor: IRaceCompetitor | undefined = externalSource
+                      ? FindCompetitorByName(
+                          clubModel.raceClubs?.selectedClub?.competitors,
+                          personResult.Person.Name.Given,
+                          personResult.Person.Name.Family
+                        )
+                      : undefined;
                     if (personId && personId.length > 0) {
                       if (!competitor) {
                         competitor = clubModel.raceClubs?.selectedClub?.competitorByEventorId(parseInt(personId));
@@ -1235,7 +1471,12 @@ const ResultWizardStep2EditRace = observer(
                         points: 0,
                         pointsOld: 0,
                         points1000: 0,
-                        missingTime: GetMissingTime(personId ?? '#', splitTimes, bestSplitTimes, secondBestSplitTimes)
+                        missingTime: GetMissingTime(
+                          splitPersonId ?? '#',
+                          splitTimes,
+                          bestSplitTimes,
+                          secondBestSplitTimes
+                        )
                       };
                       raceEvent?.results?.push(raceResult);
                     }
@@ -1246,6 +1487,7 @@ const ResultWizardStep2EditRace = observer(
           } else if (eventIsRelay && raceWizardModel.overwrite) {
             for (let i = 0; i < classResults.length; i++) {
               const classResult = classResults[i];
+              await reportClassProgress(classResults, i, true);
 
               if (classResult.TeamResult != null && classResult.TeamResult.length > 0) {
                 let currentClass:
@@ -1267,7 +1509,8 @@ const ResultWizardStep2EditRace = observer(
                   };
                 }
 
-                let shortClassName: string | null = null;
+                // Before the legs below, their winners are named by it ("<class> - <leg>")
+                const shortClassName = GetClassShortName(currentClass.ClassShortName);
                 const teamResults = classResult.TeamResult.map(teamResult => ({
                   ...teamResult,
                   TeamMemberResult: teamResult.TeamMemberResult?.filter(teamMemberResult =>
@@ -1351,7 +1594,6 @@ const ResultWizardStep2EditRace = observer(
                 const firstLegInfo = legInfos?.find(c => c.leg === 1);
                 const lastLegInfo = legInfos?.find(c => c.leg === legInfos?.length);
                 nofStartsInClass = firstLegInfo ? firstLegInfo.numberOfStarts : null;
-                shortClassName = GetClassShortName(currentClass.ClassShortName);
 
                 const clubTeamMemberResults: (Omit<ITeamMemberResult, 'Result'> & {
                   Result?: ITeamMemberRaceResult;
@@ -1364,26 +1606,33 @@ const ResultWizardStep2EditRace = observer(
                   BibNumber: string;
                 })[] = [];
                 teamResults.forEach(teamResult => {
-                  const hasClubMembers = teamResult.Organisation?.some(
-                    org => org.Id === clubModel.eventor?.organisationId.toString()
-                  );
-                  const hasDistrictMembers = teamResult.Organisation?.some(
-                    org => org.Id === clubModel.eventor?.districtOrganisationId.toString()
-                  );
+                  const hasClubMembers = teamResult.Organisation?.some(org => isClubOrganisation(org));
+                  const hasDistrictMembers =
+                    !externalSource &&
+                    teamResult.Organisation?.some(
+                      org => org.Id === clubModel.eventor?.districtOrganisationId.toString()
+                    );
                   const teamOverallResult = teamResult.TeamMemberResult?.find(
                     tmr => tmr.Result?.Leg === lastLegInfo?.leg
                   )?.Result?.OverallResult;
 
                   teamResult.TeamMemberResult?.forEach(teamMemberResult => {
-                    const personId = teamMemberResult.Person?.Id?.find(() => true);
-                    const competitor =
-                      (hasClubMembers || hasDistrictMembers) && personId && personId.length > 0
+                    const personId = externalSource ? undefined : teamMemberResult.Person?.Id?.find(() => true);
+                    const competitor = externalSource
+                      ? hasClubMembers
+                        ? FindCompetitorByName(
+                            clubModel.raceClubs?.selectedClub?.competitors,
+                            teamMemberResult.Person?.Name.Given,
+                            teamMemberResult.Person?.Name.Family
+                          )
+                        : null
+                      : (hasClubMembers || hasDistrictMembers) && personId && personId.length > 0
                         ? clubModel.raceClubs?.selectedClub?.competitorByEventorId(parseInt(personId))
                         : null;
 
                     if (
                       (raceWizardModel.queryForCompetitorWithNoClub && !teamMemberResult.Organisation?.Id) ||
-                      teamMemberResult.Organisation?.Id === clubModel.eventor?.organisationId.toString() ||
+                      isClubOrganisation(teamMemberResult.Organisation) ||
                       competitor ||
                       (hasClubMembers && teamResult.Organisation?.length === 1)
                     ) {
@@ -1406,7 +1655,9 @@ const ResultWizardStep2EditRace = observer(
 
                 for (let j = 0; j < clubTeamMemberResults.length; j++) {
                   const teamMemberResult = clubTeamMemberResults[j];
-                  const personId = teamMemberResult.Person?.Id?.find(() => true);
+                  // The split times are kept by this id, it is only an id of Eventor when Eventor is the source
+                  const splitPersonId = teamMemberResult.Person?.Id?.find(() => true);
+                  const personId = externalSource ? undefined : splitPersonId;
                   let competitor = teamMemberResult.Competitor;
                   if (personId && personId.length > 0) {
                     if (!competitor) {
@@ -1564,9 +1815,9 @@ const ResultWizardStep2EditRace = observer(
                           : null,
                       points1000: 0,
                       missingTime:
-                        legSplitTimes && personId
+                        legSplitTimes && splitPersonId
                           ? GetMissingTime(
-                              personId,
+                              splitPersonId,
                               legSplitTimes.splitTimes,
                               legSplitTimes.bestSplitTimes,
                               legSplitTimes.secondBestSplitTimes
@@ -1590,31 +1841,407 @@ const ResultWizardStep2EditRace = observer(
           raceWizardModel.setRaceEvent(raceEvent);
         }
       },
-      [clubModel, raceWizardModel, sessionModel, t, modal]
+      [clubModel, raceWizardModel, sessionModel, t, modal, reportClassProgress]
     );
+
+    // Results of a race that is not in Eventor, from another source
+    const [importLink, setImportLink] = useState('');
+    const [importClubNames, setImportClubNames] = useState(clubModel.raceClubs?.selectedClub?.name ?? '');
+    const [importing, setImporting] = useState(false);
+    const [importStatus, setImportStatus] = useState<string>();
+    const [importError, setImportError] = useState<string>();
+
+    const importResults = useCallback(async () => {
+      setImportError(undefined);
+      const clubNames = SplitClubNames(importClubNames);
+      const databaseId = WinSplitsDatabaseId(importLink);
+      if (!databaseId) {
+        setImportError(t('results.ImportInvalidWinSplitsLink'));
+        return;
+      }
+      if (clubNames.length === 0) {
+        setImportError(t('results.ImportMissingClubName'));
+        return;
+      }
+      if (!clubModel.eventorCorsProxy) return;
+      setImporting(true);
+      try {
+        const results = await FetchWinSplitsResults(clubModel.eventorCorsProxy, databaseId, (index, total, name) =>
+          setImportStatus(t('results.ImportClassProgress', { index: index + 1, total, name: name ?? '' }))
+        );
+        const relay = !!results.Event.Form?.some(form => form === 'Relay');
+        setImportStatus(t('results.LoadTaskCalculate'));
+        // A new race, the imported results take the place of the empty one
+        raceWizardModel.setBooleanValue('overwrite', true);
+        await handleIOFResults(undefined, results, undefined, undefined, undefined, undefined, relay, {
+          clubNames
+        });
+        calculateFeesAndAwards(relay);
+        setIsRelay(relay);
+        if (raceWizardModel.raceEvent) form.setFieldsValue(toJS(raceWizardModel.raceEvent));
+        const count =
+          (raceWizardModel.raceEvent?.results.length ?? 0) + (raceWizardModel.raceEvent?.teamResults.length ?? 0);
+        setImportStatus(t('results.ImportDone', { count, clubs: clubNames.join(', ') }));
+        form.validateFields().then();
+        onValidate(!!raceWizardModel.raceEvent?.valid);
+      } catch (error) {
+        setImportStatus(undefined);
+        setImportError(`${t('results.ImportFailed')}: ${error instanceof Error ? error.message : String(error)}`);
+      } finally {
+        setImporting(false);
+      }
+    }, [
+      calculateFeesAndAwards,
+      clubModel.eventorCorsProxy,
+      form,
+      handleIOFResults,
+      importClubNames,
+      importLink,
+      onValidate,
+      raceWizardModel,
+      t
+    ]);
+
+    // The total results of an event of several days, after the stage of this race
+    const [totalLink, setTotalLink] = useState('');
+    const [totalStage, setTotalStage] = useState<number | null>(null);
+    const [totalLoading, setTotalLoading] = useState(false);
+    const [totalStatus, setTotalStatus] = useState<string>();
+    const [totalError, setTotalError] = useState<string>();
+    // The earlier stages, saved races of the club up to 14 days before (no event of several days is longer). The
+    // stage of this race is their number + 1, and the total course length is the sum of the lengths.
+    const raceDate = raceWizardModel.raceEvent?.raceDate;
+    const [earlierRaces, setEarlierRaces] = useState<IEventViewResultResponse[]>([]);
+    const [earlierRaceIds, setEarlierRaceIds] = useState<number[]>([]);
+
+    useEffect(() => {
+      const url = clubModel.modules.find(module => module.name === 'Results')?.queryUrl;
+      if (raceWizardModel.existInEventor || !raceDate || !url || !clubModel.raceClubs?.selectedClub) {
+        setEarlierRaces([]);
+        return;
+      }
+      let cancelled = false;
+      PostJsonData<IEventViewResultResponse[]>(
+        url,
+        {
+          iType: 'EVENTS',
+          iClubId: clubModel.raceClubs.selectedClub.clubId,
+          iFromDate: dayjs(raceDate, dateFormat).add(-14, 'days').format(dateFormat),
+          iToDate: raceDate
+        },
+        true,
+        sessionModel.authorizationHeader
+      )
+        .then(races => {
+          if (cancelled) return;
+          setEarlierRaces(
+            (races ?? [])
+              .filter(race => !race.isRelay && race.eventId !== raceWizardModel.selectedEventId)
+              .sort((a, b) => `${a.date} ${a.time ?? ''}`.localeCompare(`${b.date} ${b.time ?? ''}`))
+          );
+        })
+        .catch(error => {
+          if (!cancelled) setTotalError(`${t('results.TotalEarlierStagesFailed')}: ${error?.message ?? error}`);
+        });
+      return () => {
+        cancelled = true;
+      };
+    }, [
+      clubModel.modules,
+      clubModel.raceClubs?.selectedClub,
+      raceDate,
+      raceWizardModel.existInEventor,
+      raceWizardModel.selectedEventId,
+      sessionModel.authorizationHeader,
+      t
+    ]);
+
+    const importTotalResults = useCallback(async () => {
+      setTotalError(undefined);
+      setTotalStatus(undefined);
+      const liveloxProxy = LiveloxProxyUrl(clubModel.eventorCorsProxy);
+      const raceEvent = raceWizardModel.raceEvent;
+      if (!liveloxProxy || !raceEvent) return;
+      if (raceEvent.isRelay) {
+        setTotalError(t('results.TotalNotForRelay'));
+        return;
+      }
+      setTotalLoading(true);
+      try {
+        const totalResults = await FetchTotalResultsPage(
+          liveloxProxy,
+          totalLink.trim(),
+          sessionModel.authorizationHeader
+        );
+        const stages = totalResults.nofStages;
+        const stage =
+          totalStage ??
+          (earlierRaceIds.length > 0 ? earlierRaceIds.length + 1 : undefined) ??
+          StageFromName(raceEvent.name) ??
+          stages;
+        if (stage < 1 || stage > stages) throw new Error(t('results.TotalStageMissing', { stage, stages }));
+        // The results of the club in the earlier stages, for the total course length
+        const queryUrl = clubModel.modules.find(module => module.name === 'Results')?.queryUrl;
+        const earlierStages: IRaceEventProps[] = [];
+        for (const eventId of earlierRaceIds) {
+          const earlier = queryUrl
+            ? await PostJsonData<IRaceEventProps>(
+                queryUrl,
+                { iType: 'EVENT', iEventId: eventId },
+                true,
+                sessionModel.authorizationHeader
+              )
+            : undefined;
+          if (earlier) earlierStages.push(earlier);
+        }
+        let withoutLength = 0;
+        let updated = 0;
+        const missing: string[] = [];
+        raceEvent.results.forEach((result, index) => {
+          const competitor = clubModel.raceClubs?.selectedClub?.competitorById(result.competitorId);
+          const totalClass = FindTotalClass(totalResults, result.className);
+          const classTotals = totalClass ? CalculateTotalAfterStage(totalClass, stage, stages) : undefined;
+          const total =
+            classTotals && competitor
+              ? FindTotalPerson(classTotals.totals, competitor.firstName, competitor.lastName)
+              : undefined;
+          if (!classTotals || !total) {
+            missing.push(`${competitor?.fullName ?? '?'} (${result.className})`);
+            return;
+          }
+          const toTime = (seconds?: number) => (seconds != null ? ConvertSecondsToTime(seconds) : null);
+          const totalLengthInMeter =
+            earlierStages.length > 0
+              ? TotalLengthInMeter(result.lengthInMeter, result.competitorId, earlierStages)
+              : undefined;
+          if (totalLengthInMeter === null) withoutLength++;
+          result.setValues({
+            resultMultiDay: {
+              multiDayResultId: result.resultMultiDay?.multiDayResultId ?? -1 - index,
+              stage,
+              totalStages: stages,
+              totalLengthInMeter: totalLengthInMeter ?? result.resultMultiDay?.totalLengthInMeter ?? null,
+              totalFailedReason:
+                total.failed === 'NotStarted'
+                  ? failedReasons.NotStarted
+                  : total.failed === 'NotFinished'
+                    ? failedReasons.NotFinished
+                    : null,
+              totalTime: toTime(total.totalTime),
+              totalWinnerTime: toTime(classTotals.winnerTime),
+              totalSecondTime: toTime(classTotals.secondTime),
+              totalPosition: total.totalPosition ?? null,
+              totalNofStartsInClass: classTotals.nofStarts
+            }
+          });
+          updated++;
+        });
+        setTotalStatus(
+          t('results.TotalApplied', { count: updated, stage, stages }) +
+            (earlierStages.length > 0
+              ? ` ${t('results.TotalLengthsCalculated', { count: updated - withoutLength, stages: earlierStages.length + 1 })}`
+              : '') +
+            (withoutLength > 0 ? ` ${t('results.TotalLengthsMissing', { count: withoutLength })}` : '') +
+            (missing.length ? ` ${t('results.TotalNotFound', { names: missing.join(', ') })}` : '')
+        );
+        onValidate(!!raceWizardModel.raceEvent?.valid);
+      } catch (error) {
+        setTotalError(`${t('results.TotalFailed')}: ${error instanceof Error ? error.message : String(error)}`);
+      } finally {
+        setTotalLoading(false);
+      }
+    }, [
+      clubModel.eventorCorsProxy,
+      clubModel.modules,
+      clubModel.raceClubs,
+      earlierRaceIds,
+      onValidate,
+      raceWizardModel,
+      sessionModel.authorizationHeader,
+      t,
+      totalLink,
+      totalStage
+    ]);
 
     useEffect(() => {
       const fetchData = async () => {
         const url = clubModel.modules.find(module => module.name === 'Results')?.queryUrl;
         if (!url || !clubModel.raceClubs || !clubModel.eventor) return;
+        const warnings: ILoadWarning[] = [];
+        const hasEventor = raceWizardModel.selectedEventorId != null && raceWizardModel.selectedEventorId > 0;
+        const hasDatabase = raceWizardModel.selectedEventId != null && raceWizardModel.selectedEventId > 0;
+        progress.reset([
+          ...(hasDatabase ? [{ key: 'database', title: t('results.LoadTaskDatabase') }] : []),
+          ...(hasEventor
+            ? [
+                { key: 'entries', title: t('results.LoadTaskEntries') },
+                { key: 'classes', title: t('results.LoadTaskClasses') },
+                { key: 'iofSplits', title: t('results.LoadTaskIofSplits') },
+                { key: 'iofTotal', title: t('results.LoadTaskIofTotal') },
+                { key: 'results', title: t('results.LoadTaskResults') },
+                { key: 'iof', title: t('results.LoadTaskIof') },
+                { key: 'length', title: t('results.LoadTaskLength') },
+                { key: 'fees', title: t('results.LoadTaskFees') },
+                { key: 'calculate', title: t('results.LoadTaskCalculate') },
+                { key: 'livelox', title: t('results.LoadTaskLivelox') }
+              ]
+            : []),
+          { key: 'process', title: t('results.LoadTaskProcess') }
+        ]);
+        eventClassesRef.current = [];
+        raceNumberRef.current = undefined;
+        nofStarters.current = 0;
+        nofClasses.current = 0;
+        calculated.current = { classes: 0, starters: 0, relay: false };
+        // The url in Eventor of the request being made, to tell where it went wrong
+        let currentEventorUrl: string | undefined;
+        const eventorUrl = (eventorRequestUrl: string) => {
+          currentEventorUrl = eventorRequestUrl;
+          return encodeURIComponent(eventorRequestUrl);
+        };
+        /** The phases of a large request: Eventor builds the answer, the download and the reading of it */
+        const megabytes = (bytes: number) =>
+          (bytes / 1000000).toLocaleString('sv-SE', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+        const eventorProgress = (key: string) => (fetchProgress: IFetchProgress) => {
+          const previous = fetchProgress.previousError;
+          const previousStatus = previous ? loadWarningShort(t, previous) : '';
+          const attempt =
+            fetchProgress.attempt > 1
+              ? ` (${t('results.LoadAttempt', { attempt: fetchProgress.attempt, attempts: fetchProgress.attempts })}${
+                  previous
+                    ? `, ${t('results.LoadPreviousAttemptFailed', {
+                        attempt: fetchProgress.attempt - 1,
+                        reason: previousStatus,
+                        message:
+                          previous.message.length > 160 ? previous.message.slice(0, 157) + '...' : previous.message
+                      })}`
+                    : ''
+                })`
+              : '';
+          const server = fetchProgress.server;
+          if (fetchProgress.phase === 'server' && server) {
+            // What the server is doing, it tells every few seconds
+            const shared = server.shared ? ` (${t('results.LoadServerContinues')})` : '';
+            const serverAttempt =
+              server.attempt && server.attempt > 1
+                ? ` (${t('results.LoadServerAttempt', { attempt: server.attempt, attempts: server.attempts })}${
+                    server.previousError ? `: ${server.previousError}` : ''
+                  })`
+                : '';
+            if (server.step === 'converting' && server.total) {
+              progress.progress(
+                key,
+                server.index ?? 0,
+                server.total,
+                t('results.LoadServerConverting', { index: (server.index ?? 0) + 1, total: server.total }) +
+                  shared +
+                  attempt,
+                'percent'
+              );
+            } else if (server.step === 'parsing') {
+              progress.progress(
+                key,
+                0,
+                0,
+                t('results.LoadServerParsing', { size: megabytes(server.size ?? 0) }) + shared + attempt
+              );
+            } else if (server.downloaded) {
+              progress.progress(
+                key,
+                server.downloaded,
+                server.total ?? 0,
+                (server.total
+                  ? t('results.LoadServerDownloading')
+                  : t('results.LoadServerDownloadingSize', { size: megabytes(server.downloaded) })) +
+                  serverAttempt +
+                  shared +
+                  attempt,
+                'bytes'
+              );
+            } else {
+              progress.progress(
+                key,
+                0,
+                0,
+                (nofStarters.current > 500
+                  ? t('results.LoadWaitingForEventorLarge', {
+                      starters: nofStarters.current.toLocaleString('sv-SE'),
+                      classes: nofClasses.current
+                    })
+                  : t('results.LoadWaitingForEventor')) +
+                  serverAttempt +
+                  shared +
+                  attempt
+              );
+            }
+          } else if (fetchProgress.phase === 'waiting') {
+            progress.progress(
+              key,
+              0,
+              0,
+              (nofStarters.current > 500
+                ? t('results.LoadWaitingForEventorLarge', {
+                    starters: nofStarters.current.toLocaleString('sv-SE'),
+                    classes: nofClasses.current
+                  })
+                : t('results.LoadWaitingForEventor')) + attempt
+            );
+          } else if (fetchProgress.phase === 'downloading') {
+            progress.progress(
+              key,
+              fetchProgress.loaded,
+              fetchProgress.total ?? 0,
+              (fetchProgress.total
+                ? t('results.LoadDownloading')
+                : t('results.LoadDownloadingSize', {
+                    size: (fetchProgress.loaded / 1000000).toLocaleString('sv-SE', { maximumFractionDigits: 1 })
+                  })) + attempt,
+              'bytes'
+            );
+          } else {
+            progress.progress(key, 0, 0, t('results.LoadParsing') + attempt);
+          }
+        };
+        /** The part failed, the load continues. The warning tells why and where, so that it can be put right */
+        const failed = (key: string, error: unknown) => {
+          const title = progress.warn(key, loadWarningShort(t, error));
+          warnings.push(toLoadWarning(t, key, title, error, currentEventorUrl));
+          currentEventorUrl = undefined;
+        };
+        /** A part that failed, but another source was loaded instead */
+        const replacedBy = (key: string, otherKey: string, detail: string) => {
+          const warning = warnings.find(w => w.key === key);
+          if (!warning) return;
+          warning.resolvedBy = t('results.LoadResolvedBy', { title: progress.title(otherKey), detail });
+          progress.warn(key, `${loadWarningShort(t)}, ${t('results.LoadReplaced')}`);
+        };
 
         try {
           let editResultJson: IRaceEventProps | undefined;
-          if (raceWizardModel.selectedEventId != null && raceWizardModel.selectedEventId > 0)
+          if (hasDatabase) {
+            progress.start('database');
             editResultJson = await PostJsonData<IRaceEventProps>(
               url,
               { iType: 'EVENT', iEventId: raceWizardModel.selectedEventId },
               true,
               sessionModel.authorizationHeader
             );
+            progress.finish(
+              'database',
+              t('results.LoadNofResults', {
+                count: (editResultJson?.results?.length ?? 0) + (editResultJson?.teamResults?.length ?? 0)
+              })
+            );
+          }
 
           let entriesJson: IEventorEntries | undefined;
           if (raceWizardModel.selectedEventorId != null && raceWizardModel.selectedEventorId > 0)
             try {
+              progress.start('entries');
               entriesJson = await PostJsonData<IEventorEntries>(
                 clubModel.eventorCorsProxy,
                 {
-                  csurl: encodeURIComponent(
+                  csurl: eventorUrl(
                     clubModel.eventor.entriesUrl +
                       '?eventIds=' +
                       raceWizardModel.selectedEventorId +
@@ -1627,73 +2254,137 @@ const ResultWizardStep2EditRace = observer(
                 },
                 true
               );
-            } catch {
-              message.warning(`Failed to fetch entries ${clubModel.eventor.entriesUrl}`);
+              progress.finish('entries');
+            } catch (error) {
+              failed('entries', error);
             }
 
           let classJson: IEventorEventClasses | undefined;
           if (raceWizardModel.selectedEventorId != null && raceWizardModel.selectedEventorId > 0)
             try {
+              progress.start('classes');
               classJson = await PostJsonData<IEventorEventClasses>(
                 clubModel.eventorCorsProxy,
                 {
-                  csurl: encodeURIComponent(
+                  csurl: eventorUrl(
                     clubModel.eventor.classesUrl +
                       '?eventId=' +
                       raceWizardModel.selectedEventorId +
                       '&includeEntryFees=true'
                   )
                 },
-                false
+                true
               );
-            } catch {
-              message.warning(`Failed to fetch classes ${clubModel.eventor.classesUrl}`);
+              const eventClasses = classJson?.EventClass
+                ? Array.isArray(classJson.EventClass)
+                  ? classJson.EventClass
+                  : [classJson.EventClass]
+                : [];
+              eventClassesRef.current = eventClasses;
+              // The attributes of the class count all the races of the event (e.g. all stages of O-Ringen),
+              // the race info has the starters of each race
+              const eventRaceId = String(raceWizardModel.selectedEventorRaceId);
+              const toNumber = (value?: string) => parseInt(value ?? '', 10) || 0;
+              const raceInfosOf = (eventClass: IEventorEventClass) =>
+                eventClass.ClassRaceInfo == null
+                  ? []
+                  : Array.isArray(eventClass.ClassRaceInfo)
+                    ? eventClass.ClassRaceInfo
+                    : [eventClass.ClassRaceInfo];
+              // A one day event without race info counts by the class
+              const hasRaceInfo = eventClasses.some(eventClass =>
+                raceInfosOf(eventClass).some(raceInfo => raceInfo.EventRaceId === eventRaceId)
+              );
+              nofStarters.current = 0;
+              nofClasses.current = 0;
+              for (const eventClass of eventClasses) {
+                const starters = hasRaceInfo
+                  ? raceInfosOf(eventClass)
+                      .filter(raceInfo => raceInfo.EventRaceId === eventRaceId)
+                      .reduce(
+                        (sum, raceInfo) =>
+                          sum +
+                          (toNumber(raceInfo['@attributes']?.noOfStarts) ||
+                            toNumber(raceInfo['@attributes']?.noOfEntries)),
+                        0
+                      )
+                  : toNumber(eventClass['@attributes']?.noOfStarts) ||
+                    toNumber(eventClass['@attributes']?.numberOfEntries);
+                if (starters > 0) {
+                  nofStarters.current += starters;
+                  nofClasses.current++;
+                }
+              }
+              progress.finish(
+                'classes',
+                nofStarters.current > 0
+                  ? t('results.LoadNofStarters', {
+                      count: nofStarters.current,
+                      starters: nofStarters.current.toLocaleString('sv-SE'),
+                      classes: nofClasses.current
+                    })
+                  : undefined
+              );
+            } catch (error) {
+              failed('classes', error);
             }
 
           let iofResults: IResultListType | undefined;
           let iofResultsWithSplitTimes = false;
           if (raceWizardModel.selectedEventorId != null && raceWizardModel.selectedEventorId > 0)
             try {
-              const response = await PostJsonData<IResultListType>(
+              progress.start('iofSplits');
+              const response = await PostJsonDataWithProgress<IResultListType>(
                 clubModel.eventorCorsProxy,
                 {
-                  csurl: encodeURIComponent(
+                  csurl: eventorUrl(
                     clubModel.eventor.iofResultUrl +
                       '?eventId=' +
                       raceWizardModel.selectedEventorId +
                       '&eventRaceId=' +
                       raceWizardModel.selectedEventorRaceId +
                       '&includeSplitTimes=true&totalResult=false'
-                  )
+                  ),
+                  stream: true
                 },
-                false
+                true,
+                {},
+                eventorProgress('iofSplits'),
+                STREAM_ATTEMPTS
               );
               iofResults = correctPhpEventorProxyXmlResponseForResult(response);
               iofResultsWithSplitTimes = true;
-            } catch {
-              message.warning(`Failed to fetch IOF results with splittimes ${clubModel.eventor.iofResultUrl}`);
+              progress.finish('iofSplits');
+            } catch (error) {
+              failed('iofSplits', error);
             }
 
           let totalIofResults: IResultListType | undefined;
           if (raceWizardModel.selectedEventorId != null && raceWizardModel.selectedEventorId > 0)
             try {
-              const response = await PostJsonData<IResultListType>(
+              progress.start('iofTotal');
+              const response = await PostJsonDataWithProgress<IResultListType>(
                 clubModel.eventorCorsProxy,
                 {
-                  csurl: encodeURIComponent(
+                  csurl: eventorUrl(
                     clubModel.eventor.iofResultUrl +
                       '?eventId=' +
                       raceWizardModel.selectedEventorId +
                       '&eventRaceId=' +
                       raceWizardModel.selectedEventorRaceId +
                       '&includeSplitTimes=false&totalResult=true'
-                  )
+                  ),
+                  stream: true
                 },
-                false
+                true,
+                {},
+                eventorProgress('iofTotal'),
+                STREAM_ATTEMPTS
               );
               totalIofResults = correctPhpEventorProxyXmlResponseForResult(response);
-            } catch {
-              message.warning(`Failed to fetch IOF total results ${clubModel.eventor.iofResultUrl}`);
+              progress.finish('iofTotal');
+            } catch (error) {
+              failed('iofTotal', error);
             }
 
           let resultJson: IEventorResults | undefined;
@@ -1704,10 +2395,11 @@ const ResultWizardStep2EditRace = observer(
             raceWizardModel.selectedEventorId > 0
           )
             try {
-              resultJson = await PostJsonData<IEventorResults>(
+              progress.start('results');
+              resultJson = await PostJsonDataWithProgress<IEventorResults>(
                 clubModel.eventorCorsProxy,
                 {
-                  csurl: encodeURIComponent(
+                  csurl: eventorUrl(
                     clubModel.eventor.resultUrl +
                       '?eventId=' +
                       raceWizardModel.selectedEventorId +
@@ -1718,12 +2410,17 @@ const ResultWizardStep2EditRace = observer(
                       `&top=${
                         raceWizardModel.queryForCompetitorWithNoClub ? 2500 : raceWizardModel.selectedIsRelay ? 30 : 15
                       }&includeSplitTimes=true`
-                  )
+                  ),
+                  stream: true
                 },
-                false
+                true,
+                {},
+                eventorProgress('results'),
+                STREAM_ATTEMPTS
               );
-            } catch {
-              message.warning(`Failed to fetch results ${clubModel.eventor.resultUrl}`);
+              progress.finish('results');
+            } catch (error) {
+              failed('results', error);
             }
 
           if (
@@ -1734,70 +2431,88 @@ const ResultWizardStep2EditRace = observer(
             raceWizardModel.selectedEventorId > 0
           )
             try {
-              const response = await PostJsonData<IResultListType>(
+              progress.start('iof');
+              const response = await PostJsonDataWithProgress<IResultListType>(
                 clubModel.eventorCorsProxy,
                 {
-                  csurl: encodeURIComponent(
+                  csurl: eventorUrl(
                     clubModel.eventor.iofResultUrl +
                       '?eventId=' +
                       raceWizardModel.selectedEventorId +
                       '&eventRaceId=' +
                       raceWizardModel.selectedEventorRaceId +
                       '&includeSplitTimes=false&totalResult=false'
-                  )
+                  ),
+                  stream: true
                 },
-                false
+                true,
+                {},
+                eventorProgress('iof'),
+                STREAM_ATTEMPTS
               );
               iofResults = correctPhpEventorProxyXmlResponseForResult(response);
-            } catch {
-              message.warning(`Failed to fetch IOF results ${clubModel.eventor.iofResultUrl}`);
+              progress.finish('iof');
+            } catch (error) {
+              failed('iof', error);
             }
 
-          let lengthHtmlJson = '';
+          // The course lengths are in the start list, the result list of the club does not have them
+          let courseLengths = new Map<string, number>();
           if (resultJson && raceWizardModel.selectedEventorId != null && raceWizardModel.selectedEventorId > 0)
             try {
-              lengthHtmlJson =
-                (await PostJsonData<string>(
-                  clubModel.eventorCorsProxy,
-                  {
-                    csurl: encodeURIComponent(
-                      clubModel.eventor.lengthUrl +
-                        '?eventId=' +
-                        raceWizardModel.selectedEventorId +
-                        '&eventRaceId=' +
-                        raceWizardModel.selectedEventorRaceId +
-                        '&groupBy=EventClass'
-                    ),
-                    noJsonConvert: true
-                  },
-                  false
-                )) ?? '';
-            } catch {
-              message.warning(`Failed to fetch cource length ${clubModel.eventor.lengthUrl}`);
+              progress.start('length');
+              const startList = await PostJsonDataWithProgress<unknown>(
+                clubModel.eventorCorsProxy,
+                {
+                  csurl: eventorUrl(
+                    clubModel.eventor.lengthUrl +
+                      '?eventId=' +
+                      raceWizardModel.selectedEventorId +
+                      '&eventRaceId=' +
+                      raceWizardModel.selectedEventorRaceId
+                  ),
+                  stream: true
+                },
+                true,
+                {},
+                eventorProgress('length'),
+                STREAM_ATTEMPTS
+              );
+              courseLengths = GetCourseLengths(startList);
+              progress.finish('length', t('results.LoadNofCourseLengths', { count: courseLengths.size }));
+            } catch (error) {
+              failed('length', error);
             }
 
           let entryFeeJson: IEventorEntryFees | undefined;
           if (raceWizardModel.selectedEventorId != null && raceWizardModel.selectedEventorId > 0)
             try {
+              progress.start('fees');
               entryFeeJson = await PostJsonData<IEventorEntryFees>(
                 clubModel.eventorCorsProxy,
                 {
-                  csurl: encodeURIComponent(clubModel.eventor.entryFeeUrl + raceWizardModel.selectedEventorId)
+                  csurl: eventorUrl(clubModel.eventor.entryFeeUrl + raceWizardModel.selectedEventorId)
                 },
                 true
               );
-            } catch {
-              message.warning(`Failed to fetch cource length ${clubModel.eventor.lengthUrl}`);
+              progress.finish('fees');
+            } catch (error) {
+              failed('fees', error);
             }
 
-          if (
-            !resultJson &&
-            !iofResults &&
-            raceWizardModel.selectedEventorId != null &&
-            raceWizardModel.selectedEventorId > 0
-          ) {
-            throw new Error('Failed to load results (both eventor and IOF).');
+          if (resultJson) {
+            replacedBy('iofSplits', 'results', t('results.LoadReplacedResults'));
+          } else if (iofResults) {
+            replacedBy('iofSplits', 'iof', t('results.LoadReplacedNoSplits'));
+            replacedBy('results', 'iof', t('results.LoadReplacedNoSplits'));
           }
+          progress.skipWaiting();
+          if (!resultJson && !iofResults && hasEventor) {
+            throw new Error(t('results.LoadRaceNoResults'));
+          }
+          // Split times, mistakes and ideal times of every class and runner, then the runners of the club
+          if (resultJson || iofResults) progress.start('calculate');
+          else progress.skip('calculate');
 
           let eventIsRelay = false;
           if (resultJson) {
@@ -1816,7 +2531,7 @@ const ResultWizardStep2EditRace = observer(
               entriesJson,
               entryFeeJson,
               classJson,
-              lengthHtmlJson,
+              courseLengths,
               eventIsRelay
             );
           } else if (iofResults) {
@@ -1836,36 +2551,133 @@ const ResultWizardStep2EditRace = observer(
             raceWizardModel.setRaceEvent(editResultJson ?? null);
           }
 
-          if (raceWizardModel.overwrite && clubModel.raceClubs && raceWizardModel.raceEvent) {
-            if (!eventIsRelay && clubModel.raceClubs.selectedClub) {
-              CalculateCompetitorsFee(
-                raceWizardModel.raceEvent,
-                clubModel.raceClubs.selectedClub,
-                clubModel.raceClubs.eventClassifications
-              );
-              CalculateAllAwards(clubModel.raceClubs, raceWizardModel.raceEvent);
-              CalculateAllClassClassificationId(clubModel.raceClubs!, raceWizardModel.raceEvent!);
-              raceWizardModel.raceEvent.results.forEach(result => {
-                if (result.missingTime?.substr(-5) !== ManuallyEditedMissingTimePostfix) {
-                  result.setStringValueOrNull('missingTime', result.missingTime);
+          if (resultJson || iofResults)
+            progress.finish(
+              'calculate',
+              calculated.current.classes > 0
+                ? t(calculated.current.relay ? 'results.LoadCalculatedRelay' : 'results.LoadCalculated', {
+                    classes: calculated.current.classes,
+                    starters: calculated.current.starters.toLocaleString('sv-SE')
+                  })
+                : undefined
+            );
+
+          // Course lengths from Livelox. Eventor and the IOF result list have one length per class, for a relay not
+          // per leg, and often none. The race in Eventor links to the event in Livelox, which has every leg.
+          const missingLength =
+            !eventIsRelay &&
+            !!raceWizardModel.raceEvent?.results.some(
+              result => !result.lengthInMeter && result.failedReason !== failedReasons.NotStarted
+            );
+          setLiveloxNeeded(eventIsRelay || missingLength);
+          const liveloxProxy = LiveloxProxyUrl(clubModel.eventorCorsProxy);
+          if (hasEventor && liveloxProxy && raceWizardModel.raceEvent && (eventIsRelay || missingLength)) {
+            const eventorEventId = raceWizardModel.selectedEventorId!;
+            const raceDate = raceWizardModel.raceEvent.raceDate;
+            const eventName = raceWizardModel.raceEvent.name;
+            progress.start('livelox');
+            let liveloxEvent: ILiveloxEvent | undefined;
+
+            // 1. Livelox is searched for the event on the day of the race, it tells which event in Eventor it has
+            let searchError: unknown;
+            if (raceDate)
+              try {
+                currentEventorUrl = LiveloxSearchUrl;
+                liveloxEvent = await FindLiveloxEvent(liveloxProxy, {
+                  eventorEventId,
+                  raceNumber: raceNumberRef.current,
+                  raceDate,
+                  eventName
+                });
+              } catch (error) {
+                searchError = error;
+              }
+
+            // 2. The link to Livelox on the page of the race in Eventor, which has a browser check that the server
+            // seldom passes
+            let eventorError: unknown;
+            let eventorUrlOfRace: string | undefined;
+            if (!liveloxEvent)
+              try {
+                eventorUrlOfRace = currentEventorUrl = EventorEventUrl(eventorEventId);
+                const liveloxEventIds = await FetchLiveloxEventIds(liveloxProxy, eventorEventId);
+                // An event of several races links to one event in Livelox for each race
+                const liveloxEvents: ILiveloxEvent[] = [];
+                for (const liveloxEventId of liveloxEventIds.slice(0, 5)) {
+                  currentEventorUrl = LiveloxEventUrl(liveloxEventId);
+                  liveloxEvents.push(await FetchLiveloxEvent(liveloxProxy, liveloxEventId));
                 }
-              });
+                liveloxEvent = ChooseLiveloxEvent(liveloxEvents, eventorEventId, raceNumberRef.current);
+              } catch (error) {
+                eventorError = error;
+              }
+
+            const notFound = t('results.LoadLiveloxNotFound', {
+              date: raceDate,
+              texts: LiveloxSearchTexts(eventName).join('", "')
+            });
+            if (liveloxEvent) {
+              const classes = GetLiveloxClassesByName(liveloxEvent, eventClassesRef.current);
+              // A saved race keeps its lengths, Livelox is asked when a leg is changed
+              const updated = raceWizardModel.overwrite ? applyLiveloxLengths(classes, eventIsRelay) : 0;
+              setLivelox({ event: liveloxEvent, classes, updated });
+              progress.finish('livelox', t('results.LoadLiveloxFound', { name: liveloxEvent.name, count: updated }));
+            } else if (eventorError || searchError) {
+              // The error of Eventor tells most (e.g. its browser check), the search is told first
+              failed('livelox', eventorError ?? searchError);
+              const warning = warnings.find(w => w.key === 'livelox');
+              if (warning) {
+                warning.message = eventorError
+                  ? `${searchError ? `${t('results.LoadLiveloxSearchFailed')}: ${searchError instanceof Error ? searchError.message : String(searchError)}` : notFound} ${t('results.LoadLiveloxEventorFailed')}: ${warning.message}`
+                  : `${t('results.LoadLiveloxSearchFailed')}: ${warning.message}`;
+                // What to do instead. The hint for the browser check of Eventor ("use the API") does not apply here.
+                warning.hint = t('results.LoadHintLivelox');
+              }
             } else {
-              raceWizardModel.raceEvent.teamResults.forEach(teamResult => {
-                if (teamResult.missingTime?.substr(-5) !== ManuallyEditedMissingTimePostfix) {
-                  teamResult.setStringValueOrNull('missingTime', teamResult.missingTime);
-                }
+              // Not an error, but the lengths are still missing
+              const short = t('results.LoadLiveloxNotFoundShort');
+              const title = progress.warn('livelox', short);
+              warnings.push({
+                key: 'livelox',
+                title,
+                short,
+                message: `${notFound} ${t('results.LoadLiveloxNoLink')}`,
+                hint: t('results.LoadHintLivelox'),
+                url: eventorUrlOfRace,
+                details: []
               });
             }
-          }
+            currentEventorUrl = undefined;
+          } else if (hasEventor) progress.skip('livelox');
 
+          progress.start('process');
+          // Time for the browser to show it
+          await new Promise(resolve => setTimeout(resolve, 0));
+
+          calculateFeesAndAwards(eventIsRelay);
+
+          progress.finish(
+            'process',
+            t('results.LoadNofResults', {
+              count:
+                (raceWizardModel.raceEvent?.results.length ?? 0) + (raceWizardModel.raceEvent?.teamResults.length ?? 0)
+            })
+          );
           form?.validateFields().then();
           onValidate(!!raceWizardModel.raceEvent?.valid);
           setIsRelay(!!eventIsRelay);
+          setLoadWarnings(warnings);
           setLoaded(true);
         } catch (e) {
-          if (e && (e as { message: string }).message) message.error((e as { message: string }).message);
-          onFailed?.(e);
+          const errorMessage =
+            e instanceof Error
+              ? e.message
+              : typeof e === 'string'
+                ? e
+                : ((e as { message?: string } | undefined)?.message ?? t('results.LoadRaceUnknownError'));
+          progress.fail(errorMessage);
+          setLoadWarnings(warnings);
+          setLoadError(errorMessage);
         }
       };
 
@@ -1891,6 +2703,8 @@ const ResultWizardStep2EditRace = observer(
         fetchData();
       }
     }, [
+      applyLiveloxLengths,
+      calculateFeesAndAwards,
       clubModel.eventor,
       clubModel.eventorCorsProxy,
       clubModel.modules,
@@ -1898,11 +2712,24 @@ const ResultWizardStep2EditRace = observer(
       form,
       handleEventorResults,
       handleIOFResults,
-      onFailed,
       onValidate,
+      progress,
       raceWizardModel,
-      sessionModel.authorizationHeader
+      reloadCount,
+      sessionModel.authorizationHeader,
+      t
     ]);
+
+    const reload = useCallback(() => {
+      setLoadError(undefined);
+      setLoadWarnings([]);
+      setLoaded(false);
+      setLivelox(undefined);
+      setLiveloxNeeded(false);
+      setLiveloxError(undefined);
+      raceWizardModel.setRaceEvent(null);
+      setReloadCount(count => count + 1);
+    }, [raceWizardModel]);
 
     const columns: TableProps<IExtendedRaceResult & { isValid?: boolean }>['columns'] = [
       {
@@ -2184,6 +3011,7 @@ const ResultWizardStep2EditRace = observer(
                         raceLightCondition={raceWizardModel.raceEvent.raceLightCondition ?? undefined}
                         result={teamResultObject}
                         results={raceWizardModel.raceEvent.teamResults}
+                        liveloxClasses={livelox?.classes}
                         autoUpdateResultWithSameClass={autoUpdateResultWithSameClass}
                         competitorsOptions={clubModel.raceClubs.selectedClub?.competitorsOptions ?? []}
                         onChange={changes => Object.assign(teamResultObject, changes)}
@@ -2389,10 +3217,159 @@ const ResultWizardStep2EditRace = observer(
       }
     ];
 
+    const warningsList = loadWarnings.length > 0 ? <LoadWarningList warnings={loadWarnings} /> : null;
+
     return (
       <>
-        {raceWizardModel.raceEvent && clubModel.raceClubs && loaded && visible ? (
+        {loadError && visible ? (
+          <Alert
+            showIcon
+            type="error"
+            title={t('results.LoadRaceFailed')}
+            description={
+              <>
+                <div>{loadError}</div>
+                <ExpandableDetails>
+                  <LoadProgress embedded title={null} tasks={loadTasks} />
+                </ExpandableDetails>
+              </>
+            }
+            action={
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <Button icon={<LeftOutlined />} onClick={() => onFailed?.(loadError)}>
+                  {t('common.Previous')}
+                </Button>
+                <Button type="primary" icon={<ReloadOutlined />} onClick={reload}>
+                  {t('results.LoadRaceAgain')}
+                </Button>
+              </div>
+            }
+          />
+        ) : raceWizardModel.raceEvent && clubModel.raceClubs && loaded && visible ? (
           <Form id={formId} form={form} layout="vertical" initialValues={raceWizardModel.raceEvent}>
+            {warningsList ? (
+              <Alert
+                closable
+                showIcon
+                type="warning"
+                title={t('results.LoadRaceWarnings')}
+                description={warningsList}
+                style={{ marginBottom: 12 }}
+              />
+            ) : null}
+            {!raceWizardModel.existInEventor ? (
+              <Card size="small" title={t('results.ImportTitle')} style={{ marginBottom: 12 }}>
+                <Row gutter={8} align="bottom">
+                  <Col span={4}>
+                    <FormItem label={t('results.ImportSource')}>
+                      <Select value="winsplits" options={[{ value: 'winsplits', label: 'WinSplits Online' }]} />
+                    </FormItem>
+                  </Col>
+                  <Col span={9}>
+                    <FormItem label={t('results.ImportLink')} tooltip={t('results.ImportWinSplitsTooltip')}>
+                      <Input
+                        allowClear
+                        value={importLink}
+                        placeholder="https://obasen.orientering.se/winsplits/online/sv/default.asp?page=classes&databaseId=116342"
+                        onChange={e => setImportLink(e.currentTarget.value)}
+                      />
+                    </FormItem>
+                  </Col>
+                  <Col span={7}>
+                    <FormItem label={t('results.ImportClubNames')} tooltip={t('results.ImportClubNamesTooltip')}>
+                      <Input value={importClubNames} onChange={e => setImportClubNames(e.currentTarget.value)} />
+                    </FormItem>
+                  </Col>
+                  <Col span={4}>
+                    <Button
+                      block
+                      type="primary"
+                      icon={<ImportOutlined />}
+                      loading={importing}
+                      disabled={!importLink.trim()}
+                      onClick={importResults}
+                    >
+                      {t('results.Import')}
+                    </Button>
+                  </Col>
+                </Row>
+                {importError ? (
+                  <Typography.Text type="danger">{importError}</Typography.Text>
+                ) : importStatus ? (
+                  <Typography.Text type="secondary">{importStatus}</Typography.Text>
+                ) : null}
+                <Row gutter={8} align="bottom" style={{ marginTop: 8 }}>
+                  <Col span={4}>
+                    <FormItem label={t('results.ImportSource')}>
+                      <Select value="oeTotal" options={[{ value: 'oeTotal', label: t('results.TotalSourceOE') }]} />
+                    </FormItem>
+                  </Col>
+                  <Col span={13}>
+                    <FormItem label={t('results.TotalLink')} tooltip={t('results.TotalLinkTooltip')}>
+                      <Input
+                        allowClear
+                        value={totalLink}
+                        placeholder="https://host-open.dk/media/v2paaar0/samlet-klasseresultat.html"
+                        onChange={e => setTotalLink(e.currentTarget.value)}
+                      />
+                    </FormItem>
+                  </Col>
+                  <Col span={3}>
+                    <FormItem label={t('results.TotalStage')} tooltip={t('results.TotalStageTooltip')}>
+                      <InputNumber
+                        min={1}
+                        max={20}
+                        style={{ width: '100%' }}
+                        value={totalStage}
+                        placeholder={(earlierRaceIds.length > 0
+                          ? earlierRaceIds.length + 1
+                          : StageFromName(raceWizardModel.raceEvent.name)
+                        )?.toString()}
+                        onChange={value => setTotalStage(value)}
+                      />
+                    </FormItem>
+                  </Col>
+                  <Col span={4}>
+                    <Button
+                      block
+                      icon={<ImportOutlined />}
+                      loading={totalLoading}
+                      disabled={!totalLink.trim() || raceWizardModel.raceEvent.results.length === 0}
+                      onClick={importTotalResults}
+                    >
+                      {t('results.TotalImport')}
+                    </Button>
+                  </Col>
+                </Row>
+                <Row gutter={8} style={{ marginTop: 4 }}>
+                  <Col span={20}>
+                    <FormItem label={t('results.TotalEarlierStages')} tooltip={t('results.TotalEarlierStagesTooltip')}>
+                      <Select
+                        allowClear
+                        mode="multiple"
+                        value={earlierRaceIds}
+                        placeholder={
+                          earlierRaces.length > 0
+                            ? t('results.TotalEarlierStagesPlaceholder')
+                            : t('results.TotalNoEarlierStages')
+                        }
+                        disabled={earlierRaces.length === 0}
+                        options={earlierRaces.map(race => ({
+                          value: race.eventId,
+                          label: `${race.date} ${race.name}`
+                        }))}
+                        onChange={(ids: number[]) => setEarlierRaceIds(ids)}
+                      />
+                    </FormItem>
+                  </Col>
+                </Row>
+                {totalError ? (
+                  <Typography.Text type="danger">{totalError}</Typography.Text>
+                ) : totalStatus ? (
+                  <Typography.Text type="secondary">{totalStatus}</Typography.Text>
+                ) : null}
+              </Card>
+            ) : null}
             <Row gutter={8}>
               <Col span={6}>
                 <FormItem
@@ -2648,6 +3625,40 @@ const ResultWizardStep2EditRace = observer(
                 </FormItem>
               </Col>
             </Row>
+            {liveloxNeeded || livelox || liveloxError ? (
+              <Row gutter={8} align="bottom" style={{ marginBottom: 8 }}>
+                <Col span={10}>
+                  <FormItem label={t('results.LiveloxLink')} tooltip={t('results.LiveloxLinkTooltip')}>
+                    <Input.Search
+                      allowClear
+                      value={liveloxLink}
+                      placeholder={t('results.LiveloxLinkPlaceholder')}
+                      enterButton={t('results.LiveloxFetch')}
+                      loading={liveloxLoading}
+                      onChange={e => setLiveloxLink(e.currentTarget.value)}
+                      onSearch={value => {
+                        if (value.trim()) loadLivelox(value);
+                      }}
+                    />
+                  </FormItem>
+                </Col>
+                <Col span={14} style={{ paddingBottom: 5 }}>
+                  {liveloxError ? (
+                    <Typography.Text type="danger">{liveloxError}</Typography.Text>
+                  ) : livelox ? (
+                    <Typography.Text type="secondary">
+                      <a href={livelox.event.url} target="_blank" rel="noopener noreferrer">
+                        {livelox.event.name}
+                      </a>
+                      {' – '}
+                      {livelox.updated > 0
+                        ? t('results.LiveloxApplied', { count: livelox.updated })
+                        : t('results.LiveloxNoChange')}
+                    </Typography.Text>
+                  ) : null}
+                </Col>
+              </Row>
+            ) : null}
             {isRelay ? (
               <StyledTable
                 columns={teamColumns}
@@ -2689,6 +3700,8 @@ const ResultWizardStep2EditRace = observer(
               />
             )}
           </Form>
+        ) : visible && loadTasks.length > 0 ? (
+          <LoadProgress title={t('results.LoadingRace')} tasks={loadTasks} startedAt={loadStartedAt} />
         ) : visible ? (
           <SpinnerDiv>
             <Spin size="large" />

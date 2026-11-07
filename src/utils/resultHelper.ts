@@ -213,25 +213,41 @@ export const GetFees = (entryFees: IEventorEntryFee[], entryFeeIds: string[], co
   return fees;
 };
 
-export const GetLength = (lengthHtmlJson: string, fullClassName: string): number | null => {
-  if (!lengthHtmlJson) {
-    return null;
+interface IStartListCourse {
+  Length?: string | number;
+}
+interface IStartListClassStart {
+  Class?: { Id?: string; Name?: string };
+  Course?: IStartListCourse | IStartListCourse[];
+  PersonStart?:
+    | { Start?: { Course?: IStartListCourse } | { Course?: IStartListCourse }[] }
+    | { Start?: { Course?: IStartListCourse } | { Course?: IStartListCourse }[] }[];
+}
+
+const toArray = <T>(value: T | T[] | null | undefined): T[] =>
+  value == null ? [] : Array.isArray(value) ? value : [value];
+
+/**
+ * The course length of each class, by the Eventor id of the class and by its name, from the start list of the race
+ * in IOF XML 3.0 (api/starts/event/iofxml). A class without a course of its own, e.g. with forked courses, gets
+ * the course of its first starter.
+ */
+export const GetCourseLengths = (startList: unknown): Map<string, number> => {
+  const lengths = new Map<string, number>();
+  const classStarts = toArray(
+    (startList as { ClassStart?: IStartListClassStart | IStartListClassStart[] } | undefined)?.ClassStart
+  );
+  for (const classStart of classStarts) {
+    const courses = [
+      ...toArray(classStart.Course),
+      ...toArray(classStart.PersonStart).flatMap(personStart => toArray(personStart.Start).map(start => start.Course))
+    ];
+    const length = courses.map(course => parseInt(String(course?.Length ?? ''), 10)).find(value => value > 0);
+    if (!length) continue;
+    if (classStart.Class?.Id != null) lengths.set(String(classStart.Class.Id), length);
+    if (classStart.Class?.Name) lengths.set(classStart.Class.Name, length);
   }
-  const searchText = `<h3>${fullClassName}</h3>`;
-  let classIndex = lengthHtmlJson.indexOf(searchText);
-  if (classIndex < 0) {
-    return null;
-  }
-  classIndex += searchText.length;
-  const meterIndex = lengthHtmlJson.indexOf('m,', classIndex);
-  if (meterIndex < 0) {
-    return null;
-  }
-  const lengthString = lengthHtmlJson.substr(classIndex, meterIndex - classIndex).replace(' ', '');
-  if (lengthString.length > 10 || isNaN(parseInt(lengthString))) {
-    return null;
-  }
-  return parseInt(lengthString);
+  return lengths;
 };
 
 export const GetSecondsWithFractionsPerKiloMeter = (timeString: string, length: number): number | undefined => {

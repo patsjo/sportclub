@@ -199,7 +199,9 @@ class Eventor implements IEventorProps {
   classesUrl = 'https://eventor.orientering.se/api/eventclasses';
   iofResultUrl = 'https://eventor.orientering.se/api/results/event/iofxml';
   resultUrl = 'https://eventor.orientering.se/api/results/organisation';
-  lengthUrl = 'https://eventor.orientering.se/Events/StartList';
+  // The start list in IOF XML 3.0 has the course lengths. The web page of the start list is behind a browser
+  // check (Cloudflare) that the server cannot pass.
+  lengthUrl = 'https://eventor.orientering.se/api/starts/event/iofxml';
   competitorsUrl = 'https://eventor.orientering.se/api/competitors';
   personResultUrl = 'https://eventor.orientering.se/api/results/person';
   externalLoginUrl = 'https://eventor.orientering.se/api/externalLoginUrl';

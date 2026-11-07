@@ -239,6 +239,15 @@ export const cupSv = {
   ShowWholeClass_other: 'Visa hela klassen ({{count}})',
   TimeBehind: 'Efter',
   Suggested: 'Förslag',
+  NoCupRacesForEvent: 'Ingen deltävling i en säsong med tävlingens datum, lägg till en ny',
+  NewCupRaceForEvent: 'Ny deltävling',
+  NewCupRaceSeasonInfo: 'Tävlingens datum {{date}} måste ligga i säsongen.',
+  Cup: 'Cup',
+  ChooseCup: 'Välj cup',
+  ChooseSeason: 'Välj säsong',
+  ResultThatCounts: 'Resultat som gäller i cupen',
+  UseStageResult: 'Etappens resultat',
+  UseTotalResultMissing: 'Tävlingen har inget sammanlagt resultat än, då gäller etappens resultat.',
   LinkedToOtherEvent: 'Kopplad till annan tävling',
   LinkedToOtherEventWarning: 'En vald cupdeltävling är kopplad till en annan tävling, kopplingen flyttas hit.'
 };
@@ -481,6 +490,15 @@ export const cupEn: typeof cupSv = {
   ShowWholeClass_other: 'Show the whole class ({{count}})',
   TimeBehind: 'Behind',
   Suggested: 'Suggestion',
+  NoCupRacesForEvent: 'No cup race in a season with the date of the race, add a new one',
+  NewCupRaceForEvent: 'New cup race',
+  NewCupRaceSeasonInfo: 'The date of the race, {{date}}, must be within the season.',
+  Cup: 'Cup',
+  ChooseCup: 'Choose a cup',
+  ChooseSeason: 'Choose a season',
+  ResultThatCounts: 'The result that counts in the cup',
+  UseStageResult: 'The result of the stage',
+  UseTotalResultMissing: 'The race has no total result yet, the result of the stage then counts.',
   LinkedToOtherEvent: 'Linked to another race',
   LinkedToOtherEventWarning: 'A chosen cup race is linked to another race, the link is moved here.'
 };

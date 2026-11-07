@@ -921,10 +921,23 @@ class RaceResult implements IRaceResult {
           this.competitorTime != null &&
           this.winnerTime != null &&
           this.position != null &&
-          this.nofStartsInClass != null))
+          this.nofStartsInClass != null)) &&
+      isRaceResultMultiDayValid(this.resultMultiDay)
     );
   }
 }
+
+/** The total result of a multi day event, null when it is not a multi day event */
+export const isRaceResultMultiDayValid = (multiDay?: IRaceResultMultiDayProps | null) =>
+  multiDay == null ||
+  (multiDay.stage != null &&
+    multiDay.totalStages != null &&
+    multiDay.stage <= multiDay.totalStages &&
+    (multiDay.totalFailedReason != null ||
+      (multiDay.totalTime != null &&
+        multiDay.totalWinnerTime != null &&
+        multiDay.totalPosition != null &&
+        multiDay.totalNofStartsInClass != null)));
 
 export interface IRaceEventBasicProps {
   name?: string | null;
