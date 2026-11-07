@@ -2,13 +2,15 @@ import {
   ArrowLeftOutlined,
   CalendarOutlined,
   DeleteOutlined,
+  DownOutlined,
   EditOutlined,
   FileTextOutlined,
   OrderedListOutlined,
   PlusOutlined,
+  SettingOutlined,
   TrophyOutlined
 } from '@ant-design/icons';
-import { Alert, Button, Popconfirm, Select, Spin } from 'antd';
+import { Alert, Button, Popconfirm, Spin } from 'antd';
 import dayjs from 'dayjs';
 import { observer } from 'mobx-react';
 import { lazy, ReactNode, Suspense, useEffect, useMemo, useState } from 'react';
@@ -16,13 +18,14 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { styled } from 'styled-components';
 import { ICupRaceProps, ICupReportProps, ICupResultProps, ICupSeasonProps } from '../../models/cupModel';
-import { createCupPersonResolver, getCurrentCupSeason, getNextCupRace } from '../../utils/cupHelper';
+import { createCupPersonResolver, getCupPursuitRace, getCurrentCupSeason, getNextCupRace } from '../../utils/cupHelper';
 import { dateFormat } from '../../utils/formHelper';
 import { useMobxStore } from '../../utils/mobxStore';
 import { SpinnerDiv } from '../styled/styled';
 import CupRaceResults from './CupRaceResults';
 import CupReports from './CupReports';
 import { formatCupDate } from './cupDate';
+import CupPursuitStartList from './CupPursuitStartList';
 import CupStandings from './CupStandings';
 import {
   CupAdminBar,
@@ -32,13 +35,14 @@ import {
   CupButton,
   CupCaption,
   CupContent,
+  CupEditToggle,
   CupGrid,
   CupHero,
   CupPanel,
+  CupSeasonTabs,
   CupSection,
   CupStamp,
-  CupThemeScope,
-  CupWide
+  CupThemeScope
 } from './CupStyled';
 import { cupHeadingFont, cupLabelFont, getCupTheme } from './cupThemes';
 import { notifyCupsChanged, showCupError, useCup, useCupApi, useCupSeasonResults } from './useCup';
@@ -49,6 +53,44 @@ const CupRaceEditModal = lazy(() => import('./admin/CupRaceEditModal'));
 const CupEventorRacePicker = lazy(() => import('./admin/CupEventorRacePicker'));
 const CupRaceResultsModal = lazy(() => import('./admin/CupRaceResultsModal'));
 const CupReportEditModal = lazy(() => import('./admin/CupReportEditModal'));
+const CupDeleteCountdownModal = lazy(() => import('./admin/CupDeleteCountdownModal'));
+
+interface IDeleteDialog {
+  title: string;
+  description: string;
+  onDelete: () => Promise<void>;
+}
+
+/** The number of columns of a grid with auto-fill columns, measured on the element */
+const useGridColumns = (minColumnWidth: number, gap: number) => {
+  const [element, gridRef] = useState<HTMLElement | null>(null);
+  const [columns, setColumns] = useState(4);
+  useEffect(() => {
+    if (!element) return;
+    const observer = new ResizeObserver(() =>
+      setColumns(Math.max(1, Math.floor((element.clientWidth + gap) / (minColumnWidth + gap))))
+    );
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [element, gap, minColumnWidth]);
+  return { columns, gridRef };
+};
+
+const readLocalStorage = <T,>(key: string, fallback: T): T => {
+  try {
+    const value = localStorage.getItem(key);
+    return value ? { ...fallback, ...JSON.parse(value) } : fallback;
+  } catch {
+    return fallback;
+  }
+};
+const writeLocalStorage = (key: string, value: unknown) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // Not possible to remember, e.g. a private window
+  }
+};
 
 type AdminDialog =
   | { type: 'cup' }
@@ -124,7 +166,7 @@ const Ticket = styled(CupPanel)<{ $next?: boolean; $done?: boolean }>`
   margin-bottom: 0;
   padding: 0;
   overflow: hidden;
-  ${({ $next }) => ($next ? 'box-shadow: 9px 9px 0 var(--cup-accent);' : '')}
+  ${({ $next }) => ($next ? 'box-shadow: 9px 9px 0 var(--cup-highlight);' : '')}
 
   .cup-ticket-head {
     display: flex;
@@ -184,22 +226,6 @@ const Ticket = styled(CupPanel)<{ $next?: boolean; $done?: boolean }>`
   }
 `;
 
-const SeasonSelect = styled(Select)`
-  &&& {
-    min-width: 200px;
-    margin-top: 28px;
-  }
-  &&& .ant-select-selector {
-    border: 3px solid var(--cup-ink) !important;
-    border-radius: 0 !important;
-    box-shadow: 4px 4px 0 var(--cup-shadow) !important;
-    font-family: ${cupLabelFont};
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
-` as typeof Select;
-
 const CupPage = observer(() => {
   const { t } = useTranslation();
   const { slug, cupRaceId: cupRaceIdParam } = useParams();
@@ -211,6 +237,17 @@ const CupPage = observer(() => {
   const [dialog, setDialog] = useState<AdminDialog>();
   const { cup } = useCup(slug, `${reloadKey}-${sessionModel.loggedIn}`);
   const isAdmin = sessionModel.loggedIn && sessionModel.isAdmin;
+  // The administration is hidden until the discreet edit button is clicked, remembered in the browser
+  const [editMode, setEditMode] = useState(() => readLocalStorage('cupEditMode', { on: false }).on);
+  const editing = isAdmin && editMode;
+  const toggleEditMode = () => {
+    writeLocalStorage('cupEditMode', { on: !editMode });
+    setEditMode(!editMode);
+  };
+  const [deleteDialog, setDeleteDialog] = useState<IDeleteDialog>();
+  // One row of races, from the last decided race, until all races are shown
+  const [allRaces, setAllRaces] = useState(false);
+  const { columns: raceColumns, gridRef: raceGridRef } = useGridColumns(270, 30);
   const today = dayjs().format(dateFormat);
 
   const seasonIdParam = searchParams.get('season');
@@ -264,6 +301,10 @@ const CupPage = observer(() => {
       : undefined;
   const races = [...(season?.races ?? [])].sort((a, b) => a.raceDate.localeCompare(b.raceDate));
   const nextRace = getNextCupRace(races, today);
+  const pursuitRace = season ? getCupPursuitRace(races, season.settings) : undefined;
+  const isPursuit = (r: ICupRaceProps) => r.cupRaceId === pursuitRace?.cupRaceId;
+  const raceCaption = (r: ICupRaceProps) =>
+    `${t('cup.RaceNumber', { number: raceNumber(r) })}${isPursuit(r) ? ` · ${t('cup.Pursuit')}` : ''}`;
   const raceHref = (r: ICupRaceProps) => `/cup/${cup.slug}/race/${r.cupRaceId}`;
   const raceNumber = (r: ICupRaceProps) => races.findIndex(x => x.cupRaceId === r.cupRaceId) + 1;
   const seasonReports = (season?.reports ?? []).filter(r => r.cupRaceId == null);
@@ -288,7 +329,13 @@ const CupPage = observer(() => {
     }
   };
 
-  const adminBar = isAdmin ? (
+  const editToggle = (
+    <CupEditToggle type="button" $active={editMode} aria-pressed={editMode} onClick={toggleEditMode}>
+      <SettingOutlined /> {editMode ? t('cup.EditModeOff') : t('cup.EditModeOn')}
+    </CupEditToggle>
+  );
+
+  const adminBar = editing ? (
     <CupAdminBar>
       <Button icon={<EditOutlined />} onClick={() => setDialog({ type: 'cup' })}>
         {t('cup.EditCup')}
@@ -318,9 +365,15 @@ const CupPage = observer(() => {
             okText={t('common.Yes')}
             cancelText={t('common.No')}
             onConfirm={() =>
-              onDelete({ iType: 'SEASON', iSeasonId: season.seasonId }, () => {
-                setSearchParams({});
-                reload();
+              setDeleteDialog({
+                title: `${t('cup.DeleteSeason')} ${season.name}`,
+                description: t('cup.DeleteSeasonConfirm'),
+                onDelete: () =>
+                  onDelete({ iType: 'SEASON', iSeasonId: season.seasonId }, () => {
+                    setDeleteDialog(undefined);
+                    setSearchParams({});
+                    reload();
+                  })
               })
             }
           >
@@ -335,9 +388,15 @@ const CupPage = observer(() => {
         okText={t('common.Yes')}
         cancelText={t('common.No')}
         onConfirm={() =>
-          onDelete({ iType: 'CUP', iCupId: cup.cupId }, () => {
-            notifyCupsChanged();
-            navigate('/cups');
+          setDeleteDialog({
+            title: `${t('cup.DeleteCup')} ${cup.name}`,
+            description: t('cup.DeleteCupConfirm'),
+            onDelete: () =>
+              onDelete({ iType: 'CUP', iCupId: cup.cupId }, () => {
+                setDeleteDialog(undefined);
+                notifyCupsChanged();
+                navigate('/cups');
+              })
           })
         }
       >
@@ -345,11 +404,12 @@ const CupPage = observer(() => {
           {t('cup.DeleteCup')}
         </Button>
       </Popconfirm>
+      {editToggle}
     </CupAdminBar>
   ) : null;
 
   const raceAdminButtons = (r: ICupRaceProps) =>
-    isAdmin ? (
+    editing ? (
       <div style={{ marginTop: 10 }}>
         <Button size="small" icon={<OrderedListOutlined />} onClick={() => setDialog({ type: 'results', race: r })}>
           {t('cup.Results')}
@@ -392,14 +452,14 @@ const CupPage = observer(() => {
   };
 
   const reportHandlers = {
-    isAdmin,
+    isAdmin: editing,
     onEdit: (report: ICupReportProps) => setDialog({ type: 'report', report }),
     onDelete: (report: ICupReportProps) => onDelete({ iType: 'REPORT', iReportId: report.reportId })
   };
 
   const statusStamp = (r: ICupRaceProps): ReactNode =>
     nextRace?.cupRaceId === r.cupRaceId ? (
-      <CupStamp $color="var(--cup-accent)">{t('cup.StampNext')}</CupStamp>
+      <CupStamp $color="var(--cup-highlight)">{t('cup.StampNext')}</CupStamp>
     ) : r.raceDate < today ? (
       <CupStamp $color="var(--cup-muted)">{t('cup.StampDone')}</CupStamp>
     ) : (
@@ -448,11 +508,21 @@ const CupPage = observer(() => {
 
   const seasonSelector =
     cup.seasons.length > 1 && !race ? (
-      <SeasonSelect
-        value={season?.seasonId}
-        options={cup.seasons.map(s => ({ value: s.seasonId, label: `${t('cup.Season')} ${s.name}` }))}
-        onChange={value => setSearchParams({ season: String(value) })}
-      />
+      <CupSeasonTabs role="group" aria-label={t('cup.Season')}>
+        <span className="cup-season-label">{t('cup.Season')}</span>
+        {[...cup.seasons]
+          .sort((a, b) => a.startDate.localeCompare(b.startDate))
+          .map(s => (
+            <button
+              key={s.seasonId}
+              type="button"
+              aria-pressed={s.seasonId === season?.seasonId}
+              onClick={() => setSearchParams({ season: String(s.seasonId) })}
+            >
+              {s.name}
+            </button>
+          ))}
+      </CupSeasonTabs>
     ) : null;
 
   const raceResultsList = race ? (results ?? []).filter(r => r.cupRaceId === race.cupRaceId) : [];
@@ -472,7 +542,7 @@ const CupPage = observer(() => {
         <NextRaceLayout>
           {race.raceDate >= today ? countdown(race) : null}
           <NextRaceInfo>
-            <CupCaption>{t('cup.RaceNumber', { number: raceNumber(race) })}</CupCaption>
+            <CupCaption>{raceCaption(race)}</CupCaption>
             <div className="cup-next-name">{race.name}</div>
             <div className="cup-next-date">
               {formatCupDate(race.raceDate, 'dddd D MMMM YYYY')}
@@ -489,10 +559,29 @@ const CupPage = observer(() => {
           <CupReports reports={raceReports(race)} {...reportHandlers} />
         </>
       ) : null}
-      <CupSection index={raceReports(race).length ? 3 : 2} title={t('cup.Results')} />
+      {isPursuit(race) && season && results ? (
+        <>
+          <CupSection index={raceReports(race).length ? 3 : 2} title={t('cup.PursuitStartList')} />
+          <CupPanel>
+            <CupPursuitStartList
+              races={races}
+              results={results}
+              settings={season.settings}
+              seasonYear={parseInt(season.startDate.substring(0, 4), 10)}
+              name={`${cup.name} ${season.name} ${t('cup.PursuitStartList')}`}
+            />
+          </CupPanel>
+        </>
+      ) : null}
+      <CupSection index={(raceReports(race).length ? 3 : 2) + (isPursuit(race) ? 1 : 0)} title={t('cup.Results')} />
       <CupPanel>
         {results && season ? (
-          <CupRaceResults cupRaceId={race.cupRaceId} results={results} settings={season.settings} />
+          <CupRaceResults
+            cupRaceId={race.cupRaceId}
+            results={results}
+            settings={season.settings}
+            hidePoints={isPursuit(race)}
+          />
         ) : (
           <Spin />
         )}
@@ -525,7 +614,7 @@ const CupPage = observer(() => {
                 <NextRaceLayout>
                   {countdown(nextRace)}
                   <NextRaceInfo>
-                    <CupCaption>{t('cup.RaceNumber', { number: raceNumber(nextRace) })}</CupCaption>
+                    <CupCaption>{raceCaption(nextRace)}</CupCaption>
                     <div className="cup-next-name">{nextRace.name}</div>
                     <div className="cup-next-date">{formatCupDate(nextRace.raceDate, 'dddd D MMMM YYYY')}</div>
                     {eventorButtons(nextRace, true, true)}
@@ -540,30 +629,54 @@ const CupPage = observer(() => {
             </>
           ) : null}
 
-          <CupSection index={nextRace ? 2 : 1} title={t('cup.Races')} />
+          <CupSection index={nextRace ? 2 : 1} title={t('cup.Standings')} />
+          {results ? (
+            <CupStandings
+              races={races}
+              results={results}
+              settings={season.settings}
+              seasonYear={parseInt(season.startDate.substring(0, 4), 10)}
+            />
+          ) : (
+            <SpinnerDiv>
+              <Spin size="large" />
+            </SpinnerDiv>
+          )}
+
+          <CupSection
+            index={nextRace ? 3 : 2}
+            title={t('cup.Races')}
+            count={t('cup.RacesDecided', {
+              decided: races.filter(r => r.raceDate < today).length,
+              count: races.length
+            })}
+          />
           {races.length === 0 ? (
             <CupPanel>
               <p>{t('cup.NoRaces')}</p>
             </CupPanel>
           ) : (
-            <CupGrid $min={270}>{races.map(ticket)}</CupGrid>
+            (() => {
+              // One row: the last decided race and the coming ones, or the last row when all are decided
+              const nextIndex = nextRace ? races.findIndex(r => r.cupRaceId === nextRace.cupRaceId) : races.length;
+              const first = Math.max(0, Math.min(nextIndex - 1, races.length - raceColumns));
+              const shown = allRaces ? races : races.slice(first, first + raceColumns);
+              return (
+                <>
+                  <CupGrid ref={raceGridRef} $min={270}>
+                    {shown.map(ticket)}
+                  </CupGrid>
+                  {shown.length < races.length ? (
+                    <div style={{ marginTop: 26 }}>
+                      <CupButton $secondary as="button" type="button" onClick={() => setAllRaces(true)}>
+                        <DownOutlined /> {t('cup.ShowAllRaces', { count: races.length })}
+                      </CupButton>
+                    </div>
+                  ) : null}
+                </>
+              );
+            })()
           )}
-
-          <CupWide>
-            <CupSection index={nextRace ? 3 : 2} title={t('cup.Standings')} />
-            {results ? (
-              <CupStandings
-                races={races}
-                results={results}
-                settings={season.settings}
-                seasonYear={parseInt(season.startDate.substring(0, 4), 10)}
-              />
-            ) : (
-              <SpinnerDiv>
-                <Spin size="large" />
-              </SpinnerDiv>
-            )}
-          </CupWide>
 
           {seasonReports.length ? (
             <>
@@ -612,11 +725,20 @@ const CupPage = observer(() => {
         stats={heroStats}
       />
       <CupContent>
+        {isAdmin && !editing ? editToggle : null}
         {adminBar}
         {!cup.isActive ? <Alert showIcon type="warning" title={t('cup.NotActive')} style={{ marginTop: 20 }} /> : null}
         {race ? raceContent : seasonContent}
       </CupContent>
       <Suspense fallback={null}>
+        {deleteDialog ? (
+          <CupDeleteCountdownModal
+            title={deleteDialog.title}
+            description={deleteDialog.description}
+            onDelete={deleteDialog.onDelete}
+            onClose={() => setDeleteDialog(undefined)}
+          />
+        ) : null}
         {dialog?.type === 'cup' ? (
           <CupEditModal
             open

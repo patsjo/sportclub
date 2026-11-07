@@ -1,8 +1,17 @@
+import { DownOutlined, UpOutlined } from '@ant-design/icons';
 import { CSSProperties, ReactNode, useEffect } from 'react';
 import { styled } from 'styled-components';
 import { useMobxStore } from '../../utils/mobxStore';
 import { CupBannerScene } from './CupArt';
-import { cupBodyFont, cupFontsUrl, cupHeadingFont, cupLabelFont, cupSfxFont, ICupTheme } from './cupThemes';
+import {
+  cupBodyFont,
+  cupFontsUrl,
+  cupHeadingFont,
+  cupLabelFont,
+  cupSfxFont,
+  contrastRatio,
+  ICupTheme
+} from './cupThemes';
 
 /*
  * The graphic novel look of the cup pages. The colors of the theme are set as CSS
@@ -23,15 +32,21 @@ export const cupThemeVariables = (theme: ICupTheme): CSSProperties =>
     '--cup-hero-text': theme.heroText,
     '--cup-sky0': theme.sky[0],
     '--cup-sky1': theme.sky[1],
+    '--cup-sky2': theme.sky[2],
     '--cup-accent': theme.accent,
     '--cup-accent-text': theme.accentText,
     '--cup-accent2': theme.accent2,
     '--cup-accent2-text': theme.accent2Text,
+    // The edge of a button that would melt into the panel (e.g. a black button on the night panel)
+    '--cup-accent-edge': contrastRatio(theme.accent, theme.panel) < 1.6 ? theme.highlight : theme.ink,
+    '--cup-accent2-edge': contrastRatio(theme.accent2, theme.panel) < 1.6 ? theme.highlight : theme.ink,
     '--cup-row-alt': theme.rowAlt,
     '--cup-gold': theme.medalGold,
     '--cup-silver': theme.medalSilver,
     '--cup-bronze': theme.medalBronze,
-    '--cup-shadow': theme.dark ? theme.accent : theme.ink,
+    '--cup-highlight': theme.highlight,
+    '--cup-highlight-text': theme.highlightText,
+    '--cup-shadow': theme.dark ? theme.highlight : theme.ink,
     // How much the hero art is toned down behind the title, the colorful youth forest only a little
     '--cup-scrim': theme.dark ? 0.78 : theme.type === 'YOUTH' ? 0.32 : 0.55
   }) as CSSProperties;
@@ -71,7 +86,7 @@ const StyledScope = styled.div`
   overflow-x: clip;
 
   a {
-    color: var(--cup-accent);
+    color: var(--cup-highlight);
     font-weight: 700;
   }
   .ant-tabs {
@@ -90,10 +105,10 @@ const StyledScope = styled.div`
   }
   .ant-tabs-tab:hover,
   .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
-    color: var(--cup-accent) !important;
+    color: var(--cup-highlight) !important;
   }
   .ant-tabs-ink-bar {
-    background: var(--cup-accent);
+    background: var(--cup-highlight);
     height: 4px !important;
   }
   .ant-empty-description {
@@ -116,41 +131,62 @@ export const CupThemeScope = ({ theme, children }: ICupThemeScopeProps) => {
   return <StyledScope style={cupThemeVariables(theme)}>{children}</StyledScope>;
 };
 
+/** The width of the content, all parts have the same width and grow on wide screens */
+const cupContentWidth = '1760px';
+
 export const CupContent = styled.div`
   position: relative;
-  max-width: 1240px;
+  max-width: ${cupContentWidth};
   margin: 0 auto;
   padding: 0 20px;
 `;
 
-/**
- * Wider than the content on big screens, for the standings with a column per race.
- * Centered on the content, never wider than the screen.
- */
-export const CupWide = styled.div`
-  position: relative;
-  left: 50%;
-  width: max(100%, min(calc(100vw - 40px), 1760px));
-  transform: translateX(-50%);
-`;
-
 /* ------------------------------------------------------------------ hero */
+
+/** The size of the banner scene, see CupBannerScene */
+const sceneAspect = '1600 / 520';
+/** Below this width the text is above the scene, the title would otherwise cover the motif */
+const heroStackedWidth = '1000px';
 
 const StyledHero = styled.header`
   position: relative;
   height: clamp(380px, 44vw, 540px);
   overflow: hidden;
-  background: var(--cup-sky1);
+  /* The same sky as the scene, where the scene does not reach on wide screens */
+  background: linear-gradient(180deg, var(--cup-sky0) 0%, var(--cup-sky1) 55%, var(--cup-sky2) 100%);
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - 56px), 0 100%);
 
+  @media screen and (max-width: ${heroStackedWidth}) {
+    height: auto;
+  }
   @media screen and (max-width: 640px) {
-    height: 440px;
     clip-path: polygon(0 0, 100% 0, 100% calc(100% - 28px), 0 100%);
   }
 `;
+/**
+ * The scene is scaled by the height and kept to the right, so it is never blown up and cropped on wide
+ * screens, and fades into the sky to the left. On a phone the motif is shown as a band below the text.
+ */
 const HeroArt = styled.div`
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  height: 100%;
+  aspect-ratio: ${sceneAspect};
+  mask-image: linear-gradient(90deg, transparent 0%, #000000 22%);
+
+  @media screen and (max-width: ${heroStackedWidth}) {
+    top: auto;
+    bottom: 0;
+    height: auto;
+    /* The right part of the scene, x 370-1600 of 1600 */
+    width: 130vw;
+    mask-image: linear-gradient(180deg, transparent 0%, #000000 40%);
+  }
+  @media screen and (max-width: 640px) {
+    /* The motif, x 800-1600 of 1600, fills the width */
+    width: 200vw;
+  }
 `;
 /** Keeps the title readable over the art */
 const HeroScrim = styled.div`
@@ -159,15 +195,23 @@ const HeroScrim = styled.div`
   background: linear-gradient(90deg, var(--cup-sky0) 0%, transparent 62%);
   opacity: var(--cup-scrim, 0.78);
 
-  @media screen and (max-width: 640px) {
+  @media screen and (max-width: ${heroStackedWidth}) {
     background: linear-gradient(180deg, var(--cup-sky0) 10%, transparent 75%);
   }
 `;
 const HeroText = styled.div`
   position: relative;
-  max-width: 1240px;
+  max-width: ${cupContentWidth};
   margin: 0 auto;
   padding: clamp(28px, 5vw, 64px) 20px 0 20px;
+
+  /* Room for the motif below the text */
+  @media screen and (max-width: ${heroStackedWidth}) {
+    padding-bottom: 27vw;
+  }
+  @media screen and (max-width: 640px) {
+    padding-bottom: 42vw;
+  }
 `;
 const HeroKicker = styled.div`
   display: inline-block;
@@ -199,9 +243,13 @@ export const CupTitle = styled.h1`
   paint-order: stroke fill;
   text-shadow:
     5px 5px 0 var(--cup-ink),
-    10px 10px 0 var(--cup-accent);
+    10px 10px 0 var(--cup-highlight);
   overflow-wrap: normal;
 
+  /* Smaller next to the scene on narrow desktops, so that the motif is not covered */
+  @media screen and (min-width: 1001px) and (max-width: 1400px) {
+    font-size: min(7.2vw, calc(var(--cup-title-scale, 110) * 1px));
+  }
   @media screen and (max-width: 640px) {
     font-size: min(64px, calc((100vw - 40px) / (var(--cup-title-longest, 8) * 0.6)));
   }
@@ -303,7 +351,7 @@ export const CupPanel = styled.section<{ $accent?: boolean }>`
   margin-bottom: 40px;
 
   a {
-    color: ${({ $accent }) => ($accent ? 'var(--cup-accent-text)' : 'var(--cup-accent)')};
+    color: ${({ $accent }) => ($accent ? 'var(--cup-accent-text)' : 'var(--cup-highlight)')};
   }
 `;
 
@@ -339,19 +387,25 @@ export const CupMuted = styled.span`
   color: var(--cup-muted);
 `;
 
-const SectionHeader = styled.div`
+const SectionHeader = styled.div<{ $clickable?: boolean }>`
   display: flex;
   align-items: flex-end;
   gap: 14px;
   margin: 56px 0 24px 0;
   color: var(--cup-page-text);
+  cursor: ${({ $clickable }) => ($clickable ? 'pointer' : 'default')};
+  user-select: none;
 
+  &:focus-visible {
+    outline: 3px solid var(--cup-highlight);
+    outline-offset: 6px;
+  }
   .cup-section-index {
     font-family: ${cupHeadingFont};
     font-size: clamp(44px, 6vw, 72px);
     line-height: 0.8;
     color: transparent;
-    -webkit-text-stroke: 2px var(--cup-accent);
+    -webkit-text-stroke: 2px var(--cup-highlight);
   }
   h2 {
     font-family: ${cupHeadingFont};
@@ -362,23 +416,180 @@ const SectionHeader = styled.div`
     margin: 0;
     color: inherit;
   }
+  .cup-section-count {
+    font-family: ${cupLabelFont};
+    font-weight: 800;
+    font-size: 15px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--cup-muted);
+    margin-bottom: 6px;
+    white-space: nowrap;
+  }
   .cup-section-line {
     flex: 1;
     min-width: 40px;
     height: 8px;
     margin-bottom: 8px;
-    background: repeating-linear-gradient(-55deg, var(--cup-accent) 0 8px, transparent 8px 14px);
+    background: repeating-linear-gradient(-55deg, var(--cup-highlight) 0 8px, transparent 8px 14px);
+  }
+  .cup-section-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex: 0 0 auto;
+    color: var(--cup-panel-text);
+    background: var(--cup-panel);
+    border: 3px solid var(--cup-ink);
+    box-shadow: 3px 3px 0 var(--cup-shadow);
+    font-size: 18px;
+    transition: transform 0.15s;
+  }
+  &:hover .cup-section-toggle {
+    transform: translate(-1px, -1px);
   }
 `;
-/** A big section title on the page, e.g. "02 RACES ////" */
-export const CupSection = ({ index, title, extra }: { index?: number; title: string; extra?: ReactNode }) => (
-  <SectionHeader>
-    {index != null ? <span className="cup-section-index">{String(index).padStart(2, '0')}</span> : null}
-    <h2>{title}</h2>
-    <span className="cup-section-line" />
-    {extra}
-  </SectionHeader>
-);
+
+interface ICupSectionProps {
+  index?: number;
+  title: string;
+  extra?: ReactNode;
+  /** Shown next to the title, e.g. the number of races, mostly when collapsed */
+  count?: ReactNode;
+  /** Set together with onToggle to make the section collapsible */
+  collapsed?: boolean;
+  onToggle?: () => void;
+}
+/** A big section title on the page, e.g. "02 RACES ////", that can collapse its section */
+export const CupSection = ({ index, title, extra, count, collapsed, onToggle }: ICupSectionProps) => {
+  const clickable = !!onToggle;
+  return (
+    <SectionHeader
+      $clickable={clickable}
+      aria-expanded={clickable ? !collapsed : undefined}
+      role={clickable ? 'button' : undefined}
+      tabIndex={clickable ? 0 : undefined}
+      onClick={onToggle}
+      onKeyDown={
+        clickable
+          ? e => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onToggle();
+              }
+            }
+          : undefined
+      }
+    >
+      {index != null ? <span className="cup-section-index">{String(index).padStart(2, '0')}</span> : null}
+      <h2>{title}</h2>
+      {count != null ? <span className="cup-section-count">{count}</span> : null}
+      <span className="cup-section-line" />
+      {extra}
+      {clickable ? (
+        <span className="cup-section-toggle" aria-hidden="true">
+          {collapsed ? <DownOutlined /> : <UpOutlined />}
+        </span>
+      ) : null}
+    </SectionHeader>
+  );
+};
+
+/** The seasons as tabs, the chosen season filled */
+export const CupSeasonTabs = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 28px;
+
+  .cup-season-label {
+    font-family: ${cupLabelFont};
+    font-weight: 800;
+    font-style: italic;
+    font-size: 14px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--cup-muted);
+    margin-right: 4px;
+  }
+  button {
+    font-family: ${cupHeadingFont};
+    font-size: 20px;
+    letter-spacing: 0.02em;
+    padding: 6px 16px 4px 16px;
+    cursor: pointer;
+    color: var(--cup-panel-text);
+    background: var(--cup-panel);
+    border: 3px solid var(--cup-ink);
+    box-shadow: 4px 4px 0 var(--cup-shadow);
+    transform: skewX(-8deg);
+    transition:
+      transform 0.08s,
+      box-shadow 0.08s;
+  }
+  button:hover {
+    transform: skewX(-8deg) translate(-2px, -2px);
+    box-shadow: 6px 6px 0 var(--cup-shadow);
+  }
+  button[aria-pressed='true'] {
+    color: var(--cup-highlight-text);
+    background: var(--cup-highlight);
+    box-shadow: 4px 4px 0 var(--cup-ink);
+  }
+  button:focus-visible {
+    outline: 3px solid var(--cup-highlight);
+    outline-offset: 3px;
+  }
+`;
+
+export const CupAdminBar = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
+  margin: 24px 0 8px 0;
+  background: var(--cup-panel);
+  border: 2px dashed var(--cup-muted);
+`;
+
+/** The small, discreet button that shows the administration */
+export const CupEditToggle = styled.button<{ $active?: boolean }>`
+  position: absolute;
+  top: 14px;
+  right: 20px;
+  z-index: 3;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  font-family: ${cupLabelFont};
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  color: var(--cup-muted);
+  background: ${({ $active }) => ($active ? 'var(--cup-panel)' : 'transparent')};
+  border: 1px dashed ${({ $active }) => ($active ? 'var(--cup-muted)' : 'transparent')};
+  opacity: ${({ $active }) => ($active ? 1 : 0.55)};
+
+  &:hover,
+  &:focus-visible {
+    opacity: 1;
+    border-color: var(--cup-muted);
+  }
+
+  /* In the administration bar: last in the row, never on top of the buttons */
+  ${CupAdminBar} & {
+    position: static;
+    margin-left: auto;
+    align-self: center;
+  }
+`;
 
 /** A comic starburst with a hand lettered sound effect */
 export const CupBurst = styled.div<{ $size?: number }>`
@@ -430,7 +641,7 @@ export const CupBubble = styled.div`
   background: var(--cup-panel);
   color: var(--cup-panel-text);
   border: 3px solid var(--cup-ink);
-  border-left: 12px solid var(--cup-accent);
+  border-left: 12px solid var(--cup-highlight);
   padding: 18px 22px;
   margin: 0 0 40px 0;
   box-shadow: 6px 6px 0 var(--cup-shadow);
@@ -456,7 +667,7 @@ export const CupButton = styled.a<{ $secondary?: boolean }>`
     margin: 6px 12px 6px 0;
     color: ${({ $secondary }) => ($secondary ? 'var(--cup-accent2-text)' : 'var(--cup-accent-text)')};
     background: ${({ $secondary }) => ($secondary ? 'var(--cup-accent2)' : 'var(--cup-accent)')};
-    border: 3px solid var(--cup-ink);
+    border: 3px solid ${({ $secondary }) => ($secondary ? 'var(--cup-accent2-edge)' : 'var(--cup-accent-edge)')};
     box-shadow: 5px 5px 0 var(--cup-ink);
     text-decoration: none;
     cursor: pointer;
@@ -480,16 +691,6 @@ export const CupGrid = styled.div<{ $min?: number }>`
   gap: 30px;
 `;
 
-export const CupAdminBar = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 12px;
-  margin: 24px 0 8px 0;
-  background: var(--cup-panel);
-  border: 2px dashed var(--cup-muted);
-`;
-
 /** A rubber stamp, e.g. on finished races */
 export const CupStamp = styled.span<{ $color?: string }>`
   display: inline-block;
@@ -498,7 +699,7 @@ export const CupStamp = styled.span<{ $color?: string }>`
   font-size: 14px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: ${({ $color }) => $color ?? 'var(--cup-accent)'};
+  color: ${({ $color }) => $color ?? 'var(--cup-highlight)'};
   border: 3px solid currentColor;
   outline: 1px solid currentColor;
   outline-offset: 2px;
@@ -579,7 +780,7 @@ export const CupTableWrapper = styled.div`
   .cup-total {
     font-family: ${cupHeadingFont};
     font-size: 22px;
-    color: var(--cup-accent);
+    color: var(--cup-highlight);
   }
   .cup-not-counted {
     opacity: 0.4;

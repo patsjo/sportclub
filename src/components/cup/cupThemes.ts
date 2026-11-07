@@ -208,7 +208,44 @@ export const cupThemePalettes: Record<CupThemeType, ICupThemePalette> = {
 
 export interface ICupTheme extends ICupThemePalette {
   type: CupThemeType;
+  /**
+   * A color that is always visible on the page and the panels, for lines, numbers and stamps.
+   * The accent when it has enough contrast, otherwise e.g. a dark club color on a night page
+   * would disappear.
+   */
+  highlight: string;
+  /** Text on the highlight color */
+  highlightText: string;
 }
+
+const relativeLuminance = (color: string): number | null => {
+  const hex = color.replace('#', '').trim();
+  const full =
+    hex.length === 3
+      ? hex
+          .split('')
+          .map(c => c + c)
+          .join('')
+      : hex.substring(0, 6);
+  if (!/^[0-9a-fA-F]{6}$/.test(full)) return null;
+  const [r, g, b] = [0, 2, 4].map(i => {
+    const c = parseInt(full.substring(i, i + 2), 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+
+/** The WCAG contrast ratio between two colors, 1 to 21 */
+export const contrastRatio = (a: string, b: string): number => {
+  const la = relativeLuminance(a);
+  const lb = relativeLuminance(b);
+  if (la == null || lb == null) return 21;
+  return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+};
+
+/** The first color that is visible against all backgrounds */
+const firstVisible = (candidates: string[], backgrounds: string[], minRatio = 2.6) =>
+  candidates.find(c => backgrounds.every(bg => contrastRatio(c, bg) >= minRatio)) ?? candidates[candidates.length - 1];
 
 /** The palette of a theme with the colors of the cup (or the club) as accents */
 export const getCupTheme = (
@@ -218,13 +255,21 @@ export const getCupTheme = (
 ): ICupTheme => {
   const themeType: CupThemeType = type && cupThemePalettes[type] ? type : 'SUMMER';
   const palette = cupThemePalettes[themeType];
+  const accent = primaryColor || palette.accent;
+  const accent2 = secondaryColor || palette.accent2;
+  const highlight = firstVisible(
+    [accent, accent2, palette.accent, palette.accent2, palette.dark ? '#ffffff' : palette.ink],
+    [palette.background, palette.backgroundEnd, palette.panel]
+  );
   return {
     ...palette,
     type: themeType,
-    accent: primaryColor || palette.accent,
+    accent,
     accentText: primaryColor ? readableTextColor(primaryColor) : palette.accentText,
-    accent2: secondaryColor || palette.accent2,
-    accent2Text: secondaryColor ? readableTextColor(secondaryColor) : palette.accent2Text
+    accent2,
+    accent2Text: secondaryColor ? readableTextColor(secondaryColor) : palette.accent2Text,
+    highlight,
+    highlightText: readableTextColor(highlight)
   };
 };
 

@@ -498,6 +498,13 @@ function cupAgeMatchesCategory($birthYear, $settings, $category)
   return (is_null($minAge) || $age >= $minAge) && (is_null($maxAge) || $age <= $maxAge);
 }
 
+//# The same class, regardless of case and extra spaces, as    #
+//# cupClassKey in cupHelper.ts                                 #
+function cupClassKey($className)
+{
+  return mb_strtolower(preg_replace('/\s+/u', ' ', trim(strval($className))), 'UTF-8');
+}
+
 function cupHasCategories($settings)
 {
   return !is_null($settings) && isset($settings->categories) && is_array($settings->categories) && count($settings->categories) > 0;
@@ -773,6 +780,34 @@ function saveCupEventorResults($cupRaceId, $results)
     cupQuery(sprintf("DELETE FROM CUP_RACE_RESULTS WHERE CUP_RESULT_ID IN (%s)", cupIdList($removeResultIds)));
   }
 
+  //# The adjustments made in the result import of the club, #
+  //# per class: the number of starters and the winner time.  #
+  //# The participants of other clubs get the same, the same  #
+  //# rules as mergeCupEventorResults in cupHelper.ts.         #
+  $classAdjustments = array();
+  $result = cupQuery(sprintf("SELECT CLASS_NAME, STATUS, NOF_STARTS_IN_CLASS, TIME_SECONDS, TIME_BEHIND_SECONDS " .
+                             "FROM CUP_RACE_RESULTS WHERE CUP_RACE_ID = %d AND SOURCE = 'DB'", $cupRaceId));
+  while ($row = \db\mysql_fetch_assoc($result))
+  {
+    $key = cupClassKey($row['CLASS_NAME']);
+    if (!isset($classAdjustments[$key]))
+    {
+      $classAdjustments[$key] = array('nofStarts' => NULL, 'winnerTime' => NULL);
+    }
+    if (!is_null($row['NOF_STARTS_IN_CLASS']) && intval($row['NOF_STARTS_IN_CLASS']) > 0)
+    {
+      $classAdjustments[$key]['nofStarts'] = max(intval($classAdjustments[$key]['nofStarts']), intval($row['NOF_STARTS_IN_CLASS']));
+    }
+    if ($row['STATUS'] == 'OK' && !is_null($row['TIME_SECONDS']) && !is_null($row['TIME_BEHIND_SECONDS']))
+    {
+      $winnerTime = intval($row['TIME_SECONDS']) - intval($row['TIME_BEHIND_SECONDS']);
+      $classAdjustments[$key]['winnerTime'] = is_null($classAdjustments[$key]['winnerTime'])
+        ? $winnerTime
+        : min($classAdjustments[$key]['winnerTime'], $winnerTime);
+    }
+  }
+  \db\mysql_free_result($result);
+
   $nofSaved = 0;
   $nofClubMembersSkipped = 0;
   $nofOtherClasses = 0;
@@ -789,6 +824,19 @@ function saveCupEventorResults($cupRaceId, $results)
     {
       $nofClubMembersSkipped++;
       continue;
+    }
+    $key = cupClassKey($r->className);
+    if (!$isClubMember && isset($classAdjustments[$key]))
+    {
+      if (!is_null($classAdjustments[$key]['nofStarts']))
+      {
+        $r->nofStartsInClass = $classAdjustments[$key]['nofStarts'];
+      }
+      if (!is_null($classAdjustments[$key]['winnerTime']) && isset($r->status) && $r->status == 'OK' &&
+          isset($r->timeSeconds) && !is_null($r->timeSeconds))
+      {
+        $r->timeBehindSeconds = max(0, intval($r->timeSeconds) - $classAdjustments[$key]['winnerTime']);
+      }
     }
     $r->source = 'EVENTOR';
     insertCupRaceResult($cupRaceId, $r);

@@ -1,19 +1,24 @@
 import { describe, expect, it } from 'vitest';
-import { defaultSeasonSettings, ICupResultProps, ICupSeasonSettings } from '../models/cupModel';
+import { defaultPursuit, defaultSeasonSettings, ICupResultProps, ICupSeasonSettings } from '../models/cupModel';
 import { IResultListType } from '../models/iof.xsd-3.0';
 import {
   calculateCupPoints,
+  addCupClockTime,
   calculateCupStandings,
   classMatchesCategory,
   cupAgeMatchesCategory,
+  cupClassKey,
   filterToCupClasses,
+  formatCupBehind,
   formatCupTime,
+  getCupPursuitMassStartOffset,
   getCupRaceResultsByClass,
   getCurrentCupSeason,
   getNextCupRace,
   getScoredResults,
   iofResultListToCupResults,
   isDateInSeason,
+  mergeCupEventorResults,
   parseCupTime
 } from './cupHelper';
 
@@ -411,6 +416,213 @@ describe('calculateCupStandings', () => {
       settings()
     );
     expect(standings[0].groups[0].rows.map(r => r.rank)).toEqual([1, 1, 3]);
+  });
+});
+
+describe('mergeCupEventorResults', () => {
+  it('keeps the club results and gives the others the adjustments of the club', () => {
+    const current = [
+      // Imported by the club, short class name, adjusted to 12 starters and winner time 25:00
+      result({
+        cupRaceId: 1,
+        competitorId: 1,
+        eventorPersonId: 10,
+        personName: 'Medlem',
+        className: 'H21K',
+        source: 'DB',
+        position: 2,
+        timeSeconds: 1560,
+        timeBehindSeconds: 60,
+        nofStartsInClass: 12
+      }),
+      result({ cupRaceId: 1, personName: 'Manuell', className: 'Öppen', source: 'MANUAL' }),
+      result({
+        cupRaceId: 1,
+        personName: 'Gammal Eventor',
+        className: 'H21 Kort',
+        source: 'EVENTOR',
+        isClubMember: false
+      })
+    ];
+    const fetched = [
+      result({
+        cupRaceId: 1,
+        eventorPersonId: 10,
+        personName: 'Medlem',
+        className: 'H21 Kort',
+        source: 'EVENTOR',
+        position: 3,
+        timeSeconds: 1560,
+        timeBehindSeconds: 90,
+        nofStartsInClass: 14
+      }),
+      result({
+        cupRaceId: 1,
+        eventorPersonId: 20,
+        personName: 'Annan',
+        className: 'H21 Kort',
+        source: 'EVENTOR',
+        isClubMember: false,
+        position: 1,
+        timeSeconds: 1470,
+        timeBehindSeconds: 0,
+        nofStartsInClass: 14
+      }),
+      result({
+        cupRaceId: 1,
+        eventorPersonId: 30,
+        personName: 'Annan klass',
+        className: 'D21',
+        source: 'EVENTOR',
+        isClubMember: false,
+        position: 1,
+        timeSeconds: 1800,
+        timeBehindSeconds: 0,
+        nofStartsInClass: 5
+      })
+    ];
+    // The old Eventor results are replaced before the merge, as in the results dialog
+    const merged = mergeCupEventorResults(
+      current.filter(r => r.source !== 'EVENTOR'),
+      fetched
+    );
+    expect(merged.map(r => [r.personName, r.source, r.className])).toEqual([
+      ['Manuell', 'MANUAL', 'Öppen'],
+      // The club result is kept and gets the Eventor class name
+      ['Medlem', 'DB', 'H21 Kort'],
+      ['Annan', 'EVENTOR', 'H21 Kort'],
+      ['Annan klass', 'EVENTOR', 'D21']
+    ]);
+    // The same class as the club: the number of starters and the time behind from the club
+    expect(merged[2]).toMatchObject({ nofStartsInClass: 12, timeBehindSeconds: 0 });
+    // A class the club did not run is as in Eventor
+    expect(merged[3]).toMatchObject({ nofStartsInClass: 5, timeBehindSeconds: 0 });
+  });
+
+  it('takes everything from Eventor when the club has no results for the race', () => {
+    const fetched = [
+      result({ eventorPersonId: 1, source: 'EVENTOR' }),
+      result({ eventorPersonId: 2, source: 'EVENTOR', isClubMember: false })
+    ];
+    expect(mergeCupEventorResults([], fetched)).toHaveLength(2);
+  });
+});
+
+describe('pursuit as the last race', () => {
+  const races = [
+    { cupRaceId: 1, raceDate: '2026-01-10' },
+    { cupRaceId: 2, raceDate: '2026-02-10' },
+    { cupRaceId: 3, raceDate: '2026-03-20' }
+  ];
+  const pursuitSettings = (values: Partial<ICupSeasonSettings['pursuit']> = {}) =>
+    settings({
+      pursuit: { ...defaultPursuit(), enabled: true, ...values }
+    });
+  // Before the pursuit: A 50 p, B 45 p, C 40 p, D 37 p
+  const before = [
+    result({ cupRaceId: 1, competitorId: 1, personName: 'A', position: 1 }),
+    result({ cupRaceId: 2, competitorId: 1, personName: 'A', position: 1 }),
+    result({ cupRaceId: 1, competitorId: 2, personName: 'B', position: 2 }),
+    result({ cupRaceId: 2, competitorId: 2, personName: 'B', position: 1 }),
+    result({ cupRaceId: 1, competitorId: 3, personName: 'C', position: 2 }),
+    result({ cupRaceId: 2, competitorId: 3, personName: 'C', position: 2 }),
+    result({ cupRaceId: 1, competitorId: 4, personName: 'D', position: 2 }),
+    result({ cupRaceId: 2, competitorId: 4, personName: 'D', position: 3 })
+  ];
+
+  it('gives the handicaps before the pursuit is run, and keeps the order', () => {
+    const rows = calculateCupStandings(races, before, pursuitSettings())[0].groups[0].rows;
+    expect(rows.map(r => [r.personName, r.totalPoints, r.pursuit?.startOffsetSeconds])).toEqual([
+      ['A', 50, 0],
+      ['B', 45, 20],
+      ['C', 40, 40],
+      ['D', 37, 52]
+    ]);
+  });
+
+  it('uses the finish order with individual times, the others after by their points', () => {
+    const rows = calculateCupStandings(
+      races,
+      [
+        ...before,
+        // A runs 30:00 and finishes 30:00 after the first start, B 29:30 + 0:20 = 29:50
+        result({ cupRaceId: 3, competitorId: 1, personName: 'A', timeSeconds: 1800 }),
+        result({ cupRaceId: 3, competitorId: 2, personName: 'B', timeSeconds: 1770 }),
+        // C did not finish, D did not take part
+        result({ cupRaceId: 3, competitorId: 3, personName: 'C', status: 'DNF' })
+      ],
+      pursuitSettings()
+    )[0].groups[0].rows;
+    expect(rows.map(r => [r.rank, r.personName, r.pursuit?.behindSeconds, r.totalPoints])).toEqual([
+      [1, 'B', 0, 45],
+      [2, 'A', 10, 50],
+      [3, 'C', null, 40],
+      [4, 'D', null, 37]
+    ]);
+    // The pursuit itself gives no points
+    expect(rows[0].races[3]).toMatchObject({ points: 0, counted: false, position: 1 });
+  });
+
+  it('uses the times from the first start as they are', () => {
+    const rows = calculateCupStandings(
+      races,
+      [
+        ...before,
+        result({ cupRaceId: 3, competitorId: 1, personName: 'A', timeSeconds: 1800 }),
+        result({ cupRaceId: 3, competitorId: 4, personName: 'D', timeSeconds: 1790 })
+      ],
+      pursuitSettings({ resultTimeType: 'FROM_FIRST_START' })
+    )[0].groups[0].rows;
+    expect(rows.map(r => r.personName)).toEqual(['D', 'A', 'B', 'C']);
+    expect(rows[1].pursuit?.behindSeconds).toBe(10);
+  });
+
+  it('starts those too far behind in the mass start', () => {
+    const group = calculateCupStandings(races, before, pursuitSettings())[0].groups[0];
+    const key = cupClassKey(group.title);
+    const offsets = (values: Partial<ICupSeasonSettings['pursuit']>) =>
+      calculateCupStandings(races, before, pursuitSettings(values))[0].groups[0].rows.map(r => [
+        r.personName,
+        r.pursuit?.startOffsetSeconds,
+        r.pursuit?.massStart
+      ]);
+    const expected = [
+      ['A', 0, false],
+      ['B', 20, false],
+      ['C', 40, true],
+      ['D', 40, true]
+    ];
+    // As a clock time with the start time of the leader, or after the leader
+    expect(offsets({ startTimes: { [key]: '19:00' }, massStartTimes: { [key]: '19:00:40' } })).toEqual(expected);
+    expect(offsets({ massStartTimes: { [key]: '+0:40' } })).toEqual(expected);
+    // A clock time without the start time of the leader is no mass start
+    expect(offsets({ massStartTimes: { [key]: '19:30' } }).map(r => r[2])).toEqual([false, false, false, false]);
+    expect(getCupPursuitMassStartOffset({ startTimes: { x: '23:50' }, massStartTimes: { x: '00:10' } }, 'X')).toBe(
+      1200
+    );
+
+    // Starting in the mass start, D finishes 10 seconds after C with the individual times
+    const rows = calculateCupStandings(
+      races,
+      [
+        ...before,
+        result({ cupRaceId: 3, competitorId: 3, personName: 'C', timeSeconds: 1800 }),
+        result({ cupRaceId: 3, competitorId: 4, personName: 'D', timeSeconds: 1810 })
+      ],
+      pursuitSettings({ massStartTimes: { [key]: '+0:40' } })
+    )[0].groups[0].rows;
+    expect(rows.slice(0, 2).map(r => [r.personName, r.pursuit?.behindSeconds])).toEqual([
+      ['C', 0],
+      ['D', 10]
+    ]);
+  });
+
+  it('formats the times', () => {
+    expect(formatCupBehind(24)).toBe('+0:24');
+    expect(formatCupBehind(88 * 60 + 21)).toBe('+88:21');
+    expect(addCupClockTime('19:00', 52)).toBe('19:00:52');
+    expect(addCupClockTime('19:00:30', 90)).toBe('19:02:00');
+    expect(addCupClockTime('', 10)).toBeNull();
   });
 });
 

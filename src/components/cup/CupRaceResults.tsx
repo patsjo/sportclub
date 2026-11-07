@@ -9,10 +9,12 @@ interface ICupRaceResultsProps {
   cupRaceId: number;
   results: ICupResultProps[];
   settings: ICupSeasonSettings;
+  /** The pursuit gives no points, its finish order is the final placing */
+  hidePoints?: boolean;
 }
 
 /** The results of one race, per class, with the cup points */
-const CupRaceResults = ({ cupRaceId, results, settings }: ICupRaceResultsProps) => {
+const CupRaceResults = ({ cupRaceId, results, settings, hidePoints }: ICupRaceResultsProps) => {
   const { t } = useTranslation();
   const classes = useMemo(() => getCupRaceResultsByClass(cupRaceId, results, settings), [cupRaceId, results, settings]);
   const format = (points: number | null) =>
@@ -53,13 +55,17 @@ const CupRaceResults = ({ cupRaceId, results, settings }: ICupRaceResultsProps) 
           </span>
         )
     },
-    {
-      title: t('cup.Points'),
-      key: 'points',
-      align: 'right',
-      width: 72,
-      render: (_, r) => <strong>{format(r.points)}</strong>
-    }
+    ...(hidePoints
+      ? []
+      : [
+          {
+            title: t('cup.Points'),
+            key: 'points',
+            align: 'right' as const,
+            width: 72,
+            render: (_: unknown, r: ICupScoredResult) => <strong>{format(r.points)}</strong>
+          }
+        ])
   ];
 
   if (classes.length === 0) return <Empty description={t('cup.NoResultsYet')} />;

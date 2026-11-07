@@ -1,5 +1,5 @@
 import { CloudDownloadOutlined, DatabaseOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
-import { Alert, Button, Checkbox, Input, InputNumber, Modal, Select, Space, Table, TableColumnsType, Tag } from 'antd';
+import { Alert, Button, Checkbox, Input, InputNumber, Modal, Select, Space, Table, TableColumnsType } from 'antd';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cupResultStatuses, ICupRaceProps, ICupResultProps, ICupSeasonProps } from '../../../models/cupModel';
@@ -8,6 +8,7 @@ import {
   cupAgeMatchesCategory,
   cupClassKey,
   filterToCupClasses,
+  mergeCupEventorResults,
   formatCupTime,
   parseCupTime
 } from '../../../utils/cupHelper';
@@ -55,14 +56,18 @@ const CupRaceResultsModal = ({ season, race, results, open, onClose, onSaved }: 
   const seasonYear = parseInt(season.startDate.substring(0, 4), 10);
 
   const replaceSource = (source: 'DB' | 'EVENTOR', fetched: ICupResultProps[]) =>
-    setRows(current => {
-      // The fetched results replace the earlier ones, manually added results are kept.
-      // From our own database only club members come, so the others are kept as well.
-      const keep = current.filter(r =>
-        source === 'DB' ? r.source === 'MANUAL' || !r.isClubMember : r.source === 'MANUAL'
-      );
-      return sortRows([...keep, ...fetched]);
-    });
+    setRows(current =>
+      sortRows(
+        source === 'DB'
+          ? // From the club database only club members come, the others and the manual results are kept
+            [...current.filter(r => r.source === 'MANUAL' || !r.isClubMember), ...fetched]
+          : // From Eventor: the results of the club and their adjustments are kept, see mergeCupEventorResults
+            mergeCupEventorResults(
+              current.filter(r => r.source !== 'EVENTOR'),
+              fetched
+            )
+      )
+    );
 
   const fetchFromDb = async () => {
     try {
@@ -198,6 +203,7 @@ const CupRaceResultsModal = ({ season, race, results, open, onClose, onSaved }: 
     {
       title: t('cup.Name'),
       key: 'personName',
+      width: 190,
       render: (_, r) => (
         <Input
           size="small"
@@ -308,10 +314,37 @@ const CupRaceResultsModal = ({ season, race, results, open, onClose, onSaved }: 
       )
     },
     {
+      title: t('cup.TimeBehind'),
+      key: 'timeBehind',
+      width: 90,
+      render: (_, r) => (
+        <Input
+          // Remounted when the time is changed, which clears the time behind
+          key={`${r.cupResultId}-${r.timeBehindSeconds}`}
+          size="small"
+          placeholder="mm:ss"
+          disabled={r.status !== 'OK'}
+          defaultValue={formatCupTime(r.timeBehindSeconds)}
+          onBlur={e => update(r.cupResultId, { timeBehindSeconds: parseCupTime(e.target.value) })}
+        />
+      )
+    },
+    {
       title: t('cup.Source'),
       key: 'source',
-      width: 80,
-      render: (_, r) => <Tag>{t(`cup.Source${r.source}`)}</Tag>
+      width: 110,
+      render: (_, r) => (
+        <Select
+          size="small"
+          value={r.source}
+          style={{ width: '100%' }}
+          options={(['DB', 'EVENTOR', 'MANUAL'] as const).map(source => ({
+            value: source,
+            label: t(`cup.Source${source}`)
+          }))}
+          onChange={source => update(r.cupResultId, { source })}
+        />
+      )
     },
     {
       key: 'delete',
@@ -331,7 +364,8 @@ const CupRaceResultsModal = ({ season, race, results, open, onClose, onSaved }: 
     <Modal
       title={`${t('cup.Results')}: ${race.name}`}
       open={open}
-      width={1100}
+      // All columns fit on a big screen, a horizontal scroll only on smaller screens
+      width="min(1480px, calc(100vw - 32px))"
       okText={t('common.Save')}
       cancelText={t('common.Cancel')}
       okButtonProps={{ loading: saving, disabled: invalid }}

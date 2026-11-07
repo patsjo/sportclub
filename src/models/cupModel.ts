@@ -64,6 +64,39 @@ export interface ICupCategory {
   maxAge?: number | null;
 }
 
+/** How the times in the result list of the pursuit race are given */
+export type CupPursuitTimeType =
+  /** The running time of every competitor */
+  | 'INDIVIDUAL'
+  /** The time from the first start, the handicap is included */
+  | 'FROM_FIRST_START';
+
+/**
+ * The last race of the season as a pursuit (jaktstart): the leader of the standings starts first,
+ * the others after a handicap of the points behind times the seconds per point. The finish order
+ * of the pursuit is the final placing, those who did not start or finish come after, by their points.
+ */
+export interface ICupPursuit {
+  enabled: boolean;
+  secondsPerPoint: number;
+  resultTimeType: CupPursuitTimeType;
+  /** The start time of the leader per class (or category), e.g. "19:00", the key is the class name in lower case */
+  startTimes: Record<string, string>;
+  /**
+   * When those too far behind start together in a mass start, per class (or category) as the start
+   * times, e.g. "19:45", or "+30:00" after the start of the leader. Empty = no mass start.
+   */
+  massStartTimes: Record<string, string>;
+}
+
+export const defaultPursuit = (): ICupPursuit => ({
+  enabled: false,
+  secondsPerPoint: 4,
+  resultTimeType: 'INDIVIDUAL',
+  startTimes: {},
+  massStartTimes: {}
+});
+
 export interface ICupSeasonSettings {
   participants: CupParticipantsType;
   pointsBasis: CupPointsBasisType;
@@ -75,6 +108,8 @@ export interface ICupSeasonSettings {
   categories: ICupCategory[];
   /** The order the classes are shown in, classes not in the list come last in the default order */
   classOrder: string[];
+  /** The last race of the season as a pursuit */
+  pursuit: ICupPursuit;
 }
 
 export interface ICupReportProps {
@@ -210,7 +245,8 @@ export const defaultSeasonSettings = (): ICupSeasonSettings => ({
   maxRacesCounted: null,
   bonusPointsPerExtraRace: 0,
   categories: [presetCategories.all()],
-  classOrder: []
+  classOrder: [],
+  pursuit: defaultPursuit()
 });
 
 /** Settings from the database may be older or partial, fill in what is missing */
@@ -223,6 +259,7 @@ export const normalizeSeasonSettings = (settings?: Partial<ICupSeasonSettings> |
     pointSystem: { ...defaults.pointSystem, ...(settings.pointSystem ?? {}) },
     categories:
       Array.isArray(settings.categories) && settings.categories.length > 0 ? settings.categories : defaults.categories,
-    classOrder: Array.isArray(settings.classOrder) ? settings.classOrder.filter(c => typeof c === 'string') : []
+    classOrder: Array.isArray(settings.classOrder) ? settings.classOrder.filter(c => typeof c === 'string') : [],
+    pursuit: { ...defaultPursuit(), ...(settings.pursuit ?? {}) }
   };
 };

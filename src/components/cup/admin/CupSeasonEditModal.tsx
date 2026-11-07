@@ -96,6 +96,13 @@ const CupSeasonEditModal = ({ cupId, season, classNames = [], open, onClose, onS
   };
 
   const ps = settings.pointSystem;
+  const setPursuit = (values: Partial<ICupSeasonSettings['pursuit']>) =>
+    setSettings(s => ({ ...s, pursuit: { ...s.pursuit, ...values } }));
+  /** The groups that get a start time in the pursuit: the classes, and the categories with one standing */
+  const pursuitGroups = [
+    ...settings.categories.filter(c => !c.groupByClass).map(c => c.name),
+    ...(settings.categories.some(c => c.groupByClass) ? orderedClasses : [])
+  ];
   const setPointSystem = (values: Partial<ICupSeasonSettings['pointSystem']>) =>
     setSettings(s => ({ ...s, pointSystem: { ...s.pointSystem, ...values } }));
   const setCategory = (id: string, values: Partial<ICupCategory>) =>
@@ -386,6 +393,78 @@ const CupSeasonEditModal = ({ cupId, season, classNames = [], open, onClose, onS
             </Button>
           </Space>
         </Space>
+
+        <Divider titlePlacement="start">{t('cup.Pursuit')}</Divider>
+        <Typography.Paragraph type="secondary">{t('cup.PursuitInfo')}</Typography.Paragraph>
+        <Form.Item>
+          <Switch checked={settings.pursuit.enabled} onChange={enabled => setPursuit({ enabled })} />{' '}
+          {t('cup.PursuitEnabled')}
+        </Form.Item>
+        {settings.pursuit.enabled ? (
+          <>
+            <Space wrap size="large" align="start">
+              <Form.Item label={t('cup.SecondsPerPoint')} extra={t('cup.SecondsPerPointInfo')}>
+                <InputNumber
+                  min={0}
+                  step={0.5}
+                  value={settings.pursuit.secondsPerPoint}
+                  onChange={v => setPursuit({ secondsPerPoint: v ?? 4 })}
+                />
+              </Form.Item>
+              <Form.Item label={t('cup.PursuitTimeType')}>
+                <Radio.Group
+                  value={settings.pursuit.resultTimeType}
+                  options={[
+                    { value: 'INDIVIDUAL', label: t('cup.PursuitTimeINDIVIDUAL') },
+                    { value: 'FROM_FIRST_START', label: t('cup.PursuitTimeFROM_FIRST_START') }
+                  ]}
+                  onChange={e => setPursuit({ resultTimeType: e.target.value })}
+                />
+              </Form.Item>
+            </Space>
+            <Form.Item label={t('cup.PursuitStartTimes')} extra={t('cup.PursuitStartTimesInfo')}>
+              {pursuitGroups.length === 0 ? (
+                <Typography.Text type="secondary">{t('cup.ClassOrderEmpty')}</Typography.Text>
+              ) : (
+                <Space wrap>
+                  {pursuitGroups.map(name => (
+                    <Space.Compact key={name}>
+                      <Button disabled style={{ color: 'inherit', cursor: 'default' }}>
+                        {name}
+                      </Button>
+                      <Input
+                        value={settings.pursuit.startTimes[cupClassKey(name)] ?? ''}
+                        placeholder="19:00"
+                        title={t('cup.PursuitStartTimes')}
+                        style={{ width: 92 }}
+                        onChange={e =>
+                          setPursuit({
+                            startTimes: { ...settings.pursuit.startTimes, [cupClassKey(name)]: e.target.value.trim() }
+                          })
+                        }
+                      />
+                      <Input
+                        value={settings.pursuit.massStartTimes[cupClassKey(name)] ?? ''}
+                        placeholder="19:45"
+                        prefix={<Typography.Text type="secondary">{t('cup.MassStartShort')}</Typography.Text>}
+                        title={t('cup.MassStart')}
+                        style={{ width: 140 }}
+                        onChange={e =>
+                          setPursuit({
+                            massStartTimes: {
+                              ...settings.pursuit.massStartTimes,
+                              [cupClassKey(name)]: e.target.value.trim()
+                            }
+                          })
+                        }
+                      />
+                    </Space.Compact>
+                  ))}
+                </Space>
+              )}
+            </Form.Item>
+          </>
+        ) : null}
 
         <Divider titlePlacement="start">{t('cup.ClassOrder')}</Divider>
         <Typography.Paragraph type="secondary">{t('cup.ClassOrderInfo')}</Typography.Paragraph>

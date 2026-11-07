@@ -74,12 +74,12 @@ const StyledSvg = styled.svg`
     transform-origin: center;
   }
 
+  /* Without animation effects (e.g. turned off in Windows) nothing moves, the stars still twinkle and
+     the glow still pulses, they only fade */
   @media (prefers-reduced-motion: reduce) {
     .cup-drift,
-    .cup-twinkle,
     .cup-fall,
     .cup-sweep,
-    .cup-pulse,
     .cup-dash,
     .cup-flap {
       animation: none;

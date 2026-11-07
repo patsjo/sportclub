@@ -38,6 +38,20 @@ export interface ICupStandingRow {
   nofFinished: number;
   bonusPoints: number;
   totalPoints: number;
+  /** When the last race is a pursuit */
+  pursuit?: ICupPursuitRow;
+}
+
+export interface ICupPursuitRow {
+  /** The handicap, the points behind the leader times the seconds per point, at most the mass start */
+  startOffsetSeconds: number;
+  /** Too far behind, starts in the mass start */
+  massStart: boolean;
+  /** From the start of the leader to the finish, null = did not finish (or not run yet) */
+  finishOffsetSeconds: number | null;
+  /** Behind the winner of the pursuit */
+  behindSeconds: number | null;
+  status: CupResultStatusType | null;
 }
 
 export interface ICupStandingGroup {
@@ -107,6 +121,59 @@ export const cupAgeMatchesCategory = (
   if (!birthYear) return false;
   const age = year - birthYear;
   return (category.minAge == null || age >= category.minAge) && (category.maxAge == null || age <= category.maxAge);
+};
+
+/**
+ * Merges a result list from Eventor with the results the cup already has for a race. The results of
+ * the club (imported in the result import of the club, with its adjustments) are kept and win over
+ * Eventor for the club members. From Eventor only the participants of other clubs are added, with the
+ * adjustments of the club for the same class: the class name (the result import shortens it, e.g.
+ * H21K for H21 Kort, matched on the club members in both lists), the number of starters and the
+ * winner time (the time behind). Manually added results are kept. The same rules as
+ * saveCupEventorResults in php/include/cup.php.
+ */
+export const mergeCupEventorResults = (current: ICupResultProps[], fetched: ICupResultProps[]): ICupResultProps[] => {
+  const manual = current.filter(r => r.source === 'MANUAL');
+  const club = current.filter(r => r.source === 'DB');
+  if (club.length === 0) return [...manual, ...fetched];
+
+  const classMap = new Map<string, string>();
+  fetched
+    .filter(f => f.isClubMember && f.eventorPersonId)
+    .forEach(f =>
+      club
+        .filter(c => c.eventorPersonId === f.eventorPersonId)
+        .forEach(c => classMap.set(cupClassKey(c.className), f.className))
+    );
+  const clubResults = club.map(c => ({ ...c, className: classMap.get(cupClassKey(c.className)) ?? c.className }));
+
+  const adjustments = new Map<string, { nofStarts: number | null; winnerTime: number | null }>();
+  clubResults.forEach(c => {
+    const key = cupClassKey(c.className);
+    const adjustment = adjustments.get(key) ?? { nofStarts: null, winnerTime: null };
+    if (c.nofStartsInClass) adjustment.nofStarts = Math.max(adjustment.nofStarts ?? 0, c.nofStartsInClass);
+    if (c.status === 'OK' && c.timeSeconds != null && c.timeBehindSeconds != null) {
+      const winnerTime = c.timeSeconds - c.timeBehindSeconds;
+      adjustment.winnerTime = adjustment.winnerTime == null ? winnerTime : Math.min(adjustment.winnerTime, winnerTime);
+    }
+    adjustments.set(key, adjustment);
+  });
+
+  const others = fetched
+    .filter(f => !f.isClubMember)
+    .map(f => {
+      const adjustment = adjustments.get(cupClassKey(f.className));
+      if (!adjustment) return f;
+      return {
+        ...f,
+        nofStartsInClass: adjustment.nofStarts ?? f.nofStartsInClass,
+        timeBehindSeconds:
+          adjustment.winnerTime != null && f.status === 'OK' && f.timeSeconds != null
+            ? Math.max(0, f.timeSeconds - adjustment.winnerTime)
+            : f.timeBehindSeconds
+      };
+    });
+  return [...manual, ...clubResults, ...others];
 };
 
 /** The same class, regardless of case and extra spaces ("Mellankort" and "MellanKort ") */
@@ -333,6 +400,168 @@ export const compareCupClasses = (classOrder: string[] | undefined) => {
   };
 };
 
+/** The pursuit race, the last race of the season, when the season has a pursuit */
+export const getCupPursuitRace = <T extends Pick<ICupRaceProps, 'cupRaceId' | 'raceDate'>>(
+  races: T[],
+  settings: Pick<ICupSeasonSettings, 'pursuit'>
+): T | undefined =>
+  settings.pursuit?.enabled && races.length >= 2
+    ? [...races].sort((a, b) => a.raceDate.localeCompare(b.raceDate) || a.cupRaceId - b.cupRaceId)[races.length - 1]
+    : undefined;
+
+/** A time behind as +minutes:seconds, e.g. +0:24 or +88:21 */
+export const formatCupBehind = (seconds: number | null | undefined): string => {
+  if (seconds == null) return '';
+  const s = Math.max(0, Math.round(seconds));
+  return `+${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+};
+
+/** A clock time "19:00" or "19:00:30" plus seconds, as "19:01:12", null when the start time is not set */
+export const addCupClockTime = (clock: string | null | undefined, seconds: number): string | null => {
+  const start = parseCupTime(clock ?? '');
+  if (start == null || !(clock ?? '').includes(':')) return null;
+  const parts = (clock ?? '').trim().split(':');
+  const base = parts.length === 2 ? start * 60 : start;
+  const total = (base + Math.round(seconds)) % 86400;
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${pad(Math.floor(total / 3600))}:${pad(Math.floor((total % 3600) / 60))}:${pad(total % 60)}`;
+};
+
+/** A clock time "19:00" or "19:00:30" as seconds after midnight, null when not a clock time */
+const cupClockSeconds = (clock: string | null | undefined): number | null => {
+  const value = (clock ?? '').trim();
+  const parts = value.split(':');
+  if (parts.length < 2 || parts.length > 3 || parts.some(p => !/^\d{1,2}$/.test(p))) return null;
+  const [h, m, s] = parts.map(p => parseInt(p, 10));
+  if (h > 23 || m > 59 || (s ?? 0) > 59) return null;
+  return h * 3600 + m * 60 + (s ?? 0);
+};
+
+/**
+ * The mass start of a class (or category) in the pursuit, as seconds after the start of the leader.
+ * Given as a clock time ("19:45", needs the start time of the leader) or after the leader ("+30:00").
+ * Null when there is no mass start.
+ */
+export const getCupPursuitMassStartOffset = (
+  pursuit: Pick<ICupSeasonSettings['pursuit'], 'startTimes' | 'massStartTimes'>,
+  groupTitle: string
+): number | null => {
+  const key = cupClassKey(groupTitle);
+  const value = (pursuit.massStartTimes?.[key] ?? '').trim();
+  if (!value) return null;
+  if (value.startsWith('+')) return parseCupTime(value.substring(1));
+  const mass = cupClockSeconds(value);
+  const start = cupClockSeconds(pursuit.startTimes?.[key]);
+  if (mass == null || start == null) return null;
+  // Over midnight
+  return (mass - start + 86400) % 86400;
+};
+
+/**
+ * The pursuit: the finish order of the last race is the final placing of the group. The handicap is
+ * the points behind the leader (before the pursuit) times the seconds per point. Those who did not
+ * start or finish come after the finishers, in the order of their points. Before the pursuit is run,
+ * only the handicaps are set (for the start list) and the order is kept.
+ */
+const applyCupPursuit = (
+  groups: ICupStandingGroup[],
+  pursuitResults: ICupScoredResult[],
+  category: ICupCategory,
+  personOf: (r: ICupScoredResult) => string,
+  pursuit: ICupSeasonSettings['pursuit'],
+  pursuitRaceId: number
+) => {
+  const finishTime = new Map<string, number | null>();
+  pursuitResults.forEach(r => {
+    const groupKey = category.groupByClass ? cupClassKey(r.className) : category.id;
+    let group = groups.find(g => g.key === groupKey);
+    if (!group) {
+      group = { key: groupKey, title: category.groupByClass ? r.className.trim() : category.name, rows: [] };
+      groups.push(group);
+    }
+    const key = personOf(r);
+    let row = group.rows.find(x => x.key === key);
+    if (!row) {
+      // In the pursuit without any points before, starts last
+      row = {
+        key,
+        rank: 0,
+        personName: r.personName,
+        clubName: r.clubName,
+        isClubMember: r.isClubMember,
+        classNames: [r.className],
+        races: {},
+        nofFinished: 0,
+        bonusPoints: 0,
+        totalPoints: 0
+      };
+      group.rows.push(row);
+    }
+    const finished = r.status === 'OK' && r.timeSeconds != null && r.timeSeconds > 0;
+    const existing = row.races[pursuitRaceId];
+    if (!existing || (finished && existing.status !== 'OK')) {
+      row.races[pursuitRaceId] = {
+        cupRaceId: pursuitRaceId,
+        points: 0,
+        counted: false,
+        status: r.status,
+        position: null,
+        className: r.className
+      };
+      finishTime.set(`${group.key}|${key}`, finished ? r.timeSeconds : null);
+    }
+  });
+
+  groups.forEach(group => {
+    const leaderPoints = Math.max(0, ...group.rows.map(r => r.totalPoints));
+    const massStartOffset = getCupPursuitMassStartOffset(pursuit, group.title);
+    group.rows.forEach(row => {
+      const handicap = Math.round((leaderPoints - row.totalPoints) * Math.max(0, pursuit.secondsPerPoint));
+      // Those too far behind start together in the mass start
+      const massStart = massStartOffset != null && handicap >= massStartOffset;
+      const startOffsetSeconds = massStart ? massStartOffset : handicap;
+      const time = finishTime.get(`${group.key}|${row.key}`) ?? null;
+      row.pursuit = {
+        startOffsetSeconds,
+        massStart,
+        finishOffsetSeconds:
+          time == null ? null : pursuit.resultTimeType === 'FROM_FIRST_START' ? time : startOffsetSeconds + time,
+        behindSeconds: null,
+        status: row.races[pursuitRaceId]?.status ?? null
+      };
+    });
+
+    const finishers = group.rows.filter(r => r.pursuit!.finishOffsetSeconds != null);
+    // Not run yet: the standings as before, with the handicaps for the start list
+    if (finishers.length === 0) return;
+
+    const priorRank = new Map(group.rows.map(r => [r.key, r.rank || Number.MAX_SAFE_INTEGER]));
+    finishers.sort((a, b) => a.pursuit!.finishOffsetSeconds! - b.pursuit!.finishOffsetSeconds!);
+    const winner = finishers[0].pursuit!.finishOffsetSeconds!;
+    finishers.forEach((row, index) => {
+      const previous = finishers[index - 1];
+      row.pursuit!.behindSeconds = row.pursuit!.finishOffsetSeconds! - winner;
+      row.rank =
+        previous && previous.pursuit!.finishOffsetSeconds === row.pursuit!.finishOffsetSeconds
+          ? previous.rank
+          : index + 1;
+      row.races[pursuitRaceId].position = row.rank;
+    });
+
+    const others = group.rows
+      .filter(r => r.pursuit!.finishOffsetSeconds == null)
+      .sort((a, b) => priorRank.get(a.key)! - priorRank.get(b.key)! || b.totalPoints - a.totalPoints);
+    others.forEach((row, index) => {
+      const previous = others[index - 1];
+      row.rank =
+        previous && priorRank.get(previous.key) === priorRank.get(row.key) && previous.totalPoints === row.totalPoints
+          ? previous.rank
+          : finishers.length + index + 1;
+    });
+    group.rows = [...finishers, ...others];
+  });
+};
+
 /** Calculates the standings for every category in a season */
 export const calculateCupStandings = (
   races: Pick<ICupRaceProps, 'cupRaceId' | 'raceDate'>[],
@@ -347,6 +576,9 @@ export const calculateCupStandings = (
     settings
   ).filter(r => r.points != null);
   const personOf = createCupPersonResolver(scored);
+  // A pursuit as the last race does not give points, its finish order is the final placing
+  const pursuitRace = getCupPursuitRace(races, settings);
+  const counted = pursuitRace ? scored.filter(r => r.cupRaceId !== pursuitRace.cupRaceId) : scored;
   const year =
     seasonYear ??
     (races.length ? Math.min(...races.map(r => parseInt(r.raceDate.substring(0, 4), 10))) : new Date().getFullYear());
@@ -357,11 +589,10 @@ export const calculateCupStandings = (
   });
 
   return settings.categories.map(category => {
-    const inCategory = scored.filter(
-      r =>
-        classMatchesCategory(r.className, category) &&
-        cupAgeMatchesCategory(r.birthYear ?? birthYearOf.get(personOf(r)), year, category)
-    );
+    const inThisCategory = (r: ICupScoredResult) =>
+      classMatchesCategory(r.className, category) &&
+      cupAgeMatchesCategory(r.birthYear ?? birthYearOf.get(personOf(r)), year, category);
+    const inCategory = counted.filter(inThisCategory);
     const groupsMap = new Map<string, { title: string; spellings: string[]; rows: Map<string, IRowBuilder> }>();
 
     inCategory.forEach(r => {
@@ -471,6 +702,16 @@ export const calculateCupStandings = (
     });
 
     const compare = compareCupClasses(settings.classOrder);
+    if (pursuitRace) {
+      applyCupPursuit(
+        groups,
+        scored.filter(r => r.cupRaceId === pursuitRace.cupRaceId && inThisCategory(r)),
+        category,
+        personOf,
+        settings.pursuit,
+        pursuitRace.cupRaceId
+      );
+    }
     groups.sort((a, b) => compare(a.title, b.title));
     return { category, groups };
   });

@@ -26,7 +26,7 @@ const Introduction = styled.p`
   font-weight: 600;
   line-height: 1.45;
   white-space: pre-line;
-  border-left: 6px solid var(--cup-accent);
+  border-left: 6px solid var(--cup-highlight);
   padding-left: 14px;
   margin: 0 0 18px 0;
 `;

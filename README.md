@@ -31,6 +31,7 @@ Administrate club cups, e.g. a night cup or a youth cup, where every cup gets it
 - **Counting** - max number of races counted in the season, and extra points for every additional finished race.
 - **Results** - in first hand from the results the club already has imported. A race in the result import can be linked to one or more cup races, and the results are then saved to the cups automatically. Results can also be fetched from Eventor (all participants), or added and changed manually.
 - **Standings** - a podium for the top three, a column per race with the counted points, and the same person is recognized over the whole season (also when entered on site without an Eventor id).
+- **Pursuit** - the last race can be a pursuit: the leader starts first and the others after with a number of seconds per point behind (default 4), with a start time and a mass start (for those too far behind) per class. The result list can have individual times or times from the first start. The finish order is the final placing, shown as +time, and the start list can be exported to CSV.
 - **Reports with images** - for every race and for the whole season.
 - **Eventor links** - entry for the next races, and the results for the finished races.
 - **Menu and toolbar** - every cup in the menu, and optionally as a button in the toolbar. The night themes give a black toolbar with the club logo in grayscale.

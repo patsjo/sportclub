@@ -37,14 +37,14 @@ const Cover = styled(Link)`
     color: var(--cup-hero-text);
     background: var(--cup-sky1);
     border: 3px solid var(--cup-ink);
-    box-shadow: 9px 9px 0 var(--cup-accent);
+    box-shadow: 9px 9px 0 var(--cup-highlight);
     transition:
       transform 0.12s,
       box-shadow 0.12s;
   }
   &&&:hover {
     transform: translate(-3px, -3px);
-    box-shadow: 13px 13px 0 var(--cup-accent);
+    box-shadow: 13px 13px 0 var(--cup-highlight);
   }
   .cup-cover-art {
     position: absolute;
@@ -73,7 +73,7 @@ const Cover = styled(Link)`
     paint-order: stroke fill;
     text-shadow:
       4px 4px 0 var(--cup-ink),
-      7px 7px 0 var(--cup-accent);
+      7px 7px 0 var(--cup-highlight);
     overflow-wrap: normal;
     word-break: keep-all;
   }
