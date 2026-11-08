@@ -47,7 +47,6 @@ import { FormSelect } from '../formItems/FormSelect';
 import { SpinnerDiv, StyledTable } from '../styled/styled';
 import { ConfirmPdfFit } from '../tableSettings/PdfFitModal';
 import TablePrintSettingButtons from '../tableSettings/TablePrintSettingButtons';
-import DeleteSavedRaceButton from './DeleteSavedRaceButton';
 
 let abortLoading = false;
 
@@ -872,15 +871,6 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
     [t, clubModel, sessionModel, isIndividual, year, events, getPrintObject, confirmFit, onPdfProgress]
   );
 
-  const onRaceDeleted = useCallback(
-    (eventId: number) => {
-      setEvents(oldEvents => oldEvents.filter(e => e.eventId !== eventId));
-      setResult(undefined);
-      form.setFieldValue('Club', undefined);
-    },
-    [form]
-  );
-
   const Spinner = (
     <SpinnerDiv>
       <Spin size="large" />
@@ -1050,18 +1040,6 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
             </td>
             <td>{clubModel.raceClubs?.sportOptions.find(opt => opt.code === clubResult.sportCode)?.description}</td>
           </tr>
-          {clubResult.eventId > 0 ? (
-            <tr>
-              <td colSpan={4}>
-                <DeleteSavedRaceButton
-                  size="small"
-                  eventId={clubResult.eventId}
-                  name={`${clubResult.raceDate}, ${clubResult.name}`}
-                  onDeleted={onRaceDeleted}
-                />
-              </td>
-            </tr>
-          ) : null}
         </StyledTable2>
       ) : null}
       {!loading && result && result.results?.length ? (
