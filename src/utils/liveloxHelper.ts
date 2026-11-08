@@ -302,13 +302,15 @@ export const ApplyLiveloxLengths = (
   isRelay: boolean,
   results: ILengthResult[],
   teamResults: ILengthTeamResult[],
-  winnerResults: ILengthWinnerResult[]
+  winnerResults: ILengthWinnerResult[],
+  /** Only the results without a length get one, a relay leg otherwise gets the length of Livelox */
+  onlyMissing = false
 ): number => {
   let updated = 0;
   if (isRelay) {
     teamResults.forEach(teamResult => {
       const length = GetLiveloxLeg(liveloxClasses.get(teamResult.className), teamResult.stage, 'leg')?.lengthInMeter;
-      if (length && teamResult.lengthInMeter !== length) {
+      if (length && teamResult.lengthInMeter !== length && !(onlyMissing && teamResult.lengthInMeter)) {
         teamResult.setValues({ lengthInMeter: length });
         updated++;
       }

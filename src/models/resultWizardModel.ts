@@ -33,6 +33,7 @@ export const getLocalStorage = (): IRaceWizardProps => {
         existInEventor: true,
         eventExistInEventor: false,
         overwrite: false,
+        autoComplete: false,
         queryForEventWithNoEntry: false,
         queryForCompetitorWithNoClub: false,
         selectedIsRelay: false,
@@ -57,6 +58,7 @@ export const getLocalStorage = (): IRaceWizardProps => {
       existInEventor: true,
       eventExistInEventor: false,
       overwrite: false,
+      autoComplete: false,
       queryForEventWithNoEntry: false,
       queryForCompetitorWithNoClub: false,
       selectedIsRelay: false,
@@ -144,6 +146,8 @@ export interface IRaceWizardProps {
   existInEventor: boolean;
   eventExistInEventor: boolean;
   overwrite: boolean;
+  /** The saved race is kept, the values it misses are taken from the result list and the missing times calculated again */
+  autoComplete: boolean;
   queryForEventWithNoEntry: boolean;
   queryForCompetitorWithNoClub: boolean;
   paymentModel: PaymentModelTypes;
@@ -170,6 +174,7 @@ export interface IRaceWizard extends Omit<IRaceWizardProps, 'raceEvent' | 'raceW
       | 'existInEventor'
       | 'eventExistInEventor'
       | 'overwrite'
+      | 'autoComplete'
       | 'queryForEventWithNoEntry'
       | 'queryForCompetitorWithNoClub'
       | 'selectedIsRelay',
@@ -184,6 +189,7 @@ export interface IRaceWizard extends Omit<IRaceWizardProps, 'raceEvent' | 'raceW
   setRaceWinnerResults: (values: IWinnerResultProps[]) => void;
   addRaceWinnerResult: (value: Omit<IWinnerResultProps, 'secondsPerKilometer' | 'timePerKilometer'>) => void;
   addImportedRace: (event: IRaceEventProps, prevEventId: number | undefined) => void;
+  removeImportedRace: (eventId: number) => void;
   setCupRaceIds: (cupRaceIds: number[] | undefined) => void;
   setCupRacesForEvent: (cupRaces: ICupRaceForEventProps[] | undefined) => void;
   raceWinnerResultOptions: IOption[];
@@ -196,6 +202,7 @@ export class RaceWizard implements IRaceWizard {
   existInEventor = false;
   eventExistInEventor = false;
   overwrite = false;
+  autoComplete = false;
   queryForEventWithNoEntry = false;
   queryForCompetitorWithNoClub = false;
   paymentModel: PaymentModelTypes = 0;
@@ -218,6 +225,7 @@ export class RaceWizard implements IRaceWizard {
       existInEventor: observable,
       eventExistInEventor: observable,
       overwrite: observable,
+      autoComplete: observable,
       queryForEventWithNoEntry: observable,
       queryForCompetitorWithNoClub: observable,
       selectedEventId: observable,
@@ -239,6 +247,7 @@ export class RaceWizard implements IRaceWizard {
       setRaceWinnerResults: actionBound,
       addRaceWinnerResult: actionBound,
       addImportedRace: actionBound,
+      removeImportedRace: actionBound,
       raceWinnerResultOptions: computed
     });
   }
@@ -254,6 +263,7 @@ export class RaceWizard implements IRaceWizard {
       | 'existInEventor'
       | 'eventExistInEventor'
       | 'overwrite'
+      | 'autoComplete'
       | 'queryForEventWithNoEntry'
       | 'queryForCompetitorWithNoClub'
       | 'selectedIsRelay',
@@ -296,6 +306,11 @@ export class RaceWizard implements IRaceWizard {
       ...this.importedIds,
       { eventId: event.eventId, eventorRaceId: event.eventorRaceId ?? undefined, prevEventId }
     ];
+  }
+
+  /** A saved race that is deleted, is no longer imported */
+  removeImportedRace(eventId: number) {
+    this.importedIds = this.importedIds.filter(imp => imp.eventId !== eventId && imp.prevEventId !== eventId);
   }
 
   setCupRaceIds(cupRaceIds: number[] | undefined) {

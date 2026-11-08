@@ -346,11 +346,12 @@ function getCupDbRaceResults($cupRaceId, $eventId, $eventorId, $eventorRaceId, $
     {
       $status = 'DNF';
     }
-    else // FULLFÖ, GODK: Finished but without time or position
+    else // FULLFÖ, GODK: Finished, normally without time or position
     {
       $status = 'OK';
     }
-    $hasTime = $status == 'OK' && (is_null($failed) || $failed == '');
+    // Older imports could mark a runner with a time as FULLFÖ, the time still counts then
+    $hasTime = $status == 'OK' && !is_null($row['TIME_SECONDS']) && intval($row['TIME_SECONDS']) > 0;
 
     $x = new stdClass();
     $x->cupResultId       = -intval($row['RESULT_ID']);
@@ -919,6 +920,33 @@ function syncCupRacesForEvent($oldEventId, $newEventId, $cupRaceIds)
   {
     saveCupRaceResultsFromEvent($cupRaceId, $newEventId, $useTotalResult);
   }
+}
+
+//# Called by result/delete.php when a race is deleted. The    #
+//# linked cup races lose the link and the club members        #
+//# results that came from the race.                           #
+function unlinkCupRacesForEvent($eventId)
+{
+  if (!cupTablesExist())
+  {
+    return;
+  }
+
+  $linked = array();
+  $result = cupQuery(sprintf("SELECT CUP_RACE_ID FROM CUP_RACE WHERE EVENT_ID = %d", $eventId));
+  while ($row = \db\mysql_fetch_assoc($result))
+  {
+    array_push($linked, intval($row['CUP_RACE_ID']));
+  }
+  \db\mysql_free_result($result);
+
+  if (count($linked) == 0)
+  {
+    return;
+  }
+
+  cupQuery(sprintf("UPDATE CUP_RACE SET EVENT_ID = NULL WHERE EVENT_ID = %d", $eventId));
+  cupQuery(sprintf("DELETE FROM CUP_RACE_RESULTS WHERE CUP_RACE_ID IN (%s) AND SOURCE = 'DB'", cupIdList($linked)));
 }
 
 //# The cup races that a race of the club can be linked to:    #

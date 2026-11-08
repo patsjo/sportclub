@@ -1,4 +1,4 @@
-import { Form, message, Spin } from 'antd';
+import { Form, message, Modal, Spin } from 'antd';
 import dayjs from 'dayjs';
 import { observer } from 'mobx-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -8,7 +8,17 @@ import { IRaceClubsProps } from '../../models/resultModel';
 import { PostJsonData } from '../../utils/api';
 import { INumberOption, IOption } from '../../utils/formHelper';
 import { useMobxStore } from '../../utils/mobxStore';
-import { getPdf, getZip, IPrintInput, IPrintObject, IPrintTable, IPrintTableColumn } from '../../utils/pdf';
+import {
+  getPdf,
+  getZip,
+  IPdfFit,
+  IPrintInput,
+  IPrintObject,
+  IPrintTable,
+  IPrintTableColumn,
+  PdfIndentedText,
+  PdfProgress
+} from '../../utils/pdf';
 import {
   IClubViewResultResponse,
   IEventViewResultResponse,
@@ -25,10 +35,19 @@ import {
   raceLightConditionOptions
 } from '../../utils/resultConstants';
 import { FormatTime } from '../../utils/resultHelper';
+import {
+  IsTotalRow,
+  TotalRowClassName,
+  TotalRowKey,
+  WithTotalColumns,
+  WithTotalRows
+} from '../../utils/resultTotalRows';
 import FormItem from '../formItems/FormItem';
 import { FormSelect } from '../formItems/FormSelect';
 import { SpinnerDiv, StyledTable } from '../styled/styled';
+import { ConfirmPdfFit } from '../tableSettings/PdfFitModal';
 import TablePrintSettingButtons from '../tableSettings/TablePrintSettingButtons';
+import DeleteSavedRaceButton from './DeleteSavedRaceButton';
 
 let abortLoading = false;
 
@@ -65,12 +84,26 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
   const [year, setYear] = useState(new Date().getFullYear());
   const [competitorId, setCompetitorId] = useState<number>(0);
   const [loading, setLoading] = useState(true);
+  const [form] = Form.useForm();
   const formId = useMemo(() => 'viewResultsForm' + Math.floor(Math.random() * 10000000000000000), []);
   const [columnsSetting, setColumnsSetting] = useState<IPrintSettingsColumn[]>([]);
   const [processed, setProcessed] = useState(0);
   const [total, setTotal] = useState(0);
   const [spinnerTitle, setSpinnerTitle] = useState<string | null>(null);
   const [spinnerText, setSpinnerText] = useState<string | null>(null);
+  const [modal, contextHolder] = Modal.useModal();
+  /** Asked when a table is too wide for the page */
+  const confirmFit = useCallback((fit: IPdfFit) => ConfirmPdfFit(t, modal, fit), [t, modal]);
+  /** How far the PDF has come, shown in the dialog of the progress */
+  const onPdfProgress = useCallback<PdfProgress>(
+    (phase, done, total, text) => {
+      setSpinnerTitle(t(phase === 'measure' ? 'common.PdfMeasuring' : 'common.PdfCreating'));
+      if (text !== undefined) setSpinnerText(text);
+      setTotal(total);
+      setProcessed(done);
+    },
+    [t]
+  );
   const columns = useMemo<IPrintTableColumn<IViewResult | IViewTeamResult>[]>(() => {
     const cols: IPrintTableColumn<IViewResult | IViewTeamResult>[] = [];
     if (isIndividual) {
@@ -154,9 +187,10 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
       dataIndex: 'competitorTime',
       key: 'competitorTime',
       render: (value: string, record) =>
-        record.failedReason != null
+        // A time beats "Fullföljt", only show the status when there is no time to show
+        record.failedReason != null && !(record.failedReason === failedReasons.Finished && value != null)
           ? record.failedReason.charAt(0).toUpperCase() + record.failedReason.substr(1).toLowerCase()
-          : record.failedReason == null && value == null
+          : value == null
             ? null
             : FormatTime(value)
     });
@@ -552,18 +586,26 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
 
       if (Array.isArray(printResult?.results) && printResult.results.length > 0) {
         tables.push({
-          columns: [...columns, ...(resultsColumns as IPrintTableColumn<IViewResult | IViewTeamResult>[])].filter(col =>
-            settings.pdf.columns.some(s => col.key === s.key && s.selected)
+          columns: WithTotalColumns(
+            [...columns, ...(resultsColumns as IPrintTableColumn<IViewResult | IViewTeamResult>[])].filter(col =>
+              settings.pdf.columns.some(s => col.key === s.key && s.selected)
+            ),
+            PdfIndentedText(t('results.Total'))
           ),
-          dataSource: printResult.results as (IViewResult | IViewTeamResult)[]
+          dataSource: WithTotalRows(printResult.results as IViewResult[]),
+          isSubRow: IsTotalRow
         });
       }
       if (Array.isArray(printResult?.teamResults) && printResult.teamResults.length > 0) {
         tables.push({
-          columns: [...columns, ...(teamResultsColumns as IPrintTableColumn<IViewResult | IViewTeamResult>[])].filter(
-            col => settings.pdf.columns.some(s => col.key === s.key && s.selected)
+          columns: WithTotalColumns(
+            [...columns, ...(teamResultsColumns as IPrintTableColumn<IViewResult | IViewTeamResult>[])].filter(col =>
+              settings.pdf.columns.some(s => col.key === s.key && s.selected)
+            ),
+            PdfIndentedText(t('results.Total'))
           ),
-          dataSource: printResult.teamResults as (IViewResult | IViewTeamResult)[]
+          dataSource: WithTotalRows(printResult.teamResults as IViewTeamResult[]),
+          isSubRow: IsTotalRow
         });
       }
 
@@ -714,7 +756,15 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
 
       try {
         const printObject = getPrintObject(settings, result, competitorId);
-        await getPdf(clubModel.corsProxy, clubModel.logo.url, printObject.header, [printObject], settings.pdf);
+        await getPdf(
+          clubModel.corsProxy,
+          clubModel.logo.url,
+          printObject.header,
+          [printObject],
+          settings.pdf,
+          confirmFit,
+          onPdfProgress
+        );
       } catch (e: unknown) {
         if (e && (e as { message: string }).message) message.error((e as { message: string }).message);
       }
@@ -722,7 +772,7 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
       setSpinnerTitle(null);
       setSpinnerText(null);
     },
-    [result, clubModel.corsProxy, clubModel.logo.url, t, getPrintObject, competitorId]
+    [result, clubModel.corsProxy, clubModel.logo.url, t, getPrintObject, competitorId, confirmFit, onPdfProgress]
   );
 
   const onPrintAll = useCallback(
@@ -797,7 +847,9 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
             clubModel.logo.url,
             `${t(isIndividual ? 'results.Individual' : 'results.Latest')} ${year}`,
             printObjects,
-            settings.pdf
+            settings.pdf,
+            confirmFit,
+            onPdfProgress
           );
         } else {
           await getZip(
@@ -805,7 +857,9 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
             clubModel.logo.url,
             `${t(isIndividual ? 'results.Individual' : 'results.Latest')} ${year}`,
             printObjects,
-            settings.pdf
+            settings.pdf,
+            confirmFit,
+            onPdfProgress
           );
         }
       } catch (e) {
@@ -815,7 +869,16 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
       setSpinnerTitle(null);
       setSpinnerText(null);
     },
-    [t, clubModel, sessionModel, isIndividual, year, events, getPrintObject]
+    [t, clubModel, sessionModel, isIndividual, year, events, getPrintObject, confirmFit, onPdfProgress]
+  );
+
+  const onRaceDeleted = useCallback(
+    (eventId: number) => {
+      setEvents(oldEvents => oldEvents.filter(e => e.eventId !== eventId));
+      setResult(undefined);
+      form.setFieldValue('Club', undefined);
+    },
+    [form]
   );
 
   const Spinner = (
@@ -837,6 +900,7 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
 
   return (
     <Form
+      form={form}
       id={formId}
       layout="vertical"
       initialValues={{
@@ -986,14 +1050,31 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
             </td>
             <td>{clubModel.raceClubs?.sportOptions.find(opt => opt.code === clubResult.sportCode)?.description}</td>
           </tr>
+          {clubResult.eventId > 0 ? (
+            <tr>
+              <td colSpan={4}>
+                <DeleteSavedRaceButton
+                  size="small"
+                  eventId={clubResult.eventId}
+                  name={`${clubResult.raceDate}, ${clubResult.name}`}
+                  onDeleted={onRaceDeleted}
+                />
+              </td>
+            </tr>
+          ) : null}
         </StyledTable2>
       ) : null}
       {!loading && result && result.results?.length ? (
         <StyledTable
-          columns={[...(columns as IPrintTableColumn<IViewResult>[]), ...resultsColumns].filter(col =>
-            columnsSetting.some(s => col.key === s.key && s.selected)
+          columns={WithTotalColumns(
+            [...(columns as IPrintTableColumn<IViewResult>[]), ...resultsColumns].filter(col =>
+              columnsSetting.some(s => col.key === s.key && s.selected)
+            ),
+            <span className="table-cell-indent">{t('results.Total')}</span>
           )}
-          dataSource={result.results}
+          dataSource={WithTotalRows(result.results as IViewResult[])}
+          rowKey={TotalRowKey}
+          rowClassName={TotalRowClassName}
           size="middle"
           pagination={false}
           scroll={{ x: true }}
@@ -1003,15 +1084,21 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
       ) : null}
       {!loading && result && result.teamResults?.length ? (
         <StyledTable
-          columns={[...(columns as IPrintTableColumn<IViewTeamResult>[]), ...teamResultsColumns].filter(col =>
-            columnsSetting.some(s => col.key === s.key && s.selected)
+          columns={WithTotalColumns(
+            [...(columns as IPrintTableColumn<IViewTeamResult>[]), ...teamResultsColumns].filter(col =>
+              columnsSetting.some(s => col.key === s.key && s.selected)
+            ),
+            <span className="table-cell-indent">{t('results.Total')}</span>
           )}
-          dataSource={result.teamResults}
+          dataSource={WithTotalRows(result.teamResults as IViewTeamResult[])}
+          rowKey={TotalRowKey}
+          rowClassName={TotalRowClassName}
           size="middle"
           pagination={false}
           scroll={{ x: true }}
         />
       ) : null}
+      {contextHolder}
     </Form>
   );
 });

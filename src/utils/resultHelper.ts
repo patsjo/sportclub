@@ -170,39 +170,54 @@ interface IFees {
   originalFee: number;
   lateFee: number;
 }
+const toDateString = (date: string | null | undefined): string | undefined => {
+  if (!date) return undefined;
+  const parsed = dayjs(date);
+  return parsed.isValid() ? parsed.format('YYYY-MM-DD') : undefined;
+};
+
+/**
+ * Whether an entry fee applies to a competitor born on the given date (YYYY-MM-DD), based on the optional
+ * FromDateOfBirth/ToDateOfBirth limits (both inclusive), e.g. adult and youth fees in an open class.
+ * With an unknown birthday the oldest age bracket is assumed, i.e. fees with a lower birth date limit are skipped.
+ */
+const IsFeeValidForBirthday = (fee: IEventorEntryFee, birthday: string | undefined): boolean => {
+  const fromDate = toDateString(fee.FromDateOfBirth?.Date);
+  const toDate = toDateString(fee.ToDateOfBirth?.Date);
+  if (!birthday) return !fromDate;
+  return (!fromDate || birthday >= fromDate) && (!toDate || birthday <= toDate);
+};
+
+const GetValidToDateTime = (fee: IEventorEntryFee): string | undefined =>
+  fee.ValidToDate?.Date ? `${fee.ValidToDate.Date} ${fee.ValidToDate.Clock ?? '23:59:59'}` : undefined;
+
 export const GetFees = (entryFees: IEventorEntryFee[], entryFeeIds: string[], competitorBirthday: string): IFees => {
   const fees: IFees = { originalFee: 0, lateFee: 0 };
   if (entryFeeIds == null) {
     return fees;
   }
+  const birthday = toDateString(competitorBirthday);
   const competitorEntryFees = entryFees.filter(
-    fee =>
-      entryFeeIds.includes(fee.EntryFeeId) &&
-      (!fee.FromDateOfBirth || dayjs(competitorBirthday, 'YYYY-MM-DD').isSameOrAfter(fee.FromDateOfBirth.Date)) &&
-      (!fee.ToDateOfBirth || dayjs(competitorBirthday, 'YYYY-MM-DD').isSameOrBefore(fee.ToDateOfBirth.Date))
+    fee => entryFeeIds.includes(fee.EntryFeeId) && IsFeeValidForBirthday(fee, birthday)
   );
   if (competitorEntryFees == null || competitorEntryFees.length === 0) {
     return fees;
   }
+  const isFixed = (fee: IEventorEntryFee) => (fee['@attributes']?.valueOperator ?? 'fixed') === 'fixed';
   const firstValidToDate = competitorEntryFees
-    .map(fee => (fee.ValidToDate ? `${fee.ValidToDate.Date} ${fee.ValidToDate.Clock}` : ''))
-    .filter(dateTime => dateTime !== '')
+    .map(GetValidToDateTime)
+    .filter((dateTime): dateTime is string => dateTime != null)
     .sort()
     .find(() => true);
+  const fixedFees = competitorEntryFees.filter(isFixed);
   const originalFees =
-    competitorEntryFees.length <= 1
-      ? competitorEntryFees
-      : competitorEntryFees.filter(
-          fee =>
-            (!fee.ValidFromDate || (fee.ValidToDate && fee.ValidToDate.Date === firstValidToDate)) &&
-            (fee['@attributes'].valueOperator ?? 'fixed') === 'fixed'
-        );
+    fixedFees.length <= 1
+      ? fixedFees
+      : fixedFees.filter(fee => !fee.ValidFromDate || GetValidToDateTime(fee) === firstValidToDate);
   const lateFees = competitorEntryFees.filter(
-    fee =>
-      !originalFees.map(oFee => oFee.EntryFeeId).includes(fee.EntryFeeId) &&
-      (fee['@attributes'].valueOperator ?? 'fixed') === 'fixed'
+    fee => !originalFees.map(oFee => oFee.EntryFeeId).includes(fee.EntryFeeId) && isFixed(fee)
   );
-  const extraPercentage = competitorEntryFees.find(fee => fee['@attributes'].valueOperator === 'percent');
+  const extraPercentage = competitorEntryFees.find(fee => fee['@attributes']?.valueOperator === 'percent');
 
   fees.originalFee = originalFees.map(fee => parseInt(fee.Amount)).reduce((a, b) => a + b, 0);
   fees.lateFee = lateFees.map(fee => parseInt(fee.Amount)).reduce((a, b) => a + b, 0);
@@ -260,6 +275,17 @@ export const GetSecondsWithFractionsPerKiloMeter = (timeString: string, length: 
   return secondsPerKilometer;
 };
 
+/**
+ * Finished, but without position or winner time. Either marked as finished/approved (e.g. beginner
+ * classes without times), or with a time but not ranked.
+ */
+const IsFinishedWithoutRanking = (
+  result: Pick<IRaceResultProps | IRaceTeamResultProps, 'failedReason' | 'competitorTime'>
+): boolean =>
+  result.failedReason === failedReasons.Approved ||
+  result.failedReason === failedReasons.Finished ||
+  (!result.failedReason && !!result.competitorTime);
+
 export const GetRacePoint = (
   raceEventClassification: IRaceEventClassificationProps,
   raceClassClassification: IRaceClassClassificationProps,
@@ -277,7 +303,7 @@ export const GetRacePoint = (
     !result.competitorTime ||
     !result.winnerTime
   ) {
-    if (result.failedReason === failedReasons.Approved || result.failedReason === failedReasons.Finished) {
+    if (IsFinishedWithoutRanking(result)) {
       Math.round(basePoint / 3);
     } else {
       return null;
@@ -308,7 +334,7 @@ export const GetRaceOldPoint = (
     !result.competitorTime ||
     !result.winnerTime
   ) {
-    if (result.failedReason === failedReasons.Approved || result.failedReason === failedReasons.Finished) {
+    if (IsFinishedWithoutRanking(result)) {
       return 30;
     } else {
       return null;
@@ -348,7 +374,7 @@ export const GetPointRunTo1000 = (
     !result.competitorTime ||
     !result.winnerTime
   ) {
-    if (result.failedReason === failedReasons.Approved || result.failedReason === failedReasons.Finished) {
+    if (IsFinishedWithoutRanking(result)) {
       return 30;
     } else {
       return null;

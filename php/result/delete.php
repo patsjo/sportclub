@@ -9,11 +9,13 @@
 //# Date        By      Description                          #
 //# ----------  ------  ------------------------------------ #
 //# 2014-01-14  PatSjo  Initial version                      #
+//# 2026-11-08  PatSjo  Delete a saved race (EVENT)          #
 //############################################################
 
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/db.php");
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/users.php");
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/functions.php");
+include_once($_SERVER["DOCUMENT_ROOT"] . "/include/cup.php");
 
 cors();
 ValidLogin();
@@ -33,7 +35,7 @@ if(!isset($input->iType))
 
 if (!(ValidGroup($cADMIN_GROUP_ID)))
 {
-  trigger_error('User needs to be a administrator, to delete a competitor/family.');
+  trigger_error('User needs to be a administrator, to delete a competitor/family/race.');
 }
 
 OpenDatabase();
@@ -77,6 +79,36 @@ elseif ($input->iType == "FAMILY")
   {
     trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
   }
+}
+elseif ($input->iType == "EVENT")
+{
+  if(!isset($input->eventId) || intval($input->eventId) <= 0)
+  {
+    trigger_error('Missing parameter eventId', E_USER_ERROR);
+  }
+
+  $eventId = intval($input->eventId);
+
+  // The cup races linked to the race lose the link and the results from it
+  unlinkCupRacesForEvent($eventId);
+
+  $queries = array(
+    "DELETE FROM RACE_EVENT_RESULTS_MULTI_DAY WHERE RESULT_ID IN (SELECT RESULT_ID FROM RACE_EVENT_RESULTS WHERE EVENT_ID = " . $eventId . ")",
+    "DELETE FROM RACE_EVENT_RESULTS WHERE EVENT_ID = " . $eventId,
+    "DELETE FROM RACE_EVENT_RESULTS_TEAM WHERE EVENT_ID = " . $eventId,
+    "DELETE FROM RACE_EVENT WHERE EVENT_ID = " . $eventId
+  );
+
+  foreach ($queries as $sql)
+  {
+    if (!\db\mysql_query($sql))
+    {
+      trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
+    }
+  }
+
+  header("Content-Type: application/json");
+  echo json_encode((object) array('deleted' => true, 'eventId' => $eventId));
 }
 else
 {

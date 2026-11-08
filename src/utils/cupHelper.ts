@@ -863,7 +863,6 @@ export const iofResultListToCupResults = (
       const overall = useTotalResult ? raceResult.OverallResult : undefined;
       const status = iofStatusToCupStatus(overall?.Status ?? raceResult.Status);
       if (!status) return;
-      const iofOk = (overall?.Status ?? raceResult.Status) === 'OK';
       const time = overall ? overall.Time : raceResult.Time;
       const timeBehind = overall ? overall.TimeBehind : raceResult.TimeBehind;
       const position = overall ? overall.Position : raceResult.Position;
@@ -893,9 +892,9 @@ export const iofResultListToCupResults = (
         isClubMember: clubOrganisationId != null && organisationId === clubOrganisationId,
         className,
         status,
-        position: status === 'OK' && iofOk && position != null ? Math.round(position) : null,
-        timeSeconds: status === 'OK' && iofOk && time != null ? Math.round(time) : null,
-        timeBehindSeconds: status === 'OK' && iofOk && timeBehind != null ? Math.round(timeBehind) : null,
+        position: status === 'OK' && position != null ? Math.round(position) : null,
+        timeSeconds: status === 'OK' && time != null ? Math.round(time) : null,
+        timeBehindSeconds: status === 'OK' && timeBehind != null ? Math.round(timeBehind) : null,
         nofStartsInClass: null,
         source: 'EVENTOR'
       });

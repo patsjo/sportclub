@@ -97,6 +97,7 @@ import {
   raceDistanceOptions,
   raceLightConditionOptions
 } from '../../utils/resultConstants';
+import { AutoCompleteRaceEvent, IAutoCompleteSummary, MissingTotalLengths } from '../../utils/resultAutoComplete';
 import {
   CalculateAllAwards,
   CalculateAllClassClassificationId,
@@ -156,6 +157,9 @@ import EditResultRelay, { IExtendedRaceTeamResult } from './EditResultRelay';
 // The host closes a request after about 100 seconds. The proxy goes on with the work, and the next
 // attempt waits for it, so a large result list (e.g. O-Ringen) needs a few attempts.
 const STREAM_ATTEMPTS = 8;
+// Above this many starters the whole result list with split times is not fetched, the results of the club
+// and the top results (with split times) are fetched instead
+const MAX_STARTERS_FOR_IOF_SPLITS = 5000;
 
 interface IResultWizardStep2EditRaceProps {
   height: number;
@@ -184,6 +188,8 @@ const ResultWizardStep2EditRace = observer(
     // Shown in the step instead of a flash message, with the choice to go back or load again
     const [loadError, setLoadError] = useState<string>();
     const [loadWarnings, setLoadWarnings] = useState<ILoadWarning[]>([]);
+    // What the auto completion of the saved race filled in
+    const [autoCompleteInfo, setAutoCompleteInfo] = useState<string>();
     const [reloadCount, setReloadCount] = useState(0);
     // What the load is doing, and how far it has come
     const { tasks: loadTasks, startedAt: loadStartedAt, api: progress } = useLoadProgress();
@@ -281,14 +287,15 @@ const ResultWizardStep2EditRace = observer(
 
     /** The course lengths of Livelox in the results, returns the number of results that got a length */
     const applyLiveloxLengths = useCallback(
-      (classes: Map<string, ILiveloxClass>, relay: boolean) =>
+      (classes: Map<string, ILiveloxClass>, relay: boolean, onlyMissing = false) =>
         raceWizardModel.raceEvent
           ? ApplyLiveloxLengths(
               classes,
               relay,
               raceWizardModel.raceEvent.results,
               raceWizardModel.raceEvent.teamResults,
-              raceWizardModel.raceWinnerResults
+              raceWizardModel.raceWinnerResults,
+              onlyMissing
             )
           : 0,
       [raceWizardModel]
@@ -408,7 +415,9 @@ const ResultWizardStep2EditRace = observer(
           eventClasses = Array.isArray(classJson.EventClass) ? classJson.EventClass : [classJson.EventClass];
         }
 
-        let raceEvent: IRaceEventProps | undefined = !raceWizardModel.overwrite ? editResultJson : undefined;
+        // Auto completion reads the result list as an import does, the saved race is completed by it afterwards
+        const importing = raceWizardModel.overwrite || raceWizardModel.autoComplete;
+        let raceEvent: IRaceEventProps | undefined = !importing ? editResultJson : undefined;
         let eventRace: IEventorEventRace | undefined;
         if (resultJson != null) {
           if (Array.isArray(resultJson.Event.EventRace)) {
@@ -555,7 +564,7 @@ const ResultWizardStep2EditRace = observer(
                   });
                 }
 
-                if (raceWizardModel.overwrite) {
+                if (importing) {
                   const clubPersonResults = personResults.filter(
                     personResult =>
                       (raceWizardModel.queryForCompetitorWithNoClub && !personResult.Organisation?.OrganisationId) ||
@@ -593,7 +602,7 @@ const ResultWizardStep2EditRace = observer(
                         }
                       }
                     }
-                    if (!competitor && clubModel.raceClubs?.selectedClub) {
+                    if (!competitor && clubModel.raceClubs?.selectedClub && !raceWizardModel.autoComplete) {
                       competitor = await AddMapCompetitorConfirmModal(
                         t,
                         modal,
@@ -687,10 +696,8 @@ const ResultWizardStep2EditRace = observer(
                           const totalOk = totalPersonResult.Status === 'OK';
                           const totalValid = totalOk && !totalDidNotStart && !totalMisPunch;
 
-                          // Deliberately not stored for Eventor imports: the raceResult below keeps
-                          // resultMultiDay null. Kept in place because the IOF import path builds the
-                          // same value and does save it.
-                          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                          // Not stored when the race is fetched again (the result keeps resultMultiDay null),
+                          // only used to complete a saved race that misses its total
                           resultMultiDay = {
                             multiDayResultId: -1 - 10000 * i - j,
                             stage: totalEventRace?.RaceNumber ?? 1,
@@ -699,9 +706,7 @@ const ResultWizardStep2EditRace = observer(
                               ? failedReasons.NotStarted
                               : !totalOk
                                 ? failedReasons.NotFinished
-                                : !totalPersonResult.Time ||
-                                    (totalPersonResult.Position !== 1 && !totalPersonResult.TimeBehind) ||
-                                    shortClassName === 'INSK'
+                                : !totalPersonResult.Time
                                   ? failedReasons.Finished
                                   : null,
                             totalLengthInMeter: null,
@@ -723,7 +728,7 @@ const ResultWizardStep2EditRace = observer(
                       const raceResult: IRaceResultProps = {
                         resultId: -1 - 10000 * i - j,
                         competitorId: competitor.competitorId,
-                        resultMultiDay: null,
+                        resultMultiDay: raceWizardModel.autoComplete ? (resultMultiDay ?? null) : null,
                         className: shortClassName ?? '',
                         deviantEventClassificationId: null,
                         classClassificationId: GetClassClassificationId(
@@ -737,9 +742,7 @@ const ResultWizardStep2EditRace = observer(
                           ? failedReasons.NotStarted
                           : !ok
                             ? failedReasons.NotFinished
-                            : !personResult.Result?.Time ||
-                                (position !== 1 && !personResult.Result.TimeDiff) ||
-                                shortClassName === 'INSK'
+                            : !personResult.Result?.Time
                               ? failedReasons.Finished
                               : null,
                         competitorTime: valid && personResult.Result ? GetTimeWithHour(personResult.Result.Time) : null,
@@ -774,7 +777,7 @@ const ResultWizardStep2EditRace = observer(
                 }
               }
             }
-          } else if (eventIsRelay && raceWizardModel.overwrite) {
+          } else if (eventIsRelay && importing) {
             for (let i = 0; i < classResults.length; i++) {
               const classResult = classResults[i];
               await reportClassProgress(classResults, i, true);
@@ -910,7 +913,7 @@ const ResultWizardStep2EditRace = observer(
                       }
                     }
                   }
-                  if (!competitor && clubModel.raceClubs?.selectedClub) {
+                  if (!competitor && clubModel.raceClubs?.selectedClub && !raceWizardModel.autoComplete) {
                     competitor = await AddMapCompetitorConfirmModal(
                       t,
                       modal,
@@ -1079,6 +1082,8 @@ const ResultWizardStep2EditRace = observer(
         } else if (raceEvent != null) {
           raceWizardModel.setRaceEvent(raceEvent);
         }
+        // The race read from the result list, to complete the saved race by
+        return importing ? raceEvent : undefined;
       },
       [clubModel, raceWizardModel, sessionModel, t, modal, reportClassProgress]
     );
@@ -1133,7 +1138,9 @@ const ResultWizardStep2EditRace = observer(
           eventClasses = Array.isArray(classJson.EventClass) ? classJson.EventClass : [classJson.EventClass];
         }
 
-        let raceEvent: IRaceEventProps | undefined = !raceWizardModel.overwrite ? editResultJson : undefined;
+        // Auto completion reads the result list as an import does, the saved race is completed by it afterwards
+        const importing = raceWizardModel.overwrite || raceWizardModel.autoComplete;
+        let raceEvent: IRaceEventProps | undefined = !importing ? editResultJson : undefined;
         let eventRace: IRace | undefined;
         if (iofResults != null) {
           eventRace = externalSource
@@ -1269,7 +1276,7 @@ const ResultWizardStep2EditRace = observer(
                   });
                 }
 
-                if (raceWizardModel.overwrite) {
+                if (importing) {
                   const clubPersonResults = personResults.filter(
                     personResult =>
                       (raceWizardModel.queryForCompetitorWithNoClub && !personResult.Organisation?.Id) ||
@@ -1315,7 +1322,7 @@ const ResultWizardStep2EditRace = observer(
                         }
                       }
                     }
-                    if (!competitor && clubModel.raceClubs?.selectedClub) {
+                    if (!competitor && clubModel.raceClubs?.selectedClub && !raceWizardModel.autoComplete) {
                       competitor = await AddMapCompetitorConfirmModal(
                         t,
                         modal,
@@ -1415,9 +1422,7 @@ const ResultWizardStep2EditRace = observer(
                               ? failedReasons.NotStarted
                               : !totalOk
                                 ? failedReasons.NotFinished
-                                : !totalPersonResult?.Time ||
-                                    (totalPersonResult.Position !== 1 && !totalPersonResult.TimeBehind) ||
-                                    shortClassName === 'INSK'
+                                : !totalPersonResult?.Time
                                   ? failedReasons.Finished
                                   : null,
                             totalLengthInMeter: null,
@@ -1453,9 +1458,7 @@ const ResultWizardStep2EditRace = observer(
                           ? failedReasons.NotStarted
                           : !ok
                             ? failedReasons.NotFinished
-                            : !personResult.Result?.Time ||
-                                (personResult.Result.Position !== 1 && !personResult.Result.TimeBehind) ||
-                                shortClassName === 'INSK'
+                            : !personResult.Result?.Time
                               ? failedReasons.Finished
                               : null,
                         competitorTime:
@@ -1484,7 +1487,7 @@ const ResultWizardStep2EditRace = observer(
                 }
               }
             }
-          } else if (eventIsRelay && raceWizardModel.overwrite) {
+          } else if (eventIsRelay && importing) {
             for (let i = 0; i < classResults.length; i++) {
               const classResult = classResults[i];
               await reportClassProgress(classResults, i, true);
@@ -1676,7 +1679,7 @@ const ResultWizardStep2EditRace = observer(
                       }
                     }
                   }
-                  if (!competitor && clubModel.raceClubs?.selectedClub) {
+                  if (!competitor && clubModel.raceClubs?.selectedClub && !raceWizardModel.autoComplete) {
                     competitor = await AddMapCompetitorConfirmModal(
                       t,
                       modal,
@@ -1840,6 +1843,8 @@ const ResultWizardStep2EditRace = observer(
         } else if (raceEvent != null) {
           raceWizardModel.setRaceEvent(raceEvent);
         }
+        // The race read from the result list, to complete the saved race by
+        return importing ? raceEvent : undefined;
       },
       [clubModel, raceWizardModel, sessionModel, t, modal, reportClassProgress]
     );
@@ -2070,6 +2075,12 @@ const ResultWizardStep2EditRace = observer(
         const warnings: ILoadWarning[] = [];
         const hasEventor = raceWizardModel.selectedEventorId != null && raceWizardModel.selectedEventorId > 0;
         const hasDatabase = raceWizardModel.selectedEventId != null && raceWizardModel.selectedEventId > 0;
+        // Number of top results per class fetched besides the club's own results (all for runners without club)
+        const clubResultsTop = raceWizardModel.queryForCompetitorWithNoClub
+          ? 2500
+          : raceWizardModel.selectedIsRelay
+            ? 30
+            : 15;
         progress.reset([
           ...(hasDatabase ? [{ key: 'database', title: t('results.LoadTaskDatabase') }] : []),
           ...(hasEventor
@@ -2078,12 +2089,20 @@ const ResultWizardStep2EditRace = observer(
                 { key: 'classes', title: t('results.LoadTaskClasses') },
                 { key: 'iofSplits', title: t('results.LoadTaskIofSplits') },
                 { key: 'iofTotal', title: t('results.LoadTaskIofTotal') },
-                { key: 'results', title: t('results.LoadTaskResults') },
+                {
+                  key: 'results',
+                  title: raceWizardModel.queryForCompetitorWithNoClub
+                    ? t('results.LoadTaskResultsAll')
+                    : t('results.LoadTaskResults', { top: clubResultsTop })
+                },
                 { key: 'iof', title: t('results.LoadTaskIof') },
                 { key: 'length', title: t('results.LoadTaskLength') },
                 { key: 'fees', title: t('results.LoadTaskFees') },
                 { key: 'calculate', title: t('results.LoadTaskCalculate') },
-                { key: 'livelox', title: t('results.LoadTaskLivelox') }
+                { key: 'livelox', title: t('results.LoadTaskLivelox') },
+                ...(hasDatabase && raceWizardModel.autoComplete
+                  ? [{ key: 'autoComplete', title: t('results.LoadTaskAutoComplete') }]
+                  : [])
               ]
             : []),
           { key: 'process', title: t('results.LoadTaskProcess') }
@@ -2331,7 +2350,18 @@ const ResultWizardStep2EditRace = observer(
 
           let iofResults: IResultListType | undefined;
           let iofResultsWithSplitTimes = false;
-          if (raceWizardModel.selectedEventorId != null && raceWizardModel.selectedEventorId > 0)
+          // The whole result list with split times of a large event (e.g. O-Ringen) is too large to fetch,
+          // the results of the club and the top results with split times are fetched instead
+          const tooManyStarters = nofStarters.current > MAX_STARTERS_FOR_IOF_SPLITS;
+          if (tooManyStarters)
+            progress.skip(
+              'iofSplits',
+              t('results.LoadSkippedTooManyStarters', {
+                limit: MAX_STARTERS_FOR_IOF_SPLITS.toLocaleString('sv-SE'),
+                starters: nofStarters.current.toLocaleString('sv-SE')
+              })
+            );
+          else if (raceWizardModel.selectedEventorId != null && raceWizardModel.selectedEventorId > 0)
             try {
               progress.start('iofSplits');
               const response = await PostJsonDataWithProgress<IResultListType>(
@@ -2407,9 +2437,7 @@ const ResultWizardStep2EditRace = observer(
                       clubModel.eventor.organisationId +
                       ',' +
                       clubModel.eventor.districtOrganisationId +
-                      `&top=${
-                        raceWizardModel.queryForCompetitorWithNoClub ? 2500 : raceWizardModel.selectedIsRelay ? 30 : 15
-                      }&includeSplitTimes=true`
+                      `&top=${clubResultsTop}&includeSplitTimes=true`
                   ),
                   stream: true
                 },
@@ -2515,6 +2543,8 @@ const ResultWizardStep2EditRace = observer(
           else progress.skip('calculate');
 
           let eventIsRelay = false;
+          // The race read from the result list, when the saved race is completed by it
+          let sourceRaceEvent: IRaceEventProps | undefined;
           if (resultJson) {
             eventIsRelay =
               editResultJson?.isRelay ||
@@ -2524,7 +2554,7 @@ const ResultWizardStep2EditRace = observer(
                 resultJson.Event['@attributes'].eventForm &&
                 resultJson.Event['@attributes'].eventForm.toLowerCase().indexOf('relay') >= 0);
 
-            await handleEventorResults(
+            sourceRaceEvent = await handleEventorResults(
               editResultJson,
               resultJson,
               totalIofResults,
@@ -2537,7 +2567,7 @@ const ResultWizardStep2EditRace = observer(
           } else if (iofResults) {
             eventIsRelay = editResultJson?.isRelay || !!iofResults.Event.Form?.some(f => f === 'Relay');
 
-            await handleIOFResults(
+            sourceRaceEvent = await handleIOFResults(
               editResultJson,
               iofResults!,
               totalIofResults,
@@ -2561,6 +2591,15 @@ const ResultWizardStep2EditRace = observer(
                   })
                 : undefined
             );
+
+          // The saved race keeps its values, only what it misses is taken from the result list
+          let autoCompleteSummary: IAutoCompleteSummary | undefined;
+          if (raceWizardModel.autoComplete && editResultJson && sourceRaceEvent) {
+            const completed = AutoCompleteRaceEvent(editResultJson, sourceRaceEvent);
+            raceWizardModel.setRaceEvent(completed.raceEvent);
+            autoCompleteSummary = completed.summary;
+          }
+          let liveloxLengths = 0;
 
           // Course lengths from Livelox. Eventor and the IOF result list have one length per class, for a relay not
           // per leg, and often none. The race in Eventor links to the event in Livelox, which has every leg.
@@ -2618,8 +2657,13 @@ const ResultWizardStep2EditRace = observer(
             });
             if (liveloxEvent) {
               const classes = GetLiveloxClassesByName(liveloxEvent, eventClassesRef.current);
-              // A saved race keeps its lengths, Livelox is asked when a leg is changed
-              const updated = raceWizardModel.overwrite ? applyLiveloxLengths(classes, eventIsRelay) : 0;
+              // A saved race keeps its lengths, Livelox is asked when a leg is changed. Auto completion only fills
+              // in the lengths that are missing.
+              const updated =
+                raceWizardModel.overwrite || raceWizardModel.autoComplete
+                  ? applyLiveloxLengths(classes, eventIsRelay, raceWizardModel.autoComplete)
+                  : 0;
+              liveloxLengths = updated;
               setLivelox({ event: liveloxEvent, classes, updated });
               progress.finish('livelox', t('results.LoadLiveloxFound', { name: liveloxEvent.name, count: updated }));
             } else if (eventorError || searchError) {
@@ -2649,6 +2693,101 @@ const ResultWizardStep2EditRace = observer(
             }
             currentEventorUrl = undefined;
           } else if (hasEventor) progress.skip('livelox');
+
+          if (autoCompleteSummary && raceWizardModel.raceEvent) {
+            progress.start('autoComplete');
+            const raceEvent = raceWizardModel.raceEvent;
+            let totalLengths = 0;
+            // The total course length of an event of several days, by the saved earlier stages of the event
+            const needsTotalLength = raceEvent.results.some(
+              result =>
+                result.lengthInMeter &&
+                result.resultMultiDay &&
+                result.resultMultiDay.stage > 1 &&
+                !result.resultMultiDay.totalLengthInMeter
+            );
+            let totalLengthsFailed = false;
+            const raceDate = raceEvent.raceDate;
+            if (needsTotalLength && raceDate && raceEvent.eventorId && clubModel.raceClubs.selectedClub)
+              try {
+                const thisRace = `${raceDate} ${raceEvent.raceTime ?? ''}`;
+                const races =
+                  (await PostJsonData<IEventViewResultResponse[]>(
+                    url,
+                    {
+                      iType: 'EVENTS',
+                      iClubId: clubModel.raceClubs.selectedClub.clubId,
+                      iFromDate: dayjs(raceDate, dateFormat).add(-14, 'days').format(dateFormat),
+                      iToDate: raceDate
+                    },
+                    true,
+                    sessionModel.authorizationHeader
+                  )) ?? [];
+                // The earlier races of the same event, by the date and time of the race
+                const earlierRaces = races.filter(
+                  race =>
+                    race.eventorId === raceEvent.eventorId &&
+                    race.eventId !== raceEvent.eventId &&
+                    race.eventorRaceId !== raceEvent.eventorRaceId &&
+                    !race.isRelay &&
+                    (race.date < raceDate || (!!raceEvent.raceTime && `${race.date} ${race.time ?? ''}` < thisRace))
+                );
+                const earlierStages: IRaceEventProps[] = [];
+                for (const race of earlierRaces) {
+                  const earlier = await PostJsonData<IRaceEventProps>(
+                    url,
+                    { iType: 'EVENT', iEventId: race.eventId },
+                    true,
+                    sessionModel.authorizationHeader
+                  );
+                  if (earlier) earlierStages.push(earlier);
+                }
+                MissingTotalLengths(toJS(raceEvent.results), earlierStages).forEach(
+                  ({ resultId, totalLengthInMeter }) => {
+                    const result = raceEvent.results.find(r => r.resultId === resultId);
+                    if (!result?.resultMultiDay) return;
+                    result.setValues({ resultMultiDay: { ...toJS(result.resultMultiDay), totalLengthInMeter } });
+                    totalLengths++;
+                  }
+                );
+              } catch (error) {
+                totalLengthsFailed = true;
+                failed('autoComplete', error);
+              }
+            const competitorNames = autoCompleteSummary.notInSavedCompetitorIds
+              .map(id => clubModel.raceClubs?.selectedClub?.competitorById(id)?.fullName)
+              .filter((name, index, names) => !!name && names.indexOf(name) === index);
+            const info = [
+              t('results.AutoCompleteDone', {
+                values: autoCompleteSummary.filledValues,
+                count: autoCompleteSummary.completedResults
+              }),
+              autoCompleteSummary.missingTimesUpdated > 0
+                ? t('results.AutoCompleteMissingTimes', { count: autoCompleteSummary.missingTimesUpdated })
+                : null,
+              liveloxLengths > 0 ? t('results.AutoCompleteLivelox', { count: liveloxLengths }) : null,
+              totalLengths > 0 ? t('results.AutoCompleteTotalLengths', { count: totalLengths }) : null,
+              competitorNames.length > 0
+                ? t('results.AutoCompleteNotInSaved', { names: competitorNames.join(', ') })
+                : null
+            ]
+              .filter(text => !!text)
+              .join(' ');
+            setAutoCompleteInfo(info);
+            if (!totalLengthsFailed)
+              progress.finish(
+                'autoComplete',
+                t(
+                  autoCompleteSummary.missingTimesUpdated > 0
+                    ? 'results.AutoCompleteProgressMissingTimes'
+                    : 'results.AutoCompleteProgress',
+                  {
+                    values: autoCompleteSummary.filledValues + liveloxLengths + totalLengths,
+                    missingTimes: autoCompleteSummary.missingTimesUpdated
+                  }
+                )
+              );
+          }
 
           progress.start('process');
           // Time for the browser to show it
@@ -2723,6 +2862,7 @@ const ResultWizardStep2EditRace = observer(
     const reload = useCallback(() => {
       setLoadError(undefined);
       setLoadWarnings([]);
+      setAutoCompleteInfo(undefined);
       setLoaded(false);
       setLivelox(undefined);
       setLiveloxNeeded(false);
@@ -3254,6 +3394,16 @@ const ResultWizardStep2EditRace = observer(
                 type="warning"
                 title={t('results.LoadRaceWarnings')}
                 description={warningsList}
+                style={{ marginBottom: 12 }}
+              />
+            ) : null}
+            {autoCompleteInfo ? (
+              <Alert
+                closable
+                showIcon
+                type="info"
+                title={t('results.AutoCompleteTitle')}
+                description={autoCompleteInfo}
                 style={{ marginBottom: 12 }}
               />
             ) : null}

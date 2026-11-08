@@ -22,6 +22,7 @@ import {
 import { IEventViewResultResponse } from '../../utils/responseInterfaces';
 import { useResultWizardStore } from '../../utils/resultWizardStore';
 import { SpinnerDiv, StyledTable } from '../styled/styled';
+import DeleteSavedRaceButton from './DeleteSavedRaceButton';
 import { ExpandableDetails, LoadProgress, useLoadProgress } from './LoadProgress';
 
 const flatten = (list: (IEventorEventRace[] | IEventorEventRace)[]): IEventorEventRace[] =>
@@ -509,6 +510,41 @@ const ResultWizardStep1ChooseRace = observer(
       );
     }, [raceWizardModel.importedIds, raceWizardModel.importedIds.length, raceWizardModel.queryIncludeExisting]);
 
+    // A race from Eventor is still there to import, a race only saved here is gone
+    const onRaceDeleted = useCallback(
+      (eventId: number) => {
+        raceWizardModel.removeImportedRace(eventId);
+        setEvents(oldEvents =>
+          oldEvents
+            .filter(e => e.eventId !== eventId || e.existInEventor)
+            .map((e): IResultEvent => {
+              if (e.eventId !== eventId) return e;
+              return {
+                ...e,
+                eventId: -1,
+                invoiceVerified: false,
+                alreadySaved: false,
+                alreadySavedEventsNotInEventor: false,
+                key: JSON.stringify({
+                  selectedEventorId: e.eventorId ?? -1,
+                  selectedEventorRaceId: e.eventorRaceId,
+                  selectedEventId: -1,
+                  alreadySaved: false,
+                  existInEventor: e.existInEventor,
+                  isRelay: e.isRelay
+                })
+              };
+            })
+        );
+        if (raceWizardModel.selectedEventId === eventId) {
+          raceWizardModel.setNumberValueOrNull('selectedEventId', null);
+          setSelectedRowKeys([]);
+          onValidate(false);
+        }
+      },
+      [onValidate, raceWizardModel]
+    );
+
     const rowSelection: TableProps<IResultEvent>['rowSelection'] = {
       selectedRowKeys,
       fixed: true,
@@ -556,7 +592,25 @@ const ResultWizardStep1ChooseRace = observer(
         render: existInEventor => (existInEventor ? t('common.Yes') : t('common.No')),
         ellipsis: true,
         width: 110
-      }
+      },
+      ...(sessionModel.isAdmin
+        ? [
+            {
+              key: 'delete',
+              width: 56,
+              render: (_: unknown, record: IResultEvent) =>
+                record.alreadySaved && record.eventId > 0 ? (
+                  <DeleteSavedRaceButton
+                    iconOnly
+                    size="small"
+                    eventId={record.eventId}
+                    name={`${record.date}, ${record.name}`}
+                    onDeleted={onRaceDeleted}
+                  />
+                ) : null
+            }
+          ]
+        : [])
     ];
 
     return loaded && visible ? (

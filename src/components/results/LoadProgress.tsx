@@ -5,7 +5,8 @@ import {
   ClockCircleOutlined,
   CloseCircleFilled,
   ExclamationCircleFilled,
-  LoadingOutlined
+  LoadingOutlined,
+  MinusCircleOutlined
 } from '@ant-design/icons';
 import { Button, Progress, theme, Typography } from 'antd';
 import { TFunction } from 'i18next';
@@ -70,8 +71,11 @@ export const useLoadProgress = () => {
       },
       /** The title of a task, e.g. to tell which task made up for another */
       title: (key: string) => state.current.titles.get(key) ?? key,
-      /** Not needed, the task is not shown */
-      skip: (key: string) => update(key, { status: 'skipped' }),
+      /** Not needed, the task is not shown. With a detail it is shown, to tell why it was skipped */
+      skip: (key: string, detail?: string) => {
+        if (state.current.running === key) state.current.running = undefined;
+        update(key, { status: 'skipped', detail, progress: undefined });
+      },
       /** The tasks that never started are not needed */
       skipWaiting: () =>
         setTasks(list => list.map(task => (task.status === 'wait' ? { ...task, status: 'skipped' } : task))),
@@ -115,7 +119,8 @@ interface ILoadProgressProps {
 export const LoadProgress = ({ title, tasks, startedAt, embedded }: ILoadProgressProps) => {
   const { t } = useTranslation();
   const { token } = theme.useToken();
-  const shown = tasks.filter(task => task.status !== 'skipped');
+  // A skipped task is shown only when it tells why it was skipped
+  const shown = tasks.filter(task => task.status !== 'skipped' || task.detail);
   const running = shown.some(task => task.status === 'process' || task.status === 'wait');
   const [now, setNow] = useState(() => Date.now());
 
@@ -129,7 +134,7 @@ export const LoadProgress = ({ title, tasks, startedAt, embedded }: ILoadProgres
   const done = shown.reduce(
     (sum, task) =>
       sum +
-      (task.status === 'finish' || task.status === 'warning' || task.status === 'error'
+      (task.status === 'finish' || task.status === 'warning' || task.status === 'error' || task.status === 'skipped'
         ? 1
         : task.status === 'process' && task.progress && task.progress.total > 0
           ? task.progress.done / task.progress.total
@@ -158,6 +163,8 @@ export const LoadProgress = ({ title, tasks, startedAt, embedded }: ILoadProgres
         return <ExclamationCircleFilled style={{ color: token.colorWarning }} />;
       case 'error':
         return <CloseCircleFilled style={{ color: token.colorError }} />;
+      case 'skipped':
+        return <MinusCircleOutlined style={{ color: token.colorTextTertiary }} />;
       default:
         return <ClockCircleOutlined style={{ color: token.colorTextQuaternary }} />;
     }
@@ -251,6 +258,7 @@ export const toLoadWarning = (t: TFunction, key: string, title: string, error: u
   else if (status === 401 || status === 403) hint = t('results.LoadHintAccess');
   else if (status === 404) hint = t('results.LoadHintNotFound');
   else if (/closed the connection before the answer/i.test(message)) hint = t('results.LoadHintConnectionClosed');
+  else if (/server stopped while/i.test(message)) hint = t('results.LoadHintServerStopped');
   else if (/timed out|timeout/i.test(message)) hint = t('results.LoadHintTimeout');
   else if (/parse the XML/i.test(message)) hint = t('results.LoadHintXml');
   else if (/not a IOF XML|version 3\.0/i.test(message)) hint = t('results.LoadHintNotIof');

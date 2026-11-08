@@ -106,6 +106,13 @@ const varendgn: IMobxClubModelProps = {
       deleteUrl: 'https://varendgn.se/files/delete.php',
       updateUrl: 'https://varendgn.se/files/save.php',
       queryUrl: 'https://varendgn.se/files/jsonFilesQuery.php'
+    },
+    {
+      name: 'Cup',
+      addUrl: 'https://varendgn.se/cup/save.php',
+      deleteUrl: 'https://varendgn.se/cup/delete.php',
+      updateUrl: 'https://varendgn.se/cup/save.php',
+      queryUrl: 'https://varendgn.se/cup/jsonCupQuery.php'
     }
   ],
   links: [{ name: 'SOFT', url: 'https://www.svenskorientering.se' }],

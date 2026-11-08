@@ -15,6 +15,8 @@
 //#                     transient errors from Eventor         #
 //# 2026-11-07  PatSjo  Stream mode for the large answers,    #
 //#                     beyond the time limit of the host     #
+//# 2026-11-08  PatSjo  Waiting attempts notice a worker that #
+//#                     was stopped, time of Eventor's answer #
 //############################################################
 
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/functions.php");
@@ -37,12 +39,14 @@ define('EVENTOR_TIMEOUT', 600);
 // Stream mode, see runStream() below
 define('STREAM_PROGRESS_INTERVAL', 2); // seconds between the progress lines
 define('STREAM_RESULT_LIFETIME', 300); // seconds a finished answer is handed to a new attempt
-define('STREAM_LOCK_LIFETIME', EVENTOR_TIMEOUT * EVENTOR_ATTEMPTS + 300);
+define('STREAM_FILE_LIFETIME', 3600); // seconds before the files of an old request are removed
 
 $streamMode = false;
 $streamFiles = null;
 $streamIsWorker = false;
 $streamLastSent = 0.0;
+// The lock of the worker, held until the request ends, however it ends
+$streamLock = null;
 
 // Passing E_USER_ERROR to trigger_error() is deprecated since PHP 8.4.
 // error_handler() in functions.php answers with a JSON 500 for any reported
@@ -322,8 +326,60 @@ function streamFail($message, $file = null, $line = null)
         @unlink($streamFiles['progress']);
         @unlink($streamFiles['lock']);
     }
+    streamReleaseLock();
     streamSend("#error\n" . $error);
     exit(1);
+}
+
+// Lets the waiting attempts go, after the answer or the error has been written for them
+function streamReleaseLock()
+{
+    global $streamLock;
+    if ($streamLock !== null) {
+        @flock($streamLock, LOCK_UN);
+        @fclose($streamLock);
+        $streamLock = null;
+    }
+}
+
+// Hands this attempt the answer or the error another attempt left, true when there was one
+function streamFromFiles($waitStarted)
+{
+    global $streamFiles;
+    clearstatcache();
+    // The answer of an attempt that lost its connection
+    if (is_file($streamFiles['result']) && filemtime($streamFiles['result']) > time() - STREAM_RESULT_LIFETIME) {
+        $json = @file_get_contents($streamFiles['result']);
+        if ($json !== false && $json !== '') {
+            streamResult($json);
+            return true;
+        }
+    }
+    // The attempt this one waited for failed
+    if (is_file($streamFiles['error']) && filemtime($streamFiles['error']) >= $waitStarted) {
+        $error = @file_get_contents($streamFiles['error']);
+        streamSend("#error\n" . ($error ? $error : json_encode(array('message' => 'Proxy error: unknown error'))));
+        return true;
+    }
+    return false;
+}
+
+// What the worker was doing when it was stopped, from the last progress it shared
+function streamStoppedMessage($values)
+{
+    $step = is_array($values) && isset($values['step']) ? $values['step'] : 'eventor';
+    if ($step === 'parsing') {
+        $doing = 'reading the XML from Eventor ('
+            . round((isset($values['size']) ? $values['size'] : 0) / 1048576, 1) . ' MB)';
+    } elseif ($step === 'converting') {
+        $doing = 'converting the answer to JSON (part '
+            . ((isset($values['index']) ? $values['index'] : 0) + 1) . ' of '
+            . (isset($values['total']) ? $values['total'] : '?') . ')';
+    } else {
+        $doing = 'waiting for Eventor';
+    }
+    return 'Proxy error: The server stopped while ' . $doing . ', without leaving an answer or an error. '
+        . 'The web host most likely ended it, e.g. for using too much memory.';
 }
 
 // A fatal error, e.g. out of memory, never reaches the error handler
@@ -337,7 +393,7 @@ register_shutdown_function(function () {
 
 function runStream($request_url)
 {
-    global $streamFiles, $streamIsWorker;
+    global $streamFiles, $streamIsWorker, $streamLock;
     streamStart();
 
     $folder = $_SERVER['DOCUMENT_ROOT'] . '/cache';
@@ -353,46 +409,59 @@ function runStream($request_url)
     );
     // Old files of earlier requests
     foreach ((array)glob($folder . '/stream-*') as $file) {
-        if (is_file($file) && filemtime($file) < time() - max(3600, STREAM_LOCK_LIFETIME)) {
+        if (is_file($file) && filemtime($file) < time() - STREAM_FILE_LIFETIME) {
             @unlink($file);
         }
     }
 
+    // The attempt doing the work holds a lock on the lock file. The lock goes with the request
+    // whichever way it ends, also when the web host kills it, e.g. for its memory, and then
+    // nothing else is left behind. A waiting attempt that gets the lock after it has seen it
+    // held therefore knows the work is over, and when there is neither an answer nor an error
+    // the work was stopped from outside. Before, it went on waiting for the lock file to grow
+    // old, more than half an hour, showing the last progress all the time.
     $waitStarted = time();
+    $hasSeenWorker = false;
     for (;;) {
-        clearstatcache();
-        // The answer of an attempt that lost its connection
-        if (is_file($streamFiles['result']) && filemtime($streamFiles['result']) > time() - STREAM_RESULT_LIFETIME) {
-            $json = @file_get_contents($streamFiles['result']);
-            if ($json !== false && $json !== '') {
-                streamResult($json);
-                return;
-            }
-        }
-        // The attempt this one waited for failed
-        if (is_file($streamFiles['error']) && filemtime($streamFiles['error']) >= $waitStarted) {
-            $error = @file_get_contents($streamFiles['error']);
-            streamSend("#error\n" . ($error ? $error : json_encode(array('message' => 'Proxy error: unknown error'))));
+        if (streamFromFiles($waitStarted)) {
             return;
         }
-        // Do the work, unless another attempt already does it
-        $lock = @fopen($streamFiles['lock'], 'x');
-        if ($lock !== false) {
-            fclose($lock);
-            $streamIsWorker = true;
-            break;
-        }
-        if (!is_file($streamFiles['lock'])) {
+        $lock = @fopen($streamFiles['lock'], 'c');
+        if ($lock === false) {
             // The cache folder cannot be written, then the work is not shared
             $streamFiles = null;
             $streamIsWorker = true;
             break;
         }
-        if (filemtime($streamFiles['lock']) < time() - STREAM_LOCK_LIFETIME) {
-            // Left by a request that never finished
-            @unlink($streamFiles['lock']);
-            continue;
+        $wouldBlock = 0;
+        if (@flock($lock, LOCK_EX | LOCK_NB, $wouldBlock)) {
+            if (!$hasSeenWorker) {
+                // Do the work. The new time keeps the cleaning above off the lock file while in use.
+                @touch($streamFiles['lock']);
+                $streamLock = $lock;
+                $streamIsWorker = true;
+                break;
+            }
+            // The worker let go. It may have finished just after the look above.
+            @flock($lock, LOCK_UN);
+            fclose($lock);
+            if (streamFromFiles($waitStarted)) {
+                return;
+            }
+            $progress = @file_get_contents($streamFiles['progress']);
+            $values = $progress ? json_decode($progress, true) : null;
+            // Told as the error of the work, the attempts waiting along with this one get it too
+            $streamIsWorker = true;
+            streamFail(streamStoppedMessage($values));
         }
+        fclose($lock);
+        if (!$wouldBlock) {
+            // The file system has no locks, then the work is not shared
+            $streamFiles = null;
+            $streamIsWorker = true;
+            break;
+        }
+        $hasSeenWorker = true;
         // Tell how far the other attempt has come
         $progress = @file_get_contents($streamFiles['progress']);
         $values = $progress ? json_decode($progress, true) : null;
@@ -419,6 +488,7 @@ function runStream($request_url)
         @unlink($streamFiles['progress']);
         @unlink($streamFiles['lock']);
     }
+    streamReleaseLock();
     streamResult($json);
 }
 
@@ -471,12 +541,16 @@ function fetchFromEventor($request_url)
     // retrieve response, giving Eventor another chance when it fails in a way that
     // tends to pass by itself
     $attempts = 0;
+    $seconds = 0;
     $response = false;
     $curlError = '';
     $responseStatusCode = 0;
     for ($attempt = 1; $attempt <= EVENTOR_ATTEMPTS; $attempt++) {
         $attempts = $attempt;
+        $started = microtime(true);
         $response = curl_exec($ch);
+        // How long Eventor took tells a lot about a failure: an error at once, or after minutes of work
+        $seconds = (int)round(microtime(true) - $started);
         $curlErrno = curl_errno($ch);
         $curlError = $curlErrno ? curl_error($ch) : '';
         $responseStatusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -506,7 +580,8 @@ function fetchFromEventor($request_url)
 
     if ($response === false || $curlError !== '')
     {
-        proxyError('Proxy error: ' . $curlError . ' after ' . $attempts . ' attempt(s), ' . $request_url);
+        proxyError('Proxy error: ' . $curlError . ' after ' . $attempts . ' attempt(s), the last after '
+            . $seconds . ' s, ' . $request_url);
     }
 
     if($responseStatusCode != 200)
@@ -516,7 +591,7 @@ function fetchFromEventor($request_url)
         $responseText = (string)preg_replace('#<(style|script)\b[^>]*>.*?</\1>#is', ' ', substr($response, 0, 65536));
         $responseStart = substr(trim((string)preg_replace('/\s+/', ' ', strip_tags($responseText))), 0, 300);
         proxyError('Proxy error: Failed with status code ' . $responseStatusCode . ' after ' . $attempts
-            . ' attempt(s) for ' . $request_url . ', ' . $responseStart);
+            . ' attempt(s), Eventor answered after ' . $seconds . ' s, for ' . $request_url . ', ' . $responseStart);
     }
 
     return $response;

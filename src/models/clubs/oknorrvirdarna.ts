@@ -113,6 +113,13 @@ const varendgn: IMobxClubModelProps = {
       deleteUrl: 'https://oknorrvirdarna.se/files/delete.php',
       updateUrl: 'https://oknorrvirdarna.se/files/save.php',
       queryUrl: 'https://oknorrvirdarna.se/files/jsonFilesQuery.php'
+    },
+    {
+      name: 'Cup',
+      addUrl: 'https://oknorrvirdarna.se/cup/save.php',
+      deleteUrl: 'https://oknorrvirdarna.se/cup/delete.php',
+      updateUrl: 'https://oknorrvirdarna.se/cup/save.php',
+      queryUrl: 'https://oknorrvirdarna.se/cup/jsonCupQuery.php'
     }
   ],
   links: [{ name: 'SOFT', url: 'https://www.svenskorientering.se' }],

@@ -31,7 +31,7 @@ import { ResultWizardStoreProvider } from '../../utils/resultWizardStore';
 import { useSize } from '../../utils/useSize';
 import FullScreenWizard from '../styled/FullscreenWizard';
 import { SpinnerDiv, StyledIcon } from '../styled/styled';
-import { ConfirmOverwriteOrEdit } from './ConfirmOverwriteOrEditPromise';
+import { ConfirmEditMode } from './ConfirmEditModePromise';
 import EditResultIndividual, { IExtendedRaceResult } from './EditResultIndividual';
 import EditResultRelay, { IExtendedRaceTeamResult } from './EditResultRelay';
 import { useCupEventorImport } from '../cup/useCupEventorImport';
@@ -81,14 +81,17 @@ const ResultsWizard = observer(() => {
         raceWizardModel.current.selectedEventId &&
         raceWizardModel.current.selectedEventId > 0
       ) {
-        ConfirmOverwriteOrEdit(t, modal).then((overwrite: boolean) => {
-          raceWizardModel.current.setBooleanValue('overwrite', overwrite);
+        ConfirmEditMode(t, modal).then(mode => {
+          if (!mode) return;
+          raceWizardModel.current.setBooleanValue('overwrite', mode === 'overwrite');
+          raceWizardModel.current.setBooleanValue('autoComplete', mode === 'autoComplete');
           setNextStepValid(false);
           setWizardStep(nextStep);
         });
         return;
       } else if (nextStep === 2) {
         raceWizardModel.current.setBooleanValue('overwrite', raceWizardModel.current.eventExistInEventor);
+        raceWizardModel.current.setBooleanValue('autoComplete', false);
       }
       setNextStepValid(false);
       setWizardStep(nextStep);

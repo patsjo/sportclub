@@ -160,7 +160,7 @@ export interface IEventorEntryFee {
   ExternalFee: string;
   Name: string;
   ValidFromDate?: IEventorDateTime;
-  ValidToDate: IEventorDateTime;
+  ValidToDate?: IEventorDateTime;
   FromDateOfBirth?: IEventorDate;
   ToDateOfBirth?: IEventorDate;
 }

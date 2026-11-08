@@ -84,6 +84,19 @@ export const StyledTable = styled(Table)<{ minWidth?: number }>`
     margin-top: 8px;
     min-width: ${({ minWidth }) => (minWidth ? `${minWidth}px` : 'unset')};
   }
+  /* A sub row (e.g. a total) is shown as a part of the row above it */
+  &&& .ant-table-tbody > tr.table-row-has-sub > td {
+    border-bottom: none;
+    padding-bottom: 0 !important;
+  }
+  &&& .ant-table-tbody > tr.table-row-sub > td {
+    font-style: italic;
+    color: rgba(0, 0, 0, 0.8);
+    padding-top: 0 !important;
+  }
+  &&& .table-cell-indent {
+    padding-left: 4px;
+  }
   &&& .ant-table-scroll > .ant-table-body {
     overflow-x: auto !important;
   }
