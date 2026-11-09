@@ -232,25 +232,28 @@ const ResultsWizardCupRaces = observer(() => {
           </Space.Compact>
         </Form.Item>
       </Form>
-      {selectedRaces.map(r => (
-        <StyledRaceRow key={r.cupRaceId}>
-          <Typography.Text>{`${r.cupName} ${r.seasonName}: ${r.name}`}</Typography.Text>
-          <Radio.Group
-            size="small"
-            optionType="button"
-            value={r.useTotalResult}
-            disabled={savingRaceId === r.cupRaceId}
-            options={[
-              { value: false, label: t('cup.UseStageResult') },
-              { value: true, label: t('cup.UseTotalResult') }
-            ]}
-            onChange={e => setUseTotalResult(r.cupRaceId, e.target.value)}
-          />
-          {r.useTotalResult && !hasTotalResults ? (
-            <Typography.Text type="warning">{t('cup.UseTotalResultMissing')}</Typography.Text>
-          ) : null}
-        </StyledRaceRow>
-      ))}
+      {/* The stage or the total only when the race has a total, or the cup race counts a total it does not have */}
+      {selectedRaces
+        .filter(r => hasTotalResults || r.useTotalResult)
+        .map(r => (
+          <StyledRaceRow key={r.cupRaceId}>
+            <Typography.Text>{`${r.cupName} ${r.seasonName}: ${r.name}`}</Typography.Text>
+            <Radio.Group
+              size="small"
+              optionType="button"
+              value={r.useTotalResult}
+              disabled={savingRaceId === r.cupRaceId}
+              options={[
+                { value: false, label: t('cup.UseStageResult') },
+                { value: true, label: t('cup.UseTotalResult') }
+              ]}
+              onChange={e => setUseTotalResult(r.cupRaceId, e.target.value)}
+            />
+            {r.useTotalResult && !hasTotalResults ? (
+              <Typography.Text type="warning">{t('cup.UseTotalResultMissing')}</Typography.Text>
+            ) : null}
+          </StyledRaceRow>
+        ))}
       {selectedRaces.some(r => r.participants === 'ALL') ? (
         <Alert showIcon type="info" title={t('cup.AllParticipantsFromEventorInfo')} style={{ marginBottom: 8 }} />
       ) : null}
@@ -293,7 +296,7 @@ const ResultsWizardCupRaces = observer(() => {
           <Form.Item name="name" label={t('cup.RaceName')} rules={[{ required: true, max: 128 }]}>
             <Input />
           </Form.Item>
-          <Form.Item name="useTotalResult" label={t('cup.ResultThatCounts')}>
+          <Form.Item name="useTotalResult" label={t('cup.ResultThatCounts')} hidden={!hasTotalResults}>
             <Radio.Group
               options={[
                 { value: false, label: t('cup.UseStageResult') },

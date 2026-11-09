@@ -7,9 +7,11 @@ import { errorRequiredField } from '../../utils/formHelper';
 import { useMobxStore } from '../../utils/mobxStore';
 import { lightConditions } from '../../utils/resultConstants';
 import { useResultWizardStore } from '../../utils/resultWizardStore';
+import { FormatRankingPoints, ISverigelistanOption } from '../../utils/sverigelistanHelper';
 import FormItem from '../formItems/FormItem';
 import { FormSelect } from '../formItems/FormSelect';
 import InputTime from '../formItems/InputTime';
+import SverigelistanRanking from './SverigelistanRanking';
 
 const areaResultOptions = [
   { timePerKilometer: '00:03:45.000', description: 'Sprint' },
@@ -129,6 +131,23 @@ const ResultWizardStep3Ranking = observer(({ saving, onValidate }: IResultWizard
               type="info"
             />
           )}
+          <SverigelistanRanking
+            onChoose={(option: ISverigelistanOption) => {
+              raceWizardModel.raceEvent?.setStringValueOrNull('rankingBasetimePerKilometer', option.timePerKilometer);
+              raceWizardModel.raceEvent?.setNumberValueOrNull('rankingBasepoint', option.points);
+              raceWizardModel.raceEvent?.setStringValueOrNull(
+                'rankingBaseDescription',
+                `${option.timePerKilometer}, ${option.className}, ${option.personName}, ${t('results.Sverigelistan')} ${FormatRankingPoints(option.points)}`
+              );
+              form?.setFieldsValue({
+                winnerTime: undefined,
+                areaTime: undefined,
+                rankingBasetimePerKilometer: option.timePerKilometer,
+                rankingBasepoint: option.points
+              });
+              onValidate(!!raceWizardModel.raceEvent?.validRanking);
+            }}
+          />
           <Row gutter={8}>
             {raceWizardModel.raceWinnerResultOptions.length ? (
               <Col span={12}>

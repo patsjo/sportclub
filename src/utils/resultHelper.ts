@@ -117,13 +117,16 @@ export const ConvertSecondsToTime = (timeInSeconds: number): string => {
 };
 
 export const ConvertSecondsWithFractionsToTime = (timeInSeconds?: number): string | undefined => {
-  if (timeInSeconds == null) return undefined;
-  const hours = Math.floor(timeInSeconds / 3600);
-  const minutes = Math.floor((timeInSeconds - hours * 3600) / 60);
-  const seconds = Math.floor(timeInSeconds - hours * 3600 - minutes * 60);
-  const milliseconds = Math.floor(1000 * (timeInSeconds - hours * 3600 - minutes * 60 - seconds));
-  const time = dayjs(`${hours}:${minutes}:${seconds}.${milliseconds}`, 'HH:mm:ss.SSS');
-  return time.format('HH:mm:ss.SSS');
+  if (timeInSeconds == null || !Number.isFinite(timeInSeconds)) return undefined;
+  // Formatted directly: parsing "h:m:s.ms" with dayjs 'SSS' needs exactly three digits and gave
+  // "Invalid Date" whenever the milliseconds were below 100.
+  const totalMilliseconds = Math.round(timeInSeconds * 1000);
+  const hours = Math.floor(totalMilliseconds / 3600000);
+  const minutes = Math.floor((totalMilliseconds % 3600000) / 60000);
+  const seconds = Math.floor((totalMilliseconds % 60000) / 1000);
+  const milliseconds = totalMilliseconds % 1000;
+  const pad = (value: number, length = 2) => String(value).padStart(length, '0');
+  return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}.${pad(milliseconds, 3)}`;
 };
 
 export const WinnerTime = (timeStr: string, timeDiffStr: string | null, position: number): string | null => {

@@ -29,7 +29,7 @@ import FormItem from '../formItems/FormItem';
 import { FormSelect } from '../formItems/FormSelect';
 import InputTime, { stringToMilliSeconds } from '../formItems/InputTime';
 import { StyledIcon } from '../styled/styled';
-import { AddMapCompetitorConfirmModal } from './AddMapCompetitorConfirmModal';
+import { AddMapCompetitorConfirmModal, CompetitorInputAborted } from './AddMapCompetitorConfirmModal';
 
 interface IColorOptionContentProps {
   background: string;
@@ -465,7 +465,8 @@ const EditResultIndividual = ({
                     form.validateFields(['competitorId', 'feeToClub']);
                   })
                   .catch(error => {
-                    console.error(error);
+                    // Closed with the cross, nothing to change
+                    if (!(error instanceof CompetitorInputAborted)) console.error(error);
                   });
             }}
           />

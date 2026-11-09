@@ -17,6 +17,7 @@
 //#                     beyond the time limit of the host     #
 //# 2026-11-08  PatSjo  Waiting attempts notice a worker that #
 //#                     was stopped, time of Eventor's answer #
+//# 2026-11-08  PatSjo  @ did not silence warnings on PHP 8   #
 //############################################################
 
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/functions.php");
@@ -66,9 +67,12 @@ function proxyError($message)
 // written so far is dropped, so exactly one JSON document is ever sent.
 set_error_handler(function ($errno, $errstr, $errfile, $errline) {
     // Silenced with @, e.g. the lock file of stream mode that is already there. PHP 7
-    // reports 0 while silenced, PHP 8 keeps only the fatal levels.
-    $level = error_reporting();
-    if ($level === 0 || $level === (E_ERROR | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR | E_RECOVERABLE_ERROR | E_PARSE)) {
+    // reports 0 while silenced. PHP 8 keeps the fatal levels of those set, not all of them:
+    // with the levels functions.php sets it is E_ERROR | E_USER_ERROR, so comparing with
+    // every fatal level missed it, and an @unlink() of a file that was not there ended
+    // every request in stream mode on PHP 8 (one.com), while PHP 7.4 (a2hosting) was fine.
+    // Outside @ the level always holds E_USER_WARNING, set in functions.php.
+    if ((error_reporting() & ~(E_ERROR | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR | E_RECOVERABLE_ERROR | E_PARSE)) === 0) {
         return false;
     }
     if ($GLOBALS['streamMode']) {

@@ -303,6 +303,7 @@ export const resources = {
         Club: 'Club',
         ModalTitleMapCompetitor: 'Map/add competitor',
         MapCompetitor: 'Map competitor',
+        MapCompetitorOk: 'Map',
         Competitor: 'Competitor',
         FirstName: 'First name',
         LastName: 'Last name',
@@ -354,6 +355,45 @@ export const resources = {
         Area: 'Area',
         TimePerKilometer: 'Speed [min/km]',
         Ranking: 'Ranking',
+        Sverigelistan: 'Sverigelistan',
+        SverigelistanOpen: 'Open Sverigelistan',
+        SverigelistanOpenDate: 'Open Sverigelistan {{date}}',
+        SverigelistanOpenTooltip:
+          'Opens the races of Sverigelistan in Eventor on the day of the race. Choose the race, wait for the browser check of Eventor, and click the bookmark "{{bookmark}}".',
+        SverigelistanBookmark: 'Copy ranking',
+        SverigelistanBookmarkBefore: 'Drag the function',
+        SverigelistanBookmarkAfter: 'to the bookmarks bar',
+        SverigelistanBookmarkTooltip:
+          'Drag this link to the bookmarks bar of the browser (once). Click the bookmark on the page of the race (or a class) in Sverigelistan: it reads the ranking points of the classes and copies them, then paste them here.',
+        SverigelistanPaste: 'Paste ranking',
+        SverigelistanTooEarly:
+          'The ranking points of Sverigelistan are normally published the day after the race, today they are probably not there yet.',
+        SverigelistanNoPoints:
+          'No class of {{eventName}} has ranking points yet, they are normally published the day after the race.',
+        SverigelistanInvalid:
+          'The clipboard has no ranking from Sverigelistan. Click the bookmark "{{bookmark}}" on the page of the race in Sverigelistan first.',
+        SverigelistanClipboardFailed:
+          'The clipboard could not be read ({{message}}), press Ctrl+V on the page instead.',
+        SverigelistanLoaded_one: '{{eventName}}: {{count}} class with ranking points',
+        SverigelistanLoaded_other: '{{eventName}}: {{count}} classes with ranking points',
+        SverigelistanNoMatch:
+          'No class of the results (violet, blue or black, with a course length) matches the classes of Sverigelistan with points: {{classes}}.',
+        SverigelistanNoH21:
+          'No H21 class (H21 Elit, H21 Lång or H21) of the results is in Sverigelistan, choose the class to base the ranking on.',
+        SverigelistanOtherEvent: 'Sverigelistan has "{{eventName}}", is it the right race?',
+        SverigelistanBasedOn: 'based on {{className}} = {{points}}',
+        SverigelistanPlace: 'place {{place}}',
+        SverigelistanBookmarkletWrongPage:
+          'Open a race (or a class) in Sverigelistan, Ranking → Races, and click the bookmark again.',
+        SverigelistanBookmarkletFetching: 'Fetching class {n} of {total}…',
+        SverigelistanBookmarkletFailed: 'Sverigelistan could not be read: {message}',
+        SverigelistanBookmarkletNoPoints:
+          'No class has ranking points yet, they are normally published the day after the race.',
+        SverigelistanBookmarkletReady: '{ranked} of {total} classes have ranking points.',
+        SverigelistanBookmarkletCopy: 'Copy',
+        SverigelistanBookmarkletCopied: 'Copied! Go back to the results and click "Paste ranking".',
+        SverigelistanBookmarkletCopyManually: 'Copy the text below with Ctrl+C, then paste it in the results.',
+        SverigelistanBookmarkletClose: 'Close',
         Sport: 'Sport',
         MissingTime: 'Missing time',
         RankingLeague: 'Ranking',
@@ -476,6 +516,7 @@ export const resources = {
         LoadTaskIof: 'Fetch the result list without split times (fallback)',
         LoadTaskLength: 'Fetch course lengths',
         LoadTaskLivelox: 'Fetch course lengths per leg from Livelox',
+        LoadTaskTotalLength: 'Total course length from the saved earlier stages',
         ImportTitle: 'Import results (race not in Eventor)',
         ImportSource: 'Source',
         ImportLink: 'Link',
@@ -974,6 +1015,7 @@ export const resources = {
         Club: 'Klubb',
         ModalTitleMapCompetitor: 'Koppla/lägg till löpare',
         MapCompetitor: 'Koppla löpare',
+        MapCompetitorOk: 'Koppla',
         Competitor: 'Löpare',
         FullName: 'Namn',
         FirstName: 'Förnamn',
@@ -1025,6 +1067,44 @@ export const resources = {
         Area: 'Terrängtyp',
         TimePerKilometer: 'Fart [min/km]',
         Ranking: 'Ranking',
+        Sverigelistan: 'Sverigelistan',
+        SverigelistanOpen: 'Öppna Sverigelistan',
+        SverigelistanOpenDate: 'Öppna Sverigelistan {{date}}',
+        SverigelistanOpenTooltip:
+          'Öppnar Sverigelistans tävlingar i Eventor på tävlingsdagen. Välj tävlingen, vänta på Eventors webbläsarkontroll och klicka på bokmärket "{{bookmark}}".',
+        SverigelistanBookmark: 'Kopiera ranking',
+        SverigelistanBookmarkBefore: 'Dra funktionen',
+        SverigelistanBookmarkAfter: 'till bokmärke',
+        SverigelistanBookmarkTooltip:
+          'Dra den här länken till webbläsarens bokmärkesfält (en gång). Klicka på bokmärket på tävlingens (eller en klass) sida i Sverigelistan: det läser klassernas rankingpoäng och kopierar dem, klistra sedan in dem här.',
+        SverigelistanPaste: 'Klistra in ranking',
+        SverigelistanTooEarly:
+          'Sverigelistans rankingpoäng publiceras normalt dagen efter tävlingen, i dag finns de troligen inte än.',
+        SverigelistanNoPoints:
+          'Ingen klass i {{eventName}} har rankingpoäng än, de publiceras normalt dagen efter tävlingen.',
+        SverigelistanInvalid:
+          'Urklippet innehåller ingen ranking från Sverigelistan. Klicka först på bokmärket "{{bookmark}}" på tävlingens sida i Sverigelistan.',
+        SverigelistanClipboardFailed: 'Urklippet kunde inte läsas ({{message}}), tryck Ctrl+V på sidan i stället.',
+        SverigelistanLoaded_one: '{{eventName}}: {{count}} klass med rankingpoäng',
+        SverigelistanLoaded_other: '{{eventName}}: {{count}} klasser med rankingpoäng',
+        SverigelistanNoMatch:
+          'Ingen klass i resultatet (violett, blå eller svart, med banlängd) motsvarar Sverigelistans klasser med poäng: {{classes}}.',
+        SverigelistanNoH21:
+          'Ingen H21-klass (H21 Elit, H21 Lång eller H21) i resultatet finns i Sverigelistan, välj vilken klass rankingen ska baseras på.',
+        SverigelistanOtherEvent: 'Sverigelistan har "{{eventName}}", är det rätt tävling?',
+        SverigelistanBasedOn: 'Baserat på {{className}} = {{points}}',
+        SverigelistanPlace: 'plac. {{place}}',
+        SverigelistanBookmarkletWrongPage:
+          'Öppna en tävling (eller en klass) i Sverigelistan, Ranking → Tävlingar, och klicka på bokmärket igen.',
+        SverigelistanBookmarkletFetching: 'Hämtar klass {n} av {total}…',
+        SverigelistanBookmarkletFailed: 'Sverigelistan kunde inte läsas: {message}',
+        SverigelistanBookmarkletNoPoints:
+          'Ingen klass har rankingpoäng än, de publiceras normalt dagen efter tävlingen.',
+        SverigelistanBookmarkletReady: '{ranked} av {total} klasser har rankingpoäng.',
+        SverigelistanBookmarkletCopy: 'Kopiera',
+        SverigelistanBookmarkletCopied: 'Kopierat! Gå tillbaka till resultatet och klicka på "Klistra in ranking".',
+        SverigelistanBookmarkletCopyManually: 'Kopiera texten nedan med Ctrl+C och klistra in den i resultatet.',
+        SverigelistanBookmarkletClose: 'Stäng',
         Sport: 'Idrott',
         MissingTime: 'Bomtid',
         RankingLeague: 'Ranking',
@@ -1147,6 +1227,7 @@ export const resources = {
         LoadTaskIof: 'Hämta resultatlista utan sträcktider (reserv)',
         LoadTaskLength: 'Hämta banlängder',
         LoadTaskLivelox: 'Hämta banlängder per sträcka från Livelox',
+        LoadTaskTotalLength: 'Total banlängd från sparade tidigare etapper',
         ImportTitle: 'Importera resultat (tävling ej i Eventor)',
         ImportSource: 'Källa',
         ImportLink: 'Länk',

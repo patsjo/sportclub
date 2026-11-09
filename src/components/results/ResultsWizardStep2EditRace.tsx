@@ -141,7 +141,7 @@ import { FormSelect } from '../formItems/FormSelect';
 import InputTime from '../formItems/InputTime';
 import { GetPositionModal } from '../map/GetPositionModal';
 import { MissingTag, NoWrap, SpinnerDiv, StyledIcon, StyledTable } from '../styled/styled';
-import { AddMapCompetitorConfirmModal } from './AddMapCompetitorConfirmModal';
+import { AddMapCompetitorConfirmModal, CompetitorInputAborted } from './AddMapCompetitorConfirmModal';
 import {
   ExpandableDetails,
   ILoadWarning,
@@ -696,8 +696,7 @@ const ResultWizardStep2EditRace = observer(
                           const totalOk = totalPersonResult.Status === 'OK';
                           const totalValid = totalOk && !totalDidNotStart && !totalMisPunch;
 
-                          // Not stored when the race is fetched again (the result keeps resultMultiDay null),
-                          // only used to complete a saved race that misses its total
+                          // The total course length is added afterwards, by the saved earlier stages
                           resultMultiDay = {
                             multiDayResultId: -1 - 10000 * i - j,
                             stage: totalEventRace?.RaceNumber ?? 1,
@@ -728,7 +727,7 @@ const ResultWizardStep2EditRace = observer(
                       const raceResult: IRaceResultProps = {
                         resultId: -1 - 10000 * i - j,
                         competitorId: competitor.competitorId,
-                        resultMultiDay: raceWizardModel.autoComplete ? (resultMultiDay ?? null) : null,
+                        resultMultiDay: resultMultiDay ?? null,
                         className: shortClassName ?? '',
                         deviantEventClassificationId: null,
                         classClassificationId: GetClassClassificationId(
@@ -1891,7 +1890,9 @@ const ResultWizardStep2EditRace = observer(
         onValidate(!!raceWizardModel.raceEvent?.valid);
       } catch (error) {
         setImportStatus(undefined);
-        setImportError(`${t('results.ImportFailed')}: ${error instanceof Error ? error.message : String(error)}`);
+        // The dialog of a runner was closed with the cross, the import is stopped
+        if (!(error instanceof CompetitorInputAborted))
+          setImportError(`${t('results.ImportFailed')}: ${error instanceof Error ? error.message : String(error)}`);
       } finally {
         setImporting(false);
       }
@@ -2100,6 +2101,7 @@ const ResultWizardStep2EditRace = observer(
                 { key: 'fees', title: t('results.LoadTaskFees') },
                 { key: 'calculate', title: t('results.LoadTaskCalculate') },
                 { key: 'livelox', title: t('results.LoadTaskLivelox') },
+                { key: 'totalLength', title: t('results.LoadTaskTotalLength') },
                 ...(hasDatabase && raceWizardModel.autoComplete
                   ? [{ key: 'autoComplete', title: t('results.LoadTaskAutoComplete') }]
                   : [])
@@ -2694,11 +2696,11 @@ const ResultWizardStep2EditRace = observer(
             currentEventorUrl = undefined;
           } else if (hasEventor) progress.skip('livelox');
 
-          if (autoCompleteSummary && raceWizardModel.raceEvent) {
-            progress.start('autoComplete');
+          // The total course length of an event of several days, by the saved earlier stages of the event. For a
+          // race read from Eventor (new or fetched again) as well as for a saved race that is completed.
+          let totalLengths = 0;
+          if ((raceWizardModel.overwrite || autoCompleteSummary) && raceWizardModel.raceEvent) {
             const raceEvent = raceWizardModel.raceEvent;
-            let totalLengths = 0;
-            // The total course length of an event of several days, by the saved earlier stages of the event
             const needsTotalLength = raceEvent.results.some(
               result =>
                 result.lengthInMeter &&
@@ -2706,10 +2708,10 @@ const ResultWizardStep2EditRace = observer(
                 result.resultMultiDay.stage > 1 &&
                 !result.resultMultiDay.totalLengthInMeter
             );
-            let totalLengthsFailed = false;
             const raceDate = raceEvent.raceDate;
             if (needsTotalLength && raceDate && raceEvent.eventorId && clubModel.raceClubs.selectedClub)
               try {
+                progress.start('totalLength');
                 const thisRace = `${raceDate} ${raceEvent.raceTime ?? ''}`;
                 const races =
                   (await PostJsonData<IEventViewResultResponse[]>(
@@ -2750,10 +2752,14 @@ const ResultWizardStep2EditRace = observer(
                     totalLengths++;
                   }
                 );
+                progress.finish('totalLength', t('results.AutoCompleteTotalLengths', { count: totalLengths }));
               } catch (error) {
-                totalLengthsFailed = true;
-                failed('autoComplete', error);
+                failed('totalLength', error);
               }
+          }
+
+          if (autoCompleteSummary && raceWizardModel.raceEvent) {
+            progress.start('autoComplete');
             const competitorNames = autoCompleteSummary.notInSavedCompetitorIds
               .map(id => clubModel.raceClubs?.selectedClub?.competitorById(id)?.fullName)
               .filter((name, index, names) => !!name && names.indexOf(name) === index);
@@ -2774,19 +2780,18 @@ const ResultWizardStep2EditRace = observer(
               .filter(text => !!text)
               .join(' ');
             setAutoCompleteInfo(info);
-            if (!totalLengthsFailed)
-              progress.finish(
-                'autoComplete',
-                t(
-                  autoCompleteSummary.missingTimesUpdated > 0
-                    ? 'results.AutoCompleteProgressMissingTimes'
-                    : 'results.AutoCompleteProgress',
-                  {
-                    values: autoCompleteSummary.filledValues + liveloxLengths + totalLengths,
-                    missingTimes: autoCompleteSummary.missingTimesUpdated
-                  }
-                )
-              );
+            progress.finish(
+              'autoComplete',
+              t(
+                autoCompleteSummary.missingTimesUpdated > 0
+                  ? 'results.AutoCompleteProgressMissingTimes'
+                  : 'results.AutoCompleteProgress',
+                {
+                  values: autoCompleteSummary.filledValues + liveloxLengths + totalLengths,
+                  missingTimes: autoCompleteSummary.missingTimesUpdated
+                }
+              )
+            );
           }
 
           progress.start('process');
@@ -2808,6 +2813,11 @@ const ResultWizardStep2EditRace = observer(
           setLoadWarnings(warnings);
           setLoaded(true);
         } catch (e) {
+          // The dialog of a runner was closed with the cross: back to choosing the race
+          if (e instanceof CompetitorInputAborted) {
+            onFailed(e);
+            return;
+          }
           const errorMessage =
             e instanceof Error
               ? e.message
@@ -2851,6 +2861,7 @@ const ResultWizardStep2EditRace = observer(
       form,
       handleEventorResults,
       handleIOFResults,
+      onFailed,
       onValidate,
       progress,
       raceWizardModel,
@@ -3371,6 +3382,8 @@ const ResultWizardStep2EditRace = observer(
                 <div>{loadError}</div>
                 <ExpandableDetails>
                   <LoadProgress embedded title={null} tasks={loadTasks} />
+                  {/* Why each part failed, the server's message, hint and url */}
+                  {warningsList ? <div style={{ marginTop: 8 }}>{warningsList}</div> : null}
                 </ExpandableDetails>
               </>
             }

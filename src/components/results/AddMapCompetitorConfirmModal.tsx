@@ -5,6 +5,18 @@ import { IRaceCompetitor } from '../../models/resultModel';
 import { ISessionModel } from '../../models/sessionModel';
 import AddMapCompetitor, { IAddLinkCompetitor, INewCompetitorForm } from './AddMapCompetitor';
 
+/** The dialog was closed with the cross: the whole input is aborted, not only this runner ("Hoppa över") */
+export class CompetitorInputAborted extends Error {
+  constructor() {
+    super('The input of competitors was aborted');
+    this.name = 'CompetitorInputAborted';
+  }
+}
+
+/**
+ * Maps the runner to a competitor of the club, or adds a new one. Resolves with the competitor, with undefined when
+ * the runner is skipped ("Hoppa över"), and rejects with CompetitorInputAborted when the dialog is closed.
+ */
 export const AddMapCompetitorConfirmModal = (
   t: TFunction,
   modal: ReturnType<typeof Modal.useModal>[0],
@@ -30,6 +42,8 @@ export const AddMapCompetitorConfirmModal = (
       confirmObject.competitorId = option.code;
     }
     let selectedTabKey = '1';
+    // "Koppla" maps the runner to a competitor, "Spara" saves a new competitor
+    const okText = (tabKey: string) => (tabKey === '1' ? t('results.MapCompetitorOk') : t('common.Save'));
     let confirmModal: {
       destroy: () => void;
       update: (configUpdate: ModalFuncProps | ((prevConfig: ModalFuncProps) => ModalFuncProps)) => void;
@@ -46,7 +60,10 @@ export const AddMapCompetitorConfirmModal = (
           defaultActiveKey={selectedTabKey}
           addLinkCompetitor={confirmObject}
           competitorsOptions={clubModel.raceClubs?.selectedClub?.competitorsOptions ?? []}
-          onTabChange={key => (selectedTabKey = key)}
+          onTabChange={key => {
+            selectedTabKey = key;
+            confirmModal.update({ okText: okText(key) });
+          }}
           onValidate={valid =>
             confirmModal.update({
               okButtonProps: {
@@ -61,11 +78,19 @@ export const AddMapCompetitorConfirmModal = (
         />
       ),
       closable: true,
-      okText: t('common.Save'),
+      okText: okText(selectedTabKey),
       okButtonProps: {
         disabled: true
       },
       cancelText: t('common.Skip'),
+      cancelButtonProps: {
+        // Skips this runner. A click of its own, antd calls onCancel for the cross as well.
+        onClick: () => {
+          canReject = false;
+          resolve(undefined);
+          confirmModal.destroy();
+        }
+      },
       onOk() {
         canReject = false;
         if (selectedTabKey === '1') {
@@ -102,12 +127,13 @@ export const AddMapCompetitorConfirmModal = (
             );
         }
       },
+      // The cross (or Esc)
       onCancel() {
         canReject = false;
-        resolve(undefined);
+        reject(new CompetitorInputAborted());
       },
       afterClose() {
-        if (canReject) reject();
+        if (canReject) reject(new CompetitorInputAborted());
       }
     });
     if (option) {

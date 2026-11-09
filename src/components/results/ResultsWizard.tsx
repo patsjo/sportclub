@@ -100,7 +100,8 @@ const ResultsWizard = observer(() => {
   );
 
   const prev = useCallback(() => {
-    const nextStep = wizardStep - 1;
+    // The rerun of the races (-100, Ctrl+Alt) is started from the first step
+    const nextStep = wizardStep < 0 ? 0 : wizardStep - 1;
     if (nextStep === 1) {
       raceWizardModel.current.setRaceEvent(null);
       raceWizardModel.current.setNumberValueOrNull('selectedEventId', null);

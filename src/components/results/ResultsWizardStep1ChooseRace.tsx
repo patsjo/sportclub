@@ -485,9 +485,15 @@ const ResultWizardStep1ChooseRace = observer(
           ? oldEvents
               .map((e): IResultEvent => ({
                 ...e,
+                // A race saved for the first time had no id (-1), as every race not yet saved. It is found by the
+                // race in Eventor, otherwise the next stage of the same event was given the id of the race just
+                // saved, and was opened (and saved) as that race.
                 eventId:
-                  raceWizardModel.importedIds.find(imp => imp.prevEventId != null && imp.prevEventId === e.eventId)
-                    ?.eventId ?? e.eventId,
+                  raceWizardModel.importedIds.find(
+                    imp =>
+                      (e.eventorRaceId != null && e.eventorRaceId > 0 && imp.eventorRaceId === e.eventorRaceId) ||
+                      (imp.prevEventId != null && imp.prevEventId > 0 && imp.prevEventId === e.eventId)
+                  )?.eventId ?? e.eventId,
                 alreadySaved:
                   e.alreadySaved ||
                   (e.eventorRaceId != null &&

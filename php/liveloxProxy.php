@@ -47,8 +47,8 @@ define('SEARCH_MAX_DAYS', 7);
 // The same as in eventorProxyWithCache.php: error_handler() in functions.php flushes before it sets the
 // status, which would send the error as a 200. The status is set first, and anything written is dropped.
 set_error_handler(function ($errno, $errstr, $errfile, $errline) {
-    $level = error_reporting();
-    if ($level === 0 || $level === (E_ERROR | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR | E_RECOVERABLE_ERROR | E_PARSE)) {
+    // Silenced with @: PHP 7 reports 0, PHP 8 only the fatal levels among those set
+    if ((error_reporting() & ~(E_ERROR | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR | E_RECOVERABLE_ERROR | E_PARSE)) === 0) {
         return false;
     }
     if (headers_sent()) {
