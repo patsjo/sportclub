@@ -124,7 +124,7 @@ const EditResultRelay = ({
     )
       raceWizardModel.addRaceWinnerResult({
         id: raceWizardModel.raceWinnerResults.length,
-        personName: 'Unknown',
+        personName: '',
         className: `${result.className} - ${result.stage}`,
         difficulty: result.difficulty,
         lengthInMeter: value,
@@ -498,7 +498,7 @@ const EditResultRelay = ({
                 )
                   raceWizardModel.addRaceWinnerResult({
                     id: raceWizardModel.raceWinnerResults.length,
-                    personName: 'Unknown',
+                    personName: '',
                     className: `${result.className} - ${result.stage}`,
                     difficulty: code,
                     lengthInMeter: result.lengthInMeter,
@@ -610,7 +610,7 @@ const EditResultRelay = ({
                 )
                   raceWizardModel.addRaceWinnerResult({
                     id: raceWizardModel.raceWinnerResults.length,
-                    personName: 'Unknown',
+                    personName: '',
                     className: `${result.className} - ${result.stage}`,
                     difficulty: result.difficulty,
                     lengthInMeter: result.lengthInMeter,

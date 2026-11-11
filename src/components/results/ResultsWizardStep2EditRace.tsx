@@ -29,6 +29,7 @@ import {
 import dayjs from 'dayjs';
 import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
+import useResizeObserver from '@react-hook/resize-observer';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -126,13 +127,17 @@ import {
   FetchTotalResultsPage,
   FetchWinSplitsResults,
   FindCompetitorByName,
+  FindLinkedCompetitorId,
   FindTotalClass,
   FindTotalPerson,
   IsClubOrganisation,
+  ITotalResultList,
+  LinkResultName,
+  ResultNameKey,
   SplitClubNames,
   StageFromName,
   TotalLengthInMeter,
-  WinSplitsDatabaseId
+  TotalResultsFromStages
 } from '../../utils/resultSources';
 import { IEventViewResultResponse } from '../../utils/responseInterfaces';
 import { useResultWizardStore } from '../../utils/resultWizardStore';
@@ -142,6 +147,8 @@ import InputTime from '../formItems/InputTime';
 import { GetPositionModal } from '../map/GetPositionModal';
 import { MissingTag, NoWrap, SpinnerDiv, StyledIcon, StyledTable } from '../styled/styled';
 import { AddMapCompetitorConfirmModal, CompetitorInputAborted } from './AddMapCompetitorConfirmModal';
+import ImportExternalResults, { LoadExternalResults } from './ImportExternalResults';
+import StageResultsInput, { IStageResults } from './StageResultsInput';
 import {
   ExpandableDetails,
   ILoadWarning,
@@ -245,6 +252,36 @@ const ResultWizardStep2EditRace = observer(
     const eventClassesRef = useRef<IEventorEventClass[]>([]);
     // The number of the race in the event (1 for a race of one day), to find the race in Livelox
     const raceNumberRef = useRef<number | undefined>(undefined);
+    // The runners of another source than Eventor that the user skipped, not asked for again at the next import
+    const skippedResultNames = useRef(new Set<string>());
+    // The rows of the table are as many as fit below what is above it (the import, the race, Livelox), whose height
+    // changes with what is shown. The height of the header and of a row are measured, the pager has its place.
+    // The elements themselves, not refs: they are shown only when the race is loaded, and observed from then on
+    const [aboveTableElement, setAboveTableElement] = useState<HTMLDivElement | null>(null);
+    const [tableElement, setTableElement] = useState<HTMLDivElement | null>(null);
+    const [aboveTableHeight, setAboveTableHeight] = useState(0);
+    useResizeObserver(aboveTableElement, entry => setAboveTableHeight((entry.target as HTMLElement).offsetHeight));
+    const [tableMetrics, setTableMetrics] = useState({ header: 47, row: 40 });
+    // Measured whenever the table changes its size, e.g. when its rows are shown or changed
+    const measureTable = useCallback((entry: ResizeObserverEntry) => {
+      const table = entry.target as HTMLElement;
+      const header = table.querySelector('thead')?.getBoundingClientRect().height;
+      const rows = Array.from(table.querySelectorAll('tbody tr.ant-table-row')).map(
+        row => row.getBoundingClientRect().height
+      );
+      // The highest row, a row of more lines must not push the pager out of sight
+      const row = rows.length ? Math.max(...rows) : undefined;
+      if (!header || !row) return;
+      setTableMetrics(metrics =>
+        Math.abs(header - metrics.header) > 0.5 || Math.abs(row - metrics.row) > 0.5 ? { header, row } : metrics
+      );
+    }, []);
+    useResizeObserver(tableElement, measureTable);
+    const tablePagerHeight = 64;
+    const tablePageSize = Math.max(
+      1,
+      Math.floor((height - aboveTableHeight - tableMetrics.header - tablePagerHeight) / tableMetrics.row)
+    );
     // The course lengths of every class and relay leg in Livelox, and how many results got their length from it
     const [livelox, setLivelox] = useState<{
       event: ILiveloxEvent;
@@ -1103,6 +1140,26 @@ const ResultWizardStep2EditRace = observer(
           externalSource
             ? IsClubOrganisation(organisation?.Name, externalSource.clubNames)
             : organisation?.Id == clubModel.eventor?.organisationId;
+        // A runner of another source than Eventor is found by name, or by a name the user linked to a runner before
+        const findExternalCompetitor = (given?: string, family?: string): IRaceCompetitor | undefined => {
+          const selectedClub = clubModel.raceClubs?.selectedClub;
+          const byName = FindCompetitorByName(selectedClub?.competitors, given, family);
+          if (byName || !selectedClub) return byName;
+          const linkedId = FindLinkedCompetitorId(selectedClub.clubId, given, family);
+          return linkedId != null ? selectedClub.competitorById(linkedId) : undefined;
+        };
+        // The runner the user linked (or skipped) in the dialog is not asked for again
+        const rememberExternalCompetitor = (
+          given: string | undefined,
+          family: string | undefined,
+          competitor: IRaceCompetitor | undefined
+        ) => {
+          const selectedClub = clubModel.raceClubs?.selectedClub;
+          if (competitor && selectedClub) LinkResultName(selectedClub.clubId, given, family, competitor.competitorId);
+          else if (!competitor) skippedResultNames.current.add(ResultNameKey(given, family));
+        };
+        const isSkippedExternal = (given?: string, family?: string) =>
+          !!externalSource && skippedResultNames.current.has(ResultNameKey(given, family));
         let eventClassificationId: EventClassificationIdTypes = 'F';
         if (iofResults?.Event.Classification != null) {
           switch (iofResults.Event.Classification) {
@@ -1294,11 +1351,7 @@ const ResultWizardStep2EditRace = observer(
                     const splitPersonId = personResult.Person.Id?.find(() => true);
                     const personId = externalSource ? undefined : splitPersonId;
                     let competitor: IRaceCompetitor | undefined = externalSource
-                      ? FindCompetitorByName(
-                          clubModel.raceClubs?.selectedClub?.competitors,
-                          personResult.Person.Name.Given,
-                          personResult.Person.Name.Family
-                        )
+                      ? findExternalCompetitor(personResult.Person.Name.Given, personResult.Person.Name.Family)
                       : undefined;
                     if (personId && personId.length > 0) {
                       if (!competitor) {
@@ -1321,7 +1374,12 @@ const ResultWizardStep2EditRace = observer(
                         }
                       }
                     }
-                    if (!competitor && clubModel.raceClubs?.selectedClub && !raceWizardModel.autoComplete) {
+                    if (
+                      !competitor &&
+                      clubModel.raceClubs?.selectedClub &&
+                      !raceWizardModel.autoComplete &&
+                      !isSkippedExternal(personResult.Person.Name.Given, personResult.Person.Name.Family)
+                    ) {
                       competitor = await AddMapCompetitorConfirmModal(
                         t,
                         modal,
@@ -1350,6 +1408,12 @@ const ResultWizardStep2EditRace = observer(
                         clubModel,
                         sessionModel
                       );
+                      if (externalSource)
+                        rememberExternalCompetitor(
+                          personResult.Person.Name.Given,
+                          personResult.Person.Name.Family,
+                          competitor
+                        );
                     }
 
                     if (competitor) {
@@ -1622,8 +1686,7 @@ const ResultWizardStep2EditRace = observer(
                     const personId = externalSource ? undefined : teamMemberResult.Person?.Id?.find(() => true);
                     const competitor = externalSource
                       ? hasClubMembers
-                        ? FindCompetitorByName(
-                            clubModel.raceClubs?.selectedClub?.competitors,
+                        ? findExternalCompetitor(
                             teamMemberResult.Person?.Name.Given,
                             teamMemberResult.Person?.Name.Family
                           )
@@ -1678,7 +1741,12 @@ const ResultWizardStep2EditRace = observer(
                       }
                     }
                   }
-                  if (!competitor && clubModel.raceClubs?.selectedClub && !raceWizardModel.autoComplete) {
+                  if (
+                    !competitor &&
+                    clubModel.raceClubs?.selectedClub &&
+                    !raceWizardModel.autoComplete &&
+                    !isSkippedExternal(teamMemberResult.Person?.Name.Given, teamMemberResult.Person?.Name.Family)
+                  ) {
                     competitor = await AddMapCompetitorConfirmModal(
                       t,
                       modal,
@@ -1707,6 +1775,12 @@ const ResultWizardStep2EditRace = observer(
                       clubModel,
                       sessionModel
                     );
+                    if (externalSource)
+                      rememberExternalCompetitor(
+                        teamMemberResult.Person?.Name.Given,
+                        teamMemberResult.Person?.Name.Family,
+                        competitor ?? undefined
+                      );
                   }
 
                   if (competitor) {
@@ -1849,67 +1923,62 @@ const ResultWizardStep2EditRace = observer(
     );
 
     // Results of a race that is not in Eventor, from another source
-    const [importLink, setImportLink] = useState('');
     const [importClubNames, setImportClubNames] = useState(clubModel.raceClubs?.selectedClub?.name ?? '');
     const [importing, setImporting] = useState(false);
     const [importStatus, setImportStatus] = useState<string>();
     const [importError, setImportError] = useState<string>();
 
-    const importResults = useCallback(async () => {
-      setImportError(undefined);
-      const clubNames = SplitClubNames(importClubNames);
-      const databaseId = WinSplitsDatabaseId(importLink);
-      if (!databaseId) {
-        setImportError(t('results.ImportInvalidWinSplitsLink'));
-        return;
-      }
-      if (clubNames.length === 0) {
-        setImportError(t('results.ImportMissingClubName'));
-        return;
-      }
-      if (!clubModel.eventorCorsProxy) return;
-      setImporting(true);
-      try {
-        const results = await FetchWinSplitsResults(clubModel.eventorCorsProxy, databaseId, (index, total, name) =>
-          setImportStatus(t('results.ImportClassProgress', { index: index + 1, total, name: name ?? '' }))
-        );
-        const relay = !!results.Event.Form?.some(form => form === 'Relay');
-        setImportStatus(t('results.LoadTaskCalculate'));
-        // A new race, the imported results take the place of the empty one
-        raceWizardModel.setBooleanValue('overwrite', true);
-        await handleIOFResults(undefined, results, undefined, undefined, undefined, undefined, relay, {
-          clubNames
-        });
-        calculateFeesAndAwards(relay);
-        setIsRelay(relay);
-        if (raceWizardModel.raceEvent) form.setFieldsValue(toJS(raceWizardModel.raceEvent));
-        const count =
-          (raceWizardModel.raceEvent?.results.length ?? 0) + (raceWizardModel.raceEvent?.teamResults.length ?? 0);
-        setImportStatus(t('results.ImportDone', { count, clubs: clubNames.join(', ') }));
-        form.validateFields().then();
-        onValidate(!!raceWizardModel.raceEvent?.valid);
-      } catch (error) {
-        setImportStatus(undefined);
-        // The dialog of a runner was closed with the cross, the import is stopped
-        if (!(error instanceof CompetitorInputAborted))
-          setImportError(`${t('results.ImportFailed')}: ${error instanceof Error ? error.message : String(error)}`);
-      } finally {
-        setImporting(false);
-      }
-    }, [
-      calculateFeesAndAwards,
-      clubModel.eventorCorsProxy,
-      form,
-      handleIOFResults,
-      importClubNames,
-      importLink,
-      onValidate,
-      raceWizardModel,
-      t
-    ]);
+    const showImportError = useCallback((message: string) => {
+      setImportStatus(undefined);
+      setImportError(message);
+    }, []);
+
+    const importResults = useCallback(
+      async (load: LoadExternalResults) => {
+        setImportError(undefined);
+        const clubNames = SplitClubNames(importClubNames);
+        if (clubNames.length === 0) {
+          setImportError(t('results.ImportMissingClubName'));
+          return;
+        }
+        setImporting(true);
+        try {
+          const results = await load(setImportStatus);
+          // WinSplits has the legs of a relay as classes of their own, for one runner each
+          const relay =
+            !!results.Event.Form?.some(form => form === 'Relay') ||
+            !!results.ClassResult?.some(classResult => (classResult.TeamResult?.length ?? 0) > 0);
+          setImportStatus(t('results.LoadTaskCalculate'));
+          // A new race, the imported results take the place of the empty one
+          raceWizardModel.setBooleanValue('overwrite', true);
+          await handleIOFResults(undefined, results, undefined, undefined, undefined, undefined, relay, {
+            clubNames
+          });
+          calculateFeesAndAwards(relay);
+          setIsRelay(relay);
+          if (raceWizardModel.raceEvent) form.setFieldsValue(toJS(raceWizardModel.raceEvent));
+          const count =
+            (raceWizardModel.raceEvent?.results.length ?? 0) + (raceWizardModel.raceEvent?.teamResults.length ?? 0);
+          setImportStatus(t('results.ImportDone', { count, clubs: clubNames.join(', ') }));
+          form.validateFields().then();
+          onValidate(!!raceWizardModel.raceEvent?.valid);
+        } catch (error) {
+          setImportStatus(undefined);
+          // The dialog of a runner was closed with the cross, the import is stopped
+          if (!(error instanceof CompetitorInputAborted))
+            setImportError(`${t('results.ImportFailed')}: ${error instanceof Error ? error.message : String(error)}`);
+        } finally {
+          setImporting(false);
+        }
+      },
+      [calculateFeesAndAwards, form, handleIOFResults, importClubNames, onValidate, raceWizardModel, t]
+    );
 
     // The total results of an event of several days, after the stage of this race
+    // A page of the total (OE), or the result lists of every stage in their order
+    const [totalSource, setTotalSource] = useState<'oeTotal' | 'stages'>('oeTotal');
     const [totalLink, setTotalLink] = useState('');
+    const [totalStageResults, setTotalStageResults] = useState<IStageResults[]>([]);
     const [totalStage, setTotalStage] = useState<number | null>(null);
     const [totalLoading, setTotalLoading] = useState(false);
     const [totalStatus, setTotalStatus] = useState<string>();
@@ -1974,11 +2043,22 @@ const ResultWizardStep2EditRace = observer(
       }
       setTotalLoading(true);
       try {
-        const totalResults = await FetchTotalResultsPage(
-          liveloxProxy,
-          totalLink.trim(),
-          sessionModel.authorizationHeader
-        );
+        let totalResults: ITotalResultList;
+        if (totalSource === 'stages') {
+          const stageLists: IResultListType[] = [];
+          for (let i = 0; i < totalStageResults.length; i++) {
+            const stageResults = totalStageResults[i];
+            setTotalStatus(t('results.TotalStageProgress', { stage: i + 1, stages: totalStageResults.length }));
+            stageLists.push(
+              stageResults.results ??
+                (await FetchWinSplitsResults(clubModel.eventorCorsProxy!, stageResults.winSplitsDatabaseId!))
+            );
+          }
+          totalResults = TotalResultsFromStages(stageLists);
+          setTotalStatus(undefined);
+        } else {
+          totalResults = await FetchTotalResultsPage(liveloxProxy, totalLink.trim(), sessionModel.authorizationHeader);
+        }
         const stages = totalResults.nofStages;
         const stage =
           totalStage ??
@@ -2066,6 +2146,8 @@ const ResultWizardStep2EditRace = observer(
       sessionModel.authorizationHeader,
       t,
       totalLink,
+      totalSource,
+      totalStageResults,
       totalStage
     ]);
 
@@ -3400,468 +3482,468 @@ const ResultWizardStep2EditRace = observer(
           />
         ) : raceWizardModel.raceEvent && clubModel.raceClubs && loaded && visible ? (
           <Form id={formId} form={form} layout="vertical" initialValues={raceWizardModel.raceEvent}>
-            {warningsList ? (
-              <Alert
-                closable
-                showIcon
-                type="warning"
-                title={t('results.LoadRaceWarnings')}
-                description={warningsList}
-                style={{ marginBottom: 12 }}
-              />
-            ) : null}
-            {autoCompleteInfo ? (
-              <Alert
-                closable
-                showIcon
-                type="info"
-                title={t('results.AutoCompleteTitle')}
-                description={autoCompleteInfo}
-                style={{ marginBottom: 12 }}
-              />
-            ) : null}
-            {!raceWizardModel.existInEventor ? (
-              <Card size="small" title={t('results.ImportTitle')} style={{ marginBottom: 12 }}>
-                <Row gutter={8} align="bottom">
-                  <Col span={4}>
-                    <FormItem label={t('results.ImportSource')}>
-                      <Select value="winsplits" options={[{ value: 'winsplits', label: 'WinSplits Online' }]} />
-                    </FormItem>
-                  </Col>
-                  <Col span={9}>
-                    <FormItem label={t('results.ImportLink')} tooltip={t('results.ImportWinSplitsTooltip')}>
-                      <Input
-                        allowClear
-                        value={importLink}
-                        placeholder="https://obasen.orientering.se/winsplits/online/sv/default.asp?page=classes&databaseId=116342"
-                        onChange={e => setImportLink(e.currentTarget.value)}
-                      />
-                    </FormItem>
-                  </Col>
-                  <Col span={7}>
-                    <FormItem label={t('results.ImportClubNames')} tooltip={t('results.ImportClubNamesTooltip')}>
-                      <Input value={importClubNames} onChange={e => setImportClubNames(e.currentTarget.value)} />
-                    </FormItem>
-                  </Col>
-                  <Col span={4}>
-                    <Button
-                      block
-                      type="primary"
-                      icon={<ImportOutlined />}
-                      loading={importing}
-                      disabled={!importLink.trim()}
-                      onClick={importResults}
-                    >
-                      {t('results.Import')}
-                    </Button>
-                  </Col>
-                </Row>
-                {importError ? (
-                  <Typography.Text type="danger">{importError}</Typography.Text>
-                ) : importStatus ? (
-                  <Typography.Text type="secondary">{importStatus}</Typography.Text>
-                ) : null}
-                <Row gutter={8} align="bottom" style={{ marginTop: 8 }}>
-                  <Col span={4}>
-                    <FormItem label={t('results.ImportSource')}>
-                      <Select value="oeTotal" options={[{ value: 'oeTotal', label: t('results.TotalSourceOE') }]} />
-                    </FormItem>
-                  </Col>
-                  <Col span={13}>
-                    <FormItem label={t('results.TotalLink')} tooltip={t('results.TotalLinkTooltip')}>
-                      <Input
-                        allowClear
-                        value={totalLink}
-                        placeholder="https://host-open.dk/media/v2paaar0/samlet-klasseresultat.html"
-                        onChange={e => setTotalLink(e.currentTarget.value)}
-                      />
-                    </FormItem>
-                  </Col>
-                  <Col span={3}>
-                    <FormItem label={t('results.TotalStage')} tooltip={t('results.TotalStageTooltip')}>
-                      <InputNumber
-                        min={1}
-                        max={20}
-                        style={{ width: '100%' }}
-                        value={totalStage}
-                        placeholder={(earlierRaceIds.length > 0
-                          ? earlierRaceIds.length + 1
-                          : StageFromName(raceWizardModel.raceEvent.name)
-                        )?.toString()}
-                        onChange={value => setTotalStage(value)}
-                      />
-                    </FormItem>
-                  </Col>
-                  <Col span={4}>
-                    <Button
-                      block
-                      icon={<ImportOutlined />}
-                      loading={totalLoading}
-                      disabled={!totalLink.trim() || raceWizardModel.raceEvent.results.length === 0}
-                      onClick={importTotalResults}
-                    >
-                      {t('results.TotalImport')}
-                    </Button>
-                  </Col>
-                </Row>
-                <Row gutter={8} style={{ marginTop: 4 }}>
-                  <Col span={20}>
-                    <FormItem label={t('results.TotalEarlierStages')} tooltip={t('results.TotalEarlierStagesTooltip')}>
-                      <Select
-                        allowClear
-                        mode="multiple"
-                        value={earlierRaceIds}
-                        placeholder={
-                          earlierRaces.length > 0
-                            ? t('results.TotalEarlierStagesPlaceholder')
-                            : t('results.TotalNoEarlierStages')
+            {/* Everything above the table, the rows of the table are as many as fit below it */}
+            <div ref={setAboveTableElement}>
+              {warningsList ? (
+                <Alert
+                  closable
+                  showIcon
+                  type="warning"
+                  title={t('results.LoadRaceWarnings')}
+                  description={warningsList}
+                  style={{ marginBottom: 12 }}
+                />
+              ) : null}
+              {autoCompleteInfo ? (
+                <Alert
+                  closable
+                  showIcon
+                  type="info"
+                  title={t('results.AutoCompleteTitle')}
+                  description={autoCompleteInfo}
+                  style={{ marginBottom: 12 }}
+                />
+              ) : null}
+              {!raceWizardModel.existInEventor ? (
+                <Card size="small" title={t('results.ImportTitle')} style={{ marginBottom: 12 }}>
+                  <ImportExternalResults
+                    eventorCorsProxy={clubModel.eventorCorsProxy}
+                    importing={importing}
+                    clubNames={importClubNames}
+                    onClubNamesChange={setImportClubNames}
+                    onImport={importResults}
+                    onError={showImportError}
+                  />
+                  {importError ? (
+                    <Typography.Text type="danger">{importError}</Typography.Text>
+                  ) : importStatus ? (
+                    <Typography.Text type="secondary">{importStatus}</Typography.Text>
+                  ) : null}
+                  <Row gutter={8} align="bottom" style={{ marginTop: 8 }}>
+                    <Col span={4}>
+                      <FormItem label={t('results.ImportSource')}>
+                        <Select
+                          value={totalSource}
+                          popupMatchSelectWidth={false}
+                          options={[
+                            { value: 'oeTotal', label: t('results.TotalSourceOE') },
+                            { value: 'stages', label: t('results.TotalSourceStages') }
+                          ]}
+                          onChange={(value: 'oeTotal' | 'stages') => setTotalSource(value)}
+                        />
+                      </FormItem>
+                    </Col>
+                    <Col span={13}>
+                      {totalSource === 'stages' ? (
+                        <FormItem label={t('results.TotalStageLinks')} tooltip={t('results.TotalStageLinksTooltip')}>
+                          <StageResultsInput value={totalStageResults} onChange={setTotalStageResults} />
+                        </FormItem>
+                      ) : (
+                        <FormItem label={t('results.TotalLink')} tooltip={t('results.TotalLinkTooltip')}>
+                          <Input
+                            allowClear
+                            value={totalLink}
+                            placeholder="https://host-open.dk/media/v2paaar0/samlet-klasseresultat.html"
+                            onChange={e => setTotalLink(e.currentTarget.value)}
+                          />
+                        </FormItem>
+                      )}
+                    </Col>
+                    <Col span={3}>
+                      <FormItem label={t('results.TotalStage')} tooltip={t('results.TotalStageTooltip')}>
+                        <InputNumber
+                          min={1}
+                          max={20}
+                          style={{ width: '100%' }}
+                          value={totalStage}
+                          placeholder={(earlierRaceIds.length > 0
+                            ? earlierRaceIds.length + 1
+                            : StageFromName(raceWizardModel.raceEvent.name)
+                          )?.toString()}
+                          onChange={value => setTotalStage(value)}
+                        />
+                      </FormItem>
+                    </Col>
+                    <Col span={4}>
+                      <Button
+                        block
+                        icon={<ImportOutlined />}
+                        loading={totalLoading}
+                        disabled={
+                          (totalSource === 'stages' ? totalStageResults.length === 0 : !totalLink.trim()) ||
+                          raceWizardModel.raceEvent.results.length === 0
                         }
-                        disabled={earlierRaces.length === 0}
-                        options={earlierRaces.map(race => ({
-                          value: race.eventId,
-                          label: `${race.date} ${race.name}`
-                        }))}
-                        onChange={(ids: number[]) => setEarlierRaceIds(ids)}
-                      />
-                    </FormItem>
-                  </Col>
-                </Row>
-                {totalError ? (
-                  <Typography.Text type="danger">{totalError}</Typography.Text>
-                ) : totalStatus ? (
-                  <Typography.Text type="secondary">{totalStatus}</Typography.Text>
-                ) : null}
-              </Card>
-            ) : null}
-            <Row gutter={8}>
-              <Col span={6}>
-                <FormItem
-                  name="name"
-                  label={t('results.Name')}
-                  rules={[
-                    {
-                      required: true,
-                      message: errorRequiredField(t, 'results.Name')
-                    }
-                  ]}
-                >
-                  <Input
-                    onChange={e => {
-                      raceWizardModel.raceEvent?.setStringValueOrNull('name', e.currentTarget.value);
-                      onValidate(!!raceWizardModel.raceEvent?.valid);
-                    }}
-                  />
-                </FormItem>
-              </Col>
-              <Col span={6}>
-                <FormItem
-                  name="organiserName"
-                  label={t('results.Club')}
-                  rules={[
-                    {
-                      required: true,
-                      message: errorRequiredField(t, 'results.Club')
-                    }
-                  ]}
-                >
-                  <Input
-                    onChange={e => {
-                      raceWizardModel.raceEvent?.setStringValueOrNull('organiserName', e.currentTarget.value);
-                      onValidate(!!raceWizardModel.raceEvent?.valid);
-                    }}
-                  />
-                </FormItem>
-              </Col>
-              <Col span={4}>
-                <FormItem
-                  name="raceDate"
-                  label={t('results.Date')}
-                  rules={[
-                    {
-                      required: true,
-                      message: errorRequiredField(t, 'results.Date')
-                    }
-                  ]}
-                  normalize={(value: dayjs.Dayjs) => (value ? value.format(dateFormat) : null)}
-                  getValueProps={(value: string | undefined) => ({ value: value ? dayjs(value, dateFormat) : null })}
-                >
-                  <DatePicker
-                    format={dateFormat}
-                    allowClear={false}
-                    onChange={date => {
-                      if (date) raceWizardModel.raceEvent?.setStringValueOrNull('raceDate', date.format(dateFormat));
-                      onValidate(!!raceWizardModel.raceEvent?.valid);
-                    }}
-                  />
-                </FormItem>
-              </Col>
-              <Col span={4}>
-                <FormItem name="raceTime" label={t('results.Time')}>
-                  <InputTime
-                    format={shortTimeFormat}
-                    allowClear={true}
-                    onChange={time => {
-                      if (time) raceWizardModel.raceEvent?.setStringValueOrNull('raceTime', time);
-                      onValidate(!!raceWizardModel.raceEvent?.valid);
-                    }}
-                  />
-                </FormItem>
-              </Col>
-              {['OL', 'SKIO', 'MTBO'].includes(raceWizardModel.raceEvent.sportCode) ? (
+                        onClick={importTotalResults}
+                      >
+                        {t('results.TotalImport')}
+                      </Button>
+                    </Col>
+                  </Row>
+                  <Row gutter={8} style={{ marginTop: 4 }}>
+                    <Col span={20}>
+                      <FormItem
+                        label={t('results.TotalEarlierStages')}
+                        tooltip={t('results.TotalEarlierStagesTooltip')}
+                      >
+                        <Select
+                          allowClear
+                          mode="multiple"
+                          value={earlierRaceIds}
+                          placeholder={
+                            earlierRaces.length > 0
+                              ? t('results.TotalEarlierStagesPlaceholder')
+                              : t('results.TotalNoEarlierStages')
+                          }
+                          disabled={earlierRaces.length === 0}
+                          options={earlierRaces.map(race => ({
+                            value: race.eventId,
+                            label: `${race.date} ${race.name}`
+                          }))}
+                          onChange={(ids: number[]) => setEarlierRaceIds(ids)}
+                        />
+                      </FormItem>
+                    </Col>
+                  </Row>
+                  {totalError ? (
+                    <Typography.Text type="danger">{totalError}</Typography.Text>
+                  ) : totalStatus ? (
+                    <Typography.Text type="secondary">{totalStatus}</Typography.Text>
+                  ) : null}
+                </Card>
+              ) : null}
+              <Row gutter={8}>
+                <Col span={6}>
+                  <FormItem
+                    name="name"
+                    label={t('results.Name')}
+                    rules={[
+                      {
+                        required: true,
+                        message: errorRequiredField(t, 'results.Name')
+                      }
+                    ]}
+                  >
+                    <Input
+                      onChange={e => {
+                        raceWizardModel.raceEvent?.setStringValueOrNull('name', e.currentTarget.value);
+                        onValidate(!!raceWizardModel.raceEvent?.valid);
+                      }}
+                    />
+                  </FormItem>
+                </Col>
+                <Col span={6}>
+                  <FormItem
+                    name="organiserName"
+                    label={t('results.Club')}
+                    rules={[
+                      {
+                        required: true,
+                        message: errorRequiredField(t, 'results.Club')
+                      }
+                    ]}
+                  >
+                    <Input
+                      onChange={e => {
+                        raceWizardModel.raceEvent?.setStringValueOrNull('organiserName', e.currentTarget.value);
+                        onValidate(!!raceWizardModel.raceEvent?.valid);
+                      }}
+                    />
+                  </FormItem>
+                </Col>
                 <Col span={4}>
                   <FormItem
-                    name="meetsAwardRequirements"
-                    label={t('results.MeetsAwardRequirements')}
-                    valuePropName="checked"
-                  >
-                    <Switch
-                      onChange={checked => {
-                        raceWizardModel.raceEvent?.setBooleanValue('meetsAwardRequirements', checked);
-                        CalculateAllAwards(clubModel.raceClubs!, raceWizardModel.raceEvent!);
-                      }}
-                    />
-                  </FormItem>
-                </Col>
-              ) : null}
-            </Row>
-            <Row gutter={8}>
-              <Col span={2}>
-                <FormItem name="longitude" label={t('map.ChooseMapPosition')}>
-                  <Tooltip
-                    title={
-                      !raceWizardModel.raceEvent?.longitude || !raceWizardModel.raceEvent?.latitude ? (
-                        t('error.MissingMapPosition')
-                      ) : (
-                        <div>
-                          <p style={{ lineHeight: '12px' }}>{`${t('map.Longitude')}: ${
-                            raceWizardModel.raceEvent?.longitude
-                          }`}</p>
-                          <p style={{ lineHeight: '12px' }}>{`${t('map.Latitude')}: ${
-                            raceWizardModel.raceEvent?.latitude
-                          }`}</p>
-                        </div>
-                      )
-                    }
-                  >
-                    <Button
-                      danger={!raceWizardModel.raceEvent?.longitude || !raceWizardModel.raceEvent?.latitude}
-                      icon={<GlobalOutlined />}
-                      onClick={onChooseMapPosition}
-                    />
-                  </Tooltip>
-                </FormItem>
-              </Col>
-              <Col span={5}>
-                <FormItem
-                  name="eventClassificationId"
-                  label={t('results.EventClassification')}
-                  rules={[
-                    {
-                      required: true,
-                      message: errorRequiredField(t, 'results.EventClassification')
-                    }
-                  ]}
-                >
-                  <FormSelect
-                    popupMatchSelectWidth={false}
-                    allowClear={false}
-                    options={clubModel.raceClubs.eventClassificationOptions}
-                    onChange={code => {
-                      raceWizardModel.raceEvent?.setEventClassificationId(code);
-                      ResetClassClassifications(
-                        raceWizardModel.raceEvent!,
-                        clubModel.raceClubs!.eventClassifications,
-                        clubModel.raceClubs!.classLevels
-                      );
-                      CalculateAllAwards(clubModel.raceClubs!, raceWizardModel.raceEvent!);
-                      CalculateAllClassClassificationId(clubModel.raceClubs!, raceWizardModel.raceEvent!);
-                      onValidate(!!raceWizardModel.raceEvent?.valid);
-                    }}
-                  />
-                </FormItem>
-              </Col>
-              <Col span={5}>
-                <FormItem
-                  name="paymentModel"
-                  label={t('results.PaymentModel')}
-                  rules={[
-                    {
-                      required: true,
-                      message: errorRequiredField(t, 'results.RaceDistance')
-                    }
-                  ]}
-                >
-                  <FormSelect
-                    allowClear={false}
-                    options={paymentOptions(t)}
-                    onChange={code => {
-                      raceWizardModel.raceEvent?.setPaymentModel(code);
-                      if (code !== payments.defaultFeePaidByCompetitor) {
-                        raceWizardModel.setNumberValue('paymentModel', code);
+                    name="raceDate"
+                    label={t('results.Date')}
+                    rules={[
+                      {
+                        required: true,
+                        message: errorRequiredField(t, 'results.Date')
                       }
-                      CalculateCompetitorsFee(
-                        raceWizardModel.raceEvent!,
-                        clubModel.raceClubs!.selectedClub!,
-                        clubModel.raceClubs!.eventClassifications
-                      );
-                      onValidate(!!raceWizardModel.raceEvent?.valid);
-                    }}
-                  />
-                </FormItem>
-              </Col>
-              <Col span={3}>
-                <FormItem
-                  name="sportCode"
-                  label={t('results.Sport')}
-                  rules={[
-                    {
-                      required: true,
-                      message: errorRequiredField(t, 'results.Sport')
-                    }
-                  ]}
-                >
-                  <FormSelect
-                    allowClear={false}
-                    options={clubModel.raceClubs.sportOptions}
-                    onChange={code => {
-                      raceWizardModel.raceEvent?.setSportCode(code);
-                      raceWizardModel.raceEvent?.setBooleanValue('meetsAwardRequirements', code === 'OL');
-                      CalculateAllAwards(clubModel.raceClubs!, raceWizardModel.raceEvent!);
-                      onValidate(!!raceWizardModel.raceEvent?.valid);
-                    }}
-                  />
-                </FormItem>
-              </Col>
-              <Col span={3}>
-                <FormItem name="isRelay" label={t('results.IsRelay')} valuePropName="checked">
-                  <Switch
-                    disabled={
-                      raceWizardModel.raceEvent.results.length > 0 || raceWizardModel.raceEvent.teamResults.length > 0
-                    }
-                    onChange={checked => {
-                      raceWizardModel.raceEvent?.setBooleanValue('isRelay', checked);
-                      setIsRelay(checked);
-                    }}
-                  />
-                </FormItem>
-              </Col>
-              <Col span={3}>
-                <FormItem
-                  name="raceDistance"
-                  label={t('results.RaceDistance')}
-                  rules={[
-                    {
-                      required: true,
-                      message: errorRequiredField(t, 'results.RaceDistance')
-                    }
-                  ]}
-                >
-                  <FormSelect
-                    allowClear={true}
-                    options={raceDistanceOptions(t)}
-                    onChange={code => {
-                      raceWizardModel.raceEvent?.setRaceDistance(code);
-                      onValidate(!!raceWizardModel.raceEvent?.valid);
-                    }}
-                  />
-                </FormItem>
-              </Col>
-              <Col span={3}>
-                <FormItem
-                  name="raceLightCondition"
-                  label={t('results.RaceLightCondition')}
-                  rules={[
-                    {
-                      required: true,
-                      message: errorRequiredField(t, 'results.RaceLightCondition')
-                    }
-                  ]}
-                >
-                  <FormSelect
-                    allowClear={true}
-                    options={raceLightConditionOptions(t)}
-                    onChange={code => {
-                      raceWizardModel.raceEvent?.setRaceLightCondition(code);
-                      onValidate(!!raceWizardModel.raceEvent?.valid);
-                    }}
-                  />
-                </FormItem>
-              </Col>
-            </Row>
-            {liveloxNeeded || livelox || liveloxError ? (
-              <Row gutter={8} align="bottom" style={{ marginBottom: 8 }}>
-                <Col span={10}>
-                  <FormItem label={t('results.LiveloxLink')} tooltip={t('results.LiveloxLinkTooltip')}>
-                    <Input.Search
-                      allowClear
-                      value={liveloxLink}
-                      placeholder={t('results.LiveloxLinkPlaceholder')}
-                      enterButton={t('results.LiveloxFetch')}
-                      loading={liveloxLoading}
-                      onChange={e => setLiveloxLink(e.currentTarget.value)}
-                      onSearch={value => {
-                        if (value.trim()) loadLivelox(value);
+                    ]}
+                    normalize={(value: dayjs.Dayjs) => (value ? value.format(dateFormat) : null)}
+                    getValueProps={(value: string | undefined) => ({ value: value ? dayjs(value, dateFormat) : null })}
+                  >
+                    <DatePicker
+                      format={dateFormat}
+                      allowClear={false}
+                      onChange={date => {
+                        if (date) raceWizardModel.raceEvent?.setStringValueOrNull('raceDate', date.format(dateFormat));
+                        onValidate(!!raceWizardModel.raceEvent?.valid);
                       }}
                     />
                   </FormItem>
                 </Col>
-                <Col span={14} style={{ paddingBottom: 5 }}>
-                  {liveloxError ? (
-                    <Typography.Text type="danger">{liveloxError}</Typography.Text>
-                  ) : livelox ? (
-                    <Typography.Text type="secondary">
-                      <a href={livelox.event.url} target="_blank" rel="noopener noreferrer">
-                        {livelox.event.name}
-                      </a>
-                      {' – '}
-                      {livelox.updated > 0
-                        ? t('results.LiveloxApplied', { count: livelox.updated })
-                        : t('results.LiveloxNoChange')}
-                    </Typography.Text>
-                  ) : null}
+                <Col span={4}>
+                  <FormItem name="raceTime" label={t('results.Time')}>
+                    <InputTime
+                      format={shortTimeFormat}
+                      allowClear={true}
+                      onChange={time => {
+                        if (time) raceWizardModel.raceEvent?.setStringValueOrNull('raceTime', time);
+                        onValidate(!!raceWizardModel.raceEvent?.valid);
+                      }}
+                    />
+                  </FormItem>
+                </Col>
+                {['OL', 'SKIO', 'MTBO'].includes(raceWizardModel.raceEvent.sportCode) ? (
+                  <Col span={4}>
+                    <FormItem
+                      name="meetsAwardRequirements"
+                      label={t('results.MeetsAwardRequirements')}
+                      valuePropName="checked"
+                    >
+                      <Switch
+                        onChange={checked => {
+                          raceWizardModel.raceEvent?.setBooleanValue('meetsAwardRequirements', checked);
+                          CalculateAllAwards(clubModel.raceClubs!, raceWizardModel.raceEvent!);
+                        }}
+                      />
+                    </FormItem>
+                  </Col>
+                ) : null}
+              </Row>
+              <Row gutter={8}>
+                <Col span={2}>
+                  <FormItem name="longitude" label={t('map.ChooseMapPosition')}>
+                    <Tooltip
+                      title={
+                        !raceWizardModel.raceEvent?.longitude || !raceWizardModel.raceEvent?.latitude ? (
+                          t('error.MissingMapPosition')
+                        ) : (
+                          <div>
+                            <p style={{ lineHeight: '12px' }}>{`${t('map.Longitude')}: ${
+                              raceWizardModel.raceEvent?.longitude
+                            }`}</p>
+                            <p style={{ lineHeight: '12px' }}>{`${t('map.Latitude')}: ${
+                              raceWizardModel.raceEvent?.latitude
+                            }`}</p>
+                          </div>
+                        )
+                      }
+                    >
+                      <Button
+                        danger={!raceWizardModel.raceEvent?.longitude || !raceWizardModel.raceEvent?.latitude}
+                        icon={<GlobalOutlined />}
+                        onClick={onChooseMapPosition}
+                      />
+                    </Tooltip>
+                  </FormItem>
+                </Col>
+                <Col span={5}>
+                  <FormItem
+                    name="eventClassificationId"
+                    label={t('results.EventClassification')}
+                    rules={[
+                      {
+                        required: true,
+                        message: errorRequiredField(t, 'results.EventClassification')
+                      }
+                    ]}
+                  >
+                    <FormSelect
+                      popupMatchSelectWidth={false}
+                      allowClear={false}
+                      options={clubModel.raceClubs.eventClassificationOptions}
+                      onChange={code => {
+                        raceWizardModel.raceEvent?.setEventClassificationId(code);
+                        ResetClassClassifications(
+                          raceWizardModel.raceEvent!,
+                          clubModel.raceClubs!.eventClassifications,
+                          clubModel.raceClubs!.classLevels
+                        );
+                        CalculateAllAwards(clubModel.raceClubs!, raceWizardModel.raceEvent!);
+                        CalculateAllClassClassificationId(clubModel.raceClubs!, raceWizardModel.raceEvent!);
+                        onValidate(!!raceWizardModel.raceEvent?.valid);
+                      }}
+                    />
+                  </FormItem>
+                </Col>
+                <Col span={5}>
+                  <FormItem
+                    name="paymentModel"
+                    label={t('results.PaymentModel')}
+                    rules={[
+                      {
+                        required: true,
+                        message: errorRequiredField(t, 'results.RaceDistance')
+                      }
+                    ]}
+                  >
+                    <FormSelect
+                      allowClear={false}
+                      options={paymentOptions(t)}
+                      onChange={code => {
+                        raceWizardModel.raceEvent?.setPaymentModel(code);
+                        if (code !== payments.defaultFeePaidByCompetitor) {
+                          raceWizardModel.setNumberValue('paymentModel', code);
+                        }
+                        CalculateCompetitorsFee(
+                          raceWizardModel.raceEvent!,
+                          clubModel.raceClubs!.selectedClub!,
+                          clubModel.raceClubs!.eventClassifications
+                        );
+                        onValidate(!!raceWizardModel.raceEvent?.valid);
+                      }}
+                    />
+                  </FormItem>
+                </Col>
+                <Col span={3}>
+                  <FormItem
+                    name="sportCode"
+                    label={t('results.Sport')}
+                    rules={[
+                      {
+                        required: true,
+                        message: errorRequiredField(t, 'results.Sport')
+                      }
+                    ]}
+                  >
+                    <FormSelect
+                      allowClear={false}
+                      options={clubModel.raceClubs.sportOptions}
+                      onChange={code => {
+                        raceWizardModel.raceEvent?.setSportCode(code);
+                        raceWizardModel.raceEvent?.setBooleanValue('meetsAwardRequirements', code === 'OL');
+                        CalculateAllAwards(clubModel.raceClubs!, raceWizardModel.raceEvent!);
+                        onValidate(!!raceWizardModel.raceEvent?.valid);
+                      }}
+                    />
+                  </FormItem>
+                </Col>
+                <Col span={3}>
+                  <FormItem name="isRelay" label={t('results.IsRelay')} valuePropName="checked">
+                    <Switch
+                      disabled={
+                        raceWizardModel.raceEvent.results.length > 0 || raceWizardModel.raceEvent.teamResults.length > 0
+                      }
+                      onChange={checked => {
+                        raceWizardModel.raceEvent?.setBooleanValue('isRelay', checked);
+                        setIsRelay(checked);
+                      }}
+                    />
+                  </FormItem>
+                </Col>
+                <Col span={3}>
+                  <FormItem
+                    name="raceDistance"
+                    label={t('results.RaceDistance')}
+                    rules={[
+                      {
+                        required: true,
+                        message: errorRequiredField(t, 'results.RaceDistance')
+                      }
+                    ]}
+                  >
+                    <FormSelect
+                      allowClear={true}
+                      options={raceDistanceOptions(t)}
+                      onChange={code => {
+                        raceWizardModel.raceEvent?.setRaceDistance(code);
+                        onValidate(!!raceWizardModel.raceEvent?.valid);
+                      }}
+                    />
+                  </FormItem>
+                </Col>
+                <Col span={3}>
+                  <FormItem
+                    name="raceLightCondition"
+                    label={t('results.RaceLightCondition')}
+                    rules={[
+                      {
+                        required: true,
+                        message: errorRequiredField(t, 'results.RaceLightCondition')
+                      }
+                    ]}
+                  >
+                    <FormSelect
+                      allowClear={true}
+                      options={raceLightConditionOptions(t)}
+                      onChange={code => {
+                        raceWizardModel.raceEvent?.setRaceLightCondition(code);
+                        onValidate(!!raceWizardModel.raceEvent?.valid);
+                      }}
+                    />
+                  </FormItem>
                 </Col>
               </Row>
-            ) : null}
-            {isRelay ? (
-              <StyledTable
-                columns={teamColumns}
-                dataSource={raceWizardModel.raceEvent.teamResults.map(result => ({
-                  ...toJS(result),
-                  key: result.teamResultId,
-                  isValid: result.valid,
-                  stageText: `${result.stage} ${t('common.Of')} ${result.totalStages}`
-                }))}
-                pagination={{
-                  pageSize: Math.trunc((height - 244) / 32),
-                  hideOnSinglePage: true,
-                  showSizeChanger: false
-                }}
-                scroll={{ x: true }}
-                size="middle"
-                tableLayout="fixed"
-                rowClassName={record => (!record.isValid ? 'table-row-red' : '')}
-              />
-            ) : (
-              <StyledTable
-                columns={columns}
-                dataSource={raceWizardModel.raceEvent.results.map(result => ({
-                  ...toJS(result),
-                  key: result.resultId,
-                  isValid: result.valid,
-                  isAwardTouched: result.isAwardTouched,
-                  fee: result.originalFee != null && result.lateFee != null ? result.originalFee + result.lateFee : null
-                }))}
-                pagination={{
-                  pageSize: Math.trunc((height - 244) / 32),
-                  hideOnSinglePage: true,
-                  showSizeChanger: false
-                }}
-                scroll={{ x: true }}
-                size="middle"
-                tableLayout="fixed"
-                rowClassName={record => (!record.isValid ? 'table-row-red' : '')}
-              />
-            )}
+              {liveloxNeeded || livelox || liveloxError ? (
+                <Row gutter={8} align="bottom" style={{ marginBottom: 8 }}>
+                  <Col span={10}>
+                    <FormItem label={t('results.LiveloxLink')} tooltip={t('results.LiveloxLinkTooltip')}>
+                      <Input.Search
+                        allowClear
+                        value={liveloxLink}
+                        placeholder={t('results.LiveloxLinkPlaceholder')}
+                        enterButton={t('results.LiveloxFetch')}
+                        loading={liveloxLoading}
+                        onChange={e => setLiveloxLink(e.currentTarget.value)}
+                        onSearch={value => {
+                          if (value.trim()) loadLivelox(value);
+                        }}
+                      />
+                    </FormItem>
+                  </Col>
+                  <Col span={14} style={{ paddingBottom: 5 }}>
+                    {liveloxError ? (
+                      <Typography.Text type="danger">{liveloxError}</Typography.Text>
+                    ) : livelox ? (
+                      <Typography.Text type="secondary">
+                        <a href={livelox.event.url} target="_blank" rel="noopener noreferrer">
+                          {livelox.event.name}
+                        </a>
+                        {' – '}
+                        {livelox.updated > 0
+                          ? t('results.LiveloxApplied', { count: livelox.updated })
+                          : t('results.LiveloxNoChange')}
+                      </Typography.Text>
+                    ) : null}
+                  </Col>
+                </Row>
+              ) : null}
+            </div>
+            <div ref={setTableElement}>
+              {isRelay ? (
+                <StyledTable
+                  columns={teamColumns}
+                  dataSource={raceWizardModel.raceEvent.teamResults.map(result => ({
+                    ...toJS(result),
+                    key: result.teamResultId,
+                    isValid: result.valid,
+                    stageText: `${result.stage} ${t('common.Of')} ${result.totalStages}`
+                  }))}
+                  pagination={{
+                    pageSize: tablePageSize,
+                    hideOnSinglePage: true,
+                    showSizeChanger: false
+                  }}
+                  scroll={{ x: true }}
+                  size="middle"
+                  tableLayout="fixed"
+                  rowClassName={record => (!record.isValid ? 'table-row-red' : '')}
+                />
+              ) : (
+                <StyledTable
+                  columns={columns}
+                  dataSource={raceWizardModel.raceEvent.results.map(result => ({
+                    ...toJS(result),
+                    key: result.resultId,
+                    isValid: result.valid,
+                    isAwardTouched: result.isAwardTouched,
+                    fee:
+                      result.originalFee != null && result.lateFee != null ? result.originalFee + result.lateFee : null
+                  }))}
+                  pagination={{
+                    pageSize: tablePageSize,
+                    hideOnSinglePage: true,
+                    showSizeChanger: false
+                  }}
+                  scroll={{ x: true }}
+                  size="middle"
+                  tableLayout="fixed"
+                  rowClassName={record => (!record.isValid ? 'table-row-red' : '')}
+                />
+              )}
+            </div>
           </Form>
         ) : visible && loadTasks.length > 0 ? (
           <LoadProgress title={t('results.LoadingRace')} tasks={loadTasks} startedAt={loadStartedAt} />

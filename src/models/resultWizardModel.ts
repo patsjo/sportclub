@@ -128,6 +128,8 @@ class WinnerResult implements IWinnerResult {
   }
 
   setWinnerTime(value: string) {
+    // Another time than the one of the winner, who won it is not known
+    if (value !== this.winnerTime) this.personName = '';
     this.winnerTime = value;
     this.secondsPerKilometer =
       this.winnerTime && this.lengthInMeter
@@ -340,7 +342,7 @@ export class RaceWizard implements IRaceWizard {
       })
       .map(wr => ({
         code: JSON.stringify(wr),
-        description: `${wr.timePerKilometer}, ${wr.className}, ${wr.personName}`
+        description: [wr.timePerKilometer, wr.className, wr.personName].filter(part => part).join(', ')
       }));
   }
 }

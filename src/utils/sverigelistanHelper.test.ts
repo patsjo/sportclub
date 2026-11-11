@@ -1,3 +1,4 @@
+import { CreateBookmarkletDialog } from './bookmarkletDialog';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -100,12 +101,13 @@ const eventPage = `<!DOCTYPE html><html lang="sv"><head><title>Eventor - O-event
 </div></body></html>`;
 
 const texts: ISverigelistanBookmarkletTexts = {
+  title: 'Copy ranking',
   wrongPage: 'wrong page',
   fetching: 'class {n} of {total}',
   failed: 'failed: {message}',
   noPoints: 'no points',
   ready: '{ranked} of {total}',
-  copy: 'Copy',
+  copiedTitle: 'Copied!',
   copied: 'copied',
   copyManually: 'copy manually',
   close: 'Close'
@@ -196,7 +198,7 @@ describe('SverigelistanBookmarklet', () => {
   it('copies the class of a class page', async () => {
     const writeText = clipboard();
     loadPage(h21Page);
-    SverigelistanBookmarkletMain(ParseSverigelistanPage, texts);
+    SverigelistanBookmarkletMain(ParseSverigelistanPage, texts, CreateBookmarkletDialog);
     await vi.waitFor(() => expect(writeText).toHaveBeenCalled());
     const data = ParseSverigelistanClipboard(writeText.mock.calls[0][0]);
     expect(data?.eventName).toBe('O-event, dag 1 - Sprint by Night');
@@ -220,7 +222,7 @@ describe('SverigelistanBookmarklet', () => {
     }));
     vi.stubGlobal('fetch', fetchMock);
     loadPage(eventPage);
-    SverigelistanBookmarkletMain(ParseSverigelistanPage, texts);
+    SverigelistanBookmarkletMain(ParseSverigelistanPage, texts, CreateBookmarkletDialog);
     await vi.waitFor(() => expect(writeText).toHaveBeenCalled());
     expect(fetchMock).toHaveBeenCalledTimes(3);
     const data = ParseSverigelistanClipboard(writeText.mock.calls[0][0]);
@@ -235,7 +237,7 @@ describe('SverigelistanBookmarklet', () => {
   it('tells when no class has points yet', async () => {
     const writeText = clipboard();
     loadPage(notPublishedPage);
-    SverigelistanBookmarkletMain(ParseSverigelistanPage, texts);
+    SverigelistanBookmarkletMain(ParseSverigelistanPage, texts, CreateBookmarkletDialog);
     await vi.waitFor(() => expect(box()?.textContent).toContain('no points'));
     expect(writeText).not.toHaveBeenCalled();
   });
@@ -247,13 +249,13 @@ describe('SverigelistanBookmarklet', () => {
       vi.fn(async () => ({ ok: false, status: 403, statusText: 'Forbidden', text: async () => '' }))
     );
     loadPage(eventPage);
-    SverigelistanBookmarkletMain(ParseSverigelistanPage, texts);
+    SverigelistanBookmarkletMain(ParseSverigelistanPage, texts, CreateBookmarkletDialog);
     await vi.waitFor(() => expect(box()?.textContent).toContain('failed: 403 Forbidden'));
   });
 
   it('tells which page to open on another page', async () => {
     loadPage(`<html><body>${menu}</body></html>`);
-    SverigelistanBookmarkletMain(ParseSverigelistanPage, texts);
+    SverigelistanBookmarkletMain(ParseSverigelistanPage, texts, CreateBookmarkletDialog);
     await vi.waitFor(() => expect(box()?.textContent).toContain('wrong page'));
   });
 });

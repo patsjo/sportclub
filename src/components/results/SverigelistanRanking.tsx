@@ -43,12 +43,13 @@ const SverigelistanRanking = observer(({ onChoose }: ISverigelistanRankingProps)
   const bookmarklet = useMemo(
     () =>
       SverigelistanBookmarklet({
+        title: t('results.SverigelistanBookmark'),
         wrongPage: t('results.SverigelistanBookmarkletWrongPage'),
         fetching: t('results.SverigelistanBookmarkletFetching'),
         failed: t('results.SverigelistanBookmarkletFailed'),
         noPoints: t('results.SverigelistanBookmarkletNoPoints'),
         ready: t('results.SverigelistanBookmarkletReady'),
-        copy: t('results.SverigelistanBookmarkletCopy'),
+        copiedTitle: t('results.SverigelistanBookmarkletCopiedTitle'),
         copied: t('results.SverigelistanBookmarkletCopied'),
         copyManually: t('results.SverigelistanBookmarkletCopyManually'),
         close: t('results.SverigelistanBookmarkletClose')

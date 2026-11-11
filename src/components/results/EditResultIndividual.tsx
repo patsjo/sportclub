@@ -658,7 +658,7 @@ const EditResultIndividual = ({
                           )
                             raceWizardModel.addRaceWinnerResult({
                               id: raceWizardModel.raceWinnerResults.length,
-                              personName: 'Unknown',
+                              personName: '',
                               className: result.className,
                               difficulty: code,
                               lengthInMeter: result.lengthInMeter,
@@ -701,7 +701,7 @@ const EditResultIndividual = ({
                           )
                             raceWizardModel.addRaceWinnerResult({
                               id: raceWizardModel.raceWinnerResults.length,
-                              personName: 'Unknown',
+                              personName: '',
                               className: result.className,
                               difficulty: result.difficulty,
                               lengthInMeter: value,
@@ -812,7 +812,7 @@ const EditResultIndividual = ({
                           )
                             raceWizardModel.addRaceWinnerResult({
                               id: raceWizardModel.raceWinnerResults.length,
-                              personName: 'Unknown',
+                              personName: '',
                               className: result.className,
                               difficulty: result.difficulty,
                               lengthInMeter: result.lengthInMeter,

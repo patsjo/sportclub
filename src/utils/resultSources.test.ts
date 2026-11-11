@@ -1,17 +1,23 @@
 import { describe, expect, it } from 'vitest';
 import { IResultListType } from '../models/iof.xsd-3.0';
+import { IofXmlToJson } from './iofXmlToJson';
 import {
   CalculateTotalAfterStage,
   FindCompetitorByName,
+  FindLinkedCompetitorId,
   FindTotalClass,
   FindTotalPerson,
   IsClubOrganisation,
+  LinkResultName,
   NormalizeName,
   ParseOETotalResults,
   ParseTimeToSeconds,
+  ResultNameKey,
   SplitClubNames,
   StageFromName,
   TotalLengthInMeter,
+  TotalResultsFromStages,
+  ToExternalResultList,
   ToSingleRaceResultList,
   WinSplitsClassResultUrl,
   WinSplitsDatabaseId
@@ -24,6 +30,12 @@ describe('names', () => {
     expect(IsClubOrganisation('OK Orion Ungdom', ['OK Orion'])).toBe(false);
     expect(IsClubOrganisation(undefined, ['OK Orion'])).toBe(false);
     expect(SplitClubNames(' OK Orion, Orion ; ')).toEqual(['OK Orion', 'Orion']);
+    expect(IsClubOrganisation('Sweden 1', SplitClubNames('SWE 1, Sweden 1'))).toBe(true);
+  });
+
+  it('takes anything but text for no name, the proxy turns <Family> </Family> into an object', () => {
+    expect(NormalizeName({})).toBe('');
+    expect(FindCompetitorByName([{ firstName: 'GB-AJ-VS', lastName: '' }], 'GB-AJ-VS', {} as string)).toBeUndefined();
   });
 
   it('finds the runner of the club by name, only when one has it', () => {
@@ -35,6 +47,114 @@ describe('names', () => {
     expect(FindCompetitorByName(competitors, 'patrik', 'Sjokvist')?.id).toBe(1);
     expect(FindCompetitorByName(competitors, 'Anna', 'Berg')).toBeUndefined();
     expect(FindCompetitorByName(competitors, 'Patrik', undefined)).toBeUndefined();
+  });
+
+  it('finds the runner by all the words of the name, when the parts are split otherwise', () => {
+    const competitors = [
+      { id: 1, firstName: 'Malin', lastName: 'Agervig Kristiansson' },
+      { id: 2, firstName: 'Anna Lisa', lastName: 'Berg' }
+    ];
+    expect(FindCompetitorByName(competitors, 'Malin Agervig', 'Kristiansson')?.id).toBe(1);
+    expect(FindCompetitorByName(competitors, 'Berg', 'Anna Lisa')?.id).toBe(2);
+    expect(FindCompetitorByName(competitors, 'Anna', 'Berg')).toBeUndefined();
+  });
+});
+
+describe('linked names of other sources', () => {
+  it('finds the runner the user linked to a name before, the words in any order, for the club', () => {
+    localStorage.clear();
+    expect(ResultNameKey('Tim', 'Johansson')).toBe(ResultNameKey('Johansson', 'Tim'));
+    expect(FindLinkedCompetitorId(45, 'Tim', 'Johansson')).toBeUndefined();
+    LinkResultName(45, 'Tim', 'Johansson', 1234);
+    LinkResultName(45, 'Anton', 'Johansson', 99);
+    expect(FindLinkedCompetitorId(45, 'Johansson', 'Tim')).toBe(1234);
+    expect(FindLinkedCompetitorId(45, 'tim', 'JOHANSSON')).toBe(1234);
+    expect(FindLinkedCompetitorId(46, 'Tim', 'Johansson')).toBeUndefined();
+    expect(FindLinkedCompetitorId(45, 'Anton', 'Johansson')).toBe(99);
+  });
+});
+
+describe('TotalResultsFromStages', () => {
+  const stage = (persons: { given: string; family: string; time?: number; status?: string }[]) =>
+    ({
+      Event: { Name: 'Stage' },
+      ClassResult: [
+        {
+          Class: { Name: 'M 21 Elite' },
+          PersonResult: persons.map(person => ({
+            Person: { Name: { Given: person.given, Family: person.family } },
+            Organisation: { Name: 'OK Orion' },
+            Result: [{ Time: person.time, Status: person.status ?? 'OK' }]
+          }))
+        }
+      ]
+    }) as unknown as IResultListType;
+
+  it('is the total of the stages, by class and name, as from a page of the total', () => {
+    const total = TotalResultsFromStages([
+      stage([
+        { given: 'Florian', family: 'Attinger', time: 5200 },
+        { given: 'Anna', family: 'Berg', time: 5000 },
+        { given: 'Eva', family: 'Holm', status: 'DidNotStart' }
+      ]),
+      stage([
+        { given: 'Anna', family: 'Berg', time: 4000 },
+        { given: 'Florian', family: 'Attinger', time: 3900 },
+        { given: 'Eva', family: 'Holm', status: 'MissingPunch' }
+      ])
+    ]);
+    expect(total.nofStages).toBe(2);
+    expect(total.classes[0].persons.map(p => [p.name, p.stages])).toEqual([
+      ['Florian Attinger', [{ time: 5200 }, { time: 3900 }]],
+      ['Anna Berg', [{ time: 5000 }, { time: 4000 }]],
+      ['Eva Holm', [{ status: 'DNS' }, { status: 'MissingPunch' }]]
+    ]);
+    const afterStage2 = CalculateTotalAfterStage(FindTotalClass(total, 'm 21 elite')!, 2, 2);
+    expect(afterStage2.totals.map(t => [t.person.name, t.totalTime, t.totalPosition, t.failed])).toEqual([
+      ['Florian Attinger', 9100, 2, undefined],
+      ['Anna Berg', 9000, 1, undefined],
+      ['Eva Holm', undefined, undefined, 'NotFinished']
+    ]);
+    expect(StageFromName('5 Days of Italy - Gara 2')).toBe(2);
+  });
+});
+
+describe('IOF XML of other sources', () => {
+  it('reads a file as the proxy does, an empty person id is no id', () => {
+    // As in the files of FISO, written by Oribos
+    const list = ToExternalResultList(
+      IofXmlToJson(`\uFEFF<?xml version="1.0" encoding="utf-8"?>
+<ResultList xmlns="http://www.orienteering.org/datastandard/3.0" iofVersion="3.0" creator="Oribos 4.3.1.6">
+\t<Event>
+\t\t<Name>5 Days of Italy - Gara 1</Name>
+\t\t<StartTime><Date>2026-07-06</Date></StartTime>
+\t</Event>
+\t<ClassResult>
+\t\t<Class><Id>ME</Id><Name>M 21 Elite</Name></Class>
+\t\t<Course><Length>10520</Length><Climb>370</Climb></Course>
+\t\t<PersonResult>
+\t\t\t<Person><Id></Id><Name><Family>Attinger</Family><Given>Florian</Given></Name></Person>
+\t\t\t<Organisation><Id>2666</Id><Name>OL ZIMMERBERG</Name><Country code="SUI">Svizzera</Country></Organisation>
+\t\t\t<Result><Time>5200</Time><TimeBehind>0</TimeBehind><Position>1</Position><Status>OK</Status>
+\t\t\t\t<SplitTime><ControlCode>31</ControlCode><Time>418</Time></SplitTime>
+\t\t\t\t<SplitTime><ControlCode>32</ControlCode><Time>505</Time></SplitTime>
+\t\t\t</Result>
+\t\t</PersonResult>
+\t</ClassResult>
+</ResultList>`)
+    );
+    expect(list.Event.Race?.[0]).toMatchObject({ RaceNumber: 1, Name: '5 Days of Italy - Gara 1' });
+    const classResult = list.ClassResult![0];
+    expect(classResult.Class.Name).toBe('M 21 Elite');
+    expect(classResult.Course?.[0]).toMatchObject({ Length: 10520, '@attributes': { raceNumber: 1 } });
+    const personResult = classResult.PersonResult![0];
+    expect(personResult.Person.Id).toEqual(['ext:1']);
+    expect(personResult.Organisation?.Name).toBe('OL ZIMMERBERG');
+    expect(personResult.Result?.[0]).toMatchObject({ Time: 5200, Position: 1, Status: 'OK' });
+    expect(personResult.Result?.[0].SplitTime?.map(s => [s.ControlCode, s.Time])).toEqual([
+      ['31', 418],
+      ['32', 505]
+    ]);
   });
 });
 
@@ -115,6 +235,39 @@ describe('ToSingleRaceResultList', () => {
       [3747, 0, 1],
       [3748, 1, 2]
     ]);
+  });
+
+  it('leaves out the whole teams of a relay, they have the initials of the team and no family name', () => {
+    // As the proxy converts "Men, whole legs" of the EOC Relay 2026 (databaseId=115821)
+    const list = ToSingleRaceResultList([
+      {
+        '@attributes': { iofVersion: '3.0' },
+        Event: { Name: 'EOC Relay', StartTime: { Date: '2026-09-27' } },
+        ClassResult: [
+          {
+            Class: { Id: 1, Name: 'Men, whole legs' },
+            PersonResult: [
+              {
+                Person: { Name: { Family: {}, Given: 'GB-AJ-VS' } },
+                Organisation: { Name: 'Sweden 1' },
+                Result: [{ Time: 5800, Status: 'OK' }]
+              }
+            ]
+          },
+          {
+            Class: { Id: 3, Name: 'Men 3 common controls' },
+            PersonResult: [
+              {
+                Person: { Id: '33940', Name: { Family: 'Svensk', Given: 'Viktor' } },
+                Organisation: { Id: '190', Name: 'Sweden 1' },
+                Result: [{ Time: 1900, Status: 'OK' }]
+              }
+            ]
+          }
+        ]
+      } as unknown as IResultListType
+    ]);
+    expect(list.ClassResult!.map(c => c.PersonResult?.length)).toEqual([0, 1]);
   });
 
   it('counts the time behind and the position among the approved only, equal times share the position', () => {

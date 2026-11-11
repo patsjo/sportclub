@@ -165,7 +165,9 @@ const ResultWizardStep3Ranking = observer(({ saving, onValidate }: IResultWizard
                       raceWizardModel.raceEvent?.setNumberValueOrNull('rankingBasepoint', undefined);
                       raceWizardModel.raceEvent?.setStringValueOrNull(
                         'rankingBaseDescription',
-                        `${raceWinnerResult.timePerKilometer}, ${raceWinnerResult.className}, ${raceWinnerResult.personName}`
+                        [raceWinnerResult.timePerKilometer, raceWinnerResult.className, raceWinnerResult.personName]
+                          .filter(part => part)
+                          .join(', ')
                       );
                       form?.setFieldsValue({
                         areaTime: undefined,

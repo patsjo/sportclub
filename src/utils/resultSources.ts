@@ -8,9 +8,12 @@ import { correctPhpEventorProxyXmlResponseForResult } from './iofXsd30ResponseHe
  * The club and its runners are found by name, these sources do not have the ids of Eventor.
  */
 
-/** "Skåneslättens OL" and "Skaneslattens OL" are the same club */
-export const NormalizeName = (name?: string | null) =>
-  (name ?? '')
+/**
+ * "Skåneslättens OL" and "Skaneslattens OL" are the same club. Anything but text is no name: the proxy turns an
+ * element holding only a space (WinSplits has <Family> </Family>) into an empty object.
+ */
+export const NormalizeName = (name?: unknown) =>
+  (typeof name === 'string' ? name : '')
     .toLowerCase()
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
@@ -29,17 +32,56 @@ export const IsClubOrganisation = (organisationName: string | null | undefined, 
   return name.length > 0 && clubNames.some(clubName => NormalizeName(clubName) === name);
 };
 
-/** The runner of the club by name, only when exactly one has it */
+/**
+ * The runner of the club by name, only when exactly one has it. When the given and the family name are not split as
+ * the club has them ("Malin Agervig" "Kristiansson", or the family name first), all the words of the name are compared.
+ */
 export const FindCompetitorByName = <T extends { firstName: string; lastName: string }>(
   competitors: T[] | undefined,
-  given: string | null | undefined,
-  family: string | null | undefined
+  given: unknown,
+  family: unknown
 ): T | undefined => {
   const first = NormalizeName(given);
   const last = NormalizeName(family);
   if (!competitors || !first || !last) return undefined;
   const found = competitors.filter(c => NormalizeName(c.firstName) === first && NormalizeName(c.lastName) === last);
-  return found.length === 1 ? found[0] : undefined;
+  if (found.length) return found.length === 1 ? found[0] : undefined;
+  const words = (value: string) => value.split(' ').sort().join(' ');
+  const name = words(`${first} ${last}`);
+  const byWords = competitors.filter(c => words(NormalizeName(`${c.firstName} ${c.lastName}`)) === name);
+  return byWords.length === 1 ? byWords[0] : undefined;
+};
+
+/** A name in results of other sources, the words in any order: "Johansson Tim" is "Tim Johansson" */
+export const ResultNameKey = (given: unknown, family: unknown) =>
+  `${NormalizeName(given)} ${NormalizeName(family)}`.trim().split(' ').sort().join(' ');
+
+/**
+ * The names in results of other sources that the user linked to a runner of the club, kept by the browser. Results
+ * of Eventor have the id of the person for it, these do not, and the runner would be asked for at every import.
+ */
+const linkedNamesKey = (clubId: number) => `sportclub-result-names-${clubId}`;
+const linkedNames = (clubId: number): Record<string, number> => {
+  try {
+    const value = JSON.parse(localStorage.getItem(linkedNamesKey(clubId)) ?? '{}');
+    return value && typeof value === 'object' ? value : {};
+  } catch {
+    return {};
+  }
+};
+export const FindLinkedCompetitorId = (clubId: number, given: unknown, family: unknown): number | undefined => {
+  const key = ResultNameKey(given, family);
+  const competitorId = key ? linkedNames(clubId)[key] : undefined;
+  return typeof competitorId === 'number' ? competitorId : undefined;
+};
+export const LinkResultName = (clubId: number, given: unknown, family: unknown, competitorId: number) => {
+  const key = ResultNameKey(given, family);
+  if (!key) return;
+  try {
+    localStorage.setItem(linkedNamesKey(clubId), JSON.stringify({ ...linkedNames(clubId), [key]: competitorId }));
+  } catch {
+    // Not kept, the runner is asked for again the next time
+  }
 };
 
 export const ExternalPersonIdPrefix = 'ext:';
@@ -67,6 +109,11 @@ const setTimeBehindAndPosition = (results: Json[]) => {
   });
 };
 
+const HasPersonName = (owner: Json) => {
+  const name = (owner.Person as Json | undefined)?.Name as Json | undefined;
+  return NormalizeName(name?.Given).length > 0 && NormalizeName(name?.Family).length > 0;
+};
+
 /**
  * Result lists (e.g. one for each class) as one result list of a single race, numbered 1 as Eventor does: the
  * race of the event, and the race number on every result and course.
@@ -80,10 +127,16 @@ export const ToSingleRaceResultList = (resultLists: IResultListType[]): IResultL
   let nextId = 1;
   const setPersonId = (owner: Json) => {
     const person = owner.Person as Json | undefined;
-    if (person && asArray(person.Id).length === 0) person.Id = [`${ExternalPersonIdPrefix}${nextId++}`];
+    // An empty <Id></Id> (the files of Oribos) is an object, not an id
+    const ids: unknown[] = Array.isArray(person?.Id) ? person.Id : person?.Id != null ? [person.Id] : [];
+    if (person && !ids.some(id => typeof id === 'string' && id.trim()))
+      person.Id = [`${ExternalPersonIdPrefix}${nextId++}`];
   };
   classResults.forEach(classResult => {
     const json = classResult as unknown as Json;
+    // The classes of whole teams in a relay of WinSplits ("Men, whole legs") have the initials of the team for a
+    // person ("GB-AJ-VS") and no family name, they are not runners
+    if (json.PersonResult != null) json.PersonResult = asArray(json.PersonResult).filter(HasPersonName);
     asArray(json.Course).forEach(setRaceNumber);
     asArray(json.PersonResult).forEach(personResult => {
       setPersonId(personResult);
@@ -149,6 +202,13 @@ export const FetchWinSplitsResults = async (
   }
   return ToSingleRaceResultList(resultLists);
 };
+
+/**
+ * An IOF XML result list, as the proxy gives it (or a file, or the results copied by the bookmarklet, in the same
+ * shape), as a result list of one race
+ */
+export const ToExternalResultList = (json: unknown): IResultListType =>
+  ToSingleRaceResultList([correctPhpEventorProxyXmlResponseForResult(json as IResultListType)]);
 
 /** "20:50", "1:07:33" as seconds, anything else (e.g. "Udgået") is no time */
 export const ParseTimeToSeconds = (text?: string | null): number | undefined => {
@@ -299,9 +359,51 @@ export const CalculateTotalAfterStage = (classResult: ITotalClassResult, stage: 
   };
 };
 
-/** The stage in the name of the race, "Bornholm Höst-Open 2026 Etape 2" is stage 2 */
+/**
+ * The total results of an event of several days from the result list of every stage (in the order of the stages),
+ * when there is no page of the total: a runner is found by class and name in each.
+ */
+export const TotalResultsFromStages = (stageLists: IResultListType[]): ITotalResultList => {
+  const classes: ITotalClassResult[] = [];
+  const persons = new Map<string, ITotalPersonResult>();
+  stageLists.forEach((resultList, stageIndex) =>
+    (resultList.ClassResult ?? []).forEach(classResult => {
+      const className = classResult.Class?.Name ?? '';
+      let totalClass = classes.find(c => NormalizeName(c.className) === NormalizeName(className));
+      if (!totalClass) {
+        totalClass = { className, persons: [] };
+        classes.push(totalClass);
+      }
+      (classResult.PersonResult ?? []).forEach(personResult => {
+        const name = `${NormalizeName(personResult.Person?.Name?.Given) && personResult.Person.Name.Given} ${
+          NormalizeName(personResult.Person?.Name?.Family) && personResult.Person.Name.Family
+        }`.trim();
+        if (!NormalizeName(name)) return;
+        const key = `${NormalizeName(className)}|${NormalizeName(name)}`;
+        let person = persons.get(key);
+        if (!person) {
+          person = { name, club: (personResult.Organisation?.Name as string | undefined) ?? '', stages: [] };
+          persons.set(key, person);
+          totalClass!.persons.push(person);
+        }
+        const result = Array.isArray(personResult.Result) ? personResult.Result[0] : personResult.Result;
+        person.stages[stageIndex] =
+          result?.Status === 'OK' && result.Time != null
+            ? { time: result.Time }
+            : { status: result?.Status === 'DidNotStart' ? 'DNS' : (result?.Status ?? undefined) };
+      });
+    })
+  );
+  return {
+    title: stageLists[stageLists.length - 1]?.Event?.Name,
+    nofStages: stageLists.length,
+    classes: classes.filter(c => c.persons.length > 0)
+  };
+};
+
+/** The stage in the name of the race, "Bornholm Höst-Open 2026 Etape 2" and "5 Days of Italy - Gara 2" are stage 2 */
 export const StageFromName = (name?: string | null): number | undefined => {
-  const match = /(etape|etapp|etappe|stage|lauf|day|dag)\s*(\d+)/i.exec(name ?? '');
+  const match = /(etape|etapp|etappe|stage|lauf|day|dag|gara|tappa)\s*(\d+)/i.exec(name ?? '');
   return match ? parseInt(match[2], 10) : undefined;
 };
 

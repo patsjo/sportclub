@@ -390,8 +390,8 @@ export const resources = {
         SverigelistanBookmarkletNoPoints:
           'No class has ranking points yet, they are normally published the day after the race.',
         SverigelistanBookmarkletReady: '{ranked} of {total} classes have ranking points.',
-        SverigelistanBookmarkletCopy: 'Copy',
-        SverigelistanBookmarkletCopied: 'Copied! Go back to the results and click "Paste ranking".',
+        SverigelistanBookmarkletCopiedTitle: 'Copied!',
+        SverigelistanBookmarkletCopied: 'Go back to the results and click "Paste ranking".',
         SverigelistanBookmarkletCopyManually: 'Copy the text below with Ctrl+C, then paste it in the results.',
         SverigelistanBookmarkletClose: 'Close',
         Sport: 'Sport',
@@ -533,7 +533,41 @@ export const resources = {
         ImportDone_one: '{{count}} result of {{clubs}} imported',
         ImportDone_other: '{{count}} results of {{clubs}} imported',
         ImportFailed: 'The results could not be imported',
+        ImportSourcePage: 'Result page (bookmark)',
+        ImportSourceIofXmlFile: 'IOF XML (file)',
+        ImportFile: 'File',
+        ImportIofXmlFileTooltip: 'An IOF XML 3.0 file of results of one race, e.g. from the organiser.',
+        ImportIofXmlFileInfo: 'Results of one race as IOF XML 3.0',
+        ImportChooseFile: 'Choose file',
+        ImportPageHow: 'Results on a web page',
+        ImportPageBookmark: 'Copy results',
+        ImportPageBookmarkTooltip:
+          'Drag this link to the bookmarks bar of the browser (once). Click the bookmark on the results: a result list by class in Eventor (e.g. IOF Eventor, after the browser check), an IOF XML file shown by the browser (e.g. fiso.it), or tulospalvelu.fi and SPORTident Center, where it is clicked on every class (or leg of a relay) that is wanted, and collects them. Then paste the results here.',
+        ImportPagePaste: 'Paste results',
+        ImportPagePasteTooltip:
+          'Pastes the results that the bookmark "{{bookmark}}" copied on the page of results. Ctrl+V works as well.',
+        ImportPageInvalid:
+          'The clipboard has no results. Click the bookmark "{{bookmark}}" on the page of results first.',
+        ImportPageBookmarkletWrongPage:
+          'No results on this page. Open the result list by class (Eventor), the results or the standings at the finish or changeover of a class or leg (tulospalvelu.fi), the analysis or overview of a class (SPORTident Center), or an IOF XML result list, and click the bookmark again.',
+        ImportPageBookmarkletFetching: 'Fetching the runners of the teams…',
+        ImportPageBookmarkletFailed: 'The results could not be read: {message}',
+        ImportPageBookmarkletReady: '{classes} classes with {results} results.',
+        ImportPageBookmarkletCollected:
+          'Collected: {names}. More classes or legs: "Close and continue copying", open the next one and click the bookmark again.',
+        ImportPageBookmarkletNotKept:
+          'The browser could not keep them for the next page (too much?), the next page starts over. What is copied now has all of them.',
+        ImportPageBookmarkletCloseAndContinue: 'Close and continue copying',
+        ImportPageBookmarkletCopied: 'Go back to the results and click "Paste results".',
         TotalSourceOE: 'Total results (OE)',
+        TotalSourceStages: 'Results of every stage',
+        TotalStageLinks: 'The stages, in order',
+        TotalStageLinksTooltip:
+          'Stage 1 first: paste each stage after the bookmark "Copy results" copied it (e.g. the IOF XML file of fiso.it), or give the link to the stage in WinSplits Online. The total after the stage of this race is the sum of the times of the stages up to it, the runners are found by class and name.',
+        TotalStagePaste: 'Paste stage',
+        TotalStagePasteTooltip: 'Adds the stage that the bookmark "{{bookmark}}" copied.',
+        TotalStageWinSplitsPlaceholder: 'or a link to the stage in WinSplits Online',
+        TotalStageProgress: 'Fetching stage {{stage}} of {{stages}}',
         TotalLink: 'Total results (several days)',
         TotalLinkTooltip:
           'The page with the total results of all stages, e.g. "samlet-klasseresultat.html" from OE. The total after the stage of this race is filled in for the runners of the club, found by class and name.',
@@ -1101,8 +1135,8 @@ export const resources = {
         SverigelistanBookmarkletNoPoints:
           'Ingen klass har rankingpoäng än, de publiceras normalt dagen efter tävlingen.',
         SverigelistanBookmarkletReady: '{ranked} av {total} klasser har rankingpoäng.',
-        SverigelistanBookmarkletCopy: 'Kopiera',
-        SverigelistanBookmarkletCopied: 'Kopierat! Gå tillbaka till resultatet och klicka på "Klistra in ranking".',
+        SverigelistanBookmarkletCopiedTitle: 'Kopierat!',
+        SverigelistanBookmarkletCopied: 'Gå tillbaka till resultatet och klicka på "Klistra in ranking".',
         SverigelistanBookmarkletCopyManually: 'Kopiera texten nedan med Ctrl+C och klistra in den i resultatet.',
         SverigelistanBookmarkletClose: 'Stäng',
         Sport: 'Idrott',
@@ -1244,7 +1278,41 @@ export const resources = {
         ImportDone_one: '{{count}} resultat för {{clubs}} importerat',
         ImportDone_other: '{{count}} resultat för {{clubs}} importerade',
         ImportFailed: 'Resultaten kunde inte importeras',
+        ImportSourcePage: 'Resultatsida (bokmärke)',
+        ImportSourceIofXmlFile: 'IOF XML (fil)',
+        ImportFile: 'Fil',
+        ImportIofXmlFileTooltip: 'En IOF XML 3.0-fil med resultat från en tävling, t.ex. från arrangören.',
+        ImportIofXmlFileInfo: 'Resultat från en tävling som IOF XML 3.0',
+        ImportChooseFile: 'Välj fil',
+        ImportPageHow: 'Resultat på en webbsida',
+        ImportPageBookmark: 'Kopiera resultat',
+        ImportPageBookmarkTooltip:
+          'Dra den här länken till webbläsarens bokmärkesfält (en gång). Klicka på bokmärket på resultaten: en resultatlista per klass i Eventor (t.ex. IOF Eventor, efter webbläsarkontrollen), en IOF XML-fil som webbläsaren visar (t.ex. fiso.it), eller tulospalvelu.fi och SPORTident Center, där du klickar på varje klass (eller stafettsträcka) du vill ha med så samlar det ihop dem. Klistra sedan in resultaten här.',
+        ImportPagePaste: 'Klistra in resultat',
+        ImportPagePasteTooltip:
+          'Klistrar in resultaten som bokmärket "{{bookmark}}" kopierade på resultatsidan. Ctrl+V fungerar också.',
+        ImportPageInvalid:
+          'Urklippet innehåller inga resultat. Klicka först på bokmärket "{{bookmark}}" på resultatsidan.',
+        ImportPageBookmarkletWrongPage:
+          'Inga resultat på den här sidan. Öppna resultatlistan per klass (Eventor), resultatet eller ställningen vid mål eller växling för en klass eller sträcka (tulospalvelu.fi), en klass analys eller översikt (SPORTident Center) eller en IOF XML-resultatlista, och klicka på bokmärket igen.',
+        ImportPageBookmarkletFetching: 'Hämtar lagens löpare…',
+        ImportPageBookmarkletFailed: 'Resultaten kunde inte läsas: {message}',
+        ImportPageBookmarkletReady: '{classes} klasser med {results} resultat.',
+        ImportPageBookmarkletCollected:
+          'Insamlat: {names}. Fler klasser eller sträckor: "Stäng och fortsätt kopiera", öppna nästa och klicka på bokmärket igen.',
+        ImportPageBookmarkletNotKept:
+          'Webbläsaren kunde inte spara dem till nästa sida (för mycket?), nästa sida börjar om. Det som kopierats nu innehåller alla.',
+        ImportPageBookmarkletCloseAndContinue: 'Stäng och fortsätt kopiera',
+        ImportPageBookmarkletCopied: 'Gå tillbaka till resultatet och klicka på "Klistra in resultat".',
         TotalSourceOE: 'Totalresultat (OE)',
+        TotalSourceStages: 'Resultat från varje etapp',
+        TotalStageLinks: 'Etapperna, i ordning',
+        TotalStageLinksTooltip:
+          'Etapp 1 först: klistra in varje etapp efter att bokmärket "Kopiera resultat" kopierat den (t.ex. IOF XML-filen på fiso.it), eller ange länken till etappen i WinSplits Online. Totalen efter denna tävlings etapp är summan av etappernas tider fram till den, löparna hittas på klass och namn.',
+        TotalStagePaste: 'Klistra in etapp',
+        TotalStagePasteTooltip: 'Lägger till etappen som bokmärket "{{bookmark}}" kopierade.',
+        TotalStageWinSplitsPlaceholder: 'eller en länk till etappen i WinSplits Online',
+        TotalStageProgress: 'Hämtar etapp {{stage}} av {{stages}}',
         TotalLink: 'Totalresultat (flerdagars)',
         TotalLinkTooltip:
           'Sidan med totalresultatet för alla etapper, t.ex. "samlet-klasseresultat.html" från OE. Totalen efter den här tävlingens etapp fylls i för klubbens löpare, som hittas på klass och namn.',

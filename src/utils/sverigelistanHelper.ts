@@ -1,3 +1,4 @@
+import { CreateBookmarkletDialog } from './bookmarkletDialog';
 import { IRaceResultProps } from '../models/resultModel';
 import { IWinnerResultProps } from '../models/resultWizardModel';
 import { difficulties, LightConditionTypes, SportCodeTypes } from './resultConstants';
@@ -143,73 +144,52 @@ export function ParseSverigelistanPage(html: string): ISverigelistanPage {
 
 /** The texts of the bookmarklet, "{n}" etc. are replaced by it */
 export interface ISverigelistanBookmarkletTexts {
+  /** The heading of the dialog, the name of the bookmark */
+  title: string;
   wrongPage: string;
   fetching: string;
   failed: string;
   noPoints: string;
   ready: string;
-  copy: string;
+  /** In bold with a green check when the ranking is copied */
+  copiedTitle: string;
+  /** What to do then, after how many classes have points */
   copied: string;
   copyManually: string;
   close: string;
 }
 
 /**
- * What the bookmarklet does on the page in Eventor. On the page of a race it fetches the page of every class (the
- * same site, after the browser check), on the page of a class it reads that class. It is run as its source text, so
- * it must not use anything outside itself.
+ * What the bookmarklet does on the page in Eventor, in a dialog over the page. On the page of a race it fetches the
+ * page of every class (the same site, after the browser check), on the page of a class it reads that class. It is run
+ * as its source text, so it must not use anything outside itself.
  */
 export function SverigelistanBookmarkletMain(
   parsePage: (html: string) => ISverigelistanPage,
-  texts: ISverigelistanBookmarkletTexts
+  texts: ISverigelistanBookmarkletTexts,
+  createDialog: typeof CreateBookmarkletDialog
 ) {
-  const boxId = 'sportclub-sverigelistan';
-  document.getElementById(boxId)?.remove();
-  const box = document.createElement('div');
-  box.id = boxId;
-  box.setAttribute(
-    'style',
-    'position:fixed;top:16px;right:16px;z-index:2147483647;max-width:380px;padding:12px 14px;background:#fff;color:#222;border:1px solid #888;border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.25);font:14px/1.4 system-ui,sans-serif'
-  );
-  const message = document.createElement('div');
-  const actions = document.createElement('div');
-  actions.setAttribute('style', 'margin-top:8px;display:flex;gap:8px;flex-wrap:wrap');
-  const button = (label: string, onClick: () => void) => {
-    const element = document.createElement('button');
-    element.type = 'button';
-    element.textContent = label;
-    element.setAttribute('style', 'padding:4px 10px;cursor:pointer');
-    element.addEventListener('click', onClick);
-    actions.appendChild(element);
-    return element;
-  };
-  const show = (value: string, error = false) => {
-    message.textContent = value;
-    message.style.color = error ? '#b00020' : '#222';
-  };
-  box.appendChild(message);
-  box.appendChild(actions);
-  button(texts.close, () => box.remove());
-  document.body.appendChild(box);
+  const dialog = createDialog('sportclub-sverigelistan', texts.title, texts.close);
+  const show = dialog.show;
 
-  const copy = (json: string) => {
+  // Copied at once, it tells clearly that it is done. When the browser does not allow it (the click on the bookmark
+  // may be too long ago, e.g. after fetching the classes), the text is shown selected to copy by hand.
+  const copy = (json: string, message: string) => {
+    const copied = () => dialog.success(texts.copiedTitle, `${message}\n${texts.copied}`);
     const manually = () => {
-      const area = document.createElement('textarea');
-      area.value = json;
-      area.setAttribute('style', 'width:100%;height:80px;margin-top:8px');
-      box.appendChild(area);
-      area.focus();
-      area.select();
-      let copied = false;
+      const area = dialog.area(json);
+      area.addEventListener('copy', copied);
+      let done = false;
       try {
-        copied = document.execCommand('copy');
+        done = document.execCommand('copy');
       } catch {
-        copied = false;
+        done = false;
       }
-      show(copied ? texts.copied : texts.copyManually, !copied);
+      if (done) copied();
+      else show(`${message}\n${texts.copyManually}`, true);
     };
     if (!navigator.clipboard) return manually();
-    navigator.clipboard.writeText(json).then(() => show(texts.copied), manually);
+    navigator.clipboard.writeText(json).then(copied, manually);
   };
 
   const run = async () => {
@@ -235,24 +215,19 @@ export function SverigelistanBookmarkletMain(
       return;
     }
     const json = JSON.stringify({ sverigelistan: 1, url: location.href, eventName: page.eventName, classes });
-    show(texts.ready.replace('{ranked}', String(ranked)).replace('{total}', String(classes.length)));
-    // The click on the bookmark may be too long ago to copy without a click on the button
-    if (navigator.clipboard)
-      navigator.clipboard.writeText(json).then(
-        () => show(texts.copied),
-        () => undefined
-      );
-    button(texts.copy, () => copy(json));
+    const message = texts.ready.replace('{ranked}', String(ranked)).replace('{total}', String(classes.length));
+    show(message);
+    copy(json, message);
   };
   run().catch(error =>
     show(texts.failed.replace('{message}', error instanceof Error ? error.message : String(error)), true)
   );
 }
 
-/** The bookmarklet, "javascript:..." with the reader of the pages and the texts in it */
+/** The bookmarklet, "javascript:..." with the reader of the pages, the dialog and the texts in it */
 export const SverigelistanBookmarklet = (texts: ISverigelistanBookmarkletTexts) =>
   `javascript:${encodeURIComponent(
-    `(${SverigelistanBookmarkletMain.toString()})(${ParseSverigelistanPage.toString()},${JSON.stringify(texts)});void 0`
+    `(${SverigelistanBookmarkletMain.toString()})(${ParseSverigelistanPage.toString()},${JSON.stringify(texts)},${CreateBookmarkletDialog.toString()});void 0`
   )}`;
 
 const SPORTS: Partial<Record<SportCodeTypes, string>> = { OL: 'ol', SKIO: 'skio', MTBO: 'mtbo' };
