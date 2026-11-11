@@ -48,7 +48,7 @@ const MapDiv = styled.div<IMapDivProps>`
   width: ${props => props.width};
   position: relative;
 `;
-const MapContainerDiv = styled.div`
+const MapContainerDiv = styled.div<{ $hasFullScreen: boolean }>`
   height: 100%;
   width: 100%;
   &&& .ol-full-screen {
@@ -59,12 +59,12 @@ const MapContainerDiv = styled.div`
   &&& .ol-zoom-extent {
     left: unset;
     right: 0.5em;
-    top: 2.5em;
+    top: ${props => (props.$hasFullScreen ? '2.5em' : '0.5em')};
   }
   .ol-layerlist {
     left: unset;
     right: 0.5em;
-    top: 4.5em;
+    top: ${props => (props.$hasFullScreen ? '4.5em' : '2.5em')};
   }
   .ol-layerlist-selected {
     background-color: rgba(255, 190, 32, 0.6);
@@ -72,7 +72,7 @@ const MapContainerDiv = styled.div`
   .ol-tracking {
     left: unset;
     right: 0.5em;
-    top: 6.5em;
+    top: ${props => (props.$hasFullScreen ? '6.5em' : '4.5em')};
   }
   .ol-tracking-selected {
     background-color: rgba(255, 190, 32, 0.6);
@@ -189,8 +189,9 @@ const OSMOrienteeringMap = observer(
     onHighlightClick = undefined,
     onLoaded = undefined
   }: IOSMOrienteeringMapProps) => {
-    const { globalStateModel, clubModel } = useMobxStore();
+    const { globalStateModel, clubModel, sessionModel } = useMobxStore();
     const { t } = useTranslation();
+    const showFullScreen = useAllWidgets && (!clubModel.map?.requireLogin || sessionModel.loggedIn);
     const [graphicsLayer, setGraphicsLayer] = React.useState<VectorLayer | undefined>();
     const map = useOpenLayersMap();
     const mapRef = useRef<HTMLDivElement>(null);
@@ -342,7 +343,6 @@ const OSMOrienteeringMap = observer(
         map.addControl(homeExtent.current);
 
         if (useAllWidgets) {
-          map.addControl(new FullScreen());
           map.addControl(new LayerListControl({ setLayerListVisible }));
           map.addControl(new TrackingControl({ map, view: map.getView(), containerId, t, setTrackingText }));
         }
@@ -609,11 +609,20 @@ const OSMOrienteeringMap = observer(
       onLoaded?.(map);
     }, [onLoaded, map]);
 
+    React.useEffect(() => {
+      if (!map || !showFullScreen) return;
+      const fullScreen = new FullScreen();
+      map.addControl(fullScreen);
+      return () => {
+        map.removeControl(fullScreen);
+      };
+    }, [map, showFullScreen]);
+
     return (
       <MapStoreProvider store={map}>
         <MapDiv key="map" height={height} width={width}>
           <Loader />
-          <MapContainerDiv ref={mapRef} key={containerId} id={containerId} />
+          <MapContainerDiv ref={mapRef} key={containerId} id={containerId} $hasFullScreen={showFullScreen} />
           <MapInfo
             ref={mapInfoRef}
             key={`${containerId}#orienteeringMapInfo`}

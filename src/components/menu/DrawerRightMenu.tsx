@@ -189,12 +189,12 @@ const DrawerRightMenu = observer(() => {
         loginMenuItem,
         menuItemDivider,
         ...allModuleMenuItems,
-        clubModel.map
+        clubModel.map && (!clubModel.map.requireLogin || loggedIn)
           ? getMenuItem('menuItem#maps', 'map', t('modules.Maps'), () => {
               globalStateModel.setDashboard(navigate, `/${t('modules.Maps').toLowerCase()}`);
             })
           : null,
-        clubModel.map
+        clubModel.map && (!clubModel.map.requireLogin || loggedIn)
           ? getMenuItem('menuItem#mapTracks', 'map-tracks', t('map.Tracks'), () => {
               globalStateModel.setDashboard(navigate, i18next.language === 'sv-SE' ? '/spårkartor' : '/maps/tracks');
             })
@@ -225,6 +225,7 @@ const DrawerRightMenu = observer(() => {
       filesMenuItems,
       globalStateModel,
       htmlEditorMenuItems,
+      loggedIn,
       loginMenuItem,
       menuItemDivider,
       navigate,

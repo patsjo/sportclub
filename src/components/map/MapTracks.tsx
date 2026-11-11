@@ -281,6 +281,10 @@ const MapTracks = () => {
       .catch(() => setSubmittable(false));
   }, [form, tracks]);
 
+  if (clubModel.map?.requireLogin && !sessionModel.loggedIn) {
+    return <div>{t('map.requireLogin')}</div>;
+  }
+
   return (
     <Form form={form} layout="vertical" initialValues={initialValues}>
       <MapContainer ref={ref}>
