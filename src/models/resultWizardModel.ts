@@ -79,6 +79,29 @@ export interface IWinnerResultProps {
   timePerKilometer?: string;
 }
 
+const IsRankingDifficulty = (difficulty?: DifficultyTypes | null) =>
+  !!difficulty && [difficulties.purple, difficulties.blue, difficulties.black].includes(difficulty);
+
+/** A winner to choose the ranking by, it can only be chosen when the speed is known (the length of the course) */
+export interface IWinnerResultOption extends IOption {
+  disabled: boolean;
+}
+
+/** "00:04:35.123, H21E, Anna Andersson, 7,2 km", the winner time instead of the speed when the length is missing */
+export const WinnerResultOption = (wr: IWinnerResultProps): IWinnerResultOption => ({
+  code: JSON.stringify(wr),
+  description: [
+    wr.timePerKilometer,
+    wr.className,
+    wr.personName,
+    wr.lengthInMeter ? `${(wr.lengthInMeter / 1000).toFixed(1).replace('.', ',')} km` : undefined,
+    !wr.timePerKilometer ? wr.winnerTime : undefined
+  ]
+    .filter(part => part)
+    .join(', '),
+  disabled: !wr.timePerKilometer
+});
+
 export interface IWinnerResult extends IWinnerResultProps {
   setLengthInMeter: (value: number) => void;
   setDifficulty: (value: DifficultyTypes) => void;
@@ -194,7 +217,8 @@ export interface IRaceWizard extends Omit<IRaceWizardProps, 'raceEvent' | 'raceW
   removeImportedRace: (eventId: number) => void;
   setCupRaceIds: (cupRaceIds: number[] | undefined) => void;
   setCupRacesForEvent: (cupRaces: ICupRaceForEventProps[] | undefined) => void;
-  raceWinnerResultOptions: IOption[];
+  raceWinnerResultOptions: IWinnerResultOption[];
+  otherRaceWinnerResultOptions: IWinnerResultOption[];
 }
 
 export class RaceWizard implements IRaceWizard {
@@ -250,7 +274,8 @@ export class RaceWizard implements IRaceWizard {
       addRaceWinnerResult: actionBound,
       addImportedRace: actionBound,
       removeImportedRace: actionBound,
-      raceWinnerResultOptions: computed
+      raceWinnerResultOptions: computed,
+      otherRaceWinnerResultOptions: computed
     });
   }
 
@@ -323,11 +348,10 @@ export class RaceWizard implements IRaceWizard {
     this.cupRacesForEvent = cupRaces;
   }
 
-  get raceWinnerResultOptions() {
+  /** The winners of the purple, blue and black classes, the base of the ranking: black first, then the fastest */
+  get raceWinnerResultOptions(): IWinnerResultOption[] {
     return this.raceWinnerResults
-      .filter(
-        wr => wr.difficulty && [difficulties.purple, difficulties.blue, difficulties.black].includes(wr.difficulty)
-      )
+      .filter(wr => IsRankingDifficulty(wr.difficulty))
       .sort((a, b) => {
         if (a.difficulty === difficulties.black && b.difficulty !== difficulties.black) {
           return -1;
@@ -340,9 +364,17 @@ export class RaceWizard implements IRaceWizard {
         }
         return 1;
       })
-      .map(wr => ({
-        code: JSON.stringify(wr),
-        description: [wr.timePerKilometer, wr.className, wr.personName].filter(part => part).join(', ')
-      }));
+      .map(WinnerResultOption);
+  }
+
+  /**
+   * The winners of all other classes, by the name of the class. A race of another source than Eventor (e.g. WinSplits
+   * abroad) has class names the club has no level for ("Men Elite", "M21E"), its winners are here.
+   */
+  get otherRaceWinnerResultOptions(): IWinnerResultOption[] {
+    return this.raceWinnerResults
+      .filter(wr => !IsRankingDifficulty(wr.difficulty))
+      .sort((a, b) => a.className.localeCompare(b.className, 'sv', { numeric: true }))
+      .map(WinnerResultOption);
   }
 }

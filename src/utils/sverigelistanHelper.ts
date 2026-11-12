@@ -336,8 +336,9 @@ export const GetSverigelistanOptions = (
   sportCode: SportCodeTypes,
   raceLightCondition: LightConditionTypes
 ): { options: ISverigelistanOption[]; base?: ISverigelistanOption; unmatched: string[] } => {
+  // A winner of a class the club has no level for (e.g. a race abroad, "M21E") is found by the class or the runner
   const winners = winnerResults.filter(
-    winner => winner.lengthInMeter && winner.difficulty && baseDifficulties.includes(winner.difficulty)
+    winner => winner.lengthInMeter && (!winner.difficulty || baseDifficulties.includes(winner.difficulty))
   );
   const used = new Set<IWinnerResultProps>();
   const options: ISverigelistanOption[] = [];

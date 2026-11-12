@@ -377,6 +377,17 @@ describe('GetSverigelistanOptions', () => {
     expect(base?.className).toBe('H21L');
   });
 
+  it('finds the winner of a class the club has no level for, by the runner', () => {
+    const { options, base } = GetSverigelistanOptions(
+      data,
+      [winner('M21E', 'Linus Wernström', 3200, null), winner('W21E', 'Somebody Foreign', 2900, null)],
+      'OL',
+      'Day'
+    );
+    expect(options.map(o => [o.className, o.rankingClassName])).toEqual([['M21E', 'H21']]);
+    expect(base).toBeUndefined();
+  });
+
   it('has no base without an H21 class', () => {
     const { options, base } = GetSverigelistanOptions(data, [winner('D21', 'Anna Andersson', 2900)], 'OL', 'Day');
     expect(base).toBeUndefined();

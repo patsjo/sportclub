@@ -320,6 +320,8 @@ export const resources = {
         NotFinished: 'Not finished',
         Finished: 'Finished',
         WinnerTime: 'Winner time',
+        WinnerTimeRankingClasses: 'Purple, blue and black classes',
+        WinnerTimeOtherClasses: 'Other classes',
         SecondTime: 'Second time',
         Position: 'Position',
         NofStartsInClass: 'Starts',
@@ -455,6 +457,11 @@ export const resources = {
         LoadingRace: 'Loading the race',
         LoadingEvents: 'Loading the races',
         LoadEventsFailed: 'The races could not be loaded',
+        LoadEventsEventorFailed: 'Eventor could not be reached, only the saved races are shown',
+        LoadEventsEventorFailedDescription:
+          'The saved races can only be edited, they cannot be fetched again or completed from Eventor. New races can be imported when Eventor answers again.',
+        LoadSavedEditOnly: 'the saved races are shown and can only be edited',
+        LoadEventsEventorAgain: 'Try Eventor again',
         LoadElapsed: '{{seconds}} s',
         LoadTaskFailed: 'could not be fetched',
         LoadWaitingForEventor: 'Eventor is building the answer',
@@ -533,6 +540,8 @@ export const resources = {
         ImportClassProgress: 'Fetching class {{index}} of {{total}} ({{name}})',
         ImportDone_one: '{{count}} result of {{clubs}} imported',
         ImportDone_other: '{{count}} results of {{clubs}} imported',
+        ImportWinnersKept_one: 'The winner time of {{count}} class is kept for the ranking.',
+        ImportWinnersKept_other: 'The winner times of {{count}} classes are kept for the ranking.',
         ImportFailed: 'The results could not be imported',
         ImportSourcePage: 'Result page (bookmark)',
         ImportSourceIofXmlFile: 'IOF XML (file)',
@@ -745,7 +754,27 @@ export const resources = {
         silver: 'Silver',
         bronze: 'Bronze',
         top10: 'Top 10',
-        top30: 'Top 30'
+        top30: 'Top 30',
+        championchipsList: 'Medals and top placings',
+        TeamMembersHint: 'Leg and club members in the team',
+        ShowingMedals: 'Showing medals (place 1-3)',
+        ShowingTop: 'Fewer than 3 medals, showing top {{limit}}',
+        ShowingAllTop30: 'Showing all placings in top 30',
+        NoPlacings: 'No placings in top 30',
+        AllYears: 'All years',
+        geographicSpread: 'Geographic spread of competitors',
+        HeatmapHint: 'The numbers show starts in the area and merge or split when you zoom. Click a number to zoom in.',
+        Starts_one: '{{count}} start',
+        Starts_other: '{{count}} starts',
+        MoreEvents_one: '... and {{count}} more competition',
+        MoreEvents_other: '... and {{count}} more competitions',
+        Competitions_one: '{{count}} competition',
+        Competitions_other: '{{count}} competitions',
+        MissingEventCenter_zero: 'All starts have an event center and are shown on the map.',
+        MissingEventCenter_one:
+          '{{count}} start ({{competitions}}) is missing an event center and is not shown on the map.',
+        MissingEventCenter_other:
+          '{{count}} starts ({{competitions}}) are missing an event center and are not shown on the map.'
       }
     }
   },
@@ -1067,6 +1096,8 @@ export const resources = {
         NotFinished: 'Utgått',
         Finished: 'Fullföljt',
         WinnerTime: 'Segratid',
+        WinnerTimeRankingClasses: 'Violetta, blå och svarta klasser',
+        WinnerTimeOtherClasses: 'Övriga klasser',
         SecondTime: 'Tvåans tid',
         Position: 'Placering',
         NofStartsInClass: 'Startande',
@@ -1201,6 +1232,11 @@ export const resources = {
         LoadingRace: 'Läser in tävlingen',
         LoadingEvents: 'Läser in tävlingarna',
         LoadEventsFailed: 'Det gick inte att läsa in tävlingarna',
+        LoadEventsEventorFailed: 'Eventor kunde inte nås, endast sparade tävlingar visas',
+        LoadEventsEventorFailedDescription:
+          'De sparade tävlingarna kan bara redigeras, de kan inte hämtas om eller kompletteras från Eventor. Nya tävlingar kan importeras när Eventor svarar igen.',
+        LoadSavedEditOnly: 'de sparade tävlingarna visas och kan bara redigeras',
+        LoadEventsEventorAgain: 'Försök mot Eventor igen',
         LoadElapsed: '{{seconds}} s',
         LoadTaskFailed: 'kunde inte hämtas',
         LoadWaitingForEventor: 'Eventor tar fram svaret',
@@ -1279,6 +1315,8 @@ export const resources = {
         ImportClassProgress: 'Hämtar klass {{index}} av {{total}} ({{name}})',
         ImportDone_one: '{{count}} resultat för {{clubs}} importerat',
         ImportDone_other: '{{count}} resultat för {{clubs}} importerade',
+        ImportWinnersKept_one: 'Segratiden i {{count}} klass är sparad till rankingen.',
+        ImportWinnersKept_other: 'Segratiderna i {{count}} klasser är sparade till rankingen.',
         ImportFailed: 'Resultaten kunde inte importeras',
         ImportSourcePage: 'Resultatsida (bokmärke)',
         ImportSourceIofXmlFile: 'IOF XML (fil)',
@@ -1491,7 +1529,27 @@ export const resources = {
         silver: 'Silver',
         bronze: 'Brons',
         top10: 'Top 10',
-        top30: 'Top 30'
+        top30: 'Top 30',
+        championchipsList: 'Medaljer och topplaceringar',
+        TeamMembersHint: 'Sträcka och klubbens löpare i laget',
+        ShowingMedals: 'Visar medaljer (plats 1-3)',
+        ShowingTop: 'Färre än 3 medaljer, visar topp {{limit}}',
+        ShowingAllTop30: 'Visar alla placeringar bland topp 30',
+        NoPlacings: 'Inga placeringar bland topp 30',
+        AllYears: 'Alla år',
+        geographicSpread: 'Geografisk spridning av tävlande',
+        HeatmapHint:
+          'Siffrorna visar antal starter i området och slås ihop eller delas upp när du zoomar. Klicka på en siffra för att zooma in.',
+        Starts_one: '{{count}} start',
+        Starts_other: '{{count}} starter',
+        MoreEvents_one: '... och {{count}} tävling till',
+        MoreEvents_other: '... och {{count}} tävlingar till',
+        Competitions_one: '{{count}} tävling',
+        Competitions_other: '{{count}} tävlingar',
+        MissingEventCenter_zero: 'Alla starter har tävlingscentrum och visas på kartan.',
+        MissingEventCenter_one: '{{count}} start ({{competitions}}) saknar tävlingscentrum och visas inte på kartan.',
+        MissingEventCenter_other:
+          '{{count}} starter ({{competitions}}) saknar tävlingscentrum och visas inte på kartan.'
       }
     }
   }

@@ -4,10 +4,13 @@ import React, { useRef, useState } from 'react';
 import { styled } from 'styled-components';
 import { PostJsonData } from '../../utils/api';
 import { useMobxStore } from '../../utils/mobxStore';
+import { HasCoordinates } from '../../utils/statisticsHelper';
 import { useSize } from '../../utils/useSize';
-import { ICustomChart } from '../charts/ChartInterface';
+import { IStatistics } from '../charts/ChartInterface';
 import CustomLineChart from '../charts/CustomLineChart';
 import CustomStackedBarChart from '../charts/CustomStackedBarChart';
+import GeographicHeatmap from '../charts/GeographicHeatmap';
+import MedalList from '../charts/MedalList';
 import { SpinnerDiv } from '../styled/styled';
 
 const Row = styled.div`
@@ -15,18 +18,31 @@ const Row = styled.div`
   width: calc(100% - 20px);
 `;
 
+const hasData = (statistics: IStatistics): boolean => {
+  switch (statistics.typeOfChart) {
+    case 'medallist':
+      return statistics.data.length > 0;
+    case 'heatmap':
+      return statistics.data.some(HasCoordinates);
+    default:
+      return (
+        statistics.data.length > 0 && statistics.data.some(d => statistics.valueKeys.some(valueKey => !!d[valueKey]))
+      );
+  }
+};
+
 const ResultsStatistics = observer(() => {
   const ref = useRef<HTMLDivElement>(null);
   const { width } = useSize(ref, true, false);
   const { clubModel } = useMobxStore();
-  const [chartData, setChartData] = useState<ICustomChart[]>([]);
+  const [chartData, setChartData] = useState<IStatistics[]>([]);
   const [loading, setLoading] = useState(true);
 
   React.useEffect(() => {
     const url = clubModel.modules.find(module => module.name === 'Results')?.queryUrl;
     if (!url) return;
 
-    PostJsonData<ICustomChart[]>(
+    PostJsonData<IStatistics[]>(
       url,
       {
         iType: 'STATISTICS'
@@ -34,11 +50,7 @@ const ResultsStatistics = observer(() => {
       true
     )
       .then(statistics => {
-        setChartData(
-          statistics?.filter(
-            chart => chart.data.length && chart.data.some(d => chart.valueKeys.some(valueKey => !!d[valueKey]))
-          ) ?? []
-        );
+        setChartData(statistics?.filter(hasData) ?? []);
         setLoading(false);
       })
       .catch(e => {
@@ -64,6 +76,10 @@ const ResultsStatistics = observer(() => {
               maxWidth={chart.title === 'startsPerYear' ? undefined : 1900}
               {...chart}
             />
+          ) : chart.typeOfChart === 'heatmap' ? (
+            <GeographicHeatmap key={chart.title} data={chart.data} />
+          ) : chart.typeOfChart === 'medallist' ? (
+            <MedalList key={chart.title} data={chart.data} />
           ) : null
         )
       ) : (

@@ -1307,9 +1307,12 @@ const ResultWizardStep2EditRace = observer(
                   ? ConvertSecondsToTime(winnerResult.Result.Time)
                   : undefined;
 
+                // Every winner of another source is kept, its classes are seldom the levels of the club. They are
+                // chosen from when the ranking is set.
                 if (
                   winnerResult &&
-                  (!classLevel ||
+                  (externalSource ||
+                    !classLevel ||
                     (classLevel.difficulty.toLowerCase() !== 'grön' &&
                       classLevel.difficulty.toLowerCase() !== 'vit' &&
                       classLevel.difficulty.toLowerCase() !== 'gul'))
@@ -1633,7 +1636,9 @@ const ResultWizardStep2EditRace = observer(
 
                     raceWinnerResults.push({
                       id: raceWinnerResults.length,
-                      personName: `${legWinner?.Person?.Name.Given} ${legWinner?.Person?.Name.Family}`,
+                      personName: legWinner?.Person
+                        ? `${legWinner.Person.Name.Given} ${legWinner.Person.Name.Family}`
+                        : '',
                       className: `${shortClassName} - ${leg}`,
                       difficulty: classLevel ? classLevel.difficulty : null,
                       lengthInMeter: lengthInMeter,
@@ -1959,7 +1964,11 @@ const ResultWizardStep2EditRace = observer(
           if (raceWizardModel.raceEvent) form.setFieldsValue(toJS(raceWizardModel.raceEvent));
           const count =
             (raceWizardModel.raceEvent?.results.length ?? 0) + (raceWizardModel.raceEvent?.teamResults.length ?? 0);
-          setImportStatus(t('results.ImportDone', { count, clubs: clubNames.join(', ') }));
+          const winners = raceWizardModel.raceWinnerResults.filter(winner => winner.winnerTime).length;
+          setImportStatus(
+            t('results.ImportDone', { count, clubs: clubNames.join(', ') }) +
+              (winners > 0 ? ` ${t('results.ImportWinnersKept', { count: winners })}` : '')
+          );
           form.validateFields().then();
           onValidate(!!raceWizardModel.raceEvent?.valid);
         } catch (error) {

@@ -1,4 +1,4 @@
-import { Alert, Col, Form, InputNumber, Row } from 'antd';
+import { Alert, Col, Form, InputNumber, Row, Select } from 'antd';
 import { observer } from 'mobx-react';
 import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -48,6 +48,20 @@ const ResultWizardStep3Ranking = observer(({ saving, onValidate }: IResultWizard
   const { raceWizardModel } = useResultWizardStore();
   const [form] = Form.useForm<IRaceEventProps & { areaTime?: string; winnerTime?: string }>();
   const formId = useMemo(() => 'resultsWizardFormStep3Ranking' + Math.floor(Math.random() * 1000000000000000), []);
+  // The winners of the ranking classes, and of all the other classes (e.g. the classes of a race abroad)
+  const winnerOptionGroups = [
+    { label: t('results.WinnerTimeRankingClasses'), options: raceWizardModel.raceWinnerResultOptions },
+    { label: t('results.WinnerTimeOtherClasses'), options: raceWizardModel.otherRaceWinnerResultOptions }
+  ]
+    .filter(group => group.options.length > 0)
+    .map(group => ({
+      label: group.label,
+      options: group.options.map(option => ({
+        value: option.code,
+        label: option.description,
+        disabled: option.disabled
+      }))
+    }));
 
   useEffect(() => {
     if (
@@ -149,14 +163,16 @@ const ResultWizardStep3Ranking = observer(({ saving, onValidate }: IResultWizard
             }}
           />
           <Row gutter={8}>
-            {raceWizardModel.raceWinnerResultOptions.length ? (
+            {winnerOptionGroups.length ? (
               <Col span={12}>
                 <FormItem name="winnerTime" label={t('results.WinnerTime')}>
-                  <FormSelect
+                  <Select
                     popupMatchSelectWidth={false}
                     allowClear={true}
-                    options={raceWizardModel.raceWinnerResultOptions}
-                    onChange={code => {
+                    showSearch={{ optionFilterProp: 'label' }}
+                    options={winnerOptionGroups}
+                    onChange={(code?: string) => {
+                      if (!code) return;
                       const raceWinnerResult = JSON.parse(code);
                       raceWizardModel.raceEvent?.setStringValueOrNull(
                         'rankingBasetimePerKilometer',

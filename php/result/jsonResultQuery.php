@@ -799,6 +799,52 @@ elseif ($input->iType == "STATISTICS")
   array_push($rows, $statistics);
   \db\mysql_free_result($result);
 
+  $sql = "SELECT e.EVENT_ID, YEAR(e.RACEDATE) AS eventyear, e.NAME, e.LONGITUDE, e.LATITUDE, SUM(s.starts) AS starts " .
+    "FROM ( " .
+    "SELECT R.EVENT_ID, COUNT(*) AS starts " .
+    "FROM `RACE_EVENT_RESULTS` AS R " .
+    "WHERE (R.FAILED_REASON IS NULL OR R.FAILED_REASON != 'EJ START') " .
+    "GROUP BY R.EVENT_ID " .
+    "UNION ALL " .
+    "SELECT R.EVENT_ID, COUNT(*) AS starts " .
+    "FROM `RACE_EVENT_RESULTS_TEAM` AS R " .
+    "WHERE (R.FAILED_REASON IS NULL OR R.FAILED_REASON != 'EJ START') " .
+    "GROUP BY R.EVENT_ID " .
+    ") AS s " .
+    "INNER JOIN RACE_EVENT AS e ON e.EVENT_ID = s.EVENT_ID " .
+    "GROUP BY e.EVENT_ID, YEAR(e.RACEDATE), e.NAME, e.LONGITUDE, e.LATITUDE " .
+    "ORDER BY eventyear";
+
+  $result = \db\mysql_query($sql);
+  if (!$result)
+  {
+    trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
+  }
+
+  $statistics = new stdClass();
+  $statistics->typeOfChart = "heatmap";
+  $statistics->title = "geographicSpread";
+  $statistics->dataKey = "year";
+  $statistics->valueKeys = array();
+  $statistics->data = array();
+
+  if (\db\mysql_num_rows($result) > 0)
+  {
+    while($row = \db\mysql_fetch_assoc($result))
+    {
+      $data = new stdClass();
+      $data->eventId = intval($row['EVENT_ID']);
+      $data->year = intval($row['eventyear']);
+      $data->name = $row['NAME'];
+      $data->longitude = is_null($row['LONGITUDE']) ? NULL : floatval($row['LONGITUDE']);
+      $data->latitude = is_null($row['LATITUDE']) ? NULL : floatval($row['LATITUDE']);
+      $data->starts = intval($row['starts']);
+      array_push($statistics->data, $data);
+    }
+  }
+  array_push($rows, $statistics);
+  \db\mysql_free_result($result);
+
   $sql = "SELECT eventyear, " .
     "  SUM(CASE WHEN age <= 16 and gender = 'MALE' THEN competitors ELSE 0 END) AS boy, " .
     "  SUM(CASE WHEN age <= 16 and gender = 'FEMALE' THEN competitors ELSE 0 END) AS girl, " .
@@ -1089,6 +1135,97 @@ elseif ($input->iType == "STATISTICS")
       array_push($statistics->data, $data);
     }
   }
+  array_push($rows, $statistics);
+  \db\mysql_free_result($result);
+
+  // Hide competitors that don't want their results public (same rule as for single results).
+  // Individual results are left out, relay teams are still shown (the team placing counts) but without that name.
+  $hiddenCompetitor = $isCoach ? "0" :
+    "(UPPER(C.EXCLUDE_RESULTS) = 'YES' OR (C.EXCLUDE_TIME IS NOT NULL AND DATE(e.RACEDATE) < DATE(C.EXCLUDE_TIME)))";
+  $classificationJoin = "INNER JOIN RACE_CLASS_CLASSIFICATION AS cc ON cc.EVENT_CLASSIFICATION_ID = COALESCE(R.DEVIANT_EVENT_CLASSIFICATION_ID, e.EVENT_CLASSIFICATION_ID) AND cc.CLASS_CLASSIFICATION_ID = R.CLASS_CLASSIFICATION_ID ";
+
+  $sql = "SELECT * FROM ( " .
+    "SELECT R.RESULT_ID AS ROW_ID, e.EVENT_ID, e.NAME AS EVENT_NAME, e.RACEDATE, e.SPORT_CODE, e.RACE_DISTANCE, " .
+    "  R.CLASS_NAME, R.POSITION AS PLACE, NULL AS TEAM_NAME, 0 AS LEG, C.FIRST_NAME, C.LAST_NAME, 0 AS HIDDEN " .
+    "FROM `RACE_EVENT_RESULTS` AS R " .
+    "INNER JOIN RACE_EVENT AS e ON e.EVENT_ID = R.EVENT_ID " .
+    "INNER JOIN RACE_COMPETITORS AS C ON C.COMPETITOR_ID = R.COMPETITOR_ID " .
+    $classificationJoin .
+    "WHERE (R.FAILED_REASON IS NULL OR R.FAILED_REASON = 'FULLFÖ') " .
+    "  AND COALESCE(R.DEVIANT_EVENT_CLASSIFICATION_ID, e.EVENT_CLASSIFICATION_ID) IN ('A', 'B') " .
+    "  AND R.POSITION IS NOT NULL " .
+    "  AND R.POSITION <= 30 " .
+    "  AND cc.AGE_LOWER_LIMIT IS NULL " .
+    "  AND NOT " . $hiddenCompetitor . " " .
+    "UNION ALL " .
+    "SELECT R.TEAM_RESULT_ID AS ROW_ID, e.EVENT_ID, e.NAME AS EVENT_NAME, e.RACEDATE, e.SPORT_CODE, e.RACE_DISTANCE, " .
+    "  R.CLASS_NAME, R.TOTAL_POSITION AS PLACE, R.TEAM_NAME, COALESCE(R.STAGE, 0) AS LEG, C.FIRST_NAME, C.LAST_NAME, " .
+    "  " . $hiddenCompetitor . " AS HIDDEN " .
+    "FROM `RACE_EVENT_RESULTS_TEAM` AS R " .
+    "INNER JOIN RACE_EVENT AS e ON e.EVENT_ID = R.EVENT_ID " .
+    "INNER JOIN RACE_COMPETITORS AS C ON C.COMPETITOR_ID = R.COMPETITOR_ID " .
+    $classificationJoin .
+    "WHERE (R.TEAM_FAILED_REASON IS NULL OR R.TEAM_FAILED_REASON = 'FULLFÖ') " .
+    "  AND COALESCE(R.DEVIANT_EVENT_CLASSIFICATION_ID, e.EVENT_CLASSIFICATION_ID) IN ('A', 'B') " .
+    "  AND R.TOTAL_POSITION IS NOT NULL " .
+    "  AND R.TOTAL_POSITION <= 30 " .
+    "  AND cc.AGE_LOWER_LIMIT IS NULL " .
+    ") AS medals " .
+    "ORDER BY RACEDATE DESC, EVENT_ID, CLASS_NAME, TEAM_NAME, LEG, ROW_ID";
+
+  $result = \db\mysql_query($sql);
+  if (!$result)
+  {
+    trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
+  }
+
+  $statistics = new stdClass();
+  $statistics->typeOfChart = "medallist";
+  $statistics->title = "championchipsList";
+  $statistics->dataKey = "year";
+  $statistics->valueKeys = array();
+  $medals = array();
+
+  if (\db\mysql_num_rows($result) > 0)
+  {
+    while($row = \db\mysql_fetch_assoc($result))
+    {
+      $isTeam = !is_null($row['TEAM_NAME']);
+      // Relay: one row per team with the team placing, listing the club members in leg order.
+      // Individual results are always one row each.
+      $key = $isTeam ?
+        "T|" . $row['EVENT_ID'] . "|" . $row['CLASS_NAME'] . "|" . $row['TEAM_NAME'] :
+        "I|" . $row['ROW_ID'];
+
+      if (!isset($medals[$key]))
+      {
+        $data = new stdClass();
+        $data->key = $key;
+        $data->eventId = intval($row['EVENT_ID']);
+        $data->year = intval(date("Y", strtotime($row['RACEDATE'])));
+        $data->raceDate = date2String(strtotime($row['RACEDATE']));
+        $data->eventName = $row['EVENT_NAME'];
+        $data->sportCode = $row['SPORT_CODE'];
+        $data->raceDistance = $isTeam ? 'Relay' : $row['RACE_DISTANCE'];
+        $data->className = $row['CLASS_NAME'];
+        $data->position = intval($row['PLACE']);
+        $data->teamName = $isTeam ? $row['TEAM_NAME'] : NULL;
+        $data->names = array();
+        $data->legs = array();
+        $medals[$key] = $data;
+      }
+      if (intval($row['PLACE']) < $medals[$key]->position)
+      {
+        $medals[$key]->position = intval($row['PLACE']);
+      }
+      if (!intval($row['HIDDEN']))
+      {
+        array_push($medals[$key]->names, $row['FIRST_NAME'] . " " . $row['LAST_NAME']);
+        array_push($medals[$key]->legs, intval($row['LEG']));
+      }
+    }
+  }
+  $statistics->data = array_values($medals);
   array_push($rows, $statistics);
 }
 else
