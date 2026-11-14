@@ -29,9 +29,7 @@ const RenounceModal = observer(({ competitor, open, onClose }: IRenounceModalPro
       saveUrl,
       {
         iType: 'COMPETITOR_RENOUNCE',
-        iCompetitorId: competitor.competitorId,
-        username: sessionModel.username,
-        password: sessionModel.password
+        iCompetitorId: competitor.competitorId
       },
       true,
       sessionModel.authorizationHeader
@@ -45,14 +43,7 @@ const RenounceModal = observer(({ competitor, open, onClose }: IRenounceModalPro
         setSaving(false);
         if (e?.message) message.error(e.message);
       });
-  }, [
-    clubModel.modules,
-    competitor,
-    onClose,
-    sessionModel.authorizationHeader,
-    sessionModel.password,
-    sessionModel.username
-  ]);
+  }, [clubModel.modules, competitor, onClose, sessionModel.authorizationHeader]);
 
   return (
     <Modal

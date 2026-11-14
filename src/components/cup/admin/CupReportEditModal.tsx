@@ -1,20 +1,35 @@
 import { Form, Input, Modal, Select } from 'antd';
-import { ClassicEditor } from 'ckeditor5';
-import { lazy, Suspense, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { styled } from 'styled-components';
 import { ICupReportProps, ICupSeasonProps } from '../../../models/cupModel';
+import { cupReportPlainText } from '../../../utils/cupHelper';
 import { fileAsBase64, getFileType } from '../../../utils/fileHelper';
-import { IFile, maxByteSize } from '../../../utils/formHelper';
+import { errorRequiredField, IFile, maxByteSize } from '../../../utils/formHelper';
 import { useMobxStore } from '../../../utils/mobxStore';
 import { INewsFileRequest } from '../../../utils/requestInterfaces';
+import FormItem from '../../formItems/FormItem';
+import SimpleHtmlHelp from '../../simpleHtml/SimpleHtmlHelp';
 import UploadDragger from '../../formItems/UploadDragger';
 import { showCupError, useCupApi } from '../useCup';
 
-const CustomCKEditor = lazy(() => import('../../htmlEditor/CustomCKEditor'));
+const { TextArea } = Input;
+const StyledModal = styled(Modal)`
+  &&& .ant-modal-body {
+    max-height: calc(100vh - 200px);
+    overflow-y: scroll;
+    overflow-x: hidden;
+  }
+`;
+const StyledUploadContainer = styled.div`
+  margin-top: 16px;
+  margin-bottom: 8px;
+`;
 
 interface IReportForm {
   header: string;
   introduction: string;
+  text: string;
   cupRaceId: number | -1;
   files: IFile[];
 }
@@ -29,14 +44,13 @@ interface ICupReportEditModalProps {
   onSaved: () => void;
 }
 
-/** A report with images, for one race or for the whole season */
+/** A plain text report with images, for one race or for the whole season. Same form as a news item. */
 const CupReportEditModal = ({ season, report, cupRaceId, open, onClose, onSaved }: ICupReportEditModalProps) => {
   const { t } = useTranslation();
   const { clubModel } = useMobxStore();
   const { save } = useCupApi();
   const [form] = Form.useForm<IReportForm>();
   const [saving, setSaving] = useState(false);
-  const editor = useRef<ClassicEditor>(null);
 
   const onOk = async () => {
     try {
@@ -63,7 +77,7 @@ const CupReportEditModal = ({ season, report, cupRaceId, open, onClose, onSaved 
         iCupRaceId: values.cupRaceId === -1 ? null : values.cupRaceId,
         iHeader: values.header,
         iIntroduction: values.introduction ?? '',
-        iText: editor.current?.getData() ?? report?.text ?? '',
+        iText: values.text ?? '',
         iFiles
       });
       setSaving(false);
@@ -75,16 +89,18 @@ const CupReportEditModal = ({ season, report, cupRaceId, open, onClose, onSaved 
   };
 
   return (
-    <Modal
+    <StyledModal
       destroyOnHidden
+      closable={false}
+      maskClosable={false}
       title={report ? t('cup.EditReport') : t('cup.NewReport')}
       open={open}
-      width={900}
+      width={800}
       okText={t('common.Save')}
       cancelText={t('common.Cancel')}
       okButtonProps={{ loading: saving }}
-      maskClosable={false}
-      style={{ top: 30 }}
+      cancelButtonProps={{ loading: saving }}
+      style={{ top: 40 }}
       onOk={onOk}
       onCancel={onClose}
     >
@@ -94,6 +110,7 @@ const CupReportEditModal = ({ season, report, cupRaceId, open, onClose, onSaved 
         initialValues={{
           header: report?.header ?? '',
           introduction: report?.introduction ?? '',
+          text: cupReportPlainText(report?.text),
           cupRaceId: report ? (report.cupRaceId ?? -1) : (cupRaceId ?? -1),
           files: (report?.files ?? []).map(file => ({
             uid: file.fileId.toString(),
@@ -107,41 +124,56 @@ const CupReportEditModal = ({ season, report, cupRaceId, open, onClose, onSaved 
           }))
         }}
       >
-        <Form.Item name="cupRaceId" label={t('cup.ReportFor')}>
+        <FormItem name="cupRaceId" label={t('cup.ReportFor')}>
           <Select
+            style={{ minWidth: 174 }}
             options={[
               { value: -1, label: t('cup.WholeSeason', { season: season.name }) },
               ...season.races.map(r => ({ value: r.cupRaceId, label: `${r.raceDate} ${r.name}` }))
             ]}
           />
-        </Form.Item>
-        <Form.Item name="header" label={t('cup.ReportHeader')} rules={[{ required: true, max: 128 }]}>
+        </FormItem>
+        <FormItem
+          name="header"
+          label={t('news.Header')}
+          rules={[{ required: true, message: errorRequiredField(t, 'news.Header') }, { max: 128 }]}
+        >
           <Input />
-        </Form.Item>
-        <Form.Item name="introduction" label={t('cup.ReportIntroduction')}>
-          <Input.TextArea autoSize={{ minRows: 2, maxRows: 5 }} />
-        </Form.Item>
-        <Form.Item label={t('cup.ReportText')}>
-          <Suspense fallback={null}>
-            <CustomCKEditor
-              data={report?.text ?? ''}
-              isReadOnly={false}
-              onReady={instance => {
-                editor.current = instance;
-              }}
-            />
-          </Suspense>
-        </Form.Item>
-        <UploadDragger
-          form={form}
-          fieldName="files"
-          maxByteSize={maxByteSize}
-          multiple={true}
-          label={t('cup.ReportImages')}
-          extra={t('news.AttachmentsInfo')}
-        />
+        </FormItem>
+        <FormItem
+          name="introduction"
+          label={
+            <>
+              {t('news.Introduction')}
+              <SimpleHtmlHelp />
+            </>
+          }
+        >
+          <TextArea autoSize={{ minRows: 1, maxRows: 4 }} />
+        </FormItem>
+        <FormItem
+          name="text"
+          label={
+            <>
+              {t('news.Text')}
+              <SimpleHtmlHelp />
+            </>
+          }
+        >
+          <TextArea autoSize={{ minRows: 2, maxRows: 6 }} />
+        </FormItem>
+        <StyledUploadContainer>
+          <UploadDragger
+            form={form}
+            fieldName="files"
+            maxByteSize={maxByteSize}
+            multiple={true}
+            label={t('news.Attachments')}
+            extra={t('news.AttachmentsInfo')}
+          />
+        </StyledUploadContainer>
       </Form>
-    </Modal>
+    </StyledModal>
   );
 };
 

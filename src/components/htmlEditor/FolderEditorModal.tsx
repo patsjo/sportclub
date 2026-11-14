@@ -37,13 +37,13 @@ export const FolderEditorModal = async (
   }
   const usersJson = await PostJsonData<{ users: IUserModel[]; groups: IGroupModel[]; councils: ICouncilModel[] }>(
     usersModule?.queryUrl,
-    { username: sessionModel.username, password: sessionModel.password },
+    {},
     true,
     sessionModel.authorizationHeader
   );
   const foldersJson = await PostJsonData<IFolderResponse[]>(
     filesModule?.queryUrl,
-    { iType: 'FOLDERS', username: sessionModel.username, password: sessionModel.password },
+    { iType: 'FOLDERS' },
     true,
     sessionModel.authorizationHeader
   );
@@ -174,9 +174,7 @@ export const FolderEditorModal = async (
               deleteUrl,
               {
                 iType: 'FOLDER',
-                folderId: folderId,
-                username: sessionModel.username,
-                password: sessionModel.password
+                folderId: folderId
               },
               true,
               sessionModel.authorizationHeader
@@ -199,9 +197,7 @@ export const FolderEditorModal = async (
                 saveUrl,
                 {
                   ...values,
-                  iType: 'FOLDER',
-                  username: sessionModel.username,
-                  password: sessionModel.password
+                  iType: 'FOLDER'
                 },
                 true,
                 sessionModel.authorizationHeader

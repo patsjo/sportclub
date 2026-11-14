@@ -66,6 +66,7 @@ const CalendarItem = observer(({ calendarObject, domains, children }: ICalendarI
     <FadeOutItem
       paddingBottom={0}
       module={calendarModule}
+      social={{ targetType: 'CALENDAR', targetId: calendarObject.activityId, card: 'compact' }}
       content={
         <Activity key={`activity#${calendarObject.activityId}`}>
           {calendarObject.time ? `${calendarObject.time}, ` : ''}
@@ -118,9 +119,7 @@ const CalendarItem = observer(({ calendarObject, domains, children }: ICalendarI
               PostJsonData(
                 calendarModule?.deleteUrl,
                 {
-                  iActivityID: calendarObject.activityId,
-                  username: sessionModel.username,
-                  password: sessionModel.password
+                  iActivityID: calendarObject.activityId
                 },
                 true,
                 sessionModel.authorizationHeader
@@ -135,9 +134,7 @@ const CalendarItem = observer(({ calendarObject, domains, children }: ICalendarI
                 calendarModule?.deleteUrl,
                 {
                   iActivityID: calendarObject.activityId,
-                  iRepeatingGid: calendarObject.repeatingGid,
-                  username: sessionModel.username,
-                  password: sessionModel.password
+                  iRepeatingGid: calendarObject.repeatingGid
                 },
                 true,
                 sessionModel.authorizationHeader

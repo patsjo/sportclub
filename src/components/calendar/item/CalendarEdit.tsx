@@ -113,9 +113,7 @@ const CalendarEdit = observer(({ title, calendarObject, domains, open, onClose, 
           saveUrl,
           {
             ...values,
-            iType: 'ACTIVITY',
-            username: sessionModel.username,
-            password: sessionModel.password
+            iType: 'ACTIVITY'
           },
           true,
           sessionModel.authorizationHeader
@@ -130,15 +128,7 @@ const CalendarEdit = observer(({ title, calendarObject, domains, open, onClose, 
         setSaving(false);
       }
     },
-    [
-      clubModel.modules,
-      isRepeating,
-      onChange,
-      onClose,
-      sessionModel.authorizationHeader,
-      sessionModel.password,
-      sessionModel.username
-    ]
+    [clubModel.modules, isRepeating, onChange, onClose, sessionModel.authorizationHeader]
   );
 
   const onChooseMapPosition = useCallback(() => {

@@ -235,9 +235,7 @@ const MapTracks = () => {
           saveUrl,
           {
             tracks: values.tracks,
-            removedTrackIds,
-            username: sessionModel.username,
-            password: sessionModel.password
+            removedTrackIds
           },
           true,
           sessionModel.authorizationHeader
@@ -254,7 +252,7 @@ const MapTracks = () => {
         setSaving(false);
       }
     },
-    [removedTrackIds, saveUrl, sessionModel.authorizationHeader, sessionModel.password, sessionModel.username]
+    [removedTrackIds, saveUrl, sessionModel.authorizationHeader]
   );
 
   useEffect(() => {

@@ -1,6 +1,7 @@
 import { Layout, message, Spin } from 'antd';
 import { observer } from 'mobx-react';
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, BrowserRouter as Router } from 'react-router-dom';
 import { styled, ThemeProvider } from 'styled-components';
 import AppContent from './AppContent';
@@ -9,8 +10,12 @@ import clubJson from './models/clubs/okorion';
 import { GlobalStateModel } from './models/globalStateModel';
 import { IThemeProps, MobxClubModel } from './models/mobxClubModel';
 import { getLocalStorage, SessionModel } from './models/sessionModel';
-import { PostJsonData } from './utils/api';
+import { SocialModel } from './models/socialModel';
+import { onLoginProvider, startGoogleAutoLogin } from './utils/googleAutoLogin';
+import { restoreLogin } from './utils/loginHelper';
 import { MobxStoreProvider } from './utils/mobxStore';
+
+const LoginForm = lazy(() => import('./components/login/LoginForm'));
 
 const StyledLayout = styled(Layout)`
   background-color: #ffffff;
@@ -119,10 +124,12 @@ const StyledEllipsis = styled.div`
 // observer, so the toolbar follows globalStateModel.darkHeader
 const App = observer(() => {
   const [messageApi, contextHolder] = message.useMessage();
+  const { t } = useTranslation();
   const scrollTop = useRef(0);
   const [scrollStickyPos, setScrollStickyPos] = useState(0);
   const sessionModel = useMemo(() => new SessionModel(getLocalStorage()), []);
   const clubModel = useMemo(() => new MobxClubModel(clubJson), []);
+  const socialModel = useMemo(() => new SocialModel(clubModel, sessionModel), [clubModel, sessionModel]);
   const logoHeight = 80;
   const logoWidth = clubModel.logo.width * (80 / clubModel.logo.height);
   const titleWidth = clubModel.titleLogo ? clubModel.titleLogo.width * (24 / clubModel.titleLogo.height) : 0;
@@ -178,27 +185,22 @@ const App = observer(() => {
   }, [onScroll]);
 
   useEffect(() => {
-    if (sessionModel.username && sessionModel.username.length > 0) {
-      PostJsonData<{ id: string; name: string; isAdmin: boolean; eventorPersonId: number }>(
-        clubModel.loginUrl,
-        {
-          username: sessionModel.username,
-          password: sessionModel.password
-        },
-        true,
-        { 'X-Requested-With': 'XMLHttpRequest' },
-        1
-      )
-        .then(json => {
-          if (json) {
-            sessionModel.setSuccessfullyLogin(json.id, json.name, json.isAdmin, json.eventorPersonId);
-          }
-        })
-        .catch(error => {
-          console.error(error);
-        });
-    }
-  }, [clubModel.loginUrl, sessionModel]);
+    // A Google/Facebook login that returns, the saved token, or a password saved by an old version
+    const onLoggedIn = () => {
+      onLoginProvider(sessionModel.provider);
+      if (sessionModel.isAdmin && sessionModel.pendingAccessRequests > 0)
+        messageApi.info(t('login.PendingAccessRequests', { count: sessionModel.pendingAccessRequests }), 8);
+    };
+    restoreLogin(clubModel, sessionModel, messageApi, t).then(() => {
+      onLoggedIn();
+      // Not logged in, Google logs in the account chosen before automatically (or asks the first time)
+      startGoogleAutoLogin(clubModel, sessionModel, onLoggedIn, error =>
+        console.warn(`The automatic Google login failed (${clubModel.loginUrl}): ${error}`)
+      );
+    });
+    // Only when the page starts
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clubModel, sessionModel]);
 
   useEffect(() => {
     const htmlEditorModule = clubModel.modules.find(module => module.name === 'HTMLEditor');
@@ -231,7 +233,8 @@ const App = observer(() => {
       store={{
         clubModel: clubModel,
         sessionModel: sessionModel,
-        globalStateModel: globalStateModel
+        globalStateModel: globalStateModel,
+        socialModel: socialModel
       }}
     >
       {contextHolder}
@@ -263,6 +266,9 @@ const App = observer(() => {
                 <AppContent />
               </LayoutContent>
             </StyledLayout>
+            {globalStateModel.loginModalVisible ? (
+              <LoginForm open={true} onClose={() => globalStateModel.setLoginModalVisible(false)} />
+            ) : null}
           </Router>
         </Suspense>
       </ThemeProvider>

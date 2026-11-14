@@ -38,9 +38,18 @@ if(!isset($input->iType))
 }
 
 ValidLogin();
-if ($input->iType != "COMPETITOR_INFO" && $input->iType != "COMPETITOR_RENOUNCE" && $input->iType != "COMPETITOR_REGRET_RENOUNCE" && !(ValidGroup($cADMIN_GROUP_ID)))
+$isOwnCompetitorType = $input->iType == "COMPETITOR_INFO" || $input->iType == "COMPETITOR_RENOUNCE" || $input->iType == "COMPETITOR_REGRET_RENOUNCE";
+if (!ValidGroup($cADMIN_GROUP_ID))
 {
-  NotAuthorized();
+  // Members may only change their own presentation and renounce their own results
+  if (!$isOwnCompetitorType || !isset($input->iCompetitorId) || !IsOwnCompetitor($input->iCompetitorId))
+  {
+    NotAuthorized(true);
+  }
+}
+if ($isOwnCompetitorType)
+{
+  $input->iCompetitorId = isset($input->iCompetitorId) ? intval($input->iCompetitorId) : 0;
 }
 
 OpenDatabase();

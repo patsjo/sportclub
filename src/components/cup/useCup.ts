@@ -20,9 +20,8 @@ const normalizeCup = (cup: ICupProps): ICupProps => ({
   }))
 });
 
-const basicAuthorization = (username?: string, password?: string) => ({
-  Authorization: 'Basic ' + window.btoa(`${username}:${password}`)
-});
+const bearerAuthorization = (token?: string): Record<string, string> =>
+  token ? { Authorization: 'Bearer ' + token } : {};
 
 /** Calls the cup module, query or save/delete, with the login of the session */
 export const useCupApi = () => {
@@ -32,30 +31,28 @@ export const useCupApi = () => {
   const updateUrl = cupModule?.updateUrl;
   const deleteUrl = cupModule?.deleteUrl;
   // Primitive dependencies, sessionModel.authorizationHeader is a new object every time it is read
-  const { username, password } = sessionModel;
+  const { token } = sessionModel;
 
   const query = useCallback(
     <T>(data: Record<string, unknown>, throwError = true) =>
-      queryUrl
-        ? PostJsonData<T>(queryUrl, data, throwError, basicAuthorization(username, password))
-        : Promise.resolve(undefined),
-    [queryUrl, username, password]
+      queryUrl ? PostJsonData<T>(queryUrl, data, throwError, bearerAuthorization(token)) : Promise.resolve(undefined),
+    [queryUrl, token]
   );
 
   const save = useCallback(
     <T>(data: Record<string, unknown>) =>
       updateUrl
-        ? PostJsonData<T>(updateUrl, { ...data, username, password }, true, basicAuthorization(username, password))
+        ? PostJsonData<T>(updateUrl, data, true, bearerAuthorization(token))
         : Promise.reject(new Error('Missing cup updateUrl')),
-    [updateUrl, password, username]
+    [updateUrl, token]
   );
 
   const remove = useCallback(
     (data: Record<string, unknown>) =>
       deleteUrl
-        ? PostJsonData(deleteUrl, { ...data, username, password }, true, basicAuthorization(username, password))
+        ? PostJsonData(deleteUrl, data, true, bearerAuthorization(token))
         : Promise.reject(new Error('Missing cup deleteUrl')),
-    [deleteUrl, password, username]
+    [deleteUrl, token]
   );
 
   return { query, save, remove, enabled: !!queryUrl };

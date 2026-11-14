@@ -25,5 +25,16 @@ export interface IUserModel {
   workPhoneNo?: string | null;
   councilId: number;
   responsibility?: string | null;
+  /** Linked by an administrator, see Accounts */
+  competitorId?: number | null;
   groupIds: number[];
+  /** The Google/Facebook accounts linked to the user (a user can have several), only to administrators */
+  oauthAccounts?: IUserOAuthAccount[];
+}
+
+export interface IUserOAuthAccount {
+  oauthId: number;
+  provider: 'GOOGLE' | 'FACEBOOK';
+  name: string;
+  email: string | null;
 }

@@ -40,20 +40,20 @@ export const FileEditorModal = async (
   }
   const usersJson = await PostJsonData<{ users: IUserModel[]; groups: IGroupModel[]; councils: ICouncilModel[] }>(
     usersModule?.queryUrl,
-    { username: sessionModel.username, password: sessionModel.password },
+    {},
     true,
     sessionModel.authorizationHeader
   );
   const foldersJson = await PostJsonData<IFolderResponse[]>(
     filesModule?.queryUrl,
-    { iType: 'FOLDERS', username: sessionModel.username, password: sessionModel.password },
+    { iType: 'FOLDERS' },
     true,
     sessionModel.authorizationHeader
   );
   if (fileId >= 0) {
     const fileJson = await PostJsonData<IFileResponse>(
       filesModule?.queryUrl,
-      { iType: 'FILE', fileId: fileId, username: sessionModel.username, password: sessionModel.password },
+      { iType: 'FILE', fileId: fileId },
       true,
       sessionModel.authorizationHeader
     );
@@ -219,9 +219,7 @@ export const FileEditorModal = async (
               deleteUrl,
               {
                 iType: 'FILE',
-                fileId: fileId,
-                username: sessionModel.username,
-                password: sessionModel.password
+                fileId: fileId
               },
               true,
               sessionModel.authorizationHeader
@@ -253,9 +251,7 @@ export const FileEditorModal = async (
                   fileData: values.fileData,
                   fileSize: values.fileSize,
                   mimeType: values.mimeType,
-                  orderField: values.orderField,
-                  username: sessionModel.username,
-                  password: sessionModel.password
+                  orderField: values.orderField
                 },
                 true,
                 sessionModel.authorizationHeader

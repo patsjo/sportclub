@@ -8,6 +8,7 @@ import {
   classMatchesCategory,
   cupAgeMatchesCategory,
   cupClassKey,
+  cupReportPlainText,
   filterToCupClasses,
   formatCupBehind,
   formatCupTime,
@@ -793,5 +794,20 @@ describe('iofResultListToCupResults', () => {
   it('uses the total result after a stage', () => {
     const cupResults = iofResultListToCupResults(resultList, 7, 100, true, 288);
     expect(cupResults.find(r => r.eventorPersonId === 555)).toMatchObject({ position: 3, timeSeconds: 1200 });
+  });
+});
+
+describe('cupReportPlainText', () => {
+  it('keeps plain text as it is', () => {
+    expect(cupReportPlainText('Rad 1\n\nRad 2 < 3')).toBe('Rad 1\n\nRad 2 < 3');
+    expect(cupReportPlainText(null)).toBe('');
+  });
+
+  it('converts html from the old editor to plain text with new lines, keeps the simple tags', () => {
+    expect(
+      cupReportPlainText(
+        '<p>Första&nbsp;stycket med <strong>fet</strong> text.</p>\n<p>Rad<br>två</p><ul><li>Ett</li><li>Två</li></ul><p>Slut &amp; tack</p>'
+      )
+    ).toBe('Första stycket med <strong>fet</strong> text.\n\nRad\ntvå\n\n• Ett\n• Två\n\nSlut & tack');
   });
 });

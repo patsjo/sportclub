@@ -4,14 +4,17 @@ import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { styled } from 'styled-components';
 import { IModule } from '../../models/mobxClubModel';
+import { SocialTargetType } from '../../models/socialModel';
 import { useMobxStore } from '../../utils/mobxStore';
 import { useSize } from '../../utils/useSize';
+import SocialBar from '../social/SocialBar';
+import SocialSection from '../social/SocialSection';
 
 interface IItemProps {
   maxHeight?: number;
 }
-const ItemHolder = styled.div<IItemProps & { paddingBottom: number }>`
-  max-height: ${({ maxHeight, paddingBottom }) => (maxHeight ? maxHeight : 300) + paddingBottom}px;
+const ItemHolder = styled.div<IItemProps & { paddingBottom: number; extraHeight: number }>`
+  max-height: ${({ maxHeight, paddingBottom, extraHeight }) => (maxHeight ? maxHeight : 300) + paddingBottom + extraHeight}px;
   overflow: hidden;
   padding-bottom: ${({ paddingBottom }) => paddingBottom}px;
 `;
@@ -49,8 +52,17 @@ const StyledModalContent = styled.div<IContentProps>`
   column-rule: 1px dotted #ccc;
 `;
 
+export interface IFadeOutItemSocial {
+  targetType: SocialTargetType;
+  targetId: string | number;
+  /** On the card: full = always the buttons, compact = only when someone has reacted, none = only in the modal */
+  card?: 'full' | 'compact' | 'none';
+}
+
 interface IFadeOutItemProps {
   ref?: React.ForwardedRef<HTMLDivElement>;
+  /** Reactions and comments */
+  social?: IFadeOutItemSocial;
   content: React.ReactNode;
   module: IModule;
   modalContent: React.ReactNode;
@@ -76,7 +88,8 @@ const FadeOutItem = observer(
     onDelete,
     deleteAllPromise,
     onDeleteAll,
-    maxHeight
+    maxHeight,
+    social
   }: IFadeOutItemProps) => {
     const { sessionModel } = useMobxStore();
     const { t } = useTranslation();
@@ -167,7 +180,12 @@ const FadeOutItem = observer(
         : null;
 
     return (
-      <ItemHolder ref={ref} maxHeight={maxHeight} paddingBottom={paddingBottom}>
+      <ItemHolder
+        ref={ref}
+        maxHeight={maxHeight}
+        paddingBottom={paddingBottom}
+        extraHeight={social && social.card !== 'none' ? 32 : 0}
+      >
         <ItemFadeOut
           maxHeight={maxHeight}
           height={height != null ? height - paddingBottom : undefined}
@@ -175,6 +193,14 @@ const FadeOutItem = observer(
         >
           <div ref={fadeOutRef}>{content}</div>
         </ItemFadeOut>
+        {social && social.card !== 'none' ? (
+          <SocialBar
+            targetType={social.targetType}
+            targetId={social.targetId}
+            compact={social.card === 'compact'}
+            onComments={openModal}
+          />
+        ) : null}
         <Modal
           closable={false}
           maskClosable={false}
@@ -192,6 +218,7 @@ const FadeOutItem = observer(
           onCancel={closeModal}
         >
           <StyledModalContent columns={modalColumns}>{modalContent}</StyledModalContent>
+          {social && showModalItem ? <SocialSection targetType={social.targetType} targetId={social.targetId} /> : null}
         </Modal>
         {EditFormContent}
       </ItemHolder>

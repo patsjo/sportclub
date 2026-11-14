@@ -7,6 +7,7 @@ import {
   ICupSeasonSettings
 } from '../models/cupModel';
 import { IPersonRaceResult, IResultListType, ResultStatus } from '../models/iof.xsd-3.0';
+import { hasOtherHtml, htmlToSimpleText } from './simpleHtml';
 
 /** A result as it is used for the points, after the participants and points basis of the season are applied */
 export interface ICupScoredResult extends ICupResultProps {
@@ -905,4 +906,14 @@ export const iofResultListToCupResults = (
   });
 
   return cupResults;
+};
+
+/**
+ * Reports are plain text (like the news) with a few simple tags (links, bold, ...). Older reports were written in a
+ * HTML editor, convert those to plain text with paragraphs and line breaks as new lines, the simple tags are kept.
+ */
+export const cupReportPlainText = (text: string | null | undefined): string => {
+  if (!text) return '';
+  if (!hasOtherHtml(text)) return text;
+  return htmlToSimpleText(text);
 };

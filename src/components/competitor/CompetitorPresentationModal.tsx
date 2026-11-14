@@ -62,9 +62,7 @@ const CompetitorPresentationModal = observer(
           saveUrl,
           {
             ...values,
-            iType: 'COMPETITOR_INFO',
-            username: sessionModel.username,
-            password: sessionModel.password
+            iType: 'COMPETITOR_INFO'
           },
           true,
           sessionModel.authorizationHeader
@@ -81,14 +79,7 @@ const CompetitorPresentationModal = observer(
             setSaving(false);
           });
       },
-      [
-        clubModel.modules,
-        onChange,
-        onClose,
-        sessionModel.authorizationHeader,
-        sessionModel.password,
-        sessionModel.username
-      ]
+      [clubModel.modules, onChange, onClose, sessionModel.authorizationHeader]
     );
 
     return (

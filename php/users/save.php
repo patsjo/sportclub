@@ -85,14 +85,23 @@ $query = sprintf("UPDATE users " .
 
 \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
 
+// Only an administrator links a user to a competitor
+if (property_exists($input, 'competitorId') && ValidGroup($cADMIN_GROUP_ID))
+{
+  $query = sprintf("UPDATE users SET competitor_id = %s WHERE user_id = %d",
+                   is_numeric($input->competitorId) && intval($input->competitorId) > 0 ? intval($input->competitorId) : "NULL",
+                   $input->userId);
+  \db\mysql_query($query) || trigger_error(sprintf('SQL-Error (%s)', substr($query, 0, 1024)), E_USER_ERROR);
+}
+
 $sql = "SELECT users.USER_ID, BIRTHDAY, FIRST_NAME, LAST_NAME, ADDRESS, ZIP, CITY, " .
-"   EMAIL, PHONE_NO, MOBILE_PHONE_NO, WORK_PHONE_NO, COUNCIL_ID, RESPONSIBILITY, " .
+"   EMAIL, PHONE_NO, MOBILE_PHONE_NO, WORK_PHONE_NO, COUNCIL_ID, RESPONSIBILITY, COMPETITOR_ID, " .
 "   GROUP_CONCAT(GROUP_ID SEPARATOR ',') AS GROUP_IDS " .
 "FROM users " .
 "LEFT OUTER JOIN user_groups ON (users.user_id = user_groups.user_id) ".
 "WHERE users.USER_ID = " . $input->userId . " ".
 "GROUP BY users.USER_ID, BIRTHDAY, FIRST_NAME, LAST_NAME, ADDRESS, ZIP, CITY, " .
-"   EMAIL, PHONE_NO, MOBILE_PHONE_NO, WORK_PHONE_NO, COUNCIL_ID, RESPONSIBILITY";
+"   EMAIL, PHONE_NO, MOBILE_PHONE_NO, WORK_PHONE_NO, COUNCIL_ID, RESPONSIBILITY, COMPETITOR_ID";
 
 $result = \db\mysql_query($sql);
 if (!$result)
@@ -116,6 +125,7 @@ if (\db\mysql_num_rows($result) > 0) {
       $x->workPhoneNo           = $row['WORK_PHONE_NO'];
       $x->councilId             = intval($row['COUNCIL_ID']);
       $x->responsibility        = $row['RESPONSIBILITY'];
+      $x->competitorId          = is_null($row['COMPETITOR_ID']) ? null : intval($row['COMPETITOR_ID']);
       $x->groupIds              = is_null($row['GROUP_IDS']) ? array() : array_map('intval', explode(",", $row['GROUP_IDS']));
       sort($x->groupIds);
   }

@@ -1,4 +1,4 @@
-# sportclub 2.4
+# sportclub 2.5
 
 This is a react app for sports like orienteering or any other sport, with the following key functionality:
 
@@ -15,6 +15,8 @@ This is a react app for sports like orienteering or any other sport, with the fo
 - Create/Edit external links into the menu
 - Upload files, and connect them into the menu
 - Administrate members
+- Login with Eventor, Google or Facebook, guests can react (👍 👎 ❤️) and comment, and apply for membership (see [Login with Google and Facebook](#login-with-google-and-facebook-reactions-and-comments))
+- News and cup reports can use simple tags: links, bold, italic, underline, strikethrough, superscript and subscript
 
 ## Cups
 
@@ -47,6 +49,75 @@ To use the cups, add the `Cup` module to your club config file:
   queryUrl: 'https://yourclub.com/cup/jsonCupQuery.php'
 }
 ```
+
+## Login with Google and Facebook, reactions and comments
+
+Besides the login with Eventor (or your own user/password), visitors can log in with Google and/or Facebook.
+
+- **Guests** - an account from Google/Facebook that isn't linked to a user is a guest. A guest can only react (👍 👎 ❤️) and comment, everything else needs a user. Nothing about a guest is saved on the server (not in the database and not in a session) until the guest reacts, comments or asks for access, the login is a token signed by the server that only the browser keeps.
+- **Stays logged in** - a login with Google or Facebook is remembered until the user logs out. With `googleClientId` in the club config, Google also logs in automatically ("One Tap"): the first time Google asks which account to use (if there are several), after that the same account is logged in automatically, every time the page is opened and also in a new browser. After a logout Google asks again (choose the account, or "Continue as" when there is only one), then it is automatic again. Facebook has no automatic login for web pages, the login is remembered instead.
+- **Access requests** - a guest can apply for membership, or for an access group (e.g. Coach). A logged in member can also request an access group. The requests are found by the administrators under _Users → Accounts_, and the administrator is told about them after the login.
+- **Linking** - the administrator approves a request (or links any account) to an existing user, or creates a new user from the name and email of the account. The user can also be linked to a competitor, used e.g. to renounce results when the user has no Eventor login. The reactions and comments made as a guest follow to the user.
+- **Reactions and comments** - on news and banners, calendar activities, the map on the dashboard, and on the cup pages (every report and every race). Everyone can read the comments and see the counts, users and guests can react and comment, and click on a count to see who reacted. You can delete your own comments, an administrator can delete all.
+- **Login tokens** - the password is never saved in the browser. The login gives a random token (only its hash is saved in the database), that the page sends as `Authorization: Bearer <token>`. Without _Remember me_ the token lives one day after it was last used (only in that browser tab), with _Remember me_ 90 days. A login saved by an older version is changed to a token automatically the first time.
+
+Both Google and Facebook login are free to use, neither charges for login (no billing account or paid API key is needed). Facebook does however require a _Business verification_ of the club (see below), that is free too.
+
+### 1. Database
+
+Run `mysql/patches/sportclub_patch_2.5.sql` (a new database gets the same from `userTables.sql` and `socialTables.sql`).
+
+### 2. Google
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/) and create a project (e.g. "OK Orion web").
+2. Open **Google Auth Platform** (APIs & Services → OAuth consent screen) and click _Get started_:
+   - **Branding** - app name, support email, the home page, a privacy policy page and the authorized domain (e.g. `okorion.com`). Skip the logo, a logo means Google has to verify the app first.
+   - **Audience** - _External_, then _Publish app_ (In production). The login only asks for `openid`, `email` and `profile`, they are non sensitive and need no verification by Google.
+3. **Clients → Create client**, type _Web application_.
+   - **Authorized redirect URIs** - `https://yourclub.com/oauth/google.php` (add `https://www.yourclub.com/oauth/google.php` too if the page is also used with www).
+   - **Authorized JavaScript origins** - needed for the automatic login (without them Google answers "Error 401: invalid_client", the login button still works), the pages it is used on: `https://yourclub.com`, `https://www.yourclub.com`, and while developing `http://localhost` and `http://localhost:5173`.
+4. Copy the **Client ID** and **Client secret** to `GetGoogleClientId()` and `GetGoogleClientSecret()` in `php/include/oauthKeys.php`. The Client ID (not the secret) also goes to `googleClientId` in the club config file, for the automatic login.
+
+### 3. Facebook
+
+1. Go to [Meta for Developers](https://developers.facebook.com/apps/), log in with Facebook and register as a developer if you haven't.
+2. **Create app** → use case _Authenticate and request data from users with Facebook Login_ (app type _Consumer_ if asked).
+3. **Use cases → Facebook Login → Customize**
+   - **Permissions** - add `email` (`public_profile` is already there).
+   - **Settings** - _Valid OAuth Redirect URIs_: `https://yourclub.com/oauth/facebook.php`. _Client OAuth login_, _Web OAuth login_, _Enforce HTTPS_ and _Use Strict Mode for redirect URIs_ on.
+4. **App settings → Basic** - App domains (`yourclub.com`), a _Privacy Policy URL_, _User data deletion_ (an URL to a page that tells how to get your data deleted, e.g. "email the club, we delete the account under Users → Accounts"), category and an icon. Copy the **App ID** and **App Secret** to `GetFacebookAppId()` and `GetFacebookAppSecret()` in `php/include/oauthKeys.php`.
+5. **Business verification** - Facebook requires that the club (the business portfolio that owns the app) is verified before the app can be used by everyone. Do it in [Meta Business Suite](https://business.facebook.com/) → _Settings → Business info → Business verification_, with the club's legal name, address, phone and organisation number, and a document that shows them (e.g. the registration certificate or a bill to the club). It's free and usually takes a few days. Then link the app to the verified business portfolio under **App settings → Basic**.
+6. **Publish** the app (switch from _Development_ to _Live_), otherwise only you and the app testers can log in.
+7. Facebook removes old versions of the Graph API after about two years, keep `GetFacebookGraphVersion()` in `oauthKeys.php` updated.
+
+### 4. The server
+
+In `php/include/oauthKeys.php` (permissions 0600, like `eventorApiKey.php`):
+
+- The keys from Google and Facebook above. Leave a key empty to turn the provider off.
+- `GetOAuthAllowedReturnOrigins()` - the pages that may get the login back, e.g. `https://yourclub.com`, `https://www.yourclub.com` and `http://localhost:5173` while developing. Empty means the same host as the PHP scripts. The redirect URI at Google/Facebook is always the server, also while developing locally.
+- `GetLoginTokenSecret()` (optional) - signs the logins of guests. Empty uses the Google/Facebook secrets instead. Changing it, or the secrets, logs out all guests.
+
+Never put the secrets in the club config file in `src/models/clubs`, it is sent to every browser.
+
+### 5. The club config file
+
+Add to e.g. `src/models/clubs/okorion.ts` (remove `googleUrl` or `facebookUrl` to hide that button, remove `social` to turn off reactions and comments):
+
+```ts
+socialLogin: {
+  googleUrl: 'https://yourclub.com/oauth/google.php',
+  googleClientId: '1234567890-abc123.apps.googleusercontent.com', // the automatic Google login, remove to turn it off
+  facebookUrl: 'https://yourclub.com/oauth/facebook.php',
+  accountsUrl: 'https://yourclub.com/users/accounts.php'
+},
+social: {
+  queryUrl: 'https://yourclub.com/social/jsonSocialQuery.php',
+  updateUrl: 'https://yourclub.com/social/save.php'
+},
+```
+
+The names of the ones who comment are shown to everyone, tell about it (and about Google/Facebook) in the privacy policy of the club. The automatic Google login loads Google's script (`accounts.google.com/gsi/client`) for visitors that aren't logged in, mention that too.
 
 ## License
 
@@ -127,12 +198,13 @@ and the following seetings:
 1. You need a webhost that's supporting
    - PHP
    - MySql with InnoDB
-2. Create all tables (within "mysql" folder). Create the cup tables (`cupTables.sql`) after the file and result tables, they refer to them. If you already have a database, run the patches in "mysql/patches" that you haven't run yet (e.g. `sportclub_patch_2.4.sql` and `sportclub_patch_2.5.sql` for the cups).
+2. Create all tables (within "mysql" folder). Create the cup tables (`cupTables.sql`) after the file and result tables, they refer to them. If you already have a database, run the patches in "mysql/patches" that you haven't run yet (e.g. `sportclub_patch_2.4.sql` for the cups and `sportclub_patch_2.5.sql` for the login with Google/Facebook, reactions and comments).
 3. Copy all php scripts (within "php" folder) to your public html root folder
 4. If you **not** using https://eventor.orientering.se/ as authorization provider (used by all orienteering clubs in sweden), you may need to update the following login files.
    - php/log_in.php
    - php/log_out.php
    - php/include/users.php
+   - To also log in with Google and Facebook, see [Login with Google and Facebook](#login-with-google-and-facebook-reactions-and-comments).
 5. Create your own club config file in the "src/models/clubs" folder.
 6. Change "src/App.tsx" to import your config instead. (import clubJson from './models/clubs/...';)
 7. npm install
@@ -198,3 +270,4 @@ QGIS:
    - Maximum zoom: 17
    - Set Output directory
 3. You can remove \*.png files that are totally empty (1,21 kB)
+

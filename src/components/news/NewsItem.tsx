@@ -10,6 +10,7 @@ import FadeOutItem from '../fadeOutItem/FadeOutItem';
 import MaterialIcon from '../materialIcon/MaterialIcon';
 import NewsEdit from './NewsEdit';
 import NewsImages from './NewsImages';
+import SimpleHtmlText from '../simpleHtml/SimpleHtmlText';
 
 const ContentHolder = styled.div``;
 
@@ -79,15 +80,15 @@ const NewsItem = observer(({ ref, newsObject }: INewsItemProps) => {
     () => getImage(200, NewsImage, newsObject.files[0], clubModel),
     [clubModel, newsObject.files]
   );
-  // One image keeps floating beside the text, several images are shown as a gallery
+  // One image keeps floating beside the text, several images are shown as a gallery. Both can be enlarged.
   const ImagesBig = React.useMemo(
     () =>
       newsObject.files.length > 1 ? (
         <NewsImages files={newsObject.files} maxSize={240} />
       ) : (
-        getImage(400, NewsImage, newsObject.files[0], clubModel)
+        <NewsImages floatRight files={newsObject.files} maxSize={400} />
       ),
-    [clubModel, newsObject.files]
+    [newsObject.files]
   );
 
   const FileDownloads = newsObject.files
@@ -108,6 +109,7 @@ const NewsItem = observer(({ ref, newsObject }: INewsItemProps) => {
       key={`news-fadeoutitem-${newsObject.id}`}
       ref={ref}
       module={newsModule}
+      social={{ targetType: 'NEWS', targetId: newsObject.id, card: 'full' }}
       content={
         <ContentHolder>
           <NewsHeader>
@@ -116,8 +118,12 @@ const NewsItem = observer(({ ref, newsObject }: INewsItemProps) => {
           </NewsHeader>
           <NewsTime>{newsObject.modificationDate}</NewsTime>
           {Image}
-          <NewsIntroduction>{newsObject.introduction}</NewsIntroduction>
-          <NewsText>{newsObject.text}</NewsText>
+          <NewsIntroduction>
+            <SimpleHtmlText text={newsObject.introduction} />
+          </NewsIntroduction>
+          <NewsText>
+            <SimpleHtmlText text={newsObject.text} />
+          </NewsText>
           <NewsBy>{newsObject.modifiedBy}</NewsBy>
         </ContentHolder>
       }
@@ -129,8 +135,12 @@ const NewsItem = observer(({ ref, newsObject }: INewsItemProps) => {
           </NewsHeader>
           <NewsTime>{newsObject.modificationDate}</NewsTime>
           {ImagesBig}
-          <NewsIntroduction>{newsObject.introduction}</NewsIntroduction>
-          <NewsText>{newsObject.text}</NewsText>
+          <NewsIntroduction>
+            <SimpleHtmlText text={newsObject.introduction} />
+          </NewsIntroduction>
+          <NewsText>
+            <SimpleHtmlText text={newsObject.text} />
+          </NewsText>
           {newsObject.link ? (
             <NewsReadMore>
               <a href={newsObject.link} target="_blank" rel="noopener noreferrer">
@@ -149,9 +159,7 @@ const NewsItem = observer(({ ref, newsObject }: INewsItemProps) => {
         PostJsonData(
           newsModule?.deleteUrl,
           {
-            iNewsID: newsObject.id,
-            username: sessionModel.username,
-            password: sessionModel.password
+            iNewsID: newsObject.id
           },
           true,
           sessionModel.authorizationHeader

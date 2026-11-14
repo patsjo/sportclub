@@ -1,4 +1,14 @@
 import { cupEn, cupSv } from './i18n.cup';
+import {
+  accountsEn,
+  accountsSv,
+  formattingEn,
+  formattingSv,
+  loginEn,
+  loginSv,
+  socialEn,
+  socialSv
+} from './i18n.social';
 
 export const defaultNS = 'translation';
 
@@ -6,6 +16,10 @@ export const resources = {
   en: {
     translation: {
       cup: cupEn,
+      login: loginEn,
+      social: socialEn,
+      accounts: accountsEn,
+      formatting: formattingEn,
       common: {
         Menu: 'Menu',
         Close: 'Close',
@@ -781,6 +795,10 @@ export const resources = {
   sv: {
     translation: {
       cup: cupSv,
+      login: loginSv,
+      social: socialSv,
+      accounts: accountsSv,
+      formatting: formattingSv,
       common: {
         Menu: 'Meny',
         Close: 'Stäng',

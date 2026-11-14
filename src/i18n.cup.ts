@@ -190,10 +190,6 @@ export const cupSv = {
   EditReport: 'Ändra referat',
   ReportFor: 'Referat för',
   WholeSeason: 'Hela säsongen {{season}}',
-  ReportHeader: 'Rubrik',
-  ReportIntroduction: 'Ingress',
-  ReportText: 'Text',
-  ReportImages: 'Bilder',
   LinkToCupRaces: 'Cupdeltävlingar',
   LinkToCupRacesInfo:
     'Välj de cupdeltävlingar tävlingen ingår i. Klubbens resultat sparas då automatiskt till cuperna.',
@@ -441,10 +437,6 @@ export const cupEn: typeof cupSv = {
   EditReport: 'Edit report',
   ReportFor: 'Report for',
   WholeSeason: 'The whole season {{season}}',
-  ReportHeader: 'Header',
-  ReportIntroduction: 'Introduction',
-  ReportText: 'Text',
-  ReportImages: 'Images',
   LinkToCupRaces: 'Cup races',
   LinkToCupRacesInfo:
     "Choose the cup races the race is part of. The club's results are then saved to the cups automatically.",

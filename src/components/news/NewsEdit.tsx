@@ -11,6 +11,7 @@ import { dateFormat, errorRequiredField, hasErrors, IFile, maxByteSize } from '.
 import { useMobxStore } from '../../utils/mobxStore';
 import { INewsEditRequest, INewsFileRequest } from '../../utils/requestInterfaces';
 import FormItem from '../formItems/FormItem';
+import SimpleHtmlHelp from '../simpleHtml/SimpleHtmlHelp';
 import UploadDragger from '../formItems/UploadDragger';
 
 const { TextArea } = Input;
@@ -85,9 +86,7 @@ const NewsEdit = observer(({ newsObject, open, onClose, onChange }: INewsEditPro
         const newsObjectResponse = await PostJsonData<INewsItemProps>(
           saveUrl,
           {
-            ...values,
-            username: sessionModel.username,
-            password: sessionModel.password
+            ...values
           },
           true,
           sessionModel.authorizationHeader
@@ -102,14 +101,7 @@ const NewsEdit = observer(({ newsObject, open, onClose, onChange }: INewsEditPro
         setSaving(false);
       }
     },
-    [
-      clubModel.modules,
-      onChange,
-      onClose,
-      sessionModel.authorizationHeader,
-      sessionModel.password,
-      sessionModel.username
-    ]
+    [clubModel.modules, onChange, onClose, sessionModel.authorizationHeader]
   );
 
   return (
@@ -189,7 +181,12 @@ const NewsEdit = observer(({ newsObject, open, onClose, onChange }: INewsEditPro
           </FormItem>
           <FormItem
             name="iInledning"
-            label={t('news.Introduction')}
+            label={
+              <>
+                {t('news.Introduction')}
+                <SimpleHtmlHelp />
+              </>
+            }
             rules={[
               {
                 required: true,
@@ -199,7 +196,15 @@ const NewsEdit = observer(({ newsObject, open, onClose, onChange }: INewsEditPro
           >
             <TextArea autoSize={{ minRows: 1, maxRows: 4 }} />
           </FormItem>
-          <FormItem name="iTexten" label={t('news.Text')}>
+          <FormItem
+            name="iTexten"
+            label={
+              <>
+                {t('news.Text')}
+                <SimpleHtmlHelp />
+              </>
+            }
+          >
             <TextArea autoSize={{ minRows: 2, maxRows: 6 }} />
           </FormItem>
           <FormItem

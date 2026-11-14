@@ -104,6 +104,32 @@ interface ILinkProps {
   url: string;
 }
 
+/**
+ * Login with Google and/or Facebook (see README). Without an account linked to a user
+ * (by an administrator) you are a guest, that only can react and comment.
+ */
+export interface ISocialLoginProps {
+  /** e.g. https://yourclub.com/oauth/google.php */
+  googleUrl?: string;
+  /**
+   * The Client ID from Google (not secret), turns on the automatic Google login. The first time Google asks which
+   * account to use, then the same account logs in automatically until the user logs out.
+   */
+  googleClientId?: string;
+  /** e.g. https://yourclub.com/oauth/facebook.php */
+  facebookUrl?: string;
+  /** e.g. https://yourclub.com/users/accounts.php, access requests and linking of the accounts */
+  accountsUrl: string;
+}
+
+/** Reactions (like, dislike, heart) and comments on news, calendar, Eventor races and cups */
+export interface ISocialProps {
+  /** e.g. https://yourclub.com/social/jsonSocialQuery.php */
+  queryUrl: string;
+  /** e.g. https://yourclub.com/social/save.php */
+  updateUrl: string;
+}
+
 interface IModuleProps {
   name: ModuleNameTypes;
   addUrl?: string;
@@ -457,6 +483,8 @@ export interface IMobxClubModelProps {
   attachmentUrl: string;
   loginUrl: string;
   logoutUrl: string;
+  socialLogin?: ISocialLoginProps;
+  social?: ISocialProps;
   theme: IThemeProps;
   modules: IModuleProps[];
   links: ILinkProps[];
@@ -490,6 +518,8 @@ export class MobxClubModel implements IMobxClubModel {
   attachmentUrl = '/showfile.php?iFileID=';
   loginUrl = '/log_in.php';
   logoutUrl = '/log_out.php';
+  socialLogin?: ISocialLoginProps;
+  social?: ISocialProps;
   theme: IThemeProps;
   modules: IModule[] = [];
   links: ILinkProps[] = [];
@@ -532,6 +562,8 @@ export class MobxClubModel implements IMobxClubModel {
       attachmentUrl: observable,
       loginUrl: observable,
       logoutUrl: observable,
+      socialLogin: observable,
+      social: observable,
       theme: observable,
       modules: observable,
       links: observable,

@@ -99,10 +99,7 @@ const getMenuItems = (
           await DownloadData(
             item.description,
             clubModel.attachmentUrl + item.fileId,
-            {
-              username: sessionModel.username,
-              password: sessionModel.password
-            },
+            {},
             sessionModel.authorizationHeader
           );
         }

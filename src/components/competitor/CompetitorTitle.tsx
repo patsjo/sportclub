@@ -72,7 +72,11 @@ const CompetitorTitle = observer(({ competitor }: ICompetitorTitleProps) => {
   const { clubModel, sessionModel } = useMobxStore();
   const [editModalIsOpen, setEditModalIsOpen] = useState(false);
   const [competitorInfo, setCompetitorInfo] = useState<ICompetitorInfo | undefined>();
-  const canEdit = sessionModel.isAdmin || sessionModel.name === competitor.name;
+  // The server checks that the competitor is linked to the user (by an administrator or through Eventor)
+  const canEdit =
+    sessionModel.isAdmin ||
+    sessionModel.competitorId === competitor.competitorId ||
+    sessionModel.name === competitor.name;
   const {
     token: { borderRadius }
   } = useToken();

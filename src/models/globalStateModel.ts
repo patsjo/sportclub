@@ -12,6 +12,7 @@ import { ISessionModel } from './sessionModel';
 
 interface IGlobalStateModelProps {
   rightMenuVisible: boolean;
+  loginModalVisible: boolean;
   startDate?: string;
   endDate?: string;
   type: number;
@@ -26,6 +27,7 @@ export interface IGlobalStateModel extends Omit<IGlobalStateModelProps, 'news'> 
   news?: INewsModel;
   updateGraphics: (graphics: IGraphic[]) => Promise<void>;
   setRightMenuVisible: (value: boolean) => void;
+  setLoginModalVisible: (value: boolean) => void;
   setUpdateGraphicCallback: (callbackFunc: (graphics: IGraphic[]) => Promise<void>) => void;
   setDashboard: (
     navigate: NavigateFunction,
@@ -50,6 +52,7 @@ export interface IGlobalStateModel extends Omit<IGlobalStateModelProps, 'news'> 
 
 export class GlobalStateModel implements IGlobalStateModel {
   rightMenuVisible = false;
+  loginModalVisible = false;
   startDate?: string;
   endDate?: string;
   type = 0;
@@ -73,6 +76,7 @@ export class GlobalStateModel implements IGlobalStateModel {
 
     makeObservable(this, {
       rightMenuVisible: observable,
+      loginModalVisible: observable,
       startDate: observable,
       endDate: observable,
       type: observable,
@@ -84,6 +88,7 @@ export class GlobalStateModel implements IGlobalStateModel {
       fullWidthPage: observable,
       setFullWidthPage: actionBound,
       setRightMenuVisible: actionBound,
+      setLoginModalVisible: actionBound,
       setDashboard: actionBound,
       setValues: actionBound,
       setHtmlEditor: actionBound,
@@ -95,6 +100,11 @@ export class GlobalStateModel implements IGlobalStateModel {
 
   setRightMenuVisible(value: boolean) {
     this.rightMenuVisible = value;
+  }
+
+  setLoginModalVisible(value: boolean) {
+    this.loginModalVisible = value;
+    if (value) this.rightMenuVisible = false;
   }
 
   setUpdateGraphicCallback(callbackFunc: (graphics: IGraphic[]) => Promise<void>) {
@@ -150,9 +160,7 @@ export class GlobalStateModel implements IGlobalStateModel {
         ? ((await PostJsonData<IMenuResponse[]>(
             htmlEditorModule.queryUrl,
             {
-              iType: 'MENUS',
-              username: sessionModel.username,
-              password: sessionModel.password
+              iType: 'MENUS'
             },
             true,
             sessionModel.authorizationHeader
@@ -162,9 +170,7 @@ export class GlobalStateModel implements IGlobalStateModel {
         ? ((await PostJsonData<IMenuResponse[]>(
             filesModule.queryUrl,
             {
-              iType: 'FILES',
-              username: sessionModel.username,
-              password: sessionModel.password
+              iType: 'FILES'
             },
             true,
             sessionModel.authorizationHeader
@@ -174,9 +180,7 @@ export class GlobalStateModel implements IGlobalStateModel {
         ? ((await PostJsonData<IFolderResponse[]>(
             filesModule.queryUrl,
             {
-              iType: 'FOLDERS',
-              username: sessionModel.username,
-              password: sessionModel.password
+              iType: 'FOLDERS'
             },
             true,
             sessionModel.authorizationHeader

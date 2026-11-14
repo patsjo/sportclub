@@ -11,6 +11,7 @@ import FadeOutItem from '../fadeOutItem/FadeOutItem';
 import MaterialIcon from '../materialIcon/MaterialIcon';
 import NewsEdit from './NewsEdit';
 import NewsImages from './NewsImages';
+import SimpleHtmlText from '../simpleHtml/SimpleHtmlText';
 
 interface IBannerHolderProps {
   'has-image': boolean;
@@ -135,8 +136,10 @@ const BannerItem = observer(({ ref, newsObject }: IBannerItemProps) => {
   return newsModule && (sessionModel.loggedIn || !newsObject.link) ? (
     <FadeOutItem
       ref={ref}
-      paddingBottom={0}
+      // Space between the reactions and the next banner
+      paddingBottom={clubModel.social ? 16 : 0}
       module={newsModule}
+      social={{ targetType: 'NEWS', targetId: newsObject.id, card: 'full' }}
       content={
         <BannerHolder has-image={Image != null}>
           {Image ? Image : <NewsHeader>{newsObject.header}</NewsHeader>}
@@ -147,8 +150,12 @@ const BannerItem = observer(({ ref, newsObject }: IBannerItemProps) => {
           {Header}
           <NewsTime>{newsObject.modificationDate}</NewsTime>
           {ImagesBig}
-          <NewsIntroduction>{newsObject.introduction}</NewsIntroduction>
-          <NewsText>{newsObject.text}</NewsText>
+          <NewsIntroduction>
+            <SimpleHtmlText text={newsObject.introduction} />
+          </NewsIntroduction>
+          <NewsText>
+            <SimpleHtmlText text={newsObject.text} />
+          </NewsText>
           <NewsBy>{newsObject.modifiedBy}</NewsBy>
         </ContentHolder>
       }
@@ -160,9 +167,7 @@ const BannerItem = observer(({ ref, newsObject }: IBannerItemProps) => {
         PostJsonData(
           newsModule.deleteUrl,
           {
-            iNewsID: newsObject.id,
-            username: sessionModel.username,
-            password: sessionModel.password
+            iNewsID: newsObject.id
           },
           true,
           sessionModel.authorizationHeader

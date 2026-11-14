@@ -12,6 +12,7 @@ import OSMOrienteeringMap from '../map/OSMOrienteeringMap';
 import { mapProjection } from '../map/useOpenLayersMap';
 import useBanners from '../news/useBanners';
 import useNews from '../news/useNews';
+import SocialFooter, { socialFooterHeight } from '../social/SocialFooter';
 import SponsorsSlideshow from '../sponsors/SponsorsSlideshow';
 import Columns from './columns/Columns';
 import { ChildContainer } from './columns/mapNodesToColumns';
@@ -22,6 +23,7 @@ const Dashboard = observer(() => {
   const { loadMoreCallback, newsItems } = useNews(true);
   const bannerItems = useBanners();
   const showSponsors = clubModel.sponsors ? clubModel.sponsors.some(s => s.active) : false;
+  const showSocial = !!clubModel.social;
 
   return (
     <InfiniteScroll key="dashboard#InfiniteScroll#home" loadMore={loadMoreCallback}>
@@ -41,7 +43,7 @@ const Dashboard = observer(() => {
             key="dashboard#homeMapContainer"
             preferredColumn="rightFixed"
             paddingBottom={24}
-            preferredHeight={400}
+            preferredHeight={400 + (showSocial ? socialFooterHeight : 0)}
           >
             <OSMOrienteeringMap
               key="dashboard#homeMap"
@@ -64,6 +66,7 @@ const Dashboard = observer(() => {
             >
               <MapTracksLayers />
             </OSMOrienteeringMap>
+            {showSocial ? <SocialFooter targetType="MAP" targetId="home" /> : null}
           </ChildContainer>
         ) : null}
         {newsItems.slice(2, 5)}

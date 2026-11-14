@@ -1,50 +1,70 @@
-import { useCallback, useState } from 'react';
+import { lazy, Suspense, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { GetJsonData } from '../../utils/api';
+import { PostJsonData } from '../../utils/api';
+import { stopGoogleAutoLogin } from '../../utils/googleAutoLogin';
 import { useMobxStore } from '../../utils/mobxStore';
 import { getMenuItem } from '../menu/MenuItem';
-import LoginForm from './LoginForm';
+
+const AccessRequestModal = lazy(() => import('./AccessRequestModal'));
 
 export const useLoginMenuItem = () => {
   const { clubModel, globalStateModel, sessionModel } = useMobxStore();
   const { t } = useTranslation();
-  const [showLoginModal, setShowLoginModal] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [showAccessRequest, setShowAccessRequest] = useState(false);
+  const loggedInOrGuest = sessionModel.loggedIn || sessionModel.isGuest;
 
   const onLogout = useCallback(() => {
     setLoggingOut(true);
+    // Not logged in automatically with Google again, until the user logs in with Google
+    stopGoogleAutoLogin();
 
-    GetJsonData(clubModel.logoutUrl)
-      .then(() => {
-        sessionModel.setLogout();
-        setLoggingOut(false);
-      })
-      .catch(() => {
+    // The server deletes the token
+    PostJsonData(clubModel.logoutUrl, {}, true, sessionModel.authorizationHeader, 1)
+      .catch(() => undefined)
+      .finally(() => {
         sessionModel.setLogout();
         setLoggingOut(false);
       });
   }, [clubModel, sessionModel]);
 
-  const openModal = useCallback(() => {
-    if (sessionModel.loggedIn) {
+  const onLoginOrLogout = useCallback(() => {
+    if (sessionModel.loggedIn || sessionModel.isGuest) {
       onLogout();
       return;
     }
-    globalStateModel.setRightMenuVisible(false);
-    setShowLoginModal(true);
-  }, [globalStateModel, onLogout, sessionModel.loggedIn]);
+    globalStateModel.setLoginModalVisible(true);
+  }, [globalStateModel, onLogout, sessionModel]);
 
-  const closeModal = useCallback(() => {
-    setShowLoginModal(false);
-  }, []);
+  const loginText = !loggedInOrGuest
+    ? t('common.Login')
+    : `${t('common.Logout')} ${sessionModel.name ?? ''}${sessionModel.isGuest ? ` (${t('login.Guest')})` : ''}`;
 
   return {
     loginMenuItem: getMenuItem(
       'menuItem#login',
-      sessionModel.loggedIn ? 'LogoutIcon' : 'LoginIcon',
-      sessionModel.loggedIn ? t('common.Logout') + ' ' + sessionModel.name : t('common.Login'),
-      openModal
+      loggedInOrGuest ? 'LogoutIcon' : 'LoginIcon',
+      loginText,
+      onLoginOrLogout,
+      false,
+      1,
+      loggingOut
     ),
-    loginForm: <LoginForm open={showLoginModal && !loggingOut} onClose={closeModal} />
+    // Guests can ask to become members, and members to get into a group
+    accessRequestMenuItem:
+      clubModel.socialLogin?.accountsUrl && loggedInOrGuest
+        ? getMenuItem(
+            'menuItem#accessRequest',
+            'user',
+            sessionModel.isGuest ? t('login.RequestMembership') : t('login.RequestAccess'),
+            () => setShowAccessRequest(true),
+            true
+          )
+        : null,
+    loginForm: showAccessRequest ? (
+      <Suspense fallback={null}>
+        <AccessRequestModal open={showAccessRequest} onClose={() => setShowAccessRequest(false)} />
+      </Suspense>
+    ) : null
   };
 };

@@ -39,9 +39,7 @@ export const useResultsSubMenus = () => {
       saveUrl,
       {
         iType: 'COMPETITOR_REGRET_RENOUNCE',
-        iCompetitorId: oldCompetitor?.competitorId,
-        username: sessionModel.username,
-        password: sessionModel.password
+        iCompetitorId: oldCompetitor?.competitorId
       },
       true,
       sessionModel.authorizationHeader
@@ -58,7 +56,7 @@ export const useResultsSubMenus = () => {
 
   useEffect(() => {
     const url = resultsModule?.queryUrl;
-    if (!url || !sessionModel.loggedIn || !sessionModel.eventorPersonId) return;
+    if (!url || !sessionModel.loggedIn || (!sessionModel.eventorPersonId && !sessionModel.competitorId)) return;
 
     PostJsonData<IRaceClubsProps>(
       url,
@@ -72,7 +70,12 @@ export const useResultsSubMenus = () => {
         if (clubsJson) {
           clubModel.setRaceClubs(clubsJson);
           if (clubModel.raceClubs?.selectedClub) {
-            setCompetitor(clubModel.raceClubs.selectedClub.competitorByEventorId(sessionModel.eventorPersonId!));
+            // An administrator can link the user to a competitor, also without Eventor
+            setCompetitor(
+              sessionModel.competitorId
+                ? clubModel.raceClubs.selectedClub.competitorById(sessionModel.competitorId)
+                : clubModel.raceClubs.selectedClub.competitorByEventorId(sessionModel.eventorPersonId!)
+            );
           }
         }
         setLoadingCompetitor(false);
@@ -85,6 +88,7 @@ export const useResultsSubMenus = () => {
     clubModel,
     resultsModule?.queryUrl,
     sessionModel.authorizationHeader,
+    sessionModel.competitorId,
     sessionModel.eventorPersonId,
     sessionModel.loggedIn
   ]);
@@ -175,7 +179,7 @@ export const useResultsSubMenus = () => {
         !sessionModel.loggedIn
       ),
       sessionModel.loggedIn &&
-      sessionModel.eventorPersonId &&
+      (sessionModel.eventorPersonId || sessionModel.competitorId) &&
       (loadingCompetitor || (competitor && !competitor.excludeResults))
         ? getMenuItem(
             'menuItem#resultsRenounce',
@@ -190,7 +194,10 @@ export const useResultsSubMenus = () => {
             loadingCompetitor
           )
         : null,
-      sessionModel.loggedIn && sessionModel.eventorPersonId && competitor && competitor.excludeResults
+      sessionModel.loggedIn &&
+      (sessionModel.eventorPersonId || sessionModel.competitorId) &&
+      competitor &&
+      competitor.excludeResults
         ? getMenuItem(
             'menuItem#resultsRegretRenounce',
             'smile',

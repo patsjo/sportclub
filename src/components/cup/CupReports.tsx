@@ -1,15 +1,15 @@
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { Button, Popconfirm, Space } from 'antd';
-import { lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { styled } from 'styled-components';
 import { ICupReportProps } from '../../models/cupModel';
+import { cupReportPlainText } from '../../utils/cupHelper';
 import NewsImages from '../news/NewsImages';
+import SimpleHtmlText from '../simpleHtml/SimpleHtmlText';
+import SocialSection from '../social/SocialSection';
 import { formatCupDate } from './cupDate';
 import { CupCaption, CupMuted, CupPanel } from './CupStyled';
 import { cupHeadingFont } from './cupThemes';
-
-const CustomCKEditor = lazy(() => import('../htmlEditor/CustomCKEditor'));
 
 const ReportHeader = styled.h3`
   font-family: ${cupHeadingFont};
@@ -33,12 +33,9 @@ const Introduction = styled.p`
 const Text = styled.div`
   font-size: 16px;
   line-height: 1.6;
-
-  .ck-content,
-  .ck-editor__editable {
-    background: transparent !important;
-    color: inherit !important;
-  }
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  margin-bottom: 12px;
 `;
 
 interface ICupReportsProps {
@@ -74,16 +71,19 @@ const CupReports = ({ reports, isAdmin, onEdit, onDelete }: ICupReportsProps) =>
             {report.modificationDate ? formatCupDate(report.modificationDate, 'D MMM YYYY') : t('cup.Report')}
           </CupCaption>
           <ReportHeader>{report.header}</ReportHeader>
-          {report.introduction ? <Introduction>{report.introduction}</Introduction> : null}
+          {report.introduction ? (
+            <Introduction>
+              <SimpleHtmlText text={report.introduction} />
+            </Introduction>
+          ) : null}
           <NewsImages files={report.files} maxSize={360} />
           {report.text ? (
             <Text>
-              <Suspense fallback={null}>
-                <CustomCKEditor data={report.text} isReadOnly={true} onReady={() => undefined} />
-              </Suspense>
+              <SimpleHtmlText text={cupReportPlainText(report.text)} />
             </Text>
           ) : null}
           {report.modifiedBy ? <CupMuted>{report.modifiedBy}</CupMuted> : null}
+          <SocialSection targetType="CUP_REPORT" targetId={report.reportId} />
         </CupPanel>
       ))}
     </>

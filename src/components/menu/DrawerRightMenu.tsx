@@ -47,7 +47,7 @@ const DrawerRightMenu = observer(() => {
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
   const [modal, contextHolder2] = Modal.useModal();
-  const { loginMenuItem, loginForm } = useLoginMenuItem();
+  const { loginMenuItem, accessRequestMenuItem, loginForm } = useLoginMenuItem();
   const { allModuleMenuItems, allModuleModals } = useModuleSubMenu();
   const htmlEditorMenu = globalStateModel.htmlEditorMenu;
   const htmlEditorMenuItems = useMemo(
@@ -187,6 +187,7 @@ const DrawerRightMenu = observer(() => {
           globalStateModel.setDashboard(navigate, '/');
         }),
         loginMenuItem,
+        accessRequestMenuItem,
         menuItemDivider,
         ...allModuleMenuItems,
         clubModel.map && (!clubModel.map.requireLogin || loggedIn)
@@ -227,6 +228,7 @@ const DrawerRightMenu = observer(() => {
       htmlEditorMenuItems,
       loggedIn,
       loginMenuItem,
+      accessRequestMenuItem,
       menuItemDivider,
       navigate,
       t

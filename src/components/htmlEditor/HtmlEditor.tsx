@@ -99,9 +99,7 @@ const HtmlEditor = observer(({ pageIdFromLocation }: IHtmlEditorProps) => {
       htmlEditorModule.queryUrl,
       {
         iType: 'PAGE',
-        iPageID: pageIdFromLocation,
-        username: sessionModel.username,
-        password: sessionModel.password
+        iPageID: pageIdFromLocation
       },
       true,
       sessionModel.authorizationHeader
@@ -133,8 +131,6 @@ const HtmlEditor = observer(({ pageIdFromLocation }: IHtmlEditorProps) => {
   }, [
     htmlEditorModule?.queryUrl,
     sessionModel.authorizationHeader,
-    sessionModel.username,
-    sessionModel.password,
     location.pathname,
     pageIdFromLocation,
     form,
@@ -157,9 +153,7 @@ const HtmlEditor = observer(({ pageIdFromLocation }: IHtmlEditorProps) => {
           ...values,
           iData: htmlData,
           iPageID: pageId,
-          iGroupIds: values.iGroupIds,
-          username: sessionModel.username,
-          password: sessionModel.password
+          iGroupIds: values.iGroupIds
         },
         true,
         sessionModel.authorizationHeader
@@ -289,9 +283,7 @@ const HtmlEditor = observer(({ pageIdFromLocation }: IHtmlEditorProps) => {
                   PostJsonData(
                     htmlEditorModule?.deleteUrl,
                     {
-                      iPageID: pageId,
-                      username: sessionModel.username,
-                      password: sessionModel.password
+                      iPageID: pageId
                     },
                     true,
                     sessionModel.authorizationHeader

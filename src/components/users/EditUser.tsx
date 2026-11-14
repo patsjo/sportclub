@@ -4,19 +4,29 @@ import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ISessionModel } from '../../models/sessionModel';
 import { ICouncilModel, IGroupModel, IUserModel } from '../../models/userModel';
-import { dateFormat, errorRequiredField, hasErrors } from '../../utils/formHelper';
+import { dateFormat, errorRequiredField, hasErrors, INumberOption } from '../../utils/formHelper';
 import FormItem from '../formItems/FormItem';
 import { FormSelect } from '../formItems/FormSelect';
 
 interface IEditUserProps {
   groups: IGroupModel[];
   councils: ICouncilModel[];
+  /** The competitors an administrator can link the user to */
+  competitorOptions: INumberOption[];
   user: IUserModel;
   sessionModel: ISessionModel;
   onChange: (changes: Partial<IUserModel>) => void;
   onValidate: (valid: boolean) => void;
 }
-const EditUser = ({ groups, councils, user, sessionModel, onChange, onValidate }: IEditUserProps) => {
+const EditUser = ({
+  groups,
+  councils,
+  competitorOptions,
+  user,
+  sessionModel,
+  onChange,
+  onValidate
+}: IEditUserProps) => {
   const { t } = useTranslation();
   const [form] = Form.useForm<IUserModel>();
   // eslint-disable-next-line react-hooks/purity
@@ -145,6 +155,21 @@ const EditUser = ({ groups, councils, user, sessionModel, onChange, onValidate }
                 mode="multiple"
                 options={groups.map(g => ({ code: g.groupId, description: g.description }))}
                 onChange={(codes: number[]) => onChange({ groupIds: codes })}
+              />
+            </FormItem>
+          </Col>
+        </Row>
+      ) : null}
+      {sessionModel.isAdmin ? (
+        <Row gutter={8}>
+          <Col span={24}>
+            <FormItem name="competitorId" label={t('accounts.Competitor')} extra={t('accounts.CompetitorInfo')}>
+              <FormSelect
+                allowClear
+                showSearch
+                optionFilterProp="label"
+                options={competitorOptions}
+                onChange={(code?: number) => onChange({ competitorId: code ?? null })}
               />
             </FormItem>
           </Col>

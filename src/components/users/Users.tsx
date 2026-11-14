@@ -1,12 +1,15 @@
-import { Empty, message, Modal, ModalFuncProps, Popconfirm, Spin, TableProps } from 'antd';
+import { LinkOutlined } from '@ant-design/icons';
+import { Empty, message, Space, Tooltip, Modal, ModalFuncProps, Popconfirm, Spin, TableProps } from 'antd';
 import { observer } from 'mobx-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ICouncilModel, IGroupModel, IUserModel } from '../../models/userModel';
+import { ICouncilModel, IGroupModel, IUserModel, IUserOAuthAccount } from '../../models/userModel';
 import { PostJsonData } from '../../utils/api';
 import { useMobxStore } from '../../utils/mobxStore';
 import { MissingTag, NoWrap, SpinnerDiv, StyledIcon, StyledTable } from '../styled/styled';
+import { ProviderLogo } from '../login/ProviderLogos';
 import EditUser from './EditUser';
+import { useCompetitorOptions } from './useCompetitorOptions';
 
 interface IUserTable extends IUserModel {
   edit?: undefined;
@@ -31,6 +34,8 @@ const Users = observer(() => {
   const [groups, setGroups] = useState<IGroupModel[]>([]);
   const [councils, setCouncils] = useState<ICouncilModel[]>([]);
   const [modal, contextHolder] = Modal.useModal();
+  const [messageApi, messageContextHolder] = message.useMessage();
+  const { competitorOptions, competitorName } = useCompetitorOptions(messageApi);
 
   const onDeleteUser = useCallback(
     (userId: number) => {
@@ -68,9 +73,14 @@ const Users = observer(() => {
       PostJsonData<IUserModel>(url, user, true, sessionModel.authorizationHeader)
         .then(updatedUser => {
           if (updatedUser)
-            setUsers(oldUsers =>
-              [...oldUsers.filter(u => u.userId !== updatedUser.userId), updatedUser].sort(userSort)
-            );
+            setUsers(oldUsers => {
+              // The saved user doesn't come back with the linked Google/Facebook accounts
+              const oldUser = oldUsers.find(u => u.userId === updatedUser.userId);
+              return [
+                ...oldUsers.filter(u => u.userId !== updatedUser.userId),
+                { ...updatedUser, oauthAccounts: updatedUser.oauthAccounts ?? oldUser?.oauthAccounts }
+              ].sort(userSort);
+            });
           setLoaded(true);
         })
         .catch(e => {
@@ -135,6 +145,7 @@ const Users = observer(() => {
                     <EditUser
                       groups={groups}
                       councils={councils}
+                      competitorOptions={competitorOptions}
                       user={userObject}
                       sessionModel={sessionModel}
                       onChange={changes => Object.assign(userObject, changes)}
@@ -225,7 +236,45 @@ const Users = observer(() => {
               .filter(g => g)
               .join(', ')
           : null
-    }
+    },
+    ...(sessionModel.isAdmin
+      ? [
+          {
+            title: t('accounts.LinkedAccounts'),
+            dataIndex: 'oauthAccounts',
+            key: 'oauthAccounts',
+            render: (value?: IUserOAuthAccount[]) =>
+              value?.length ? (
+                <Space size={4}>
+                  {value.map(account => (
+                    <Tooltip
+                      key={account.oauthId}
+                      title={`${account.provider === 'GOOGLE' ? 'Google' : 'Facebook'}: ${account.name}${account.email ? ` (${account.email})` : ''}`}
+                    >
+                      <span>
+                        <ProviderLogo provider={account.provider} size={16} />
+                      </span>
+                    </Tooltip>
+                  ))}
+                </Space>
+              ) : null
+          },
+          {
+            title: t('accounts.LinkedCompetitor'),
+            dataIndex: 'competitorId',
+            key: 'competitorId',
+            render: (value?: number | null) => {
+              const name = competitorName(value);
+              return name ? (
+                <NoWrap>
+                  <LinkOutlined style={{ marginRight: 4 }} />
+                  {name}
+                </NoWrap>
+              ) : null;
+            }
+          }
+        ]
+      : [])
   ];
 
   return (
@@ -240,6 +289,7 @@ const Users = observer(() => {
         <Empty description={t('common.Login')} />
       )}
       {contextHolder}
+      {messageContextHolder}
     </>
   );
 });

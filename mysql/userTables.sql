@@ -64,6 +64,7 @@ CREATE TABLE users (
   work_phone_no varchar(18) DEFAULT NULL,
   council_id int(2) UNSIGNED DEFAULT NULL,
   responsibility varchar(32) DEFAULT NULL,
+  competitor_id int(10) UNSIGNED DEFAULT NULL,
   PRIMARY KEY (user_id),
   CONSTRAINT FK_USERS_COUNCIL FOREIGN KEY (council_id)
   REFERENCES councils(council_id)
@@ -90,3 +91,62 @@ CREATE TABLE user_login (
   REFERENCES users(user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- An account from Google or Facebook. Without USER_ID it is a guest,
+-- that only can react and comment. An administrator links it to a user.
+CREATE TABLE IF NOT EXISTS user_oauth
+(
+    oauth_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    provider VARCHAR(16) NOT NULL,
+    provider_user_id VARCHAR(128) NOT NULL,
+    user_id INT(8) UNSIGNED DEFAULT NULL,
+    name VARCHAR(128) NOT NULL DEFAULT '',
+    first_name VARCHAR(64) DEFAULT NULL,
+    last_name VARCHAR(64) DEFAULT NULL,
+    email VARCHAR(128) DEFAULT NULL,
+    picture_url VARCHAR(512) DEFAULT NULL,
+    cre_date DATETIME NOT NULL,
+    last_login_date DATETIME NOT NULL,
+    PRIMARY KEY (oauth_id),
+    UNIQUE INDEX IDX_USER_OAUTH_PROVIDER (provider, provider_user_id),
+    INDEX IDX_USER_OAUTH_USER (user_id),
+    CONSTRAINT FK_USER_OAUTH_USER FOREIGN KEY (user_id)
+    REFERENCES users(user_id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Only the SHA-256 hash of a token is saved.
+-- LOGIN    sent as "Authorization: Bearer <token>" by the web page.
+-- EXCHANGE a one time code (2 minutes) when Google/Facebook returns to
+--          the web page, the web page exchanges it for a LOGIN token.
+CREATE TABLE IF NOT EXISTS user_login_tokens
+(
+    token_hash CHAR(64) NOT NULL,
+    token_type VARCHAR(8) NOT NULL DEFAULT 'LOGIN',
+    user_id INT UNSIGNED DEFAULT NULL,
+    oauth_id INT UNSIGNED DEFAULT NULL,
+    eventor_person_id INT UNSIGNED DEFAULT NULL,
+    remember BOOLEAN NOT NULL DEFAULT FALSE,
+    cre_date DATETIME NOT NULL,
+    expire_date DATETIME NOT NULL,
+    PRIMARY KEY (token_hash),
+    INDEX IDX_USER_LOGIN_TOKENS_USER (user_id),
+    INDEX IDX_USER_LOGIN_TOKENS_OAUTH (oauth_id),
+    INDEX IDX_USER_LOGIN_TOKENS_EXPIRE (expire_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- GROUP_ID 0 is a request to become a member (linked to a user)
+CREATE TABLE IF NOT EXISTS user_access_requests
+(
+    request_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    oauth_id INT UNSIGNED DEFAULT NULL,
+    user_id INT UNSIGNED DEFAULT NULL,
+    group_id INT UNSIGNED NOT NULL DEFAULT 0,
+    message VARCHAR(512) DEFAULT NULL,
+    status VARCHAR(8) NOT NULL DEFAULT 'PENDING',
+    cre_date DATETIME NOT NULL,
+    handled_by_user_id INT UNSIGNED DEFAULT NULL,
+    handled_date DATETIME DEFAULT NULL,
+    PRIMARY KEY (request_id),
+    INDEX IDX_USER_ACCESS_REQUESTS_STATUS (status),
+    INDEX IDX_USER_ACCESS_REQUESTS_OAUTH (oauth_id),
+    INDEX IDX_USER_ACCESS_REQUESTS_USER (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

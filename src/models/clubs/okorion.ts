@@ -300,6 +300,16 @@ const okorion: IMobxClubModelProps = {
   },
   loginUrl: 'https://okorion.com/log_in.php',
   logoutUrl: 'https://okorion.com/log_out.php',
+  socialLogin: {
+    googleUrl: 'https://okorion.com/oauth/google.php',
+    googleClientId: '755769089258-89dgur1b750oqnhmnv875t1qj433hofe.apps.googleusercontent.com',
+    facebookUrl: undefined, //'https://okorion.com/oauth/facebook.php',
+    accountsUrl: 'https://okorion.com/users/accounts.php'
+  },
+  social: {
+    queryUrl: 'https://okorion.com/social/jsonSocialQuery.php',
+    updateUrl: 'https://okorion.com/social/save.php'
+  },
   attachmentUrl: 'https://okorion.com/showfile.php?iFileID=',
   invoice: {
     breakMonthDay: '1031',

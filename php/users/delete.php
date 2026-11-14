@@ -42,6 +42,20 @@ if (!\db\mysql_query($sql))
   trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
 }
 
+$userId = intval($input->userId);
+foreach (array("DELETE FROM user_login_tokens WHERE user_id = " . $userId,
+               "UPDATE user_oauth SET user_id = NULL WHERE user_id = " . $userId,
+               "DELETE FROM user_access_requests WHERE user_id = " . $userId . " AND oauth_id IS NULL",
+               "UPDATE user_access_requests SET user_id = NULL WHERE user_id = " . $userId,
+               "DELETE FROM SOCIAL_REACTIONS WHERE AUTHOR_KEY = 'U" . $userId . "'",
+               "DELETE FROM SOCIAL_COMMENTS WHERE AUTHOR_KEY = 'U" . $userId . "'") as $sql)
+{
+  if (!\db\mysql_query($sql))
+  {
+    trigger_error('SQL Error: ' . \db\mysql_error(), E_USER_ERROR);
+  }
+}
+
 $sql = "DELETE FROM user_login WHERE user_id = " . $input->userId;
 
 if (!\db\mysql_query($sql))

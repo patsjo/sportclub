@@ -27,6 +27,7 @@ import CupReports from './CupReports';
 import { formatCupDate } from './cupDate';
 import CupPursuitStartList from './CupPursuitStartList';
 import CupStandings from './CupStandings';
+import SocialSection from '../social/SocialSection';
 import {
   CupAdminBar,
   CupBigNumber,
@@ -586,6 +587,17 @@ const CupPage = observer(() => {
           <Spin />
         )}
       </CupPanel>
+      {clubModel.social ? (
+        <>
+          <CupSection
+            index={(raceReports(race).length ? 4 : 3) + (isPursuit(race) ? 1 : 0)}
+            title={t('social.Comments')}
+          />
+          <CupPanel>
+            <SocialSection targetType="CUP_RACE" targetId={race.cupRaceId} />
+          </CupPanel>
+        </>
+      ) : null}
     </>
   ) : null;
 

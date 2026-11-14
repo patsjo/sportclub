@@ -125,9 +125,7 @@ export const HtmlEditorLinkModal = (
             PostJsonData<undefined>(
               deleteUrl,
               {
-                iLinkID: linkId,
-                username: sessionModel.username,
-                password: sessionModel.password
+                iLinkID: linkId
               },
               true,
               sessionModel.authorizationHeader
@@ -150,9 +148,7 @@ export const HtmlEditorLinkModal = (
                 saveUrl,
                 {
                   ...values,
-                  iLinkID: linkId,
-                  username: sessionModel.username,
-                  password: sessionModel.password
+                  iLinkID: linkId
                 },
                 true,
                 sessionModel.authorizationHeader

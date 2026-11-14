@@ -33,9 +33,7 @@ const DeleteSavedRaceButton = observer(
           deleteUrl,
           {
             iType: 'EVENT',
-            eventId,
-            username: sessionModel.username,
-            password: sessionModel.password
+            eventId
           },
           true,
           sessionModel.authorizationHeader

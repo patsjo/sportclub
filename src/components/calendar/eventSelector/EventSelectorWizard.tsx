@@ -79,9 +79,7 @@ const EventSelectorWizard = observer(() => {
       saveUrl,
       {
         ...data,
-        iType: 'EVENTS',
-        username: sessionModel.username,
-        password: sessionModel.password
+        iType: 'EVENTS'
       },
       true,
       sessionModel.authorizationHeader
@@ -93,14 +91,7 @@ const EventSelectorWizard = observer(() => {
         if (e?.message) message.error(e.message);
         setSaving(false);
       });
-  }, [
-    clubModel.modules,
-    eventSelectorWizardModel,
-    sessionModel.username,
-    sessionModel.password,
-    sessionModel.authorizationHeader,
-    onClose
-  ]);
+  }, [clubModel.modules, eventSelectorWizardModel, sessionModel.authorizationHeader, onClose]);
 
   useEffect(() => {
     if (loaded) return;

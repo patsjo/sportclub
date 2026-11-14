@@ -266,9 +266,7 @@ const ResultsWizard = observer(() => {
         {
           ...snapshot,
           iType: 'EVENT',
-          iCupRaceIds: raceWizardModel.current.cupRaceIds ? [...raceWizardModel.current.cupRaceIds] : undefined,
-          username: sessionModel.username,
-          password: sessionModel.password
+          iCupRaceIds: raceWizardModel.current.cupRaceIds ? [...raceWizardModel.current.cupRaceIds] : undefined
         },
         true,
         sessionModel.authorizationHeader
@@ -309,9 +307,7 @@ const ResultsWizard = observer(() => {
       clubModel.raceClubs?.eventClassifications,
       importCupResultsFromEventor,
       onClose,
-      sessionModel.authorizationHeader,
-      sessionModel.password,
-      sessionModel.username
+      sessionModel.authorizationHeader
     ]
   );
 

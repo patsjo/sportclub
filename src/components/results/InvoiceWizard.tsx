@@ -77,9 +77,7 @@ const InvoiceWizard = observer(() => {
         saveUrl,
         {
           ...snapshot,
-          iType: 'EVENT_VERIFY',
-          username: sessionModel.username,
-          password: sessionModel.password
+          iType: 'EVENT_VERIFY'
         },
         true,
         sessionModel.authorizationHeader
@@ -94,7 +92,7 @@ const InvoiceWizard = observer(() => {
           setSaving(false);
         });
     },
-    [clubModel.modules, onClose, sessionModel.authorizationHeader, sessionModel.password, sessionModel.username]
+    [clubModel.modules, onClose, sessionModel.authorizationHeader]
   );
 
   const saveAndNextEvent = useCallback(() => {
