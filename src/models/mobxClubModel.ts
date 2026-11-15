@@ -118,6 +118,8 @@ export interface ISocialLoginProps {
   googleClientId?: string;
   /** e.g. https://yourclub.com/oauth/facebook.php */
   facebookUrl?: string;
+  /** e.g. https://yourclub.com/oauth/apple.php, Sign in with Apple */
+  appleUrl?: string;
   /** e.g. https://yourclub.com/users/accounts.php, access requests and linking of the accounts */
   accountsUrl: string;
 }

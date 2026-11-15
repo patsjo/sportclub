@@ -15,7 +15,7 @@ This is a react app for sports like orienteering or any other sport, with the fo
 - Create/Edit external links into the menu
 - Upload files, and connect them into the menu
 - Administrate members
-- Login with Eventor, Google or Facebook, guests can react (👍 👎 ❤️) and comment, and apply for membership (see [Login with Google and Facebook](#login-with-google-and-facebook-reactions-and-comments))
+- Login with Eventor, Google, Facebook or Apple, guests can react (👍 👎 ❤️) and comment, and apply for membership (see [Login with Google, Facebook and Apple](#login-with-google-facebook-and-apple-reactions-and-comments))
 - News and cup reports can use simple tags: links, bold, italic, underline, strikethrough, superscript and subscript
 
 ## Cups
@@ -50,18 +50,18 @@ To use the cups, add the `Cup` module to your club config file:
 }
 ```
 
-## Login with Google and Facebook, reactions and comments
+## Login with Google, Facebook and Apple, reactions and comments
 
-Besides the login with Eventor (or your own user/password), visitors can log in with Google and/or Facebook.
+Besides the login with Eventor (or your own user/password), visitors can log in with Google, Facebook and/or Apple (each one can be turned on by itself).
 
-- **Guests** - an account from Google/Facebook that isn't linked to a user is a guest. A guest can only react (👍 👎 ❤️) and comment, everything else needs a user. Nothing about a guest is saved on the server (not in the database and not in a session) until the guest reacts, comments or asks for access, the login is a token signed by the server that only the browser keeps.
-- **Stays logged in** - a login with Google or Facebook is remembered until the user logs out. With `googleClientId` in the club config, Google also logs in automatically ("One Tap"): the first time Google asks which account to use (if there are several), after that the same account is logged in automatically, every time the page is opened and also in a new browser. After a logout Google asks again (choose the account, or "Continue as" when there is only one), then it is automatic again. Facebook has no automatic login for web pages, the login is remembered instead.
+- **Guests** - an account from Google/Facebook/Apple that isn't linked to a user is a guest. A guest can only react (👍 👎 ❤️) and comment, everything else needs a user. Nothing about a guest is saved on the server (not in the database and not in a session) until the guest reacts, comments or asks for access, the login is a token signed by the server that only the browser keeps.
+- **Stays logged in** - a login with Google, Facebook or Apple is remembered until the user logs out. With `googleClientId` in the club config, Google also logs in automatically ("One Tap"): the first time Google asks which account to use (if there are several), after that the same account is logged in automatically, every time the page is opened and also in a new browser. After a logout Google asks again (choose the account, or "Continue as" when there is only one), then it is automatic again. Facebook and Apple have no automatic login for web pages, the login is remembered instead.
 - **Access requests** - a guest can apply for membership, or for an access group (e.g. Coach). A logged in member can also request an access group. The requests are found by the administrators under _Users → Accounts_, and the administrator is told about them after the login.
 - **Linking** - the administrator approves a request (or links any account) to an existing user, or creates a new user from the name and email of the account. The user can also be linked to a competitor, used e.g. to renounce results when the user has no Eventor login. The reactions and comments made as a guest follow to the user.
 - **Reactions and comments** - on news and banners, calendar activities, the map on the dashboard, and on the cup pages (every report and every race). Everyone can read the comments and see the counts, users and guests can react and comment, and click on a count to see who reacted. You can delete your own comments, an administrator can delete all.
 - **Login tokens** - the password is never saved in the browser. The login gives a random token (only its hash is saved in the database), that the page sends as `Authorization: Bearer <token>`. Without _Remember me_ the token lives one day after it was last used (only in that browser tab), with _Remember me_ 90 days. A login saved by an older version is changed to a token automatically the first time.
 
-Both Google and Facebook login are free to use, neither charges for login (no billing account or paid API key is needed). Facebook does however require a _Business verification_ of the club (see below), that is free too.
+Both Google and Facebook login are free to use, neither charges for login (no billing account or paid API key is needed). Facebook does however require a _Business verification_ of the club (see below), that is free too. Sign in with Apple needs a membership in the Apple Developer Program, that normally costs 99 USD a year, but non profit organisations can apply for a fee waiver (see [Apple](#4-apple)).
 
 ### 1. Database
 
@@ -90,25 +90,63 @@ Run `mysql/patches/sportclub_patch_2.5.sql` (a new database gets the same from `
 6. **Publish** the app (switch from _Development_ to _Live_), otherwise only you and the app testers can log in.
 7. Facebook removes old versions of the Graph API after about two years, keep `GetFacebookGraphVersion()` in `oauthKeys.php` updated.
 
-### 4. The server
+### 4. Apple
+
+Sign in with Apple is mostly used by iPhone and Mac users, and lets them hide their email (Apple then gives a relay address, `...@privaterelay.appleid.com`).
+
+**The membership and the fee waiver.** Sign in with Apple needs a membership in the [Apple Developer Program](https://developer.apple.com/programs/), enrolled as an **organisation** (not as an individual, then your private name is shown to the users). The membership normally costs 99 USD a year, but Apple offers a **fee waiver for non profit organisations**, and it also applies to Swedish organisations (e.g. an ideell förening) that meet the requirements:
+
+- The club is a legal entity that is a non profit organisation, e.g. registered with an _organisationsnummer_ at Skatteverket (or Bolagsverket).
+- The club has a **D-U-N-S number** (free, Apple checks the legal entity with it). Look it up or apply for it with the [D-U-N-S lookup at Apple](https://developer.apple.com/enroll/duns-lookup/), it can take a couple of weeks.
+- The person enrolling has an Apple Account with two-factor authentication, and the right to sign agreements for the club (e.g. the chairman, or someone with a power of attorney from the board).
+- No paid apps or in-app purchases, the waiver is for organisations that don't charge for their apps. A login on the web page is fine.
+
+How to do it:
+
+1. Get the D-U-N-S number for the club (see above).
+2. Apply for the fee waiver on [Membership fee waivers](https://developer.apple.com/support/membership-fee-waiver/) _before_ you pay for the enrollment, with the club's documents (e.g. the registration certificate and the statutes that tell that the club is non profit). Apple answers by email, then the club enrolls without paying.
+3. If the waiver isn't approved, the club can still enroll and pay 99 USD a year.
+
+**The setup** (in [Certificates, Identifiers & Profiles](https://developer.apple.com/account/resources/identifiers/list), when the membership is active):
+
+1. **Identifiers → +  → App IDs**, type _App_. A description (e.g. "OK Orion") and a Bundle ID (e.g. `com.okorion.app`), check **Sign in with Apple**. The App ID is needed even without an app, the Services ID below is grouped under it.
+2. **Identifiers → + → Services IDs**. A description (shown to the users when they log in, e.g. "OK Orion") and an identifier (e.g. `com.okorion.web`), this is the client id. Check **Sign in with Apple → Configure**:
+   - **Primary App ID** - the App ID above.
+   - **Domains and Subdomains** - `yourclub.com` (and `www.yourclub.com` if it is used).
+   - **Return URLs** - `https://yourclub.com/oauth/apple.php`. Apple doesn't allow `localhost`, but that isn't needed, the return URL is always the server, also while developing locally.
+3. **Keys → +**. A name, check **Sign in with Apple → Configure** and choose the App ID above. Download the key file `AuthKey_<Key ID>.p8`, it can only be downloaded once, keep it safe.
+4. In `php/include/oauthKeys.php`:
+   - `GetAppleTeamId()` - the Team ID (top right on the developer page, or under _Membership details_).
+   - `GetAppleServicesId()` - the identifier of the Services ID, e.g. `com.okorion.web`.
+   - `GetAppleKeyId()` - the Key ID of the key.
+   - `GetApplePrivateKey()` - the whole content of the `.p8` file, including the `-----BEGIN PRIVATE KEY-----` and `-----END PRIVATE KEY-----` lines (see the example in the file).
+
+Good to know:
+
+- Apple only sends the name the **first time** someone logs in to the club, the email is sent every time. A guest that hasn't reacted yet, and logs in again on another device, is called "Apple" until the name comes again.
+- The relay address only forwards emails from domains registered under _Sign in with Apple for Email Communication_ at Apple. The web page doesn't send emails to the guests, but if the club wants to email members that use a relay address, register the domain there.
+- The membership must be renewed every year (also with a fee waiver), otherwise the login with Apple stops working.
+
+### 5. The server
 
 In `php/include/oauthKeys.php` (permissions 0600, like `eventorApiKey.php`):
 
-- The keys from Google and Facebook above. Leave a key empty to turn the provider off.
-- `GetOAuthAllowedReturnOrigins()` - the pages that may get the login back, e.g. `https://yourclub.com`, `https://www.yourclub.com` and `http://localhost:5173` while developing. Empty means the same host as the PHP scripts. The redirect URI at Google/Facebook is always the server, also while developing locally.
-- `GetLoginTokenSecret()` (optional) - signs the logins of guests. Empty uses the Google/Facebook secrets instead. Changing it, or the secrets, logs out all guests.
+- The keys from Google, Facebook and Apple above. Leave a key empty to turn the provider off. An `oauthKeys.php` from an older version without the Apple functions works too, then Apple is off.
+- `GetOAuthAllowedReturnOrigins()` - the pages that may get the login back, e.g. `https://yourclub.com`, `https://www.yourclub.com` and `http://localhost:5173` while developing. Empty means the same host as the PHP scripts. The redirect URI at Google/Facebook/Apple is always the server, also while developing locally.
+- `GetLoginTokenSecret()` (optional) - signs the logins of guests. Empty uses the Google/Facebook/Apple secrets instead. Changing it, or the secrets, logs out all guests.
 
 Never put the secrets in the club config file in `src/models/clubs`, it is sent to every browser.
 
-### 5. The club config file
+### 6. The club config file
 
-Add to e.g. `src/models/clubs/okorion.ts` (remove `googleUrl` or `facebookUrl` to hide that button, remove `social` to turn off reactions and comments):
+Add to e.g. `src/models/clubs/okorion.ts` (remove `googleUrl`, `facebookUrl` or `appleUrl` to hide that button, remove `social` to turn off reactions and comments):
 
 ```ts
 socialLogin: {
   googleUrl: 'https://yourclub.com/oauth/google.php',
   googleClientId: '1234567890-abc123.apps.googleusercontent.com', // the automatic Google login, remove to turn it off
   facebookUrl: 'https://yourclub.com/oauth/facebook.php',
+  appleUrl: 'https://yourclub.com/oauth/apple.php',
   accountsUrl: 'https://yourclub.com/users/accounts.php'
 },
 social: {
@@ -117,7 +155,7 @@ social: {
 },
 ```
 
-The names of the ones who comment are shown to everyone, tell about it (and about Google/Facebook) in the privacy policy of the club. The automatic Google login loads Google's script (`accounts.google.com/gsi/client`) for visitors that aren't logged in, mention that too.
+The names of the ones who comment are shown to everyone, tell about it (and about Google/Facebook/Apple) in the privacy policy of the club. The automatic Google login loads Google's script (`accounts.google.com/gsi/client`) for visitors that aren't logged in, mention that too.
 
 ## License
 
@@ -204,7 +242,7 @@ and the following seetings:
    - php/log_in.php
    - php/log_out.php
    - php/include/users.php
-   - To also log in with Google and Facebook, see [Login with Google and Facebook](#login-with-google-and-facebook-reactions-and-comments).
+   - To also log in with Google, Facebook and Apple, see [Login with Google, Facebook and Apple](#login-with-google-facebook-and-apple-reactions-and-comments).
 5. Create your own club config file in the "src/models/clubs" folder.
 6. Change "src/App.tsx" to import your config instead. (import clubJson from './models/clubs/...';)
 7. npm install

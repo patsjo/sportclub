@@ -10,7 +10,7 @@ import { errorRequiredField, hasErrors } from '../../utils/formHelper';
 import { oauthLoginUrl } from '../../utils/loginHelper';
 import { useMobxStore } from '../../utils/mobxStore';
 import FormItem from '../formItems/FormItem';
-import { FacebookLogo, GoogleLogo } from './ProviderLogos';
+import { AppleLogo, FacebookLogo, GoogleLogo } from './ProviderLogos';
 
 const StyledModalContent = styled.div``;
 const ProviderButtons = styled.div`
@@ -18,8 +18,13 @@ const ProviderButtons = styled.div`
   flex-direction: column;
   gap: 8px;
 `;
-// The colors and look that Google and Facebook require for their sign in buttons
-const ProviderButton = styled.button<{ $provider: 'google' | 'facebook' }>`
+// The colors and look that Google, Facebook and Apple require for their sign in buttons
+const buttonColors = {
+  google: { border: '#747775', background: '#ffffff', color: '#1f1f1f', hover: '#f2f2f2' },
+  facebook: { border: '#1877f2', background: '#1877f2', color: '#ffffff', hover: '#166fe5' },
+  apple: { border: '#000000', background: '#000000', color: '#ffffff', hover: '#333333' }
+};
+const ProviderButton = styled.button<{ $provider: 'google' | 'facebook' | 'apple' }>`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -34,11 +39,11 @@ const ProviderButton = styled.button<{ $provider: 'google' | 'facebook' }>`
   transition:
     background-color 0.2s,
     box-shadow 0.2s;
-  border: 1px solid ${({ $provider }) => ($provider === 'google' ? '#747775' : '#1877f2')};
-  background-color: ${({ $provider }) => ($provider === 'google' ? '#ffffff' : '#1877f2')};
-  color: ${({ $provider }) => ($provider === 'google' ? '#1f1f1f' : '#ffffff')};
+  border: 1px solid ${({ $provider }) => buttonColors[$provider].border};
+  background-color: ${({ $provider }) => buttonColors[$provider].background};
+  color: ${({ $provider }) => buttonColors[$provider].color};
   &:hover:not(:disabled) {
-    background-color: ${({ $provider }) => ($provider === 'google' ? '#f2f2f2' : '#166fe5')};
+    background-color: ${({ $provider }) => buttonColors[$provider].hover};
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   }
   &:disabled {
@@ -93,6 +98,19 @@ const Login = observer(({ open, onClose }: ILoginProps) => {
             <>
               <FacebookLogo size={20} />
               {t('login.WithFacebook')}
+            </>
+          )
+        }
+      : null,
+    socialLogin?.appleUrl
+      ? {
+          key: 'apple' as const,
+          url: socialLogin.appleUrl,
+          label: t('login.WithApple'),
+          content: (
+            <>
+              <AppleLogo size={18} style={{ color: '#ffffff', marginTop: -2 }} />
+              {t('login.WithApple')}
             </>
           )
         }

@@ -1,3 +1,5 @@
+import type { OAuthProvider } from './sessionModel';
+
 export interface ICouncilModel {
   councilId: number;
   name: string;
@@ -34,7 +36,7 @@ export interface IUserModel {
 
 export interface IUserOAuthAccount {
   oauthId: number;
-  provider: 'GOOGLE' | 'FACEBOOK';
+  provider: OAuthProvider;
   name: string;
   email: string | null;
 }

@@ -1,3 +1,5 @@
+import { AppleFilled } from '@ant-design/icons';
+
 interface ILogoProps {
   size?: number;
   style?: React.CSSProperties;
@@ -48,5 +50,23 @@ export const FacebookLogo = ({ size = 18, style }: ILogoProps) => (
   </svg>
 );
 
+/** The Apple logo, black (or white on the black Apple button) */
+export const AppleLogo = ({ size = 18, style }: ILogoProps) => (
+  <AppleFilled
+    aria-hidden="true"
+    style={{ fontSize: size, lineHeight: 0, verticalAlign: 'middle', flexShrink: 0, color: '#000000', ...style }}
+  />
+);
+
+/** Google, Facebook or Apple */
+export const providerName = (provider: string) =>
+  provider === 'GOOGLE' ? 'Google' : provider === 'APPLE' ? 'Apple' : 'Facebook';
+
 export const ProviderLogo = ({ provider, ...props }: ILogoProps & { provider: string }) =>
-  provider === 'GOOGLE' ? <GoogleLogo {...props} /> : <FacebookLogo {...props} />;
+  provider === 'APPLE' ? (
+    <AppleLogo {...props} />
+  ) : provider === 'GOOGLE' ? (
+    <GoogleLogo {...props} />
+  ) : (
+    <FacebookLogo {...props} />
+  );

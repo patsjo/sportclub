@@ -1,6 +1,6 @@
 import { actionBound, computed, makeObservable, observable } from 'mobx';
 
-export type OAuthProvider = 'GOOGLE' | 'FACEBOOK';
+export type OAuthProvider = 'GOOGLE' | 'FACEBOOK' | 'APPLE';
 
 /** What log_in.php answers, token only when a new login is made */
 export interface ISessionInfo {

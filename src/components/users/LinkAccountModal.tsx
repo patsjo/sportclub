@@ -10,6 +10,7 @@ import {
 } from '../../models/accountModel';
 import { INumberOption } from '../../utils/formHelper';
 import FormItem from '../formItems/FormItem';
+import { providerName } from '../login/ProviderLogos';
 
 /** userId 0 = create a new user */
 const newUserId = 0;
@@ -122,7 +123,7 @@ const LinkAccountModal = ({
     >
       <p>
         {account
-          ? `${account.name}${account.email ? ` (${account.email})` : ''}, ${account.provider === 'GOOGLE' ? 'Google' : 'Facebook'}`
+          ? `${account.name}${account.email ? ` (${account.email})` : ''}, ${providerName(account.provider)}`
           : request?.userName}
       </p>
       {request?.message ? <p style={{ fontStyle: 'italic' }}>”{request.message}”</p> : null}

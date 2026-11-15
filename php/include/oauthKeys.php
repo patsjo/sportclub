@@ -6,10 +6,10 @@
 //# Created: 2026-11-13                                      #
 //# Author:  Patrik Sjokvist                                 #
 //# -------------------------------------------------------- #
-//# The keys for login with Google and Facebook, see README  #
-//# "Login with Google and Facebook". Never put the secrets  #
-//# in the club config file (src/models/clubs), it is sent   #
-//# to every browser.                                        #
+//# The keys for login with Google, Facebook and Apple, see  #
+//# README "Login with Google, Facebook and Apple". Never    #
+//# put the secrets in the club config file                  #
+//# (src/models/clubs), it is sent to every browser.         #
 //# Return an empty string to turn a provider off.           #
 //# -------------------------------------------------------- #
 //# Modification History:                                    #
@@ -46,7 +46,37 @@ function GetFacebookGraphVersion()
     return "v24.0";
 }
 
-// The web pages that Google/Facebook may return to after the login, scheme + host (+ port).
+// Sign in with Apple (developer.apple.com, Certificates, Identifiers & Profiles), all four are needed.
+// The Team ID of the membership
+function GetAppleTeamId()
+{
+    return "";
+}
+
+// The identifier of the Services ID (the client id), e.g. "com.okorion.web"
+function GetAppleServicesId()
+{
+    return "";
+}
+
+// The Key ID of the key with "Sign in with Apple"
+function GetAppleKeyId()
+{
+    return "";
+}
+
+// The content of the downloaded key file AuthKey_<Key ID>.p8, e.g.
+//     return <<<'KEY'
+// -----BEGIN PRIVATE KEY-----
+// ...
+// -----END PRIVATE KEY-----
+// KEY;
+function GetApplePrivateKey()
+{
+    return "";
+}
+
+// The web pages that Google/Facebook/Apple may return to after the login, scheme + host (+ port).
 // An empty array allows the same host as the PHP scripts.
 function GetOAuthAllowedReturnOrigins()
 {

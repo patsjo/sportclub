@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { IAccessRequest, IAccountsList, ILinkAccountRequest, IOAuthAccount } from '../../models/accountModel';
 import { PostJsonData } from '../../utils/api';
 import { useMobxStore } from '../../utils/mobxStore';
-import { ProviderLogo } from '../login/ProviderLogos';
+import { ProviderLogo, providerName } from '../login/ProviderLogos';
 import LinkAccountModal from './LinkAccountModal';
 import { useCompetitorOptions } from './useCompetitorOptions';
 
@@ -92,9 +92,7 @@ const Accounts = observer(({ onPendingChange }: IAccountsProps) => {
     {
       title: t('accounts.Provider'),
       key: 'provider',
-      render: (_, account) => (
-        <Tag icon={providerIcon(account.provider)}>{account.provider === 'GOOGLE' ? 'Google' : 'Facebook'}</Tag>
-      )
+      render: (_, account) => <Tag icon={providerIcon(account.provider)}>{providerName(account.provider)}</Tag>
     },
     { title: t('users.Email'), dataIndex: 'email', key: 'email' },
     {

@@ -1,4 +1,4 @@
-/** Translations for the login with Google/Facebook, access requests, reactions and comments, merged into i18n.resources.ts */
+/** Translations for the login with Google/Facebook/Apple, access requests, reactions and comments, merged into i18n.resources.ts */
 
 export const loginSv = {
   EventorUsername: 'Användarnamn (Eventor)',
@@ -6,8 +6,9 @@ export const loginSv = {
   Or: 'eller',
   WithGoogle: 'Logga in med Google',
   WithFacebook: 'Logga in med Facebook',
+  WithApple: 'Logga in med Apple',
   GuestInfo:
-    'Med Google eller Facebook loggar du in som gäst och kan gilla och kommentera. Är du medlem kan du sedan ansöka om att bli kopplad till ditt medlemskonto.',
+    'Med kontona ovan loggar du in som gäst och kan gilla och kommentera. Är du medlem kan du sedan ansöka om att bli kopplad till ditt medlemskonto.',
   Guest: 'gäst',
   WelcomeGuest: 'Välkommen {{name}}! Du är inloggad som gäst och kan gilla och kommentera.',
   RestoreFailed: 'Kunde inte kontrollera inloggningen, du visas som utloggad tills sidan laddas om',
@@ -46,8 +47,9 @@ export const loginEn: typeof loginSv = {
   Or: 'or',
   WithGoogle: 'Sign in with Google',
   WithFacebook: 'Continue with Facebook',
+  WithApple: 'Sign in with Apple',
   GuestInfo:
-    'With Google or Facebook you sign in as a guest and can like and comment. If you are a member you can then ask to be linked to your member account.',
+    'With the accounts above you sign in as a guest and can like and comment. If you are a member you can then ask to be linked to your member account.',
   Guest: 'guest',
   WelcomeGuest: 'Welcome {{name}}! You are signed in as a guest and can like and comment.',
   RestoreFailed: 'Could not check the login, you are shown as logged out until the page is reloaded',
@@ -90,7 +92,7 @@ export const socialSv = {
   Emojis: 'Emojis',
   DeleteComment: 'Ta bort kommentaren?',
   LoginToReact: 'Logga in för att gilla',
-  LoginToComment: 'Logga in (t.ex. med Google eller Facebook) för att gilla och kommentera',
+  LoginToComment: 'Logga in (t.ex. med Google, Facebook eller Apple) för att gilla och kommentera',
   LoadFailed: 'Kunde inte hämta kommentarerna, visar bara antalen',
   ShowWho: 'Visa vilka',
   NamesLoadFailed: 'Kunde inte hämta vilka det är'
@@ -106,7 +108,7 @@ export const socialEn: typeof socialSv = {
   Emojis: 'Emojis',
   DeleteComment: 'Delete the comment?',
   LoginToReact: 'Log in to like',
-  LoginToComment: 'Log in (e.g. with Google or Facebook) to like and comment',
+  LoginToComment: 'Log in (e.g. with Google, Facebook or Apple) to like and comment',
   LoadFailed: 'Could not load the comments, only showing the counts',
   ShowWho: 'Show who',
   NamesLoadFailed: 'Could not load who it is'
@@ -124,7 +126,7 @@ export const accountsSv = {
   LastLogin: 'Senast inloggad',
   PendingRequests: 'Väntande förfrågningar',
   NoPendingRequests: 'Inga väntande förfrågningar',
-  NoAccounts: 'Ingen har loggat in med Google eller Facebook ännu',
+  NoAccounts: 'Ingen har loggat in med Google, Facebook eller Apple ännu',
   Approve: 'Godkänn',
   ApproveRequest: 'Godkänn förfrågan',
   Approved: 'Förfrågan är godkänd',
@@ -155,7 +157,7 @@ export const accountsEn: typeof accountsSv = {
   LastLogin: 'Last login',
   PendingRequests: 'Pending requests',
   NoPendingRequests: 'No pending requests',
-  NoAccounts: 'No one has logged in with Google or Facebook yet',
+  NoAccounts: 'No one has logged in with Google, Facebook or Apple yet',
   Approve: 'Approve',
   ApproveRequest: 'Approve the request',
   Approved: 'The request is approved',

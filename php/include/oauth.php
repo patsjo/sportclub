@@ -30,6 +30,7 @@
 //# 2026-11-13  PatSjo  Initial version                      #
 //# 2026-11-14  PatSjo  Automatic Google login, guests are   #
 //#                     saved first when they react          #
+//# 2026-11-15  PatSjo  Sign in with Apple (oauth/apple.php) #
 //############################################################
 
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/db.php");
@@ -143,11 +144,22 @@ function oauthHttp($iUrl, $iPostFields = null)
   return $result;
 }
 
+// A setting in oauthKeys.php that an older oauthKeys.php may not have (e.g. Apple), empty when missing
+function oauthSetting($iFunctionName)
+{
+  return function_exists($iFunctionName) ? (string)call_user_func($iFunctionName) : '';
+}
+
 function oauthProviderConfigured($iProvider)
 {
   if ($iProvider == 'GOOGLE')
   {
     return strlen(GetGoogleClientId()) > 0 && strlen(GetGoogleClientSecret()) > 0;
+  }
+  if ($iProvider == 'APPLE')
+  {
+    return strlen(oauthSetting('GetAppleTeamId')) > 0 && strlen(oauthSetting('GetAppleServicesId')) > 0 &&
+      strlen(oauthSetting('GetAppleKeyId')) > 0 && strlen(oauthSetting('GetApplePrivateKey')) > 0;
   }
   return strlen(GetFacebookAppId()) > 0 && strlen(GetFacebookAppSecret()) > 0;
 }
@@ -472,6 +484,229 @@ function oauthLogin($iProvider)
     oauthCallback($iProvider);
   }
   oauthStart($iProvider);
+}
+
+//############################################################
+//# Sign in with Apple. Apple returns with a POST from       #
+//# appleid.apple.com (response_mode=form_post, needed for   #
+//# the name and email), the PHP session cookie isn't sent   #
+//# then. The state is instead kept in a signed cookie       #
+//# (SameSite=None) and nothing is saved on the server.      #
+//############################################################
+
+$cAPPLE_STATE_COOKIE = 'sportclub_apple_login';
+
+function oauthAppleCookie($iValue, $iExpires)
+{
+  global $cAPPLE_STATE_COOKIE;
+  setcookie($cAPPLE_STATE_COOKIE, $iValue, array(
+    'expires' => $iExpires,
+    'path' => isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : '/',
+    'secure' => true,
+    'httponly' => true,
+    'samesite' => 'None'
+  ));
+}
+
+// An ECDSA signature from openssl (DER) as the 64 bytes (r and s) a JWT wants, null when it isn't valid
+function oauthEcdsaDerToRaw($iDer, $iPartLength = 32)
+{
+  $length = strlen($iDer);
+  if ($length < 8 || ord($iDer[0]) != 0x30)
+  {
+    return null;
+  }
+  $offset = 2;
+  if (ord($iDer[1]) & 0x80)
+  {
+    $offset += ord($iDer[1]) & 0x7f;
+  }
+  $raw = '';
+  for ($part = 0; $part < 2; $part++)
+  {
+    if ($offset + 2 > $length || ord($iDer[$offset]) != 0x02)
+    {
+      return null;
+    }
+    $partLength = ord($iDer[$offset + 1]);
+    $value = ltrim(substr($iDer, $offset + 2, $partLength), "\0");
+    $offset += 2 + $partLength;
+    if (strlen($value) > $iPartLength || $offset > $length)
+    {
+      return null;
+    }
+    $raw .= str_pad($value, $iPartLength, "\0", STR_PAD_LEFT);
+  }
+  return $raw;
+}
+
+// The client secret is a JWT signed (ES256) with the private key from Apple, null when the key can't be used
+function oauthAppleClientSecret()
+{
+  $privateKey = openssl_pkey_get_private(oauthSetting('GetApplePrivateKey'));
+  if ($privateKey === false)
+  {
+    return null;
+  }
+  $header = base64UrlEncode(json_encode(array('alg' => 'ES256', 'kid' => oauthSetting('GetAppleKeyId'))));
+  $claims = base64UrlEncode(json_encode(array(
+    'iss' => oauthSetting('GetAppleTeamId'),
+    'iat' => time(),
+    'exp' => time() + 300,
+    'aud' => 'https://appleid.apple.com',
+    'sub' => oauthSetting('GetAppleServicesId')
+  )));
+  $signature = '';
+  if (!openssl_sign($header . '.' . $claims, $signature, $privateKey, OPENSSL_ALGO_SHA256))
+  {
+    return null;
+  }
+  $raw = oauthEcdsaDerToRaw($signature);
+  return is_null($raw) ? null : $header . '.' . $claims . '.' . base64UrlEncode($raw);
+}
+
+// The person from Apple, null when the answer can't be trusted.
+// The name ($iUserJson) is only sent by Apple the first time the person logs in to the club.
+function oauthAppleProfile($iCode, $iNonce, $iUserJson)
+{
+  $clientSecret = oauthAppleClientSecret();
+  if (is_null($clientSecret))
+  {
+    return null;
+  }
+  $response = oauthHttp('https://appleid.apple.com/auth/token', array(
+    'client_id' => oauthSetting('GetAppleServicesId'),
+    'client_secret' => $clientSecret,
+    'code' => $iCode,
+    'grant_type' => 'authorization_code',
+    'redirect_uri' => oauthRedirectUri()
+  ));
+  if ($response->status != 200 || is_null($response->body) || !isset($response->body->id_token))
+  {
+    return null;
+  }
+  // The id token comes directly from Apple over https, the signature doesn't need to be checked
+  $parts = explode('.', (string)$response->body->id_token);
+  if (count($parts) != 3)
+  {
+    return null;
+  }
+  $payload = base64UrlDecode($parts[1]);
+  $claims = json_decode($payload === false ? '' : $payload);
+  if (!is_object($claims) || !isset($claims->sub) || !is_string($claims->sub) || strlen($claims->sub) == 0 ||
+      !isset($claims->aud) || $claims->aud !== oauthSetting('GetAppleServicesId') ||
+      !isset($claims->iss) || $claims->iss !== 'https://appleid.apple.com' ||
+      !isset($claims->exp) || intval($claims->exp) < time() || !isset($claims->nonce) || $claims->nonce !== $iNonce)
+  {
+    return null;
+  }
+
+  $profile = new stdClass();
+  $profile->id = $claims->sub;
+  $profile->firstName = null;
+  $profile->lastName = null;
+  $user = is_string($iUserJson) ? json_decode($iUserJson) : null;
+  if (is_object($user) && isset($user->name) && is_object($user->name))
+  {
+    $profile->firstName = isset($user->name->firstName) && is_string($user->name->firstName) ? $user->name->firstName : null;
+    $profile->lastName = isset($user->name->lastName) && is_string($user->name->lastName) ? $user->name->lastName : null;
+  }
+  $name = trim((string)$profile->firstName . ' ' . (string)$profile->lastName);
+  $profile->name = strlen($name) > 0 ? $name : null;
+  // Can be a relay address (privaterelay.appleid.com) when the person hides the email
+  $profile->email = isset($claims->email) && is_string($claims->email) && isset($claims->email_verified) &&
+    ($claims->email_verified === true || $claims->email_verified === 'true') ? $claims->email : null;
+  $profile->pictureUrl = null;
+  return $profile;
+}
+
+// Step 1, to Apple
+function oauthAppleStart()
+{
+  $returnUrl = isset($_GET['returnUrl']) && is_string($_GET['returnUrl']) ? $_GET['returnUrl'] : '';
+  if (!oauthValidReturnUrl($returnUrl))
+  {
+    oauthFail('The returnUrl is not allowed, add the web page to GetOAuthAllowedReturnOrigins in include/oauthKeys.php.');
+  }
+  if (!oauthProviderConfigured('APPLE'))
+  {
+    oauthRedirect(oauthReturnUrl($returnUrl, 'oauthError', 'config'));
+  }
+
+  // The state goes to Apple, its hash is in the signed cookie, so only this browser can finish the login
+  $state = bin2hex(random_bytes(16));
+  $nonce = bin2hex(random_bytes(16));
+  $login = createSignedToken(array(
+    't' => 'S',
+    'b' => hash('sha256', $state),
+    'u' => $returnUrl,
+    'r' => isset($_GET['remember']) && $_GET['remember'] == '1' ? 1 : 0,
+    'n' => $nonce,
+    'x' => time() + 900
+  ));
+  if (is_null($login))
+  {
+    oauthRedirect(oauthReturnUrl($returnUrl, 'oauthError', 'config'));
+  }
+  oauthAppleCookie($login, time() + 900);
+
+  oauthRedirect('https://appleid.apple.com/auth/authorize?' . http_build_query(array(
+    'client_id' => oauthSetting('GetAppleServicesId'),
+    'redirect_uri' => oauthRedirectUri(),
+    'response_type' => 'code',
+    'response_mode' => 'form_post',
+    'scope' => 'name email',
+    'state' => $state,
+    'nonce' => $nonce
+  )));
+}
+
+// Step 2, back from Apple (POST)
+function oauthAppleCallback()
+{
+  global $cAPPLE_STATE_COOKIE;
+  global $cOAUTH_EXCHANGE_SECONDS;
+
+  $cookie = isset($_COOKIE[$cAPPLE_STATE_COOKIE]) && is_string($_COOKIE[$cAPPLE_STATE_COOKIE]) ? $_COOKIE[$cAPPLE_STATE_COOKIE] : '';
+  oauthAppleCookie('', time() - 3600);
+  $login = readSignedToken($cookie, 'S');
+  $state = isset($_POST['state']) && is_string($_POST['state']) ? $_POST['state'] : '';
+  if (is_null($login) || !isset($login['b']) || !is_string($login['b']) || !hash_equals($login['b'], hash('sha256', $state)) ||
+      !isset($login['u']) || !oauthValidReturnUrl($login['u']) || !isset($login['n']) || !is_string($login['n']))
+  {
+    oauthFail('The login has expired or was started in another browser, please try again from the web page.');
+  }
+  $returnUrl = $login['u'];
+
+  if (isset($_POST['error']) || !isset($_POST['code']) || !is_string($_POST['code']))
+  {
+    // E.g. the user cancelled
+    oauthRedirect(oauthReturnUrl($returnUrl, 'oauthError', 'cancelled'));
+  }
+
+  $profile = oauthAppleProfile($_POST['code'], $login['n'], isset($_POST['user']) ? $_POST['user'] : null);
+  if (is_null($profile))
+  {
+    oauthRedirect(oauthReturnUrl($returnUrl, 'oauthError', 'profile'));
+  }
+
+  // The same signed one time code as Google/Facebook, exchanged in log_in.php
+  $code = createGuestToken('X', 'APPLE', $profile, isset($login['r']) && intval($login['r']) == 1, $cOAUTH_EXCHANGE_SECONDS);
+  if (is_null($code))
+  {
+    oauthRedirect(oauthReturnUrl($returnUrl, 'oauthError', 'config'));
+  }
+  oauthRedirect(oauthReturnUrl($returnUrl, 'oauthCode', $code));
+}
+
+// oauth/apple.php, no PHP session is used
+function oauthAppleLogin()
+{
+  if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST')
+  {
+    oauthAppleCallback();
+  }
+  oauthAppleStart();
 }
 
 ?>

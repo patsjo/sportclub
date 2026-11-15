@@ -153,38 +153,69 @@ function oauthSqlString($iValue, $iMaxLength)
   return "'" . \db\mysql_real_escape_string($value) . "'";
 }
 
-// The saved Google/Facebook account (oauth_id, user_id), or null
+// The providers that can be logged in with, and their names
+$cOAUTH_PROVIDERS = array('GOOGLE' => 'Google', 'FACEBOOK' => 'Facebook', 'APPLE' => 'Apple');
+
+// GOOGLE, FACEBOOK or APPLE, null for anything else
+function oauthProvider($iProvider)
+{
+  global $cOAUTH_PROVIDERS;
+  return is_string($iProvider) && isset($cOAUTH_PROVIDERS[$iProvider]) ? $iProvider : null;
+}
+
+function oauthProviderName($iProvider)
+{
+  global $cOAUTH_PROVIDERS;
+  return is_string($iProvider) && isset($cOAUTH_PROVIDERS[$iProvider]) ? $cOAUTH_PROVIDERS[$iProvider] : '';
+}
+
+// The saved Google/Facebook/Apple account (oauth_id, user_id), or null
 function findOAuthAccount($iProvider, $iProviderUserId)
 {
+  $provider = oauthProvider($iProvider);
+  if (is_null($provider))
+  {
+    return null;
+  }
   OpenDatabase();
   return sqlFirstRow(sprintf("SELECT oauth_id, user_id FROM user_oauth WHERE provider = '%s' AND provider_user_id = '%s'",
-                             $iProvider == 'GOOGLE' ? 'GOOGLE' : 'FACEBOOK',
+                             $provider,
                              \db\mysql_real_escape_string(substr((string)$iProviderUserId, 0, 128))));
 }
 
-// Saves the account (or updates the name and picture), returns the oauth_id
+// Saves the account (or updates the name, email and picture), returns the oauth_id
 function oauthSaveAccount($iProvider, $iProfile)
 {
+  $provider = oauthProvider($iProvider);
+  if (is_null($provider))
+  {
+    trigger_error('Felaktig parameter "provider".', E_USER_ERROR);
+  }
   OpenDatabase();
-  $name = strlen((string)$iProfile->name) > 0 ? $iProfile->name : ($iProvider == 'GOOGLE' ? 'Google' : 'Facebook');
-  $row = findOAuthAccount($iProvider, $iProfile->id);
+  $row = findOAuthAccount($provider, $iProfile->id);
   if (!is_null($row))
   {
     $oauthId = intval($row['oauth_id']);
-    sqlQueryOrError(sprintf("UPDATE user_oauth SET name = %s, first_name = %s, last_name = %s, email = %s, " .
-                            "picture_url = %s, last_login_date = NOW() WHERE oauth_id = %d",
-                            oauthSqlString($name, 128),
-                            oauthSqlString($iProfile->firstName, 64),
-                            oauthSqlString($iProfile->lastName, 64),
-                            oauthSqlString($iProfile->email, 128),
-                            oauthSqlString($iProfile->pictureUrl, 512),
-                            $oauthId));
+    // Apple only sends the name the first time, an empty value doesn't remove the saved one
+    $columns = array('name' => array($iProfile->name, 128), 'first_name' => array($iProfile->firstName, 64),
+                     'last_name' => array($iProfile->lastName, 64), 'email' => array($iProfile->email, 128),
+                     'picture_url' => array($iProfile->pictureUrl, 512));
+    $set = '';
+    foreach ($columns as $column => $value)
+    {
+      if (strlen((string)$value[0]) > 0)
+      {
+        $set .= $column . ' = ' . oauthSqlString($value[0], $value[1]) . ', ';
+      }
+    }
+    sqlQueryOrError(sprintf("UPDATE user_oauth SET %slast_login_date = NOW() WHERE oauth_id = %d", $set, $oauthId));
   }
   else
   {
+    $name = strlen((string)$iProfile->name) > 0 ? $iProfile->name : oauthProviderName($provider);
     sqlQueryOrError(sprintf("INSERT INTO user_oauth (provider, provider_user_id, name, first_name, last_name, email, " .
                             "picture_url, cre_date, last_login_date) VALUES ('%s', '%s', %s, %s, %s, %s, %s, NOW(), NOW())",
-                            $iProvider == 'GOOGLE' ? 'GOOGLE' : 'FACEBOOK',
+                            $provider,
                             \db\mysql_real_escape_string(substr((string)$iProfile->id, 0, 128)),
                             oauthSqlString($name, 128),
                             oauthSqlString($iProfile->firstName, 64),
@@ -198,23 +229,26 @@ function oauthSaveAccount($iProvider, $iProfile)
 }
 
 //############################################################
-//# Guest token: the Google/Facebook person signed by the    #
-//# server (HMAC), nothing is saved in the database or the   #
-//# session. "g.<base64 json>.<base64 signature>"            #
+//# Tokens signed by the server (HMAC), nothing is saved in  #
+//# the database or the session.                             #
+//# "g.<base64 json>.<base64 signature>"                     #
+//# Guest token, the Google/Facebook/Apple person:           #
 //#   t  G = guest login token, X = one time code from       #
-//#      oauth/google.php or oauth/facebook.php              #
-//#   p  GOOGLE or FACEBOOK, s  the id at the provider       #
+//#      oauth/google.php, facebook.php or apple.php         #
+//#   p  GOOGLE, FACEBOOK or APPLE, s  the id there          #
 //#   n, f, l, e, i  name, first, last, email, picture       #
 //#   r  remember, x  expires (unix time)                    #
+//# The Apple login also signs its state (t = S) this way.   #
 //############################################################
 
-// The key that signs the guest tokens, null when there is no secret to make it from
+// The key that signs the tokens, null when there is no secret to make it from
 function guestTokenKey()
 {
   $secret = function_exists('GetLoginTokenSecret') ? (string)GetLoginTokenSecret() : '';
   if (strlen($secret) == 0)
   {
-    $secret = (string)GetGoogleClientSecret() . (string)GetFacebookAppSecret();
+    $secret = (string)GetGoogleClientSecret() . (string)GetFacebookAppSecret() .
+      (function_exists('GetApplePrivateKey') ? (string)GetApplePrivateKey() : '');
   }
   // Without a secret anyone could make a token
   if (strlen($secret) < 16)
@@ -224,32 +258,21 @@ function guestTokenKey()
   return hash('sha256', 'sportclub guest token|' . $secret, true);
 }
 
-function createGuestToken($iType, $iProvider, $iProfile, $iRemember, $iSeconds)
+// The payload (an array with t and x) signed, null when there is no key
+function createSignedToken($iPayload)
 {
   $key = guestTokenKey();
   if (is_null($key))
   {
     return null;
   }
-  $payload = array(
-    't' => $iType,
-    'p' => $iProvider == 'GOOGLE' ? 'GOOGLE' : 'FACEBOOK',
-    's' => (string)$iProfile->id,
-    'n' => is_null($iProfile->name) ? null : (string)$iProfile->name,
-    'f' => is_null($iProfile->firstName) ? null : (string)$iProfile->firstName,
-    'l' => is_null($iProfile->lastName) ? null : (string)$iProfile->lastName,
-    'e' => is_null($iProfile->email) ? null : (string)$iProfile->email,
-    'i' => is_null($iProfile->pictureUrl) ? null : (string)$iProfile->pictureUrl,
-    'r' => $iRemember ? 1 : 0,
-    'x' => time() + intval($iSeconds)
-  );
-  $json = json_encode($payload, JSON_PARTIAL_OUTPUT_ON_ERROR);
+  $json = json_encode($iPayload, JSON_PARTIAL_OUTPUT_ON_ERROR);
   $body = base64UrlEncode($json === false ? '{}' : $json);
   return 'g.' . $body . '.' . base64UrlEncode(hash_hmac('sha256', 'g.' . $body, $key, true));
 }
 
-// The payload of a valid guest token of the type, or null
-function readGuestToken($iToken, $iType)
+// The payload of a valid signed token of the type that hasn't expired, or null
+function readSignedToken($iToken, $iType)
 {
   if (!is_string($iToken) || strlen($iToken) > 4096)
   {
@@ -268,7 +291,39 @@ function readGuestToken($iToken, $iType)
   $json = base64UrlDecode($parts[1]);
   $payload = json_decode($json === false ? '' : $json, true);
   if (!is_array($payload) || !isset($payload['t']) || $payload['t'] !== $iType || !isset($payload['x']) ||
-      intval($payload['x']) < time() || !isset($payload['p']) || ($payload['p'] !== 'GOOGLE' && $payload['p'] !== 'FACEBOOK') ||
+      intval($payload['x']) < time())
+  {
+    return null;
+  }
+  return $payload;
+}
+
+function createGuestToken($iType, $iProvider, $iProfile, $iRemember, $iSeconds)
+{
+  $provider = oauthProvider($iProvider);
+  if (is_null($provider))
+  {
+    return null;
+  }
+  return createSignedToken(array(
+    't' => $iType,
+    'p' => $provider,
+    's' => (string)$iProfile->id,
+    'n' => is_null($iProfile->name) ? null : (string)$iProfile->name,
+    'f' => is_null($iProfile->firstName) ? null : (string)$iProfile->firstName,
+    'l' => is_null($iProfile->lastName) ? null : (string)$iProfile->lastName,
+    'e' => is_null($iProfile->email) ? null : (string)$iProfile->email,
+    'i' => is_null($iProfile->pictureUrl) ? null : (string)$iProfile->pictureUrl,
+    'r' => $iRemember ? 1 : 0,
+    'x' => time() + intval($iSeconds)
+  ));
+}
+
+// The payload of a valid guest token of the type, or null
+function readGuestToken($iToken, $iType)
+{
+  $payload = readSignedToken($iToken, $iType);
+  if (is_null($payload) || !isset($payload['p']) || is_null(oauthProvider($payload['p'])) ||
       !isset($payload['s']) || !is_string($payload['s']) || strlen($payload['s']) == 0)
   {
     return null;
@@ -802,7 +857,7 @@ function setUserName()
     if (!is_null($oauthGuest))
     {
       $profile = guestProfile($oauthGuest);
-      $userName = strlen((string)$profile->name) > 0 ? $profile->name : ($oauthGuest['p'] == 'GOOGLE' ? 'Google' : 'Facebook');
+      $userName = strlen((string)$profile->name) > 0 ? $profile->name : oauthProviderName($oauthGuest['p']);
     }
     return;
   }

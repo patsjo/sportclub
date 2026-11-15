@@ -3,7 +3,7 @@ import { observer } from 'mobx-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMobxStore } from '../../utils/mobxStore';
-import { FacebookLogo, GoogleLogo } from '../login/ProviderLogos';
+import { AppleLogo, FacebookLogo, GoogleLogo } from '../login/ProviderLogos';
 import Accounts from './Accounts';
 import Competitors from './Competitors';
 import Users from './Users';
@@ -15,6 +15,7 @@ const UsersAndCompetitors = observer(() => {
   const showAccounts = sessionModel.isAdmin && !!clubModel.socialLogin?.accountsUrl;
   const showGoogle = !!clubModel.socialLogin?.googleUrl;
   const showFacebook = !!clubModel.socialLogin?.facebookUrl;
+  const showApple = !!clubModel.socialLogin?.appleUrl;
   const pendingCount = pending ?? sessionModel.pendingAccessRequests;
 
   // destroyOnHidden: loaded again when shown, e.g. the linked accounts after a link under Accounts
@@ -42,6 +43,7 @@ const UsersAndCompetitors = observer(() => {
                     <Space size={4}>
                       {showGoogle ? <GoogleLogo size={16} /> : null}
                       {showFacebook ? <FacebookLogo size={16} /> : null}
+                      {showApple ? <AppleLogo size={16} /> : null}
                       {t('accounts.Accounts')}
                     </Space>
                   </Badge>

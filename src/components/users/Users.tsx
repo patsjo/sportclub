@@ -7,7 +7,7 @@ import { ICouncilModel, IGroupModel, IUserModel, IUserOAuthAccount } from '../..
 import { PostJsonData } from '../../utils/api';
 import { useMobxStore } from '../../utils/mobxStore';
 import { MissingTag, NoWrap, SpinnerDiv, StyledIcon, StyledTable } from '../styled/styled';
-import { ProviderLogo } from '../login/ProviderLogos';
+import { ProviderLogo, providerName } from '../login/ProviderLogos';
 import EditUser from './EditUser';
 import { useCompetitorOptions } from './useCompetitorOptions';
 
@@ -249,7 +249,7 @@ const Users = observer(() => {
                   {value.map(account => (
                     <Tooltip
                       key={account.oauthId}
-                      title={`${account.provider === 'GOOGLE' ? 'Google' : 'Facebook'}: ${account.name}${account.email ? ` (${account.email})` : ''}`}
+                      title={`${providerName(account.provider)}: ${account.name}${account.email ? ` (${account.email})` : ''}`}
                     >
                       <span>
                         <ProviderLogo provider={account.provider} size={16} />
