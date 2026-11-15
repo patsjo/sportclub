@@ -15,7 +15,7 @@ export const useModuleSubMenu = () => {
   const { t } = useTranslation();
   const { clubModel, globalStateModel, sessionModel } = useMobxStore();
   const navigate = useNavigate();
-  const { addCalendarModal, calendarMenuItems } = useCalendarSubMenus();
+  const { addCalendarModal, subscribeCalendarModal, calendarMenuItems } = useCalendarSubMenus();
   const { addNewsModal, newsMenuItems } = useNewsSubMenus();
   const { renounceModal, resultsMenuItems } = useResultsSubMenus();
   const { cupMenuItems } = useCupSubMenus();
@@ -118,7 +118,7 @@ export const useModuleSubMenu = () => {
   );
 
   return {
-    allModuleModals: [addCalendarModal, addNewsModal, renounceModal],
+    allModuleModals: [addCalendarModal, subscribeCalendarModal, addNewsModal, renounceModal],
     allModuleMenuItems
   };
 };

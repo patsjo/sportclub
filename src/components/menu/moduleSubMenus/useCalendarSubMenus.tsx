@@ -1,3 +1,4 @@
+import { LinkOutlined } from '@ant-design/icons';
 import { message } from 'antd';
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
@@ -8,6 +9,7 @@ import { dateFormat } from '../../../utils/formHelper';
 import { useMobxStore } from '../../../utils/mobxStore';
 import { ICalendarActivity, ICalendarDomains } from '../../../utils/responseCalendarInterfaces';
 import CalendarEdit from '../../calendar/item/CalendarEdit';
+import CalendarSubscribeModal from '../../calendar/subscribe/CalendarSubscribeModal';
 import { MaterialIconsType } from '../../materialIcon/MaterialIcon';
 import { getMenuItem } from '../MenuItem';
 
@@ -42,6 +44,7 @@ export const useCalendarSubMenus = () => {
     [clubModel.modules]
   );
   const [addCalendarModalIsOpen, setAddCalendarModalIsOpen] = useState(false);
+  const [subscribeModalIsOpen, setSubscribeModalIsOpen] = useState(false);
   const [domains, setDomains] = useState<ICalendarDomains>();
   const navigate = useNavigate();
 
@@ -75,6 +78,14 @@ export const useCalendarSubMenus = () => {
           onClose={() => setAddCalendarModalIsOpen(false)}
         />
       ) : null,
+    subscribeCalendarModal:
+      subscribeModalIsOpen && domains ? (
+        <CalendarSubscribeModal
+          open={subscribeModalIsOpen}
+          domains={domains}
+          onClose={() => setSubscribeModalIsOpen(false)}
+        />
+      ) : null,
     calendarMenuItems: [
       getMenuItem(
         'menuItem#calendar',
@@ -102,6 +113,18 @@ export const useCalendarSubMenus = () => {
         true,
         1,
         !calendarModule?.addUrl || !sessionModel.loggedIn || !domains
+      ),
+      getMenuItem(
+        'menuItem#calendarSubscribe',
+        <LinkOutlined style={{ verticalAlign: 'middle', fontSize: 18 }} />,
+        t('calendar.Subscribe'),
+        () => {
+          globalStateModel.setRightMenuVisible(false);
+          setTimeout(() => setSubscribeModalIsOpen(true), 0);
+        },
+        true,
+        1,
+        !calendarModule?.queryUrl || !domains
       ),
       getMenuItem(
         'menuItem#calendarEventSelector',

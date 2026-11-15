@@ -114,7 +114,21 @@ export const resources = {
         DurationMinutes: 'Duration [minutes]',
         IsRepeating: 'Is repeating',
         RepeatingDates: 'Repeating weeks',
-        RepeatingModified: 'Change only this'
+        RepeatingModified: 'Change only this',
+        Subscribe: 'Subscribe in your own calendar',
+        SubscribeDescription:
+          'Get the club\'s calendar into your own calendar (Google, Outlook, iPhone/Mac). Copy the link and add it as a subscribed calendar, or "From URL". Changes in the club\'s calendar then show up automatically.',
+        SubscribeMonthsBack: 'Months back',
+        SubscribeMonthsForward: 'Months forward',
+        SubscribeHint: 'Google updates subscribed calendars about once or twice a day, Outlook and Apple more often.',
+        SubscribeCopy: 'Copy link',
+        SubscribeCopied: 'Copied link',
+        SubscribeCopyFailed: 'The link could not be copied, copy it from here',
+        SubscribeEventorRaces: 'Races/trainings selected for the club from Eventor',
+        SubscribeAll: 'All',
+        SubscribeNoFilterAll: 'None selected includes all.',
+        SubscribeGroupHint:
+          'None selected includes all. Activities for all groups, and the races from Eventor, are always included.'
       },
       error: {
         Missing: 'MISSING',
@@ -893,7 +907,22 @@ export const resources = {
         DurationMinutes: 'Varar i [minuter]',
         IsRepeating: 'Återkommande',
         RepeatingDates: 'Återkommande veckor',
-        RepeatingModified: 'Ändra endast denna'
+        RepeatingModified: 'Ändra endast denna',
+        Subscribe: 'Prenumerera i din egen kalender',
+        SubscribeDescription:
+          'Få in klubbens kalender i din egen kalender (Google, Outlook, iPhone/Mac). Kopiera länken och lägg till den som prenumererad kalender, eller "Från webbadress". Ändringar i klubbens kalender dyker sedan upp automatiskt.',
+        SubscribeMonthsBack: 'Antal månader bakåt',
+        SubscribeMonthsForward: 'Antal månader framåt',
+        SubscribeHint:
+          'Google uppdaterar prenumererade kalendrar ungefär en till två gånger per dygn, Outlook och Apple oftare.',
+        SubscribeCopy: 'Kopiera länk',
+        SubscribeCopied: 'Kopierad länk',
+        SubscribeCopyFailed: 'Länken kunde inte kopieras, kopiera den härifrån',
+        SubscribeEventorRaces: 'Utvalda tävlingar/träningar för klubben från Eventor',
+        SubscribeAll: 'Alla',
+        SubscribeNoFilterAll: 'Inget valt innebär alla.',
+        SubscribeGroupHint:
+          'Inget valt innebär alla. Aktiviteter för alla grupper, och tävlingarna från Eventor, kommer alltid med.'
       },
       error: {
         Missing: 'SAKNAS',
