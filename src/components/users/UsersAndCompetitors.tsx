@@ -6,6 +6,7 @@ import { useMobxStore } from '../../utils/mobxStore';
 import { AppleLogo, FacebookLogo, GoogleLogo } from '../login/ProviderLogos';
 import Accounts from './Accounts';
 import Competitors from './Competitors';
+import SystemGroupsAlert from './SystemGroupsAlert';
 import Users from './Users';
 
 const UsersAndCompetitors = observer(() => {
@@ -20,41 +21,44 @@ const UsersAndCompetitors = observer(() => {
 
   // destroyOnHidden: loaded again when shown, e.g. the linked accounts after a link under Accounts
   return (
-    <Tabs
-      destroyOnHidden
-      defaultActiveKey="users"
-      items={[
-        {
-          key: 'users',
-          label: t('users.Users'),
-          children: <Users />
-        },
-        {
-          key: 'competitors',
-          label: t('users.Competitors'),
-          children: <Competitors />
-        },
-        ...(showAccounts
-          ? [
-              {
-                key: 'accounts',
-                label: (
-                  <Badge count={pendingCount} size="small" offset={[8, -2]}>
-                    <Space size={4}>
-                      {showGoogle ? <GoogleLogo size={16} /> : null}
-                      {showFacebook ? <FacebookLogo size={16} /> : null}
-                      {showApple ? <AppleLogo size={16} /> : null}
-                      {t('accounts.Accounts')}
-                    </Space>
-                  </Badge>
-                ),
-                children: <Accounts onPendingChange={setPending} />
-              }
-            ]
-          : [])
-      ]}
-      type="card"
-    />
+    <>
+      <SystemGroupsAlert />
+      <Tabs
+        destroyOnHidden
+        defaultActiveKey="users"
+        items={[
+          {
+            key: 'users',
+            label: t('users.Users'),
+            children: <Users />
+          },
+          {
+            key: 'competitors',
+            label: t('users.Competitors'),
+            children: <Competitors />
+          },
+          ...(showAccounts
+            ? [
+                {
+                  key: 'accounts',
+                  label: (
+                    <Badge count={pendingCount} size="small" offset={[8, -2]}>
+                      <Space size={4}>
+                        {showGoogle ? <GoogleLogo size={16} /> : null}
+                        {showFacebook ? <FacebookLogo size={16} /> : null}
+                        {showApple ? <AppleLogo size={16} /> : null}
+                        {t('accounts.Accounts')}
+                      </Space>
+                    </Badge>
+                  ),
+                  children: <Accounts onPendingChange={setPending} />
+                }
+              ]
+            : [])
+        ]}
+        type="card"
+      />
+    </>
   );
 });
 

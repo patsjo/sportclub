@@ -318,7 +318,9 @@ const okorion: IMobxClubModelProps = {
     account: '916-0219',
     accountType: 'Bankgiro',
     swishNumber: '123-198 58 37',
-    message: 'Tävlingsavgift, {name}'
+    message: 'Tävlingsavgift, {name}',
+    url: 'https://okorion.com/invoices/invoices.php',
+    invoiceFee: 3
   },
   titleLogo: {
     url: 'https://okorion.com/images/okorion_text.png',

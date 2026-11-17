@@ -14,6 +14,10 @@ export interface ISessionInfo {
   provider?: OAuthProvider | null;
   pictureUrl?: string | null;
   pendingAccessRequests?: number;
+  /** In the group Ekonomiansvarig, verifies the invoices */
+  isEconomy?: boolean;
+  unpaidInvoices?: number;
+  overdueInvoices?: number;
   token?: string;
   rememberLogin?: boolean;
 }
@@ -129,6 +133,12 @@ export interface ISessionModel extends ISessionModelProps {
   provider?: OAuthProvider;
   pictureUrl?: string;
   pendingAccessRequests: number;
+  /** In the group Ekonomiansvarig, only the economy responsible verifies the invoices (an administrator only creates) */
+  isEconomy: boolean;
+  unpaidInvoices: number;
+  overdueInvoices: number;
+  /** After a payment, or when the invoices are loaded */
+  setInvoiceCounts: (unpaid: number, overdue: number) => void;
   /** A user or a guest, can react and comment */
   canInteract: boolean;
   setSession: (info: ISessionInfo, username?: string) => void;
@@ -151,6 +161,9 @@ export class SessionModel implements ISessionModel {
   provider?: OAuthProvider;
   pictureUrl?: string;
   pendingAccessRequests = 0;
+  isEconomy = false;
+  unpaidInvoices = 0;
+  overdueInvoices = 0;
   canReadLocalStorage = false;
 
   constructor(options?: Partial<ISessionModelProps>) {
@@ -169,7 +182,11 @@ export class SessionModel implements ISessionModel {
       provider: observable,
       pictureUrl: observable,
       pendingAccessRequests: observable,
+      isEconomy: observable,
+      unpaidInvoices: observable,
+      overdueInvoices: observable,
       canReadLocalStorage: observable,
+      setInvoiceCounts: actionBound,
       canInteract: computed,
       setSession: actionBound,
       setFailedLogin: actionBound,
@@ -195,6 +212,9 @@ export class SessionModel implements ISessionModel {
     this.provider = info.provider ?? undefined;
     this.pictureUrl = info.pictureUrl ?? undefined;
     this.pendingAccessRequests = info.pendingAccessRequests ?? 0;
+    this.isEconomy = this.loggedIn && !!info.isEconomy;
+    this.unpaidInvoices = info.unpaidInvoices ?? 0;
+    this.overdueInvoices = info.overdueInvoices ?? 0;
 
     if (info.token) {
       this.token = info.token;
@@ -202,6 +222,11 @@ export class SessionModel implements ISessionModel {
       if (username !== undefined) this.username = username;
       this.saveStorage();
     }
+  }
+
+  public setInvoiceCounts(unpaid: number, overdue: number) {
+    this.unpaidInvoices = unpaid;
+    this.overdueInvoices = overdue;
   }
 
   public setFailedLogin() {
@@ -223,6 +248,9 @@ export class SessionModel implements ISessionModel {
     this.provider = undefined;
     this.pictureUrl = undefined;
     this.pendingAccessRequests = 0;
+    this.isEconomy = false;
+    this.unpaidInvoices = 0;
+    this.overdueInvoices = 0;
     this.token = undefined;
     this.saveStorage();
   }

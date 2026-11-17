@@ -3,7 +3,7 @@ import { PostJsonData } from '../utils/api';
 import { IMobxClubModel } from './mobxClubModel';
 import { ISessionModel } from './sessionModel';
 
-export type SocialTargetType = 'NEWS' | 'CALENDAR' | 'MAP' | 'CUP_RACE' | 'CUP_REPORT';
+export type SocialTargetType = 'NEWS' | 'CALENDAR' | 'CUP_RACE' | 'CUP_REPORT';
 export type SocialReaction = 'LIKE' | 'DISLIKE' | 'HEART';
 export const socialReactions: { reaction: SocialReaction; emoji: string }[] = [
   { reaction: 'LIKE', emoji: '👍' },

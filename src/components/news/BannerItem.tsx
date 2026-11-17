@@ -136,10 +136,8 @@ const BannerItem = observer(({ ref, newsObject }: IBannerItemProps) => {
   return newsModule && (sessionModel.loggedIn || !newsObject.link) ? (
     <FadeOutItem
       ref={ref}
-      // Space between the reactions and the next banner
-      paddingBottom={clubModel.social ? 16 : 0}
+      paddingBottom={0}
       module={newsModule}
-      social={{ targetType: 'NEWS', targetId: newsObject.id, card: 'full' }}
       content={
         <BannerHolder has-image={Image != null}>
           {Image ? Image : <NewsHeader>{newsObject.header}</NewsHeader>}

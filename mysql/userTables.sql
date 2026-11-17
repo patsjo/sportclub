@@ -48,6 +48,7 @@ INSERT INTO groups (group_id, `name`, description, email, show_in_calendar) VALU
 INSERT INTO groups (group_id, `name`, description, email, show_in_calendar) VALUES(7, 'ORION_STARS_FC', 'Orion Stars FC', NULL, 'NO');
 INSERT INTO groups (group_id, `name`, description, email, show_in_calendar) VALUES(8, 'TRAINER', 'Tränare', NULL, 'NO');
 INSERT INTO groups (group_id, `name`, description, email, show_in_calendar) VALUES(9, 'MAP', 'Kartritare', NULL, 'NO');
+INSERT INTO groups (group_id, `name`, description, email, show_in_calendar) VALUES(8000, 'ECONOMY', 'Ekonomiansvarig', NULL, 'NO');
 COMMIT;
 
 CREATE TABLE users (

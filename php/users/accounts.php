@@ -29,6 +29,8 @@
 //# Date        By      Description                          #
 //# ----------  ------  ------------------------------------ #
 //# 2026-11-13  PatSjo  Initial version                      #
+//# 2026-11-17  PatSjo  The economy responsible can't be     #
+//#                     requested                            #
 //############################################################
 
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/db.php");
@@ -83,12 +85,13 @@ function sqlStringOrNull($iValue)
   return strlen($iValue) == 0 ? 'NULL' : "'" . \db\mysql_real_escape_string($iValue) . "'";
 }
 
-// The groups that can be requested, all but the administrators
+// The groups that can be requested, all but the administrators and the economy responsible
+// (an administrator adds them to the user)
 function requestableGroups()
 {
-  global $cADMIN_GROUP_ID;
+  global $cADMIN_GROUP_ID, $cECONOMY_GROUP_ID;
   $groups = array();
-  $result = sqlQueryOrError("SELECT group_id, description FROM `groups` WHERE group_id <> " . intval($cADMIN_GROUP_ID) .
+  $result = sqlQueryOrError("SELECT group_id, description FROM `groups` WHERE group_id NOT IN (" . intval($cADMIN_GROUP_ID) . ", " . intval($cECONOMY_GROUP_ID) . ")" .
                             " ORDER BY description");
   while ($row = \db\mysql_fetch_assoc($result))
   {
@@ -206,7 +209,7 @@ elseif ($input->iType == "REQUEST")
   {
     accountsError('Du är redan medlem.');
   }
-  if ($groupId < 0 || $groupId == $cADMIN_GROUP_ID ||
+  if ($groupId < 0 || $groupId == $cADMIN_GROUP_ID || $groupId == $cECONOMY_GROUP_ID ||
       ($groupId > 0 && is_null(sqlFirstRow(sprintf("SELECT group_id FROM `groups` WHERE group_id = %d", $groupId)))))
   {
     accountsError('Felaktig parameter "groupId".');

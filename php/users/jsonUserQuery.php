@@ -11,6 +11,8 @@
 //# 2022-01-06  PatSjo  Initial version                      #
 //# 2026-11-14  PatSjo  Linked Google/Facebook accounts,     #
 //#                     only to administrators               #
+//# 2026-11-17  PatSjo  iType SYSTEM_GROUPS, only the        #
+//#                     groups the code depends on           #
 //############################################################
 
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/db.php");
@@ -26,6 +28,21 @@ $rows->groups = array();
 $rows->councils = array();
 
 OpenDatabase();
+
+// Takes raw data from the request
+$json = file_get_contents('php://input');
+$input = json_decode($json === false ? '' : $json);
+
+// Only the groups the code depends on, see systemGroups
+if (is_object($input) && isset($input->iType) && $input->iType === 'SYSTEM_GROUPS')
+{
+  $rows = new stdClass();
+  $rows->systemGroups = systemGroups();
+  CloseDatabase();
+  header("Content-Type: application/json");
+  echo json_encode($rows);
+  exit;
+}
 
 $sql = "SELECT users.USER_ID, BIRTHDAY, FIRST_NAME, LAST_NAME, ADDRESS, ZIP, CITY, " .
 "   EMAIL, PHONE_NO, MOBILE_PHONE_NO, WORK_PHONE_NO, COUNCIL_ID, RESPONSIBILITY, COMPETITOR_ID, " .

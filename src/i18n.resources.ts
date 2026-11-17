@@ -1,4 +1,5 @@
 import { cupEn, cupSv } from './i18n.cup';
+import { invoicesEn, invoicesSv } from './i18n.invoices';
 import {
   accountsEn,
   accountsSv,
@@ -19,6 +20,7 @@ export const resources = {
       login: loginEn,
       social: socialEn,
       accounts: accountsEn,
+      invoices: invoicesEn,
       formatting: formattingEn,
       common: {
         Menu: 'Menu',
@@ -266,7 +268,15 @@ export const resources = {
         WorkPhoneNo: 'Work phone',
         Council: 'Council',
         Responsibility: 'Responsibility',
-        Groups: 'Groups'
+        Groups: 'Groups',
+        SystemGroupAdmin: 'Administrator',
+        SystemGroupCoach: 'Coach',
+        SystemGroupEconomy: 'Treasurer',
+        SystemGroupsWarning: 'Check the authority groups in the database',
+        SystemGroupMissing: 'Group id {{groupId}} is missing, it should be "{{sv}}" or "{{en}}".',
+        SystemGroupWrongDescription: 'Group id {{groupId}} is "{{description}}", it should be "{{sv}}" or "{{en}}".',
+        SystemGroupsLoadError:
+          'Could not check the authority groups in the database ({{error}}), they are not verified.'
       },
       competitor: {
         Info: 'Rules behind the stars',
@@ -356,7 +366,7 @@ export const resources = {
         EventFee: 'Event fee',
         OriginalFee: 'Original event fee',
         LateFee: 'Late event fee',
-        Invoices: 'Invoices',
+        Invoices: 'Create invoices for event fees',
         FeeToClub: 'Fee to clubmember',
         ServiceFeeToClub: 'Servicefee to clubmember',
         ServiceFeeDescription: 'Description',
@@ -812,6 +822,7 @@ export const resources = {
       login: loginSv,
       social: socialSv,
       accounts: accountsSv,
+      invoices: invoicesSv,
       formatting: formattingSv,
       common: {
         Menu: 'Meny',
@@ -1060,7 +1071,15 @@ export const resources = {
         WorkPhoneNo: 'Arbete',
         Council: 'Styrelse',
         Responsibility: 'Ansvarsområde',
-        Groups: 'Grupper'
+        Groups: 'Grupper',
+        SystemGroupAdmin: 'Administratör',
+        SystemGroupCoach: 'UK',
+        SystemGroupEconomy: 'Ekonomiansvarig',
+        SystemGroupsWarning: 'Kontrollera behörighetsgrupperna i databasen',
+        SystemGroupMissing: 'Grupp-id {{groupId}} saknas, den ska vara "{{sv}}" eller "{{en}}".',
+        SystemGroupWrongDescription: 'Grupp-id {{groupId}} är "{{description}}", den ska vara "{{sv}}" eller "{{en}}".',
+        SystemGroupsLoadError:
+          'Kunde inte kontrollera behörighetsgrupperna i databasen ({{error}}), de är inte verifierade.'
       },
       competitor: {
         Info: 'Regelverk bakom stjärnorna',
@@ -1151,7 +1170,7 @@ export const resources = {
         EventFee: 'Tävlingsavgift',
         OriginalFee: 'Anmälningsavgift',
         LateFee: 'Efteranmälningsavgift',
-        Invoices: 'Fakturor',
+        Invoices: 'Skapa fakturor för tävlingsavgifter',
         FeeToClub: 'Avgift till klubbmedlem',
         ServiceFeeToClub: 'Tjänsteavgift till klubbmedlem',
         ServiceFeeDescription: 'Beskrivning',

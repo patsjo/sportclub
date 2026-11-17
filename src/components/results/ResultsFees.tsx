@@ -1,13 +1,15 @@
-import { DatePicker, Form, message, Space, Spin } from 'antd';
+import { Alert, Button, DatePicker, Form, message, Space, Spin, Typography } from 'antd';
 import dayjs from 'dayjs';
 import { observer } from 'mobx-react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ICreateInvoiceRecipient, IEventFeePeriod, IInvoiceRow } from '../../models/invoiceModel';
 import { IRaceClubsProps } from '../../models/resultModel';
 import { PickRequired } from '../../models/typescriptPartial';
 import { PostJsonData } from '../../utils/api';
 import { getTextColorBasedOnBackground } from '../../utils/colorHelper';
 import { dateFormat, errorRequiredField } from '../../utils/formHelper';
+import { IEventFeePeriodSuggestion, isEventFeePeriodValid, suggestEventFeePeriod } from '../../utils/invoicePeriod';
 import { useMobxStore } from '../../utils/mobxStore';
 import { IPrintTableColumn } from '../../utils/pdf';
 import {
@@ -25,6 +27,8 @@ import {
 } from '../../utils/responseInterfaces';
 import FormItem from '../formItems/FormItem';
 import { FormSelect } from '../formItems/FormSelect';
+import CreateInvoiceModal, { IEventFeesPreset } from '../invoices/CreateInvoiceModal';
+import { errorText } from '../invoices/invoiceHelper';
 import { SpinnerDiv } from '../styled/styled';
 import TablePrintSettingButtons from '../tableSettings/TablePrintSettingButtons';
 import { CompetitorTable } from '../users/Competitors';
@@ -65,6 +69,14 @@ const ResultsFees = observer(() => {
     dayjs(toDate?.format('YYYY-MM-DD'))?.add(clubModel.invoice.daysToDueDate, 'days') ?? null
   );
   const [loading, setLoading] = useState(true);
+  const [form] = Form.useForm();
+  // The invoiced periods of event fees, the next period starts the day after (no overlap or gap)
+  const invoicesUrl = clubModel.invoice.url;
+  const [periods, setPeriods] = useState<IEventFeePeriod[]>();
+  const [periodsError, setPeriodsError] = useState<string>();
+  const [suggestion, setSuggestion] = useState<IEventFeePeriodSuggestion>();
+  const [createPreset, setCreatePreset] = useState<IEventFeesPreset>();
+  const canCreateInvoices = !!invoicesUrl && (sessionModel.isAdmin || sessionModel.isEconomy);
   const [formId] = useState('resultsFeesForm' + Math.floor(Math.random() * 10000000000000000));
   const [columnsSetting, setColumnsSetting] = useState<IPrintSettingsColumn[]>([]);
   const [processed, setProcessed] = useState(0);
@@ -180,6 +192,46 @@ const ResultsFees = observer(() => {
     },
     [resultsQueryUrl, sessionModel.authorizationHeader]
   );
+
+  // The invoiced periods and the next period, also after new invoices are created (the start is then the day after)
+  const loadPeriods = useCallback(() => {
+    if (!invoicesUrl || !sessionModel.loggedIn) return;
+    PostJsonData<{ periods: IEventFeePeriod[] }>(
+      invoicesUrl,
+      { iType: 'EVENT_FEE_PERIODS' },
+      true,
+      sessionModel.authorizationHeader
+    )
+      .then(response => {
+        const newPeriods = response?.periods ?? [];
+        const newSuggestion = suggestEventFeePeriod(newPeriods, clubModel.invoice.breakMonthDay);
+        // Nothing to invoice yet: the fixed start (the day after the last period), a period of one day
+        const newFrom = newSuggestion.from;
+        const newTo = newSuggestion.empty ? newSuggestion.from : newSuggestion.to;
+        const newDueDate = dayjs().add(clubModel.invoice.daysToDueDate, 'days');
+        setPeriods(newPeriods);
+        setSuggestion(newSuggestion);
+        setPeriodsError(undefined);
+        setFromDate(newFrom);
+        setToDate(newTo);
+        setDueDate(newDueDate);
+        form.setFieldsValue({
+          FromDate: newFrom.format(dateFormat),
+          ToDate: newTo.format(dateFormat),
+          DueDate: newDueDate.format(dateFormat)
+        });
+      })
+      .catch(e => setPeriodsError(errorText(e)));
+  }, [
+    clubModel.invoice.breakMonthDay,
+    clubModel.invoice.daysToDueDate,
+    form,
+    invoicesUrl,
+    sessionModel.authorizationHeader,
+    sessionModel.loggedIn
+  ]);
+
+  useEffect(() => loadPeriods(), [loadPeriods]);
 
   useEffect(() => {
     if (!resultsQueryUrl) return;
@@ -454,6 +506,56 @@ const ResultsFees = observer(() => {
     [t, clubModel, fees, fromDate, toDate, dueDate, getPrintObject]
   );
 
+  const periodValid = !!suggestion && !!fromDate && !!toDate && isEventFeePeriodValid(suggestion, fromDate, toDate);
+
+  const onCreateInvoices = useCallback(() => {
+    if (!fromDate || !toDate || !fees) return;
+    const recipients = fees.map((f): ICreateInvoiceRecipient => ({
+      key: String(f.key),
+      familyId: f.isFamily ? (f.familyId ?? undefined) : undefined,
+      competitorId: f.isFamily ? undefined : (f.competitorId ?? undefined),
+      name: `${f.firstName} ${f.lastName}`,
+      amount: Math.round((f.feeToClub + f.serviceFeeToClub) * 100) / 100
+    }));
+    setCreatePreset({
+      title: t('invoice.eventFeesSubtitle')
+        ?.replaceAll('{0}', fromDate.format(dateFormat))
+        ?.replaceAll('{1}', toDate.format(dateFormat)),
+      messageTemplate: t('invoice.invoiceMessage')
+        ?.replaceAll('{0}', toDate.format('YYYY'))
+        ?.replaceAll('{1}', '{namn}'),
+      dueDate:
+        dueDate && !dueDate.isBefore(dayjs(), 'day') ? dueDate : dayjs().add(clubModel.invoice.daysToDueDate, 'days'),
+      periodFrom: fromDate.format(dateFormat),
+      periodTo: toDate.format(dateFormat),
+      recipients,
+      // The same specification as the PDF invoices
+      loadRows: async (selected, onProgress) => {
+        generatePdfStatus.abortLoading = false;
+        const rows = new Map<string, IInvoiceRow[]>();
+        for (let index = 0; index < selected.length; index++) {
+          const fee = fees.find(f => String(f.key) === selected[index].key);
+          onProgress(index, selected.length, selected[index].name);
+          if (!fee) continue;
+          const printObject = await getPrintObject(fee);
+          rows.set(
+            selected[index].key,
+            printObject.details.map(detail => ({
+              description: detail.description,
+              numberOf: detail.numberOf,
+              totalFee: detail.totalFee,
+              amount: detail.feeToClub
+            }))
+          );
+        }
+        onProgress(selected.length, selected.length);
+        setProcessed(0);
+        setSpinnerText(null);
+        return rows;
+      }
+    });
+  }, [clubModel.invoice.daysToDueDate, dueDate, fees, fromDate, getPrintObject, t, toDate]);
+
   const Spinner = (
     <SpinnerDiv>
       <Spin size="large" />
@@ -465,6 +567,7 @@ const ResultsFees = observer(() => {
   return (
     <Form
       id={formId}
+      form={form}
       layout="vertical"
       initialValues={{
         FromDate: fromDate?.format(dateFormat),
@@ -485,7 +588,15 @@ const ResultsFees = observer(() => {
           normalize={(value: dayjs.Dayjs) => (value ? value.format(dateFormat) : null)}
           getValueProps={(value: string | undefined) => ({ value: value ? dayjs(value, dateFormat) : null })}
         >
-          <DatePicker format={dateFormat} allowClear={false} onChange={setFromDate} />
+          <DatePicker
+            format={dateFormat}
+            allowClear={false}
+            disabled={!!suggestion?.fixedFrom}
+            disabledDate={date =>
+              !!suggestion && (date.isAfter(suggestion.maxTo, 'day') || (!!toDate && date.isAfter(toDate, 'day')))
+            }
+            onChange={setFromDate}
+          />
         </FormItem>
         <FormItem
           name="ToDate"
@@ -499,7 +610,14 @@ const ResultsFees = observer(() => {
           normalize={(value: dayjs.Dayjs) => (value ? value.format(dateFormat) : null)}
           getValueProps={(value: string | undefined) => ({ value: value ? dayjs(value, dateFormat) : null })}
         >
-          <DatePicker format={dateFormat} allowClear={false} onChange={setToDate} />
+          <DatePicker
+            format={dateFormat}
+            allowClear={false}
+            disabledDate={date =>
+              !!suggestion && (date.isAfter(suggestion.maxTo, 'day') || (!!fromDate && date.isBefore(fromDate, 'day')))
+            }
+            onChange={setToDate}
+          />
         </FormItem>
         <FormItem
           name="DueDate"
@@ -551,7 +669,50 @@ const ResultsFees = observer(() => {
           onPrintAll={onPrintAll}
           onTableColumns={setColumnsSetting}
         />
+        {canCreateInvoices ? (
+          // The same margin as the print buttons, in line with the fields under the labels
+          <Button
+            type="primary"
+            disabled={loading || !periodValid}
+            style={{ marginTop: 24 }}
+            onClick={onCreateInvoices}
+          >
+            {t('invoices.CreateEventFeeInvoices')}
+          </Button>
+        ) : null}
       </Space>
+      {invoicesUrl && periodsError ? (
+        <Alert
+          showIcon
+          type="warning"
+          style={{ marginBottom: 12 }}
+          title={t('invoices.LoadPeriodsFailed', { error: periodsError, interpolation: { escapeValue: false } })}
+        />
+      ) : null}
+      {suggestion ? (
+        <Alert
+          showIcon
+          type={suggestion.empty ? 'warning' : 'info'}
+          style={{ marginBottom: 12 }}
+          title={
+            suggestion.empty
+              ? t('invoices.PeriodEmpty', { to: suggestion.fixedFrom?.add(-1, 'day').format(dateFormat) })
+              : suggestion.fixedFrom
+                ? t('invoices.PeriodRule', {
+                    from: suggestion.fixedFrom.format(dateFormat),
+                    maxDate: suggestion.maxTo.format(dateFormat)
+                  })
+                : t('invoices.PeriodRuleFirst', { maxDate: suggestion.maxTo.format(dateFormat) })
+          }
+          description={
+            <Typography.Text type="secondary">
+              {periods && periods.length > 0
+                ? `${t('invoices.PreviousPeriods')}: ${periods.map(p => `${p.periodFrom} – ${p.periodTo}`).join(', ')}`
+                : t('invoices.NoPreviousPeriods')}
+            </Typography.Text>
+          }
+        />
+      ) : null}
       {!loading ? (
         <CompetitorTable
           familyBackgroundColor={clubBgColor}
@@ -573,6 +734,16 @@ const ResultsFees = observer(() => {
       ) : (
         Spinner
       )}
+      {createPreset ? (
+        <CreateInvoiceModal
+          batchType="EVENT_FEES"
+          eventFees={createPreset}
+          onClose={created => {
+            setCreatePreset(undefined);
+            if (created) loadPeriods();
+          }}
+        />
+      ) : null}
     </Form>
   );
 });

@@ -21,15 +21,20 @@
 //# 2021-08-21  PatSjo  Remove HTML functions                #
 //# 2026-03-08  PatSjo  PHP 8.5 fixes                        #
 //# 2026-11-13  PatSjo  Login tokens, Google and Facebook    #
+//# 2026-11-17  PatSjo  Added cECONOMY_GROUP_ID and          #
+//#                     systemGroups, invoices in the        #
+//#                     session info                         #
 //############################################################
 
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/functions.php");
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/db.php");
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/eventorApiKey.php");
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/oauthKeys.php");
+include_once($_SERVER["DOCUMENT_ROOT"] . "/include/invoices.php");
 
 $cADMIN_GROUP_ID = 1;
 $cCOACH_GROUP_ID = 6;
+$cECONOMY_GROUP_ID = 8000;
 $user_id = 0;
 // The Google/Facebook account (user_oauth). Without a user_id it is a guest,
 // a guest can only react and comment (see ValidSocialLogin).
@@ -125,6 +130,25 @@ function sqlFirstRow($sql)
   $row = \db\mysql_fetch_assoc($result);
   \db\mysql_free_result($result);
   return $row ? $row : null;
+}
+
+// The groups the code depends on, with the description in the database (null = the group is missing).
+// The key is the translation in the web (users.SystemGroup<key>), the description should be the
+// Swedish or English translation.
+function systemGroups()
+{
+  global $cADMIN_GROUP_ID, $cCOACH_GROUP_ID, $cECONOMY_GROUP_ID;
+  $groups = array();
+  foreach (array('Admin' => $cADMIN_GROUP_ID, 'Coach' => $cCOACH_GROUP_ID, 'Economy' => $cECONOMY_GROUP_ID) as $key => $groupId)
+  {
+    $row = sqlFirstRow(sprintf("SELECT description FROM `groups` WHERE group_id = %d", $groupId));
+    $x = new stdClass();
+    $x->groupId = intval($groupId);
+    $x->key = $key;
+    $x->description = is_null($row) ? null : $row['description'];
+    array_push($groups, $x);
+  }
+  return $groups;
 }
 
 function base64UrlEncode($iData)
@@ -350,6 +374,7 @@ function GetSessionInfo()
   global $userName;
   global $eventorPersonId;
   global $cADMIN_GROUP_ID;
+  global $cECONOMY_GROUP_ID;
   global $oauthGuest;
 
   $info = new stdClass();
@@ -363,6 +388,10 @@ function GetSessionInfo()
   $info->provider = $user_id <= 0 && !is_null($oauthGuest) ? $oauthGuest['p'] : null;
   $info->pictureUrl = $user_id <= 0 && !is_null($oauthGuest) ? guestProfile($oauthGuest)->pictureUrl : null;
   $info->pendingAccessRequests = 0;
+  // Only the economy responsible verifies the invoices, an administrator can only create them
+  $info->isEconomy = $user_id > 0 && ValidGroup($cECONOMY_GROUP_ID);
+  $info->unpaidInvoices = 0;
+  $info->overdueInvoices = 0;
 
   OpenDatabase();
   if ($user_id > 0)
@@ -381,6 +410,12 @@ function GetSessionInfo()
       $info->provider = $row['provider'];
       $info->pictureUrl = $row['picture_url'];
     }
+  }
+  if ($user_id > 0)
+  {
+    $invoiceCounts = myInvoiceCounts($user_id);
+    $info->unpaidInvoices = $invoiceCounts->unpaid;
+    $info->overdueInvoices = $invoiceCounts->overdue;
   }
   if ($info->isAdmin)
   {

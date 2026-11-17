@@ -26,7 +26,10 @@ const varendgn: IMobxClubModelProps = {
     daysToDueDate: 21,
     account: '10 68 79-0',
     accountType: 'Postgiro',
-    message: 'Tävlingsavgift, {name}'
+    message: 'Tävlingsavgift, {name}',
+    // Invoices paid with Swish, see README "Invoices and Swish"
+    // url: 'https://varendgn.se/invoices/invoices.php',
+    invoiceFee: 3
   },
   titleLogo: {
     url: 'https://oknorrvirdarna.se/images/norrvirdarna_text.png',

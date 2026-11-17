@@ -1,3 +1,4 @@
+import { AccountBookOutlined, FileTextOutlined } from '@ant-design/icons';
 import { Button, Col, Drawer, Form, Menu, MenuProps, message, Modal, Row, Spin, Typography } from 'antd';
 import i18next from 'i18next';
 import { observer } from 'mobx-react';
@@ -188,6 +189,26 @@ const DrawerRightMenu = observer(() => {
         }),
         loginMenuItem,
         accessRequestMenuItem,
+        clubModel.invoice.url && loggedIn
+          ? getMenuItem(
+              'menuItem#myInvoices',
+              <FileTextOutlined style={{ verticalAlign: 'middle', fontSize: 18 }} />,
+              sessionModel.unpaidInvoices > 0
+                ? `${t('invoices.MyInvoices')} (${sessionModel.unpaidInvoices})`
+                : t('invoices.MyInvoices'),
+              () => globalStateModel.setDashboard(navigate, '/invoices'),
+              true
+            )
+          : null,
+        clubModel.invoice.url && loggedIn && (isAdmin || sessionModel.isEconomy)
+          ? getMenuItem(
+              'menuItem#invoiceOverview',
+              <AccountBookOutlined style={{ verticalAlign: 'middle', fontSize: 18 }} />,
+              t('invoices.Overview'),
+              () => globalStateModel.setDashboard(navigate, '/invoices/overview'),
+              true
+            )
+          : null,
         menuItemDivider,
         ...allModuleMenuItems,
         clubModel.map && (!clubModel.map.requireLogin || loggedIn)
@@ -219,6 +240,7 @@ const DrawerRightMenu = observer(() => {
       ].filter(item => item !== null),
     [
       allModuleMenuItems,
+      clubModel.invoice.url,
       clubModel.map,
       clubModel.oldUrl,
       clubModel.sponsors,
@@ -229,8 +251,11 @@ const DrawerRightMenu = observer(() => {
       loggedIn,
       loginMenuItem,
       accessRequestMenuItem,
+      isAdmin,
       menuItemDivider,
       navigate,
+      sessionModel.isEconomy,
+      sessionModel.unpaidInvoices,
       t
     ]
   );

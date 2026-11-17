@@ -2,6 +2,7 @@ import { observer } from 'mobx-react';
 import { lazy } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { styled } from 'styled-components';
+import OverdueInvoicesAlert from './components/invoices/OverdueInvoicesAlert';
 
 const Dashboard = lazy(() => import('./components/dashboard/Dashboard'));
 const Maps = lazy(() => import('./components/map/Maps'));
@@ -22,6 +23,8 @@ const CupList = lazy(() => import('./components/cup/CupList'));
 const CupPage = lazy(() => import('./components/cup/CupPage'));
 const OtherRoutes = lazy(() => import('./components/routes/OhterRoutes'));
 const AllCompetitorsPresentation = lazy(() => import('./components/competitor/AllCompetitorsPresentation'));
+const MyInvoices = lazy(() => import('./components/invoices/MyInvoices'));
+const InvoiceOverview = lazy(() => import('./components/invoices/InvoiceOverview'));
 
 const NoMonthlyContainer = styled.div`
   & {
@@ -43,6 +46,7 @@ const ContentArea = styled.div`
 const AppContent = observer(() => {
   return (
     <ContentArea>
+      <OverdueInvoicesAlert />
       <Routes>
         <Route path="/" element={<Dashboard key="dashboard" />} />
         <Route path="/maps/tracks" element={<MapTracks />} />
@@ -51,6 +55,8 @@ const AppContent = observer(() => {
         <Route path="/kartor" element={<Maps />} />
         <Route path="/news" element={<News key="news" />} />
         <Route path="/users" element={<UsersAndCompetitors key="users" />} />
+        <Route path="/invoices/overview" element={<InvoiceOverview key="invoiceOverview" />} />
+        <Route path="/invoices" element={<MyInvoices key="myInvoices" />} />
         <Route path="/calendar/eventselector" element={<EventSelector key="eventSelector" />} />
         <Route
           path="/calendar"

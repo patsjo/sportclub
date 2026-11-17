@@ -76,6 +76,13 @@ export interface IInvoiceProps {
   swishNumber?: string;
   message?: string;
   taxPercentage?: number;
+  /**
+   * e.g. https://yourclub.com/invoices/invoices.php, invoices on the web page that are paid with Swish
+   * (see README "Invoices and Swish"). Without it, there are no invoices on the web page.
+   */
+  url?: string;
+  /** The invoice fee added to every invoice, default 3 kr */
+  invoiceFee?: number;
 }
 
 interface IPaletteProps {
