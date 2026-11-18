@@ -1,5 +1,5 @@
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
-import { Button, Spin, Steps, message } from 'antd';
+import { Button, Spin, message } from 'antd';
 import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -17,6 +17,7 @@ import { SpinnerDiv } from '../styled/styled';
 import InvoiceWizardStep0Input from './InvoiceWizardStep0Input';
 import InvoiceWizardStep1ChooseRace from './InvoiceWizardStep1ChooseRace';
 import InvoiceWizardStep2EditRace from './InvoiceWizardStep2EditRace';
+import WizardSteps from '../styled/WizardSteps';
 
 const StyledFullWidth = styled.div`
   width: 100%;
@@ -165,7 +166,7 @@ const InvoiceWizard = observer(() => {
       >
         <StyledModalContent>
           <StyledFullWidth ref={stepsRef}>
-            <Steps
+            <WizardSteps
               current={wizardStep}
               items={[
                 { title: t('results.Step0Input') },

@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { styled } from 'styled-components';
 import { useMobxStore } from '../../utils/mobxStore';
+import { mobileMediaQuery } from '../../utils/useIsMobile';
 import { IFileUploadRequest, ISaveLinkRequest } from '../../utils/requestInterfaces';
 import { IFolderResponse } from '../../utils/responseInterfaces';
 import { FileEditorModal } from '../htmlEditor/FileEditorModal';
@@ -34,6 +35,14 @@ const StyledMenu = styled(Menu)`
   }
   &&& .ant-menu-sub {
     background-color: #ffffff;
+  }
+  /* Bigger touch targets on a phone */
+  ${mobileMediaQuery} {
+    &&& .ant-menu-item,
+    &&& .ant-menu-submenu-title {
+      line-height: 32px !important;
+      height: 32px !important;
+    }
   }
 `;
 
@@ -272,6 +281,7 @@ const DrawerRightMenu = observer(() => {
           <Col flex="40px">
             <Button
               type="text"
+              aria-label={t('common.Close')}
               icon={<MaterialIcon icon="menu-unfold" fontSize={20} />}
               onClick={() => globalStateModel.setRightMenuVisible(!globalStateModel.rightMenuVisible)}
             />

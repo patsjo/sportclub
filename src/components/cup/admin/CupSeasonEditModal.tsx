@@ -238,7 +238,11 @@ const CupSeasonEditModal = ({ cupId, season, classNames = [], open, onClose, onS
         </Form.Item>
         <Space wrap size="middle">
           {ps.type === 'POSITION_TABLE' ? (
-            <Form.Item label={t('cup.PositionPoints')} extra={t('cup.PositionPointsInfo')} style={{ minWidth: 380 }}>
+            <Form.Item
+              label={t('cup.PositionPoints')}
+              extra={t('cup.PositionPointsInfo')}
+              style={{ minWidth: 'min(380px, 100%)' }}
+            >
               <Input
                 value={positionPointsText}
                 onChange={e => {
@@ -332,7 +336,7 @@ const CupSeasonEditModal = ({ cupId, season, classNames = [], open, onClose, onS
                 <Select
                   mode="tags"
                   value={category.classes}
-                  style={{ minWidth: 360 }}
+                  style={{ minWidth: 'min(360px, 100%)' }}
                   placeholder={t('cup.ClassPatterns')}
                   tokenSeparators={[',', ' ']}
                   onChange={(classes: string[]) => setCategory(category.id, { classes })}

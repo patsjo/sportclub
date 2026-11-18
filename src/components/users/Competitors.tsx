@@ -355,12 +355,14 @@ const Competitors = observer(() => {
     {
       title: t('results.StartDate'),
       dataIndex: 'startDate',
-      key: 'startDate'
+      key: 'startDate',
+      className: 'table-cell-nowrap'
     },
     {
       title: t('results.EndDate'),
       dataIndex: 'endDate',
-      key: 'endDate'
+      key: 'endDate',
+      className: 'table-cell-nowrap'
     },
     {
       title: 'Eventor Id',
@@ -381,6 +383,7 @@ const Competitors = observer(() => {
           columns={columns}
           dataSource={familesAndCompetitors}
           pagination={false}
+          scroll={{ x: true }}
           size="middle"
           expandable={{
             defaultExpandAllRows: true,

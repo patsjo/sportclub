@@ -127,6 +127,7 @@ const SwishPaymentModal = observer(({ invoice, invoicesUrl, onClose }: ISwishPay
   }, [cancelPayment, onClose, payment, status]);
 
   const paid = status === 'PAID';
+  const onPhone = isMobile();
 
   return (
     <Modal
@@ -158,13 +159,23 @@ const SwishPaymentModal = observer(({ invoice, invoicesUrl, onClose }: ISwishPay
         {!payment && !error ? <Spin size="large" /> : null}
         {payment && status === 'CREATED' && !timedOut ? (
           <>
+            {/* On a phone the app is the way to pay, the QR code is for paying with another phone */}
+            {payment.token && onPhone ? (
+              <Button block type="primary" size="large" href={swishAppUrl(payment.token)}>
+                {t('invoices.SwishOpenApp')}
+              </Button>
+            ) : null}
             {payment.qrCode ? (
-              <img src={payment.qrCode} alt="Swish QR" style={{ width: 240, height: 240, margin: '0 auto' }} />
+              <img
+                src={payment.qrCode}
+                alt="Swish QR"
+                style={{ width: 240, maxWidth: '100%', height: 'auto', aspectRatio: '1', margin: '0 auto' }}
+              />
             ) : (
               <Alert showIcon type="info" title={t('invoices.SwishNoQr')} />
             )}
             <Typography.Text type="secondary">{t('invoices.SwishScanQr')}</Typography.Text>
-            {payment.token ? (
+            {payment.token && !onPhone ? (
               <Button type="primary" size="large" href={swishAppUrl(payment.token)}>
                 {t('invoices.SwishOpenApp')}
               </Button>

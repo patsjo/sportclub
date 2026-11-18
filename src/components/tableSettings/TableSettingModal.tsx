@@ -75,6 +75,8 @@ const selectColumns: TableProps<IPrintSettingsColumn>['columns'] = [
   {
     dataIndex: 'selected',
     key: 'selected',
+    // Just the switch, the title gets the rest (not "Ljusförhållande|n" on a phone)
+    width: 64,
     render: (value, record) => <Switch defaultChecked={value} onChange={val => (record.selected = val)} />
   },
   {

@@ -86,5 +86,5 @@ export const Col = styled.div<IColProps>`
   vertical-align: bottom;
   min-height: 300px;
   width: ${({ width }: IColProps) => width};
-  min-width: 400px;
+  min-width: min(400px, calc(100% - 16px));
 `;

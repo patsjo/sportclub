@@ -152,7 +152,7 @@ export const StarsInfoModal = (t: TFunction, modal: ReturnType<typeof Modal.useM
   modal.info({
     title: `${t('competitor.Info')} - ${gender === 'MALE' ? t('results.Male') : t('results.FeMale')}`,
     icon: <StarOutlined />,
-    style: { top: 20, minWidth: 800, maxWidth: 1350 },
+    style: { top: 20, minWidth: 'min(800px, calc(100vw - 16px))', maxWidth: 1350 },
     width: 'calc(100% - 40px)',
     content: (
       <div>

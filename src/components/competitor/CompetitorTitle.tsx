@@ -105,7 +105,7 @@ const CompetitorTitle = observer(({ competitor }: ICompetitorTitleProps) => {
     <Row align="top" gutter={15}>
       <Col xs={24} flex="140px">
         {competitorInfo?.thumbnail ? (
-          <StyledImage src={competitorInfo.thumbnail} border-radius={borderRadius} />
+          <StyledImage src={competitorInfo.thumbnail} alt={competitor.name} border-radius={borderRadius} />
         ) : (
           <StyledAvatar shape="square" icon={<UserOutlined />} border-radius={borderRadius} />
         )}

@@ -25,6 +25,9 @@ export const resources = {
       common: {
         Menu: 'Menu',
         Close: 'Close',
+        Print: 'Print (PDF)',
+        ExportExcel: 'Export to Excel',
+        TableSettings: 'Table settings',
         Delete: 'Delete',
         DeleteAll: 'Delete the entire serie',
         Edit: 'Edit',
@@ -827,6 +830,9 @@ export const resources = {
       common: {
         Menu: 'Meny',
         Close: 'Stäng',
+        Print: 'Skriv ut (PDF)',
+        ExportExcel: 'Exportera till Excel',
+        TableSettings: 'Tabellinställningar',
         Delete: 'Ta bort',
         DeleteAll: 'Ta bort hela serien',
         Edit: 'Redigera',

@@ -9,6 +9,7 @@ import { PostJsonData } from '../../utils/api';
 import { useMobxStore } from '../../utils/mobxStore';
 import { ILeagueCompetitor } from '../../utils/responseInterfaces';
 import { genders, GenderType } from '../../utils/resultConstants';
+import { useIsMobile } from '../../utils/useIsMobile';
 import { SpinnerDiv, StyledTable } from '../styled/styled';
 
 const fromYear = 1994;
@@ -18,6 +19,12 @@ const StyledSelect = styled(Select)`
   &&& {
     width: 120px;
   }
+`;
+
+const MobileFilters = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 4px;
 `;
 
 const Spinner = () => (
@@ -35,6 +42,7 @@ interface ILeagueSelect {
 const YearSelect = ({ gender, t, onUpdate }: ILeagueSelect) => (
   <StyledSelect
     defaultValue={-1}
+    aria-label={t('calendar.Year')}
     options={[
       { value: -1, label: t('results.CurrentSeason') },
       ...[...Array(1 + currentYear - fromYear)].map((_, i) => ({ value: currentYear - i, label: currentYear - i }))
@@ -53,6 +61,8 @@ const StyledGenderSelect = styled(Select)`
 const GenderSelect = ({ year, t, onUpdate }: ILeagueSelect) => (
   <StyledGenderSelect
     allowClear={true}
+    placeholder={t('results.Gender')}
+    aria-label={t('results.Gender')}
     options={[
       { value: genders.FeMale, label: t('results.FeMale') },
       { value: genders.Male, label: t('results.Male') }
@@ -84,7 +94,8 @@ const getColumns = <T extends Record<keyof HasNumberArray<T>, number[]>>(
   t: TFunction,
   columnName: NumberArrayKeys<T>,
   nofColumns: number,
-  isTotal = false
+  isTotal = false,
+  isMobile = false
 ): TableProps<IColumnProps & T>['columns'] => {
   const cols: TableProps<IColumnProps & T>['columns'] = [];
   cols.push({
@@ -92,14 +103,14 @@ const getColumns = <T extends Record<keyof HasNumberArray<T>, number[]>>(
     dataIndex: 'position',
     key: 'position',
     fixed: 'left',
-    width: 80
+    width: isMobile ? 40 : 80
   });
   cols.push({
     title: t('results.Competitor'),
     dataIndex: 'name',
     key: 'name',
     fixed: 'left',
-    width: 200
+    width: isMobile ? 130 : 200
   });
   for (let idx = 0; idx < nofColumns; idx++) {
     cols.push({
@@ -129,8 +140,9 @@ const getColumns = <T extends Record<keyof HasNumberArray<T>, number[]>>(
     title: t('results.Total'),
     dataIndex: 'total',
     key: 'total',
-    fixed: 'right',
-    width: 80
+    // A fixed column to the right takes too much of the width on a phone
+    fixed: isMobile ? undefined : 'right',
+    width: isMobile ? 56 : 80
   });
   return cols;
 };
@@ -153,6 +165,7 @@ interface IPoints1000Competitor extends IBaseCompetitor {
 }
 const League = observer(() => {
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
   const { clubModel } = useMobxStore();
   const league = useMemo(
     () => clubModel.modules.find(module => module.name === 'Results')?.league,
@@ -588,144 +601,161 @@ const League = observer(() => {
     onUpdate(-1, undefined);
   }, [onUpdate]);
 
+  const filters = (
+    <>
+      <GenderSelect year={year} t={t} onUpdate={onUpdate} />
+      <YearSelect gender={gender} t={t} onUpdate={onUpdate} />
+    </>
+  );
+
   return league ? (
-    <Tabs
-      defaultActiveKey="grandSlam"
-      tabBarExtraContent={
-        <>
-          <GenderSelect year={year} t={t} onUpdate={onUpdate} />
-          <YearSelect gender={gender} t={t} onUpdate={onUpdate} />
-        </>
-      }
-    >
-      <TabPane key="grandSlam" tab={t('results.GrandSlam')}>
-        Sammanlagd placering i de fyra ligorna.
-        {league.grandSlamAgeLimit > 0 ? ` Åldersgräns ${league.grandSlamAgeLimit} år.` : ''}
-        {!loading ? (
-          <StyledTable
-            columns={getColumns<IGrandslamCompetitor>(t, 'positions', 6, true)}
-            dataSource={grandSlam}
-            size="middle"
-            pagination={false}
-            scroll={{ x: true }}
-          />
-        ) : (
-          <Spinner />
-        )}
-      </TabPane>
-      <TabPane key="rankingLeague" tab={t('results.RankingLeague')}>
-        Antal minuter efter sveriges bästa herrsenior på en 75 minuters bana. Samma grundprincip som ranking och
-        sverigelistan, fast utan konstiga överankingar i gubbaklasser. Även samma rankinglista för damer och herrar. Man
-        får ranking på alla tävlingar, både individuellt, jaktstart och stafetter.
-        {league.rankingLeagueAgeLimit > 0 ? ` Åldersgräns ${league.rankingLeagueAgeLimit} år.` : ''}
-        {!loading ? (
-          <StyledTable
-            columns={getColumns<IRankingCompetitor>(t, 'ranking', 6)}
-            dataSource={rankingLeague}
-            size="middle"
-            pagination={false}
-            scroll={{ x: true }}
-          />
-        ) : (
-          <Spinner />
-        )}
-      </TabPane>
-      <TabPane key="rankingRelayLeague" tab={t('results.RankingRelayLeague')}>
-        Antal minuter efter sveriges bästa herrsenior på en 75 minuters bana. Samma grundprincip som ranking och
-        sverigelistan, fast utan konstiga överankingar i gubbaklasser. Även samma rankinglista för damer och herrar. En
-        ren stafett ranking.
-        {league.rankingRelayLeagueAgeLimit > 0 ? ` Åldersgräns ${league.rankingRelayLeagueAgeLimit} år.` : ''}
-        {!loading ? (
-          <StyledTable
-            columns={getColumns<IRankingCompetitor>(t, 'ranking', 3)}
-            dataSource={rankingRelayLeague}
-            size="middle"
-            pagination={false}
-            scroll={{ x: true }}
-          />
-        ) : (
-          <Spinner />
-        )}
-      </TabPane>
-      <TabPane key="rankingSpeedLeague" tab={t('results.RankingSpeedLeague')}>
-        Antal minuter efter sveriges bästa herrsenior på en 75 minuters bana i ren löphastighet. Bomtiden räknas bort
-        och sen beräknas rankingen på den nya tiden. Även samma rankinglista för damer och herrar. En ren
-        löphastighetsranking.
-        {league.rankingLeagueAgeLimit > 0 ? ` Åldersgräns ${league.rankingLeagueAgeLimit} år.` : ''}
-        {!loading ? (
-          <StyledTable
-            columns={getColumns<IRankingCompetitor>(t, 'ranking', 6)}
-            dataSource={rankingSpeedLeague}
-            size="middle"
-            pagination={false}
-            scroll={{ x: true }}
-          />
-        ) : (
-          <Spinner />
-        )}
-      </TabPane>
-      <TabPane key="rankingTechnicalLeague" tab={t('results.RankingTechnicalLeague')}>
-        Antal minuter efter sveriges bästa herrsenior på en 75 minuters bana i ren orienteringsteknik. Antal bomminuter
-        + ett teknikpåslag på 10% av löphastighetsrankingen. Även samma rankinglista för damer och herrar. En ren teknik
-        ranking.
-        {league.rankingLeagueAgeLimit > 0 ? ` Åldersgräns ${league.rankingLeagueAgeLimit} år.` : ''}
-        {!loading ? (
-          <StyledTable
-            columns={getColumns<IRankingCompetitor>(t, 'ranking', 6)}
-            dataSource={rankingTechnicalLeague}
-            size="middle"
-            pagination={false}
-            scroll={{ x: true }}
-          />
-        ) : (
-          <Spinner />
-        )}
-      </TabPane>
-      <TabPane key="points1000League" tab={t('results.Points1000League')}>
-        Placering i förhållande till antal startande. 100 poäng för seger i en nationell tävling vid minst två
-        startande. 30 är lägsta poäng vid fullföljt.
-        {league.points1000LeagueAgeLimit > 0 ? ` Åldersgräns ${league.points1000LeagueAgeLimit} år.` : ''}
-        {!loading ? (
-          <StyledTable
-            columns={getColumns<Omit<IPoints1000Competitor, 'total'> & { total: string }>(t, 'points1000', 10)}
-            dataSource={points1000League.map(p => ({ ...p, total: `${p.total} (${p.numberOf100})` }))}
-            size="middle"
-            pagination={false}
-            scroll={{ x: true }}
-          />
-        ) : (
-          <Spinner />
-        )}
-      </TabPane>
-      <TabPane
-        key="pointsLeague"
-        tab={t(year > 1900 && year < 2003 ? 'results.PointsOldLeague' : 'results.PointsLeague')}
-      >
-        {year > 1900 && year < 2003
-          ? 'Grundpoäng baserat på typ av tävling och klass + Placeringspoäng + Poäng för antal startande - Poäng för minuter efter täten per 100m.'
-          : 'Grundpoäng baserat på typ av tävling och klass + Logaritmen av antal startande i förhållande till placering. Allt sedan i förhållande till hur många procent efter täten man är.'}
-        {league.pointsLeagueAgeLimit > 0 ? ` Åldersgräns ${league.pointsLeagueAgeLimit} år.` : ''}
-        {!loading && year > 1900 && year < 2003 ? (
-          <StyledTable
-            columns={getColumns<IPointsOldCompetitor>(t, 'pointsOld', 10)}
-            dataSource={pointsOldLeague}
-            size="middle"
-            pagination={false}
-            scroll={{ x: true }}
-          />
-        ) : !loading ? (
-          <StyledTable
-            columns={getColumns<IPointsCompetitor>(t, 'points', 10)}
-            dataSource={pointsLeague}
-            size="middle"
-            pagination={false}
-            scroll={{ x: true }}
-          />
-        ) : (
-          <Spinner />
-        )}
-      </TabPane>
-    </Tabs>
+    <>
+      {/* On a phone the filters take the place of the tabs, so they are above instead */}
+      {isMobile ? <MobileFilters>{filters}</MobileFilters> : null}
+      <Tabs defaultActiveKey="grandSlam" tabBarExtraContent={isMobile ? undefined : filters}>
+        <TabPane key="grandSlam" tab={t('results.GrandSlam')}>
+          Sammanlagd placering i de fyra ligorna.
+          {league.grandSlamAgeLimit > 0 ? ` Åldersgräns ${league.grandSlamAgeLimit} år.` : ''}
+          {!loading ? (
+            <StyledTable
+              columns={getColumns<IGrandslamCompetitor>(t, 'positions', 6, true, isMobile)}
+              dataSource={grandSlam}
+              size="middle"
+              pagination={false}
+              className="mobile-keep-fixed-start"
+              scroll={{ x: true }}
+            />
+          ) : (
+            <Spinner />
+          )}
+        </TabPane>
+        <TabPane key="rankingLeague" tab={t('results.RankingLeague')}>
+          Antal minuter efter sveriges bästa herrsenior på en 75 minuters bana. Samma grundprincip som ranking och
+          sverigelistan, fast utan konstiga överankingar i gubbaklasser. Även samma rankinglista för damer och herrar.
+          Man får ranking på alla tävlingar, både individuellt, jaktstart och stafetter.
+          {league.rankingLeagueAgeLimit > 0 ? ` Åldersgräns ${league.rankingLeagueAgeLimit} år.` : ''}
+          {!loading ? (
+            <StyledTable
+              columns={getColumns<IRankingCompetitor>(t, 'ranking', 6, false, isMobile)}
+              dataSource={rankingLeague}
+              size="middle"
+              pagination={false}
+              className="mobile-keep-fixed-start"
+              scroll={{ x: true }}
+            />
+          ) : (
+            <Spinner />
+          )}
+        </TabPane>
+        <TabPane key="rankingRelayLeague" tab={t('results.RankingRelayLeague')}>
+          Antal minuter efter sveriges bästa herrsenior på en 75 minuters bana. Samma grundprincip som ranking och
+          sverigelistan, fast utan konstiga överankingar i gubbaklasser. Även samma rankinglista för damer och herrar.
+          En ren stafett ranking.
+          {league.rankingRelayLeagueAgeLimit > 0 ? ` Åldersgräns ${league.rankingRelayLeagueAgeLimit} år.` : ''}
+          {!loading ? (
+            <StyledTable
+              columns={getColumns<IRankingCompetitor>(t, 'ranking', 3, false, isMobile)}
+              dataSource={rankingRelayLeague}
+              size="middle"
+              pagination={false}
+              className="mobile-keep-fixed-start"
+              scroll={{ x: true }}
+            />
+          ) : (
+            <Spinner />
+          )}
+        </TabPane>
+        <TabPane key="rankingSpeedLeague" tab={t('results.RankingSpeedLeague')}>
+          Antal minuter efter sveriges bästa herrsenior på en 75 minuters bana i ren löphastighet. Bomtiden räknas bort
+          och sen beräknas rankingen på den nya tiden. Även samma rankinglista för damer och herrar. En ren
+          löphastighetsranking.
+          {league.rankingLeagueAgeLimit > 0 ? ` Åldersgräns ${league.rankingLeagueAgeLimit} år.` : ''}
+          {!loading ? (
+            <StyledTable
+              columns={getColumns<IRankingCompetitor>(t, 'ranking', 6, false, isMobile)}
+              dataSource={rankingSpeedLeague}
+              size="middle"
+              pagination={false}
+              className="mobile-keep-fixed-start"
+              scroll={{ x: true }}
+            />
+          ) : (
+            <Spinner />
+          )}
+        </TabPane>
+        <TabPane key="rankingTechnicalLeague" tab={t('results.RankingTechnicalLeague')}>
+          Antal minuter efter sveriges bästa herrsenior på en 75 minuters bana i ren orienteringsteknik. Antal
+          bomminuter + ett teknikpåslag på 10% av löphastighetsrankingen. Även samma rankinglista för damer och herrar.
+          En ren teknik ranking.
+          {league.rankingLeagueAgeLimit > 0 ? ` Åldersgräns ${league.rankingLeagueAgeLimit} år.` : ''}
+          {!loading ? (
+            <StyledTable
+              columns={getColumns<IRankingCompetitor>(t, 'ranking', 6, false, isMobile)}
+              dataSource={rankingTechnicalLeague}
+              size="middle"
+              pagination={false}
+              className="mobile-keep-fixed-start"
+              scroll={{ x: true }}
+            />
+          ) : (
+            <Spinner />
+          )}
+        </TabPane>
+        <TabPane key="points1000League" tab={t('results.Points1000League')}>
+          Placering i förhållande till antal startande. 100 poäng för seger i en nationell tävling vid minst två
+          startande. 30 är lägsta poäng vid fullföljt.
+          {league.points1000LeagueAgeLimit > 0 ? ` Åldersgräns ${league.points1000LeagueAgeLimit} år.` : ''}
+          {!loading ? (
+            <StyledTable
+              columns={getColumns<Omit<IPoints1000Competitor, 'total'> & { total: string }>(
+                t,
+                'points1000',
+                10,
+                false,
+                isMobile
+              )}
+              dataSource={points1000League.map(p => ({ ...p, total: `${p.total} (${p.numberOf100})` }))}
+              size="middle"
+              pagination={false}
+              className="mobile-keep-fixed-start"
+              scroll={{ x: true }}
+            />
+          ) : (
+            <Spinner />
+          )}
+        </TabPane>
+        <TabPane
+          key="pointsLeague"
+          tab={t(year > 1900 && year < 2003 ? 'results.PointsOldLeague' : 'results.PointsLeague')}
+        >
+          {year > 1900 && year < 2003
+            ? 'Grundpoäng baserat på typ av tävling och klass + Placeringspoäng + Poäng för antal startande - Poäng för minuter efter täten per 100m.'
+            : 'Grundpoäng baserat på typ av tävling och klass + Logaritmen av antal startande i förhållande till placering. Allt sedan i förhållande till hur många procent efter täten man är.'}
+          {league.pointsLeagueAgeLimit > 0 ? ` Åldersgräns ${league.pointsLeagueAgeLimit} år.` : ''}
+          {!loading && year > 1900 && year < 2003 ? (
+            <StyledTable
+              columns={getColumns<IPointsOldCompetitor>(t, 'pointsOld', 10, false, isMobile)}
+              dataSource={pointsOldLeague}
+              size="middle"
+              pagination={false}
+              className="mobile-keep-fixed-start"
+              scroll={{ x: true }}
+            />
+          ) : !loading ? (
+            <StyledTable
+              columns={getColumns<IPointsCompetitor>(t, 'points', 10, false, isMobile)}
+              dataSource={pointsLeague}
+              size="middle"
+              pagination={false}
+              className="mobile-keep-fixed-start"
+              scroll={{ x: true }}
+            />
+          ) : (
+            <Spinner />
+          )}
+        </TabPane>
+      </Tabs>
+    </>
   ) : null;
 });
 

@@ -92,3 +92,50 @@ h6 {
 ::-webkit-scrollbar-thumb:hover {
   background-color: #909090;
 }
+
+/* Mobile first: a phone has room for one fixed column in a table, the rest scrolls horizontally */
+@media screen and (max-width: 767px) {
+  .ant-table-wrapper:not(.mobile-keep-fixed-start) .ant-table .ant-table-cell-fix-start ~ .ant-table-cell-fix-start,
+  .ant-table .ant-table-cell-fix-end {
+    position: relative !important;
+    inset-inline-start: auto !important;
+    inset-inline-end: auto !important;
+    left: auto !important;
+    right: auto !important;
+    /* Else it is painted over the fixed column when it scrolls past it */
+    z-index: auto !important;
+  }
+  .ant-table-wrapper:not(.mobile-keep-fixed-start)
+    .ant-table
+    .ant-table-cell-fix-start
+    ~ .ant-table-cell-fix-start::after,
+  .ant-table .ant-table-cell-fix-end::before,
+  .ant-table .ant-table-cell-fix-end::after {
+    display: none !important;
+  }
+}
+
+/* Mobile first: a dialog uses the width of the phone, with less padding */
+@media screen and (max-width: 767px) {
+  .ant-modal {
+    max-width: calc(100vw - 16px) !important;
+  }
+  .ant-modal .ant-modal-content {
+    padding: 16px 12px;
+  }
+}
+
+/* Mobile first: a dropdown list (also one wider than its select) stays inside the phone, long texts wrap */
+@media screen and (max-width: 767px) {
+  .ant-select-dropdown {
+    max-width: calc(100vw - 16px);
+  }
+  .ant-select-dropdown .ant-select-item-option-content {
+    white-space: normal;
+  }
+}
+
+/* A date, an amount or a phone number in a table is never broken over two lines */
+.ant-table .table-cell-nowrap {
+  white-space: nowrap;
+}

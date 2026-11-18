@@ -107,6 +107,10 @@ const LoginLink = styled(Button)`
     padding: 0;
     color: inherit;
     text-decoration: underline;
+    /* A long text wraps on a phone */
+    white-space: normal;
+    height: auto;
+    text-align: left;
   }
 `;
 

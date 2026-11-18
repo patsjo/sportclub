@@ -4,6 +4,7 @@ import { observer } from 'mobx-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { styled } from 'styled-components';
+import { mobileMediaQuery } from '../../utils/useIsMobile';
 import { PostJsonData } from '../../utils/api';
 import { useMobxStore } from '../../utils/mobxStore';
 import { ICompetitor } from '../../utils/responseCompetitorInterfaces';
@@ -36,6 +37,11 @@ const StyledCard = styled(Card)`
   &&& .ant-card-head-title {
     padding: 0;
     line-height: 0;
+  }
+  ${mobileMediaQuery} {
+    &&& .ant-card-body {
+      padding: 12px;
+    }
   }
 `;
 

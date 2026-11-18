@@ -1,5 +1,5 @@
 import { LeftOutlined, PlusOutlined, RightOutlined } from '@ant-design/icons';
-import { Button, Modal, ModalFuncProps, Popconfirm, Space, Spin, Steps, Switch, Typography, message } from 'antd';
+import { Button, Modal, ModalFuncProps, Popconfirm, Space, Spin, Switch, Typography, message } from 'antd';
 import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
 import { MouseEventHandler, useCallback, useEffect, useRef, useState } from 'react';
@@ -42,6 +42,7 @@ import ResultWizardStep1ChooseRaceRerun from './ResultsWizardStep1ChooseRaceReru
 import ResultWizardStep2EditRace from './ResultsWizardStep2EditRace';
 import ResultWizardStep3Ranking from './ResultsWizardStep3Ranking';
 import { SelectEventorIdConfirmModal } from './SelectEventorIdConfirmModal';
+import WizardSteps from '../styled/WizardSteps';
 
 const StyledFullWidth = styled.div`
   width: 100%;
@@ -589,7 +590,7 @@ const ResultsWizard = observer(() => {
       >
         <StyledModalContent>
           <StyledFullWidth ref={stepsRef}>
-            <Steps
+            <WizardSteps
               current={wizardStep}
               items={[
                 { title: t('results.Step0Input') },

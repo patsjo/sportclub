@@ -10,6 +10,7 @@ import { TableSettingModal, getLocalStorage } from './TableSettingModal';
 const ButtonsContainer = styled.div`
   min-width: 150px;
   margin-top: 24px;
+  white-space: nowrap;
 `;
 
 interface ITablePrintSettingButtonsProps {
@@ -88,6 +89,8 @@ const TablePrintSettingButtons = ({
     <ButtonsContainer>
       <Button
         icon={<PrinterOutlined />}
+        aria-label={t('common.Print')}
+        title={t('common.Print')}
         disabled={disablePrint}
         style={{ marginRight: 5 }}
         loading={loading}
@@ -100,6 +103,8 @@ const TablePrintSettingButtons = ({
       />
       <Button
         icon={<FileTextOutlined />}
+        aria-label={t('common.ExportExcel')}
+        title={t('common.ExportExcel')}
         style={{ marginRight: 5 }}
         loading={loading}
         onClick={() => {
@@ -123,6 +128,8 @@ const TablePrintSettingButtons = ({
       ) : null}
       <Button
         icon={<SettingOutlined />}
+        aria-label={t('common.TableSettings')}
+        title={t('common.TableSettings')}
         onClick={() =>
           TableSettingModal(t, modal, localStorageName, columns).then(value => {
             setSettings(value);

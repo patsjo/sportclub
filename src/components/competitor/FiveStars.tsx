@@ -1,21 +1,43 @@
 import { Skeleton } from 'antd';
 import { styled } from 'styled-components';
+import { mobileMediaQuery } from '../../utils/useIsMobile';
 import Star from '../svg/Star';
 
+// On a phone two columns with smaller stars, instead of one long column
 export const ContainerDiv = styled.div`
   padding-right: 20px;
   padding-bottom: 10px;
   width: 220px;
   float: left;
+  ${mobileMediaQuery} {
+    box-sizing: border-box;
+    width: 50%;
+    padding-right: 8px;
+    padding-bottom: 8px;
+  }
 `;
 export const LabelDiv = styled.div`
   font-size: 12px;
   white-space: nowrap;
   text-overflow: ellipsis;
+  ${mobileMediaQuery} {
+    white-space: normal;
+    line-height: 14px;
+    min-height: 28px;
+    display: flex;
+    align-items: flex-end;
+  }
 `;
 export const StarsDiv = styled.div`
   white-space: nowrap;
   height: 40px;
+  ${mobileMediaQuery} {
+    height: 30px;
+    svg {
+      width: 28px;
+      height: 28px;
+    }
+  }
 `;
 export const OnlyStarsDiv = styled.div`
   white-space: nowrap;
@@ -26,6 +48,10 @@ export const InfoDiv = styled.div`
   font-size: 32px;
   font-weight: 600;
   line-height: 34px;
+  ${mobileMediaQuery} {
+    font-size: 24px;
+    line-height: 30px;
+  }
 `;
 
 const SkeletonsDiv = styled.div`

@@ -270,6 +270,8 @@ const InvoiceOverview = observer(() => {
     {
       title: t('invoices.Recipient'),
       key: 'recipient',
+      // Not a name on three lines on a phone, the table scrolls instead
+      onCell: () => ({ style: { minWidth: 150 } }),
       render: (_, invoice) => (
         <>
           {invoice.recipientName}
@@ -285,11 +287,18 @@ const InvoiceOverview = observer(() => {
         </>
       )
     },
-    { title: t('invoices.Total'), key: 'total', align: 'right', render: (_, i) => formatMoney(i.total) },
+    {
+      title: t('invoices.Total'),
+      key: 'total',
+      align: 'right',
+      className: 'table-cell-nowrap',
+      render: (_, i) => formatMoney(i.total)
+    },
     {
       title: t('invoices.PaidAmount'),
       key: 'paid',
       align: 'right',
+      className: 'table-cell-nowrap',
       render: (_, i) =>
         i.paidAmount > 0 ? (
           <Tooltip title={i.paidDate}>
@@ -301,6 +310,7 @@ const InvoiceOverview = observer(() => {
       title: t('invoices.Left'),
       key: 'left',
       align: 'right',
+      className: 'table-cell-nowrap',
       render: (_, i) =>
         invoiceLeft(i) > 0 ? (
           <Typography.Text strong type={isPartlyPaid(i) ? 'warning' : undefined}>
@@ -358,6 +368,8 @@ const InvoiceOverview = observer(() => {
     {
       title: t('invoices.Title'),
       key: 'title',
+      // Not squeezed to a few letters on a phone, the table scrolls instead
+      onCell: () => ({ style: { minWidth: 220 } }),
       render: (_, batch) => (
         <>
           <Typography.Text strong>{batch.title}</Typography.Text>{' '}
@@ -378,8 +390,14 @@ const InvoiceOverview = observer(() => {
         </>
       )
     },
-    { title: t('invoices.InvoiceDate'), dataIndex: 'invoiceDate', key: 'invoiceDate', responsive: ['md'] },
-    { title: t('invoices.DueDate'), dataIndex: 'dueDate', key: 'dueDate' },
+    {
+      title: t('invoices.InvoiceDate'),
+      dataIndex: 'invoiceDate',
+      key: 'invoiceDate',
+      className: 'table-cell-nowrap',
+      responsive: ['md']
+    },
+    { title: t('invoices.DueDate'), dataIndex: 'dueDate', key: 'dueDate', className: 'table-cell-nowrap' },
     {
       title: t('invoices.Status'),
       key: 'summary',

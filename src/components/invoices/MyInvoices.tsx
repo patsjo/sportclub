@@ -1,14 +1,30 @@
-import { Alert, Button, Empty, Spin, Table, TableProps, Tag, Typography } from 'antd';
+import { Alert, Button, Card, Collapse, Empty, Spin, Table, TableProps, Tag, Typography } from 'antd';
 import { observer } from 'mobx-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { styled } from 'styled-components';
 import { IInvoice, IMyInvoicesResponse } from '../../models/invoiceModel';
 import { PostJsonData } from '../../utils/api';
 import { useMobxStore } from '../../utils/mobxStore';
+import { useIsMobile } from '../../utils/useIsMobile';
 import { SpinnerDiv } from '../styled/styled';
 import InvoiceRowsTable from './InvoiceRowsTable';
 import { errorText, formatMoney, invoiceLeft, InvoiceStatusTag, isPartlyPaid } from './invoiceHelper';
 import SwishPaymentModal from './SwishPaymentModal';
+
+const CardList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+const CardRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 4px;
+`;
 
 /** The invoices of the logged in user, to the user, the linked competitor and the family */
 const MyInvoices = observer(() => {
@@ -19,6 +35,7 @@ const MyInvoices = observer(() => {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string>();
   const [payInvoice, setPayInvoice] = useState<IInvoice>();
+  const isMobile = useIsMobile();
 
   const load = useCallback(() => {
     if (!invoicesUrl || !sessionModel.loggedIn) {
@@ -124,14 +141,67 @@ const MyInvoices = observer(() => {
     },
     {
       key: 'pay',
-      render: (_, invoice) =>
-        invoiceLeft(invoice) >= 1 && data?.swishEnabled ? (
-          <Button type="primary" onClick={() => setPayInvoice(invoice)}>
-            {isPartlyPaid(invoice) ? t('invoices.PayRestWithSwish') : t('invoices.PayWithSwish')}
-          </Button>
-        ) : null
+      render: (_, invoice) => payButton(invoice)
     }
   ];
+
+  const payButton = (invoice: IInvoice, block = false) =>
+    invoiceLeft(invoice) >= 1 && data?.swishEnabled ? (
+      <Button type="primary" block={block} onClick={() => setPayInvoice(invoice)}>
+        {isPartlyPaid(invoice) ? t('invoices.PayRestWithSwish') : t('invoices.PayWithSwish')}
+      </Button>
+    ) : null;
+
+  // On a phone one card per invoice, with what is left to pay and the Swish button in view
+  const invoiceCards = (invoices: IInvoice[]) => (
+    <CardList>
+      {invoices.map(invoice => (
+        <Card key={invoice.invoiceId} size="small">
+          <CardRow>
+            <Typography.Text strong>{invoice.title}</Typography.Text>
+            <Typography.Text type="secondary" style={{ whiteSpace: 'nowrap' }}>
+              #{invoice.invoiceId}
+            </Typography.Text>
+          </CardRow>
+          {invoice.message ? <Typography.Text type="secondary">{invoice.message}</Typography.Text> : null}
+          <CardRow>
+            <span>
+              {invoice.recipientName}
+              {invoice.familyId ? (
+                <Tag color="purple" style={{ marginLeft: 6 }}>
+                  {t('invoices.Family')}
+                </Tag>
+              ) : null}
+            </span>
+            <InvoiceStatusTag invoice={invoice} t={t} />
+          </CardRow>
+          <CardRow>
+            <Typography.Text type={invoice.isOverdue ? 'danger' : 'secondary'}>
+              {t('invoices.DueDate')} {invoice.dueDate}
+            </Typography.Text>
+            {invoiceLeft(invoice) > 0 ? (
+              <Typography.Text strong type={isPartlyPaid(invoice) || invoice.isOverdue ? 'danger' : undefined}>
+                {formatMoney(invoiceLeft(invoice))}
+              </Typography.Text>
+            ) : (
+              <Typography.Text>{formatMoney(invoice.total)}</Typography.Text>
+            )}
+          </CardRow>
+          {invoiceLeft(invoice) >= 1 && data?.swishEnabled ? (
+            <div style={{ marginTop: 8 }}>{payButton(invoice, true)}</div>
+          ) : null}
+          {invoice.rows.length > 0 ? (
+            <Collapse
+              ghost
+              size="small"
+              style={{ marginTop: 4 }}
+              items={[{ key: 'rows', label: t('invoices.Rows'), children: <InvoiceRowsTable invoice={invoice} /> }]}
+            />
+          ) : null}
+        </Card>
+      ))}
+    </CardList>
+  );
 
   return (
     <>
@@ -150,6 +220,8 @@ const MyInvoices = observer(() => {
         <SpinnerDiv>
           <Spin size="large" />
         </SpinnerDiv>
+      ) : data && data.invoices.length > 0 && isMobile ? (
+        invoiceCards(data.invoices)
       ) : data && data.invoices.length > 0 ? (
         <Table<IInvoice>
           rowKey="invoiceId"

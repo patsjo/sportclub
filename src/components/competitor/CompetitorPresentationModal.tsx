@@ -130,13 +130,13 @@ const CompetitorPresentationModal = observer(
               <Input type="hidden" />
             </FormItem>
             <FormItem name="iSeniorAchievements" label={t('competitor.Senior')}>
-              <Input />
+              <Input.TextArea autoSize={{ minRows: 1, maxRows: 4 }} />
             </FormItem>
             <FormItem name="iJuniorAchievements" label={t('competitor.Junior')}>
-              <Input />
+              <Input.TextArea autoSize={{ minRows: 1, maxRows: 4 }} />
             </FormItem>
             <FormItem name="iYouthAchievements" label={t('competitor.Youth')}>
-              <Input />
+              <Input.TextArea autoSize={{ minRows: 1, maxRows: 4 }} />
             </FormItem>
             <UploadDragger
               form={form}

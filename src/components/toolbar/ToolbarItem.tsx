@@ -4,10 +4,15 @@ import MaterialIcon, { MaterialIconsType } from '../materialIcon/MaterialIcon';
 interface IToolbarItemHolderProps {
   disabled?: boolean;
 }
-const ToolbarItemHolder = styled.div<IToolbarItemHolderProps>`
+const ToolbarItemHolder = styled.button<IToolbarItemHolderProps>`
   & {
     display: ${({ disabled }) => (disabled ? 'none' : 'inline-block')};
     cursor: pointer;
+    border: none;
+    color: inherit;
+    font: inherit;
+    /* The size as when it was a div, a button counts the padding in the width */
+    box-sizing: content-box;
     min-width: 46px;
     height: 46px;
     line-height: 20px;
@@ -21,6 +26,10 @@ const ToolbarItemHolder = styled.div<IToolbarItemHolderProps>`
   }
   &:hover {
     background-color: rgba(0, 0, 0, 0.4);
+  }
+  &:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
   }
 `;
 
@@ -38,7 +47,7 @@ interface IToolbarItemProps {
   disabled?: boolean;
 }
 const ToolbarItem = ({ icon, name, onClick, disabled }: IToolbarItemProps) => (
-  <ToolbarItemHolder disabled={disabled} onClick={onClick}>
+  <ToolbarItemHolder type="button" disabled={disabled} onClick={onClick}>
     <MaterialIcon icon={icon} fontSize={20} />
     <MaterialIconText>{name}</MaterialIconText>
   </ToolbarItemHolder>

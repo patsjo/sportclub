@@ -8,6 +8,7 @@ export default defineConfig({
   base: '/',
   test: {
     globals: true,
+    include: ['src/**/*.{test,spec}.?(c|m)[jt]s?(x)'],
     setupFiles: './setupTests.ts',
     environment: 'jsdom',
     css: false,

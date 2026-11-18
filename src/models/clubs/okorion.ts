@@ -304,7 +304,7 @@ const okorion: IMobxClubModelProps = {
     googleUrl: 'https://okorion.com/oauth/google.php',
     googleClientId: '755769089258-89dgur1b750oqnhmnv875t1qj433hofe.apps.googleusercontent.com',
     facebookUrl: undefined, //'https://okorion.com/oauth/facebook.php',
-    appleUrl: undefined, //'https://okorion.com/oauth/apple.php',
+    appleUrl: 'https://okorion.com/oauth/apple.php',
     accountsUrl: 'https://okorion.com/users/accounts.php'
   },
   social: {

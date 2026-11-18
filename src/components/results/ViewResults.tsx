@@ -1,13 +1,14 @@
 import { Form, message, Modal, Spin } from 'antd';
 import dayjs from 'dayjs';
 import { observer } from 'mobx-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Fragment, ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { styled } from 'styled-components';
 import { IRaceClubsProps } from '../../models/resultModel';
 import { PostJsonData } from '../../utils/api';
 import { INumberOption, IOption } from '../../utils/formHelper';
 import { useMobxStore } from '../../utils/mobxStore';
+import { mobileMediaQuery, useIsMobile } from '../../utils/useIsMobile';
 import {
   getPdf,
   getZip,
@@ -58,17 +59,54 @@ const StyledTable2 = styled.table`
   &&& tr td {
     padding-right: 20px;
   }
+  ${mobileMediaQuery} {
+    &&& tr td {
+      padding-right: 12px;
+      vertical-align: top;
+    }
+    &&& tr td:first-child {
+      white-space: nowrap;
+    }
+  }
 `;
 
+type InfoPair = [label: string, value: ReactNode];
+
+/** Labels with their values, two pairs on each row (one on a phone, else the values get squeezed) */
+const InfoTable = ({ pairs, pairsPerRow }: { pairs: InfoPair[]; pairsPerRow: number }) => (
+  <StyledTable2>
+    <tbody>
+      {Array.from({ length: Math.ceil(pairs.length / pairsPerRow) }, (_, row) => (
+        <tr key={row}>
+          {pairs.slice(row * pairsPerRow, (row + 1) * pairsPerRow).map(([label, value]) => (
+            <Fragment key={label}>
+              <td>
+                <b>{label}:</b>
+              </td>
+              <td>{value}</td>
+            </Fragment>
+          ))}
+        </tr>
+      ))}
+    </tbody>
+  </StyledTable2>
+);
+
+// Wraps on a phone: the year and the race/competitor on the first line, the buttons on the next
 const StyledRow = styled.div`
-  display: block;
-  white-space: nowrap;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  column-gap: 8px;
   width: 100%;
 `;
 const Col = styled.div`
-  display: inline-block;
-  margin-left: 5px;
-  vertical-align: bottom;
+  flex: none;
+`;
+const SelectCol = styled.div`
+  flex: 1 1 220px;
+  min-width: 0;
+  max-width: 600px;
 `;
 
 interface IViewResultsProps {
@@ -77,6 +115,7 @@ interface IViewResultsProps {
 
 const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
   const { t } = useTranslation();
+  const pairsPerRow = useIsMobile() ? 1 : 2;
   const { clubModel, sessionModel } = useMobxStore();
   const [events, setEvents] = useState<IEventViewResultResponse[]>([]);
   const [result, setResult] = useState<IIndividualViewResultResponse | IClubViewResultResponse | undefined>();
@@ -908,7 +947,7 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
             />
           </FormItem>
         </Col>
-        <Col style={{ width: 'calc(100% - 276px)' }}>
+        <SelectCol>
           {isIndividual ? (
             <FormItem name="Competitor" label={t('results.Competitor')}>
               <FormSelect
@@ -918,7 +957,7 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
                     option!.label!.toString().toLowerCase().indexOf(input.toLowerCase()) >= 0
                 }}
                 disabled={loading}
-                style={{ maxWidth: 600, width: '100%' }}
+                style={{ width: '100%' }}
                 popupMatchSelectWidth={false}
                 options={
                   loading || !clubModel.raceClubs ? [] : (clubModel.raceClubs.selectedClub?.competitorsOptions ?? [])
@@ -935,14 +974,14 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
                     option!.label!.toString().toLowerCase().indexOf(input.toLowerCase()) >= 0
                 }}
                 disabled={loading}
-                style={{ maxWidth: 600, width: '100%' }}
+                style={{ width: '100%' }}
                 popupMatchSelectWidth={false}
                 options={eventOptions}
                 onChange={eventId => updateEvent(eventId)}
               />
             </FormItem>
           )}
-        </Col>
+        </SelectCol>
         <Col>
           <TablePrintSettingButtons
             localStorageName="results"
@@ -964,23 +1003,14 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
         </Col>
       </StyledRow>
       {!loading && competitorId && result && isIndividual ? (
-        <StyledTable2>
-          <tr>
-            <td>
-              <b>{t('results.Competitor')}:</b>
-            </td>
-            <td>{clubModel.raceClubs?.selectedClub?.competitorById(competitorId)?.fullName}</td>
-            <td>
-              <b>{t('calendar.Year')}:</b>
-            </td>
-            <td>{year}</td>
-          </tr>
-          <tr>
-            <td>
-              <b>{t('results.TotalFeeToClub')}:</b>
-            </td>
-            <td>
-              {(result.results
+        <InfoTable
+          pairsPerRow={pairsPerRow}
+          pairs={[
+            [t('results.Competitor'), clubModel.raceClubs?.selectedClub?.competitorById(competitorId)?.fullName],
+            [t('calendar.Year'), year],
+            [
+              t('results.TotalFeeToClub'),
+              (result.results
                 ? (result.results as { feeToClub: number; serviceFeeToClub: number }[]).reduce(
                     (sum, obj) => (sum += obj.feeToClub + obj.serviceFeeToClub),
                     0
@@ -991,56 +1021,37 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
                       (sum, obj) => (sum += obj.serviceFeeToClub),
                       0
                     )
-                  : 0)}
-            </td>
-          </tr>
-        </StyledTable2>
+                  : 0)
+            ]
+          ]}
+        />
       ) : null}
       {!loading && clubResult && !isIndividual ? (
-        <StyledTable2>
-          <tr>
-            <td>
-              <b>{t('results.Club')}:</b>
-            </td>
-            <td>{clubResult.organiserName}</td>
-            <td>
-              <b>{t('results.Name')}:</b>
-            </td>
-            <td>{clubResult.name}</td>
-          </tr>
-          <tr>
-            <td>
-              <b>{t('results.Date')}:</b>
-            </td>
-            <td>{clubResult.raceDate}</td>
-            <td>
-              <b>{t('results.RaceLightCondition')}:</b>
-            </td>
-            <td>{raceLightConditionOptions(t).find(opt => opt.code === clubResult.raceLightCondition)?.description}</td>
-          </tr>
-          <tr>
-            <td>
-              <b>{t('results.RaceDistance')}:</b>
-            </td>
-            <td>{raceDistanceOptions(t).find(opt => opt.code === clubResult.raceDistance)?.description}</td>
-            <td>
-              <b>{t('results.EventClassification')}:</b>
-            </td>
-            <td>
-              {
-                clubModel.raceClubs?.eventClassificationOptions.find(
-                  opt => opt.code === clubResult.eventClassificationId
-                )?.description
-              }
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <b>{t('results.Sport')}:</b>
-            </td>
-            <td>{clubModel.raceClubs?.sportOptions.find(opt => opt.code === clubResult.sportCode)?.description}</td>
-          </tr>
-        </StyledTable2>
+        <InfoTable
+          pairsPerRow={pairsPerRow}
+          pairs={[
+            [t('results.Club'), clubResult.organiserName],
+            [t('results.Name'), clubResult.name],
+            [t('results.Date'), clubResult.raceDate],
+            [
+              t('results.RaceLightCondition'),
+              raceLightConditionOptions(t).find(opt => opt.code === clubResult.raceLightCondition)?.description
+            ],
+            [
+              t('results.RaceDistance'),
+              raceDistanceOptions(t).find(opt => opt.code === clubResult.raceDistance)?.description
+            ],
+            [
+              t('results.EventClassification'),
+              clubModel.raceClubs?.eventClassificationOptions.find(opt => opt.code === clubResult.eventClassificationId)
+                ?.description
+            ],
+            [
+              t('results.Sport'),
+              clubModel.raceClubs?.sportOptions.find(opt => opt.code === clubResult.sportCode)?.description
+            ]
+          ]}
+        />
       ) : null}
       {!loading && result && result.results?.length ? (
         <StyledTable

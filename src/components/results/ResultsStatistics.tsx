@@ -65,14 +65,14 @@ const ResultsStatistics = observer(() => {
           chart.typeOfChart === 'line' ? (
             <CustomLineChart
               key={chart.title}
-              totalWidth={width}
+              totalWidth={width ? width - 16 : undefined}
               maxWidth={chart.title === 'startsPerYear' ? undefined : 1900}
               {...chart}
             />
           ) : chart.typeOfChart === 'stackedbar' ? (
             <CustomStackedBarChart
               key={chart.title}
-              totalWidth={width}
+              totalWidth={width ? width - 16 : undefined}
               maxWidth={chart.title === 'startsPerYear' ? undefined : 1900}
               {...chart}
             />

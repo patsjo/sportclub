@@ -1,5 +1,5 @@
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
-import { Button, Spin, Steps, message } from 'antd';
+import { Button, Spin, message } from 'antd';
 import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -19,6 +19,7 @@ import FullScreenWizard from '../../styled/FullscreenWizard';
 import { SpinnerDiv } from '../../styled/styled';
 import EventSelectorWizardStep0Input from './EventSelectorWizardStep0Input';
 import EventSelectorWizardStep1ChooseRace from './EventSelectorWizardStep1ChooseRace';
+import WizardSteps from '../../styled/WizardSteps';
 
 const StyledFullWidth = styled.div`
   width: 100%;
@@ -154,7 +155,7 @@ const EventSelectorWizard = observer(() => {
     >
       <StyledModalContent>
         <StyledFullWidth ref={stepsRef}>
-          <Steps
+          <WizardSteps
             current={wizardStep}
             items={[{ title: t('results.Step0Input') }, { title: t('results.Step1ChooseRace') }]}
           />

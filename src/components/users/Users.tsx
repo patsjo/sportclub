@@ -211,13 +211,15 @@ const Users = observer(() => {
       title: t('users.PhoneNo'),
       dataIndex: 'phoneNo',
       key: 'phoneNo',
+      className: 'table-cell-nowrap',
       render: (value, record) =>
         [record.mobilePhoneNo, record.phoneNo, record.workPhoneNo].filter(phoneNo => phoneNo).join(', ')
     },
     {
       title: t('users.Email'),
       dataIndex: 'email',
-      key: 'email'
+      key: 'email',
+      className: 'table-cell-nowrap'
     },
     {
       title: t('users.BirthDay'),
@@ -280,7 +282,7 @@ const Users = observer(() => {
   return (
     <>
       {loaded && sessionModel.loggedIn ? (
-        <StyledTable columns={columns} dataSource={users} pagination={false} size="middle" />
+        <StyledTable columns={columns} dataSource={users} pagination={false} size="middle" scroll={{ x: true }} />
       ) : !loaded ? (
         <SpinnerDiv>
           <Spin size="large" />

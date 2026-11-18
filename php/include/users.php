@@ -97,8 +97,8 @@ function NotAuthorized($UseForbidden = false)
     if ($UseForbidden || (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == "XMLHttpRequest")) {
       header("HTTP/1.0 403 Forbidden");
     } else {
+      // No "WWW-Authenticate: Basic" header, it makes the browser show its own login dialog over the app
       header("HTTP/1.0 401 Unauthorized");
-      header("WWW-Authenticate: Basic realm=\"Sportclub\"");
     }
     die(0);
 }

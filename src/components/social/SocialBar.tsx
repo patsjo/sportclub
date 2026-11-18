@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { styled } from 'styled-components';
 import { socialKey, SocialReaction, socialReactions, SocialTargetType } from '../../models/socialModel';
 import { useMobxStore } from '../../utils/mobxStore';
+import { mobileMediaQuery } from '../../utils/useIsMobile';
 
 const Bar = styled.div<{ $compact: boolean }>`
   display: flex;
@@ -39,6 +40,10 @@ const PillButton = styled.button<{ $compact: boolean }>`
   padding: ${({ $compact }) => ($compact ? '0 6px' : '1px 9px')};
   cursor: pointer;
   transition: background 0.15s;
+  /* A bit taller on a phone, easier to hit with a finger */
+  ${mobileMediaQuery} {
+    min-height: ${({ $compact }) => ($compact ? 24 : 26)}px;
+  }
 
   &:hover:not(:disabled) {
     background: rgba(128, 128, 128, 0.14);

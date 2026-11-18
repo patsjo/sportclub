@@ -206,7 +206,7 @@ const FadeOutItem = observer(
           maskClosable={false}
           open={showModalItem}
           width="calc(100% - 80px)"
-          style={{ top: 40, minWidth: 560, maxWidth: 800 }}
+          style={{ top: 40, minWidth: 'min(560px, calc(100vw - 16px))', maxWidth: 800 }}
           footer={[
             ShowDeleteAllButton,
             ShowDeleteButton,

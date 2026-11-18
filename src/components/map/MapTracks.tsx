@@ -40,6 +40,10 @@ const ContentArea = styled.div`
     margin-left: 20px;
     margin-right: 0px;
     overflow: hidden;
+    @media screen and (max-width: 699px) {
+      margin-left: 12px;
+      margin-right: 6px;
+    }
   }
 `;
 const StyledSplitter = styled(Splitter)<{ vertical: boolean }>`
@@ -295,9 +299,9 @@ const MapTracks = () => {
               <Splitter.Panel
                 collapsible
                 defaultSize="35%"
-                min={400}
+                min={isVertical ? undefined : 400}
                 max={1000}
-                style={{ minWidth: 400, minHeight: 400, marginRight: 6, marginBottom: 6 }}
+                style={{ minWidth: isVertical ? undefined : 400, minHeight: 400, marginRight: 6, marginBottom: 6 }}
               >
                 <ContentArea>
                   <FullScreenWizard

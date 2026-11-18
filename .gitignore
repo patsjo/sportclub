@@ -23,3 +23,5 @@ yarn-debug.log*
 yarn-error.log*
 package-lock.json
 public/favicon*.ico
+/e2e-results
+/e2e/.auth.json
