@@ -35,7 +35,101 @@ const feeFormat = (fee: number) =>
 export interface IInvoicePrintObject {
   invoiceMessage: string;
   details: IFeesRecord[];
+  /** A saved invoice, its number instead of YYYY-TÄVL-AVG-competitorId */
+  invoiceNumber?: string;
+  /** A saved invoice, its date instead of today */
+  invoiceDate?: Dayjs;
+  /** The amount in the Swish QR code instead of the total, no QR code when less than 1 (e.g. paid) */
+  swishAmount?: number;
+  /** A saved invoice that is paid (fully or partly), shown with what is left to pay */
+  payment?: IInvoicePayment;
 }
+
+export interface IInvoicePayment {
+  paidAmount: number;
+  paidDate: Dayjs | null;
+  leftToPay: number;
+}
+
+const paidColor = '#2e7d32';
+const partlyPaidColor = '#e65100';
+
+/** The size of the stamp text in the PDF (pt), drawn 4 times bigger so it is sharp */
+const stampFontSize = 26;
+const stampScale = 4;
+const stampAngle = (-8 * Math.PI) / 180;
+
+/** A tilted stamp with a frame, e.g. BETALD, as a PNG (pdfmake can't rotate text), null without a canvas */
+const stampImage = (text: string, color: string): { image: string; width: number } | null => {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+  const font = `bold ${stampFontSize * stampScale}px Helvetica, Arial, sans-serif`;
+  ctx.font = font;
+  const border = 3 * stampScale;
+  const width = ctx.measureText(text).width + 2 * 12 * stampScale;
+  const height = stampFontSize * stampScale + 2 * 8 * stampScale;
+  const cos = Math.abs(Math.cos(stampAngle));
+  const sin = Math.abs(Math.sin(stampAngle));
+  canvas.width = Math.ceil(width * cos + height * sin + 2 * border);
+  canvas.height = Math.ceil(width * sin + height * cos + 2 * border);
+  // The state is reset when the size is set
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.rotate(stampAngle);
+  ctx.globalAlpha = 0.9;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = border;
+  ctx.beginPath();
+  // roundRect is missing in older browsers
+  if (typeof ctx.roundRect === 'function') ctx.roundRect(-width / 2, -height / 2, width, height, 4 * stampScale);
+  else ctx.rect(-width / 2, -height / 2, width, height);
+  ctx.stroke();
+  ctx.fillStyle = color;
+  ctx.font = font;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, 0, stampScale * 2);
+  return { image: canvas.toDataURL('image/png'), width: canvas.width / stampScale };
+};
+
+/** The stamp next to the invoice details and the rows after the total, nothing when nothing is paid */
+const paymentContent = (payment: IInvoicePayment | undefined): { stamp: Content | null; rows: Content[][] } => {
+  if (!payment || payment.paidAmount <= 0) return { stamp: null, rows: [] };
+  const isPaid = payment.leftToPay <= 0;
+  const stampText = i18next.t(isPaid ? 'invoice.paidStamp' : 'invoice.partlyPaidStamp');
+  const stamp = stampImage(stampText, isPaid ? paidColor : partlyPaidColor);
+  return {
+    stamp: stamp
+      ? { image: stamp.image, width: stamp.width, margin: [0, 10, 0, 0] }
+      : { text: stampText, style: 'header', color: isPaid ? paidColor : partlyPaidColor, margin: [0, 10, 0, 0] },
+    // The texts to the left of the amounts, the amounts under the total
+    rows: [
+      [
+        {
+          columns: [
+            { width: '*', text: '' },
+            {
+              width: 'auto',
+              alignment: 'right',
+              margin: [0, 0, 10, 0],
+              stack: [
+                payment.paidDate
+                  ? `${i18next.t('invoice.paidAmount')} ${payment.paidDate.format(dateFormat)}`
+                  : i18next.t('invoice.paidAmount'),
+                { text: i18next.t('invoice.leftToPay'), style: 'bold' }
+              ]
+            },
+            {
+              width: '20%',
+              alignment: 'right',
+              stack: [feeFormat(payment.paidAmount), { text: feeFormat(payment.leftToPay), style: 'bold' }]
+            }
+          ]
+        }
+      ]
+    ]
+  };
+};
 
 const postSwishUrl = 'https://api.swish.nu/qr/v2/prefilled';
 interface ISwishProps {
@@ -140,16 +234,20 @@ const getPdfDocDefinition = async (
     const totalFeeToClub = printObject.details.map(detail => detail.feeToClub).reduce((prev, curr) => prev + curr, 0);
     const taxFee = (totalFeeToClub * (invoiceMetaData.taxPercentage ?? 0)) / 100;
     const excludingTax = totalFeeToClub - taxFee;
-    const swishLogo = await getInvoiceSwishLogo(
-      totalFeeToClub,
-      printObject.invoiceMessage,
-      invoiceMetaData.swishNumber
-    );
+    const swishAmount = printObject.swishAmount ?? totalFeeToClub;
+    const swishLogo =
+      swishAmount >= 1
+        ? await getInvoiceSwishLogo(swishAmount, printObject.invoiceMessage, invoiceMetaData.swishNumber)
+        : null;
+    const payment = paymentContent(printObject.payment);
     const headerData: Column = {
       width: '*',
       alignment: 'left',
       stack: [
-        { text: i18next.t('invoice.invoiceTitle') ?? '', style: 'header' },
+        {
+          text: i18next.t('invoice.invoiceTitle') ?? '',
+          style: 'header'
+        },
         { text: invoiceMetaData.title, style: 'subHeader' },
         {
           style: 'marginBottom',
@@ -177,11 +275,13 @@ const getPdfDocDefinition = async (
               alignment: 'left',
               width: 'auto',
               stack: [
-                { text: dayjs().format(dateFormat), style: 'bold' },
+                { text: (printObject.invoiceDate ?? dayjs()).format(dateFormat), style: 'bold' },
                 {
-                  text: `${invoiceMetaData.endDate.format('YYYY')}-TÄVL-AVG-${
-                    printObject.details.find(() => true)?.competitorId ?? 99999
-                  }`,
+                  text:
+                    printObject.invoiceNumber ??
+                    `${invoiceMetaData.endDate.format('YYYY')}-TÄVL-AVG-${
+                      printObject.details.find(() => true)?.competitorId ?? 99999
+                    }`,
                   style: 'bold'
                 },
                 {
@@ -198,7 +298,9 @@ const getPdfDocDefinition = async (
                 clubInfo.zip,
                 clubInfo.city
               ].filter(stack => stack != null) as Content[]
-            }
+            },
+            // In the empty space to the right of the details
+            ...(payment.stamp ? [{ width: '*', alignment: 'center', stack: [payment.stamp] } as Column] : [])
           ]
         }
       ]
@@ -331,6 +433,7 @@ const getPdfDocDefinition = async (
               ]
             }
           ],
+          ...payment.rows,
           [
             {
               columns: [

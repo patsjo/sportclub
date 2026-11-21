@@ -71,7 +71,7 @@ const InvoiceHistoryModal = observer(({ invoice, invoicesUrl, onClose }: IInvoic
             dataSource={data.history}
             scroll={{ x: true }}
             columns={[
-              { title: t('results.Date'), dataIndex: 'creDate', key: 'creDate' },
+              { title: t('results.Date'), dataIndex: 'eventDate', key: 'eventDate', className: 'table-cell-nowrap' },
               {
                 title: t('invoices.Status'),
                 key: 'status',
@@ -92,7 +92,8 @@ const InvoiceHistoryModal = observer(({ invoice, invoicesUrl, onClose }: IInvoic
                 key: 'changedBy',
                 render: (_, h) => h.changedBy ?? <Tag color="green">{t('invoices.BySwish')}</Tag>
               },
-              { title: t('invoices.Comment'), dataIndex: 'comment', key: 'comment' }
+              { title: t('invoices.Comment'), dataIndex: 'comment', key: 'comment' },
+              { title: t('invoices.Registered'), dataIndex: 'creDate', key: 'creDate', className: 'table-cell-nowrap' }
             ]}
           />
           {data.payments.length > 0 ? (

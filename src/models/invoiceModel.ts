@@ -1,6 +1,6 @@
 /** Invoices paid with Swish, see php/invoices/invoices.php */
 
-export type InvoiceStatus = 'UNPAID' | 'PAID' | 'OVERPAID' | 'CANCELLED';
+export type InvoiceStatus = 'UNPAID' | 'PAID' | 'OVERPAID' | 'CANCELLED' | 'REFUNDED';
 export type InvoiceBatchType = 'GENERAL' | 'EVENT_FEES';
 export type SwishPaymentStatus = 'CREATED' | 'PAID' | 'DECLINED' | 'ERROR' | 'CANCELLED';
 
@@ -36,6 +36,8 @@ export interface IInvoice {
   lastReminderDate: string | null;
   /** Unpaid after the due date */
   isOverdue: boolean;
+  /** The number of email addresses a reminder is sent to, no reminder without any */
+  reminderEmails: number;
   rows: IInvoiceRow[];
 }
 
@@ -76,6 +78,9 @@ export interface IInvoiceHistory {
   swishPaymentId: string | null;
   /** null = Swish */
   changedBy: string | null;
+  /** The date of the payment, refund or cancellation (YYYY-MM-DD) */
+  eventDate: string;
+  /** When it was registered */
   creDate: string;
 }
 

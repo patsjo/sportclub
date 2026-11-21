@@ -184,6 +184,10 @@ export const resources = {
         taxFee: 'Tax kr',
         total: 'TOTAL',
         message: 'Message',
+        paidStamp: 'PAID',
+        partlyPaidStamp: 'PARTLY PAID',
+        paidAmount: 'Paid',
+        leftToPay: 'LEFT TO PAY',
         generatePdf: 'Generate PDF'
       },
       map: {
@@ -990,6 +994,10 @@ export const resources = {
         taxFee: 'Moms kr',
         total: 'TOTALT',
         message: 'Meddelande',
+        paidStamp: 'BETALD',
+        partlyPaidStamp: 'DELBETALD',
+        paidAmount: 'Betalt',
+        leftToPay: 'KVAR ATT BETALA',
         generatePdf: 'Skapar PDF'
       },
       map: {

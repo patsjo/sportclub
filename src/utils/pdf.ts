@@ -181,7 +181,9 @@ export const getLogo = (corsProxy: string, logoUrl: string): Promise<string | nu
         reader.onerror = reject;
         reader.onload = e => resolve(e.target ? (e.target.result as string | null) : null);
         reader.readAsDataURL(blob);
-      });
+      })
+      // Without the logo instead of waiting forever, e.g. when the logo or the proxy can't be reached
+      .catch(() => resolve(null));
   });
 
 /** The table layout, a sub row has no line above it and sits close to the row it belongs to */

@@ -24,7 +24,8 @@ const statusColors: Record<InvoiceFilterStatus, string> = {
   OVERDUE: 'red',
   PAID: 'green',
   OVERPAID: 'blue',
-  CANCELLED: 'default'
+  CANCELLED: 'default',
+  REFUNDED: 'magenta'
 };
 
 /** The statuses shown, e.g. overdue and partly paid */
@@ -63,10 +64,55 @@ export const InvoiceStatusTag = ({ invoice, t }: { invoice: IInvoice; t: TFuncti
 );
 
 export const invoiceStatusOptions = (t: TFunction): { value: InvoiceFilterStatus; label: string }[] =>
-  (['UNPAID', 'PARTLY_PAID', 'OVERDUE', 'PAID', 'OVERPAID', 'CANCELLED'] as InvoiceFilterStatus[]).map(status => ({
-    value: status,
-    label: t(`invoices.Status${status}`)
-  }));
+  (['UNPAID', 'PARTLY_PAID', 'OVERDUE', 'PAID', 'OVERPAID', 'REFUNDED', 'CANCELLED'] as InvoiceFilterStatus[]).map(
+    status => ({
+      value: status,
+      label: t(`invoices.Status${status}`)
+    })
+  );
+
+/** Cancelled and refunded invoices are owed nothing */
+export const isClosed = (invoice: IInvoice) => invoice.status === 'CANCELLED' || invoice.status === 'REFUNDED';
+
+/** A status the economy responsible changes to, partly paid is unpaid with a paid amount */
+export type InvoiceChangeStatus = InvoiceStatus | 'PARTLY_PAID';
+
+export const invoiceChangeStatuses: InvoiceChangeStatus[] = [
+  'PAID',
+  'PARTLY_PAID',
+  'OVERPAID',
+  'REFUNDED',
+  'CANCELLED',
+  'UNPAID'
+];
+
+/** The status now, partly paid instead of unpaid when something is paid */
+export const invoiceCurrentStatus = (invoice: IInvoice): InvoiceChangeStatus =>
+  isPartlyPaid(invoice) ? 'PARTLY_PAID' : invoice.status;
+
+/**
+ * The statuses the invoice can change to, the same as invoiceAllowedStatuses in php/invoices/invoices.php.
+ * Not the same status again, except a new partial payment or refund. Cancelled only when nothing is paid,
+ * otherwise it is refunded.
+ */
+export const allowedStatuses = (invoice: IInvoice): InvoiceChangeStatus[] => {
+  switch (invoiceCurrentStatus(invoice)) {
+    case 'UNPAID':
+      return ['PAID', 'PARTLY_PAID', 'OVERPAID', 'CANCELLED'];
+    case 'PARTLY_PAID':
+      return ['PAID', 'PARTLY_PAID', 'OVERPAID', 'REFUNDED', 'UNPAID'];
+    case 'PAID':
+      return ['OVERPAID', 'REFUNDED', 'UNPAID'];
+    case 'OVERPAID':
+      return ['PAID', 'REFUNDED', 'UNPAID'];
+    default:
+      // Cancelled or refunded, something still paid can be refunded
+      return invoice.paidAmount > 0 ? ['REFUNDED', 'UNPAID'] : ['UNPAID'];
+  }
+};
+
+/** Rounded to öre */
+export const roundMoney = (value: number) => Math.round(value * 100) / 100;
 
 /** The text of an error from PostJsonData */
 export const errorText = (e: unknown) =>

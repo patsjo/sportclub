@@ -18,10 +18,13 @@ COMMIT;
 -- #                  invoiced period, no overlap or gap).  #
 -- # INVOICES         one per recipient: a user, a          #
 -- #                  competitor or a family. STATUS        #
--- #                  UNPAID, PAID, OVERPAID or CANCELLED.  #
+-- #                  UNPAID, PAID, OVERPAID, CANCELLED or  #
+-- #                  REFUNDED.                             #
 -- # INVOICE_ROWS     the specification, e.g. the races.   #
 -- # INVOICE_HISTORY  every change of the status, by whom  #
--- #                  (CHANGED_BY_USER_ID NULL = Swish).    #
+-- #                  (CHANGED_BY_USER_ID NULL = Swish),    #
+-- #                  EVENT_DATE the date of the payment,  #
+-- #                  refund or cancellation.              #
 -- # SWISH_PAYMENTS   the payment requests sent to Swish.  #
 -- ##########################################################
 
@@ -90,6 +93,7 @@ CREATE TABLE IF NOT EXISTS INVOICE_HISTORY
     NEW_STATUS VARCHAR(10) NOT NULL,
     OLD_PAID_AMOUNT DECIMAL(10,2) DEFAULT NULL,
     NEW_PAID_AMOUNT DECIMAL(10,2) NOT NULL DEFAULT 0,
+    EVENT_DATE DATE NOT NULL,
     COMMENT VARCHAR(255) DEFAULT NULL,
     SWISH_PAYMENT_ID CHAR(32) DEFAULT NULL,
     CHANGED_BY_USER_ID INT UNSIGNED DEFAULT NULL,

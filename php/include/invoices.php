@@ -26,7 +26,7 @@ if (file_exists($_SERVER["DOCUMENT_ROOT"] . "/include/swishKeys.php"))
   include_once($_SERVER["DOCUMENT_ROOT"] . "/include/swishKeys.php");
 }
 
-$cINVOICE_STATUSES = array('UNPAID', 'PAID', 'OVERPAID', 'CANCELLED');
+$cINVOICE_STATUSES = array('UNPAID', 'PAID', 'OVERPAID', 'CANCELLED', 'REFUNDED');
 // A payment request at Swish expires after 3 minutes
 $cSWISH_EXPIRE_SECONDS = 180;
 
@@ -99,31 +99,34 @@ function invoiceMoney($iValue)
   return round(floatval($iValue), 2);
 }
 
-// The status from what is paid, a cancelled invoice is owed nothing
+// The status from what is paid, a cancelled or refunded invoice is owed nothing
 function invoiceStatusFromPaid($iStatus, $iTotal, $iPaidAmount)
 {
-  $owed = $iStatus == 'CANCELLED' ? 0 : invoiceMoney($iTotal);
+  $closed = $iStatus == 'CANCELLED' || $iStatus == 'REFUNDED';
+  $owed = $closed ? 0 : invoiceMoney($iTotal);
   $paid = invoiceMoney($iPaidAmount);
   if ($paid > $owed)
   {
     return 'OVERPAID';
   }
-  if ($iStatus != 'CANCELLED' && $paid >= $owed)
+  if (!$closed && $paid >= $owed)
   {
     return 'PAID';
   }
-  return $iStatus == 'CANCELLED' ? 'CANCELLED' : 'UNPAID';
+  return $closed ? $iStatus : 'UNPAID';
 }
 
-function addInvoiceHistory($iInvoiceId, $iOldStatus, $iNewStatus, $iOldPaidAmount, $iNewPaidAmount, $iComment, $iSwishPaymentId, $iChangedByUserId)
+// $iEventDate YYYY-MM-DD (the date of the payment, refund or cancellation), null = today
+function addInvoiceHistory($iInvoiceId, $iOldStatus, $iNewStatus, $iOldPaidAmount, $iNewPaidAmount, $iComment, $iSwishPaymentId, $iChangedByUserId, $iEventDate = null)
 {
-  sqlQueryOrError(sprintf("INSERT INTO INVOICE_HISTORY (INVOICE_ID, OLD_STATUS, NEW_STATUS, OLD_PAID_AMOUNT, NEW_PAID_AMOUNT, " .
-                          "COMMENT, SWISH_PAYMENT_ID, CHANGED_BY_USER_ID, CRE_DATE) VALUES (%d, %s, '%s', %s, %s, %s, %s, %s, NOW())",
+  sqlQueryOrError(sprintf("INSERT INTO INVOICE_HISTORY (INVOICE_ID, OLD_STATUS, NEW_STATUS, OLD_PAID_AMOUNT, NEW_PAID_AMOUNT, EVENT_DATE, " .
+                          "COMMENT, SWISH_PAYMENT_ID, CHANGED_BY_USER_ID, CRE_DATE) VALUES (%d, %s, '%s', %s, %s, %s, %s, %s, %s, NOW())",
                           $iInvoiceId,
                           is_null($iOldStatus) ? 'NULL' : "'" . \db\mysql_real_escape_string($iOldStatus) . "'",
                           \db\mysql_real_escape_string($iNewStatus),
                           is_null($iOldPaidAmount) ? 'NULL' : number_format(invoiceMoney($iOldPaidAmount), 2, '.', ''),
                           number_format(invoiceMoney($iNewPaidAmount), 2, '.', ''),
+                          is_null($iEventDate) ? 'CURDATE()' : "'" . \db\mysql_real_escape_string($iEventDate) . "'",
                           is_null($iComment) || $iComment == '' ? 'NULL' : "'" . \db\mysql_real_escape_string($iComment) . "'",
                           is_null($iSwishPaymentId) ? 'NULL' : "'" . \db\mysql_real_escape_string($iSwishPaymentId) . "'",
                           is_null($iChangedByUserId) ? 'NULL' : intval($iChangedByUserId)));
@@ -145,7 +148,8 @@ function applySwishPaymentToInvoice($iInvoiceId, $iAmount, $iPaymentId, $iDatePa
                           number_format($paid, 2, '.', ''),
                           is_null($iDatePaid) ? 'NOW()' : "'" . \db\mysql_real_escape_string($iDatePaid) . "'",
                           $iInvoiceId));
-  addInvoiceHistory($iInvoiceId, $invoice['STATUS'], $status, $invoice['PAID_AMOUNT'], $paid, 'Swish', $iPaymentId, null);
+  addInvoiceHistory($iInvoiceId, $invoice['STATUS'], $status, $invoice['PAID_AMOUNT'], $paid, 'Swish', $iPaymentId, null,
+                    is_null($iDatePaid) ? null : substr($iDatePaid, 0, 10));
 }
 
 // Only the characters Swish allows in the message, at most 50
@@ -355,27 +359,38 @@ function refreshSwishPayment($iPaymentId, $iFailOnError = false)
 // The users that see the invoice and have an email
 function invoiceEmails($iInvoiceId)
 {
+  $emails = invoiceEmailsOf(array(intval($iInvoiceId)));
+  return isset($emails[intval($iInvoiceId)]) ? $emails[intval($iInvoiceId)] : array();
+}
+
+// The email addresses a reminder is sent to for each of the invoices (invoice id => addresses), one query for all
+function invoiceEmailsOf($iInvoiceIds)
+{
   $emails = array();
+  if (count($iInvoiceIds) == 0)
+  {
+    return $emails;
+  }
   // The same users as in myInvoicesWhere: the recipient, and everyone in the family of the recipient
-  $result = sqlQueryOrError(sprintf(
-    "SELECT DISTINCT u.email, u.first_name, u.last_name FROM INVOICES i " .
+  $result = sqlQueryOrError(
+    "SELECT DISTINCT i.INVOICE_ID, u.email FROM INVOICES i " .
     "INNER JOIN users u ON (u.user_id = i.USER_ID OR (u.competitor_id IS NOT NULL AND u.competitor_id = i.COMPETITOR_ID) OR " .
     "  u.competitor_id IN (SELECT c.COMPETITOR_ID FROM RACE_COMPETITORS c WHERE c.FAMILY_ID IS NOT NULL AND (" .
     "    c.FAMILY_ID = i.FAMILY_ID OR " .
     "    c.FAMILY_ID = (SELECT ic.FAMILY_ID FROM RACE_COMPETITORS ic WHERE ic.COMPETITOR_ID = i.COMPETITOR_ID) OR " .
     "    c.FAMILY_ID = (SELECT uc.FAMILY_ID FROM users iu INNER JOIN RACE_COMPETITORS uc ON (iu.competitor_id = uc.COMPETITOR_ID) " .
     "                   WHERE iu.user_id = i.USER_ID)))) " .
-    "WHERE i.INVOICE_ID = %d AND u.email IS NOT NULL AND u.email <> ''", $iInvoiceId));
+    "WHERE i.INVOICE_ID IN (" . implode(',', array_map('intval', $iInvoiceIds)) . ") AND u.email IS NOT NULL AND u.email <> ''");
   while ($row = \db\mysql_fetch_assoc($result))
   {
     $email = trim($row['email']);
     if (filter_var($email, FILTER_VALIDATE_EMAIL))
     {
-      $emails[strtolower($email)] = $email;
+      $emails[intval($row['INVOICE_ID'])][strtolower($email)] = $email;
     }
   }
   \db\mysql_free_result($result);
-  return array_values($emails);
+  return array_map('array_values', $emails);
 }
 
 function encodeMailHeader($iText)

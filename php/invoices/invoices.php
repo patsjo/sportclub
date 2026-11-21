@@ -150,6 +150,7 @@ function invoiceFromRow($iRow)
   $x->reminders = intval($iRow['REMINDERS']);
   $x->lastReminderDate = $iRow['LAST_REMINDER_DATE'];
   $x->isOverdue = $x->status == 'UNPAID' && $x->dueDate < date('Y-m-d');
+  $x->reminderEmails = 0;
   $x->rows = array();
   return $x;
 }
@@ -181,6 +182,11 @@ function loadInvoices($iSql)
       array_push($invoices[$index[intval($row['INVOICE_ID'])]]->rows, $x);
     }
     \db\mysql_free_result($result);
+    // How many email addresses a reminder is sent to, no reminder without any
+    foreach (invoiceEmailsOf(array_keys($index)) as $invoiceId => $emails)
+    {
+      $invoices[$index[$invoiceId]]->reminderEmails = count($emails);
+    }
   }
   return $invoices;
 }
@@ -254,6 +260,36 @@ function assertNothingPaid($iWhere)
   {
     trigger_error('Det finns betalningar, makulera fakturan i stället för att radera den.', E_USER_ERROR);
   }
+}
+
+// The statuses an invoice can change to from the status shown (PARTLY_PAID = unpaid with a paid amount), the same as
+// allowedStatuses in invoiceHelper.tsx. A new partial payment is partly paid again. Cancelled only when nothing is
+// paid, otherwise it is refunded.
+function invoiceAllowedStatuses($iStatus, $iPaidAmount)
+{
+  switch ($iStatus)
+  {
+    case 'UNPAID':
+      return array('PAID', 'PARTLY_PAID', 'OVERPAID', 'CANCELLED');
+    case 'PARTLY_PAID':
+      return array('PAID', 'PARTLY_PAID', 'OVERPAID', 'REFUNDED', 'UNPAID');
+    case 'PAID':
+      return array('OVERPAID', 'REFUNDED', 'UNPAID');
+    case 'OVERPAID':
+      return array('PAID', 'REFUNDED', 'UNPAID');
+    case 'CANCELLED':
+    case 'REFUNDED':
+      // Something still paid can be refunded
+      return $iPaidAmount > 0 ? array('REFUNDED', 'UNPAID') : array('UNPAID');
+  }
+  return array();
+}
+
+function invoiceStatusName($iStatus)
+{
+  $names = array('UNPAID' => 'ej betald', 'PARTLY_PAID' => 'delbetald', 'PAID' => 'betald', 'OVERPAID' => 'överbetald',
+                 'CANCELLED' => 'makulerad', 'REFUNDED' => 'återbetald');
+  return isset($names[$iStatus]) ? $names[$iStatus] : $iStatus;
 }
 
 $rows = new stdClass();
@@ -374,7 +410,16 @@ switch ($input->iType)
       array_push($rows->batches, $x);
     }
     \db\mysql_free_result($result);
-    foreach (loadInvoices($cINVOICE_SELECT . "ORDER BY i.RECIPIENT_NAME, i.INVOICE_ID") as $invoice)
+    // Sorted on the last name and then the first name, a family name is "First Last" (the same as ResultsFees),
+    // the name on the invoice when the recipient is removed
+    $familyLastName = "SUBSTRING(sf.FAMILY_NAME, LOCATE(' ', sf.FAMILY_NAME) + 1)";
+    $familyFirstName = "IF(LOCATE(' ', sf.FAMILY_NAME) > 0, SUBSTRING_INDEX(sf.FAMILY_NAME, ' ', 1), '')";
+    foreach (loadInvoices($cINVOICE_SELECT .
+                          "LEFT OUTER JOIN users su ON (i.USER_ID = su.user_id) " .
+                          "LEFT OUTER JOIN RACE_COMPETITORS sc ON (i.COMPETITOR_ID = sc.COMPETITOR_ID) " .
+                          "LEFT OUTER JOIN RACE_FAMILIES sf ON (i.FAMILY_ID = sf.FAMILY_ID) " .
+                          "ORDER BY COALESCE(su.last_name, sc.LAST_NAME, " . $familyLastName . ", i.RECIPIENT_NAME), " .
+                          "  COALESCE(su.first_name, sc.FIRST_NAME, " . $familyFirstName . ", ''), i.INVOICE_ID") as $invoice)
     {
       if (isset($batchIndex[$invoice->batchId]))
       {
@@ -386,7 +431,7 @@ switch ($input->iType)
   case 'HISTORY':
     $rows->history = array();
     $result = sqlQueryOrError(sprintf("SELECT h.OLD_STATUS, h.NEW_STATUS, h.OLD_PAID_AMOUNT, h.NEW_PAID_AMOUNT, h.COMMENT, h.SWISH_PAYMENT_ID, " .
-                                      "  h.CHANGED_BY_USER_ID, h.CRE_DATE, u.first_name, u.last_name " .
+                                      "  h.CHANGED_BY_USER_ID, h.CRE_DATE, h.EVENT_DATE, u.first_name, u.last_name " .
                                       "FROM INVOICE_HISTORY h LEFT OUTER JOIN users u ON (h.CHANGED_BY_USER_ID = u.user_id) " .
                                       "WHERE h.INVOICE_ID = %d ORDER BY h.CRE_DATE, h.HISTORY_ID", inputInt($input, 'invoiceId')));
     while ($row = \db\mysql_fetch_assoc($result))
@@ -400,6 +445,7 @@ switch ($input->iType)
       $x->swishPaymentId = $row['SWISH_PAYMENT_ID'];
       $x->changedBy = is_null($row['CHANGED_BY_USER_ID']) ? null : trim($row['first_name'] . ' ' . $row['last_name']);
       $x->creDate = $row['CRE_DATE'];
+      $x->eventDate = $row['EVENT_DATE'];
       array_push($rows->history, $x);
     }
     \db\mysql_free_result($result);
@@ -622,21 +668,37 @@ switch ($input->iType)
     break;
 
   case 'SET_STATUS':
+    // amount is what is paid now (negative = paid back), null = the amount the status gives for each invoice
+    // (paid: what is left, unpaid: back all that is paid, refunded: all that is paid). The date is required,
+    // the date of the payment, the refund, the cancellation or the change of the status.
     $status = isset($input->status) && is_string($input->status) ? $input->status : '';
-    if (!in_array($status, $cINVOICE_STATUSES, true))
+    if (!in_array($status, array('PAID', 'PARTLY_PAID', 'OVERPAID', 'REFUNDED', 'UNPAID', 'CANCELLED'), true))
     {
       trigger_error('Felaktig status.', E_USER_ERROR);
     }
     $invoiceIds = inputIds($input, 'invoiceIds');
-    $paidAmount = inputMoney($input, 'paidAmount');
+    $amount = inputMoney($input, 'amount');
     $comment = inputString($input, 'comment', 255);
+    $eventDate = inputDate($input, 'date');
     if (count($invoiceIds) == 0)
     {
       trigger_error('Välj minst en faktura.', E_USER_ERROR);
     }
-    if (!is_null($paidAmount) && $paidAmount < 0)
+    if (is_null($eventDate))
     {
-      trigger_error('Det betalda beloppet kan inte vara negativt.', E_USER_ERROR);
+      trigger_error('Datumet saknas.', E_USER_ERROR);
+    }
+    if ($eventDate > date('Y-m-d'))
+    {
+      trigger_error('Datumet kan inte vara i framtiden.', E_USER_ERROR);
+    }
+    if (($status == 'PARTLY_PAID' || $status == 'OVERPAID') && (is_null($amount) || count($invoiceIds) > 1))
+    {
+      trigger_error('Delbetald och överbetald kräver ett belopp och kan bara sättas på en faktura i taget.', E_USER_ERROR);
+    }
+    if (!is_null($amount) && count($invoiceIds) > 1)
+    {
+      trigger_error('Ett belopp kan bara anges för en faktura i taget.', E_USER_ERROR);
     }
     foreach ($invoiceIds as $invoiceId)
     {
@@ -645,49 +707,73 @@ switch ($input->iType)
       {
         trigger_error('Fakturan ' . $invoiceId . ' finns inte.', E_USER_ERROR);
       }
-      $total = invoiceMoney($invoice['AMOUNT']) + invoiceMoney($invoice['INVOICE_FEE']);
+      $name = 'Faktura ' . $invoiceId . ' (' . $invoice['RECIPIENT_NAME'] . '): ';
+      $total = invoiceMoney(invoiceMoney($invoice['AMOUNT']) + invoiceMoney($invoice['INVOICE_FEE']));
       $oldPaid = invoiceMoney($invoice['PAID_AMOUNT']);
+      $left = invoiceMoney($total - $oldPaid);
+      $oldStatus = $invoice['STATUS'] == 'UNPAID' && $oldPaid > 0 ? 'PARTLY_PAID' : $invoice['STATUS'];
+      if (!in_array($status, invoiceAllowedStatuses($oldStatus, $oldPaid), true))
+      {
+        trigger_error($name . 'statusen kan inte ändras från ' . invoiceStatusName($oldStatus) . ' till ' . invoiceStatusName($status) . '.', E_USER_ERROR);
+      }
       switch ($status)
       {
         case 'PAID':
-          $newPaid = is_null($paidAmount) ? $total : $paidAmount;
-          if ($newPaid < $total)
+          // What is left, negative for an overpaid invoice (the overpaid part is paid back)
+          if (!is_null($amount) && $amount != $left)
           {
-            trigger_error('Faktura ' . $invoiceId . ' (' . $invoice['RECIPIENT_NAME'] . '): betalt belopp är mindre än ' . moneyString($total) . '.', E_USER_ERROR);
+            trigger_error($name . 'betald måste vara det som återstår, ' . moneyString($left) . ' kr.', E_USER_ERROR);
           }
-          $newStatus = $newPaid > $total ? 'OVERPAID' : 'PAID';
+          $payment = $left;
+          $newStatus = 'PAID';
+          break;
+        case 'PARTLY_PAID':
+          if ($amount <= 0 || $amount >= $left)
+          {
+            trigger_error($name . 'delbetalt belopp måste vara mer än 0 och mindre än ' . moneyString($left) . ' kr.', E_USER_ERROR);
+          }
+          $payment = $amount;
+          $newStatus = 'UNPAID';
           break;
         case 'OVERPAID':
-          $newPaid = is_null($paidAmount) ? $oldPaid : $paidAmount;
-          if ($newPaid <= $total)
+          if ($amount <= $left)
           {
-            trigger_error('Faktura ' . $invoiceId . ' (' . $invoice['RECIPIENT_NAME'] . '): överbetalt belopp måste vara mer än ' . moneyString($total) . '.', E_USER_ERROR);
+            trigger_error($name . 'överbetalt belopp måste vara mer än ' . moneyString($left) . ' kr.', E_USER_ERROR);
           }
+          $payment = $amount;
           $newStatus = 'OVERPAID';
           break;
-        case 'UNPAID':
-          $newPaid = is_null($paidAmount) ? 0 : $paidAmount;
-          if ($newPaid >= $total)
+        case 'REFUNDED':
+          $payment = is_null($amount) ? -$oldPaid : $amount;
+          if ($payment >= 0 || $payment < -$oldPaid)
           {
-            trigger_error('Faktura ' . $invoiceId . ' (' . $invoice['RECIPIENT_NAME'] . '): ej betald måste ha ett betalt belopp under ' . moneyString($total) . '.', E_USER_ERROR);
+            trigger_error($name . 'återbetalt belopp måste vara negativt och högst ' . moneyString($oldPaid) . ' kr.', E_USER_ERROR);
           }
+          $newStatus = 'REFUNDED';
+          break;
+        case 'UNPAID':
+          // Back to unpaid takes back all that is paid
+          if (!is_null($amount) && $amount != -$oldPaid)
+          {
+            trigger_error($name . 'ej betald måste ta tillbaka allt betalt, ' . moneyString(-$oldPaid) . ' kr.', E_USER_ERROR);
+          }
+          $payment = -$oldPaid;
           $newStatus = 'UNPAID';
           break;
         default:
-          $newPaid = is_null($paidAmount) ? $oldPaid : $paidAmount;
+          $payment = 0;
           $newStatus = 'CANCELLED';
           break;
       }
-      if ($newStatus == $invoice['STATUS'] && $newPaid == $oldPaid)
-      {
-        continue;
-      }
+      $newPaid = invoiceMoney($oldPaid + $payment);
+      // A payment gets the date, nothing paid has no date, a refund keeps the date of the payment
+      $paidDateSql = $newPaid <= 0 ? "NULL" : ($payment > 0 ? ($eventDate == date('Y-m-d') ? "NOW()" : "'" . $eventDate . "'") : "PAID_DATE");
       sqlQueryOrError(sprintf("UPDATE INVOICES SET STATUS = '%s', PAID_AMOUNT = %s, PAID_DATE = %s WHERE INVOICE_ID = %d",
                               $newStatus,
                               moneyString($newPaid),
-                              $newPaid > 0 ? "COALESCE(PAID_DATE, NOW())" : "NULL",
+                              $paidDateSql,
                               $invoiceId));
-      addInvoiceHistory($invoiceId, $invoice['STATUS'], $newStatus, $oldPaid, $newPaid, $comment, null, $user_id);
+      addInvoiceHistory($invoiceId, $invoice['STATUS'], $newStatus, $oldPaid, $newPaid, $comment, null, $user_id, $eventDate);
     }
     $rows->invoices = loadInvoices($cINVOICE_SELECT . "WHERE i.INVOICE_ID IN (" . implode(',', $invoiceIds) . ")");
     break;

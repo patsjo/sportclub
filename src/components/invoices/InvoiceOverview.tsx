@@ -38,9 +38,13 @@ import {
   invoiceMatchesStatus,
   InvoiceStatusTag,
   invoiceStatusOptions,
+  isClosed,
   isPartlyPaid
 } from './invoiceHelper';
 import SetStatusModal, { ISetStatusValues } from './SetStatusModal';
+
+/** The unpaid invoices a reminder can be sent for, with at least one email address */
+const canRemind = (invoices: IInvoice[]) => invoices.filter(i => i.status === 'UNPAID' && i.reminderEmails > 0);
 
 interface IBatchRow extends IInvoiceBatch {
   /** The invoices that match the filter */
@@ -125,6 +129,7 @@ const InvoiceOverview = observer(() => {
   const allInvoices = useMemo(() => data?.batches.flatMap(b => b.invoices) ?? [], [data]);
   const selectedInvoices = allInvoices.filter(i => selectedIds.includes(i.invoiceId));
   const selectedUnpaid = selectedInvoices.filter(i => i.status === 'UNPAID');
+  const selectedRemindable = canRemind(selectedUnpaid);
   const filterActive = !!search.trim() || statusFilter.length > 0;
 
   const post = useCallback(
@@ -150,7 +155,8 @@ const InvoiceOverview = observer(() => {
         iType: 'SET_STATUS',
         invoiceIds: statusInvoices.map(i => i.invoiceId),
         status: values.status,
-        paidAmount: values.paidAmount ?? null,
+        amount: values.amount,
+        date: values.date,
         comment: values.comment ?? ''
       });
       if (response) {
@@ -196,14 +202,29 @@ const InvoiceOverview = observer(() => {
     [modal, post, replaceInvoices, t]
   );
 
+  /** Reminds the unpaid invoices that have an email address, and tells when some of them have none */
   const confirmRemind = useCallback(
-    (invoices: IInvoice[]) =>
+    (unpaid: IInvoice[]) => {
+      const remindable = canRemind(unpaid);
       modal.confirm({
-        title: t('invoices.SendRemindersConfirm', { count: invoices.length }),
-        onOk: () => onRemind(invoices)
-      }),
+        title: t('invoices.SendRemindersConfirm', { count: remindable.length }),
+        content:
+          remindable.length < unpaid.length ? (
+            <Typography.Text type="warning">
+              {t('invoices.RemindersOnlySome', { count: remindable.length, total: unpaid.length })}
+            </Typography.Text>
+          ) : undefined,
+        onOk: () => onRemind(remindable)
+      });
+    },
     [modal, onRemind, t]
   );
+
+  /** "Påminn (2)" or "Påminn (2 av 3)" when some of the unpaid have no email address */
+  const remindText = (unpaid: IInvoice[]) =>
+    canRemind(unpaid).length < unpaid.length
+      ? t('invoices.SendRemindersOf', { count: canRemind(unpaid).length, total: unpaid.length })
+      : t('invoices.SendReminders', { count: unpaid.length });
 
   const onDeleteInvoices = useCallback(
     async (invoices: IInvoice[]) => {
@@ -243,8 +264,8 @@ const InvoiceOverview = observer(() => {
         <Tooltip title={t('invoices.ChangeStatusFor', { count: selected.length })}>
           <Button size="small" type="primary" icon={<EditOutlined />} onClick={() => setStatusInvoices(selected)} />
         </Tooltip>
-        {unpaid.length > 0 ? (
-          <Tooltip title={t('invoices.SendReminders', { count: unpaid.length })}>
+        {canRemind(unpaid).length > 0 ? (
+          <Tooltip title={remindText(unpaid)}>
             <Button size="small" type="primary" icon={<MailOutlined />} onClick={() => confirmRemind(unpaid)} />
           </Tooltip>
         ) : (
@@ -299,12 +320,13 @@ const InvoiceOverview = observer(() => {
       key: 'paid',
       align: 'right',
       className: 'table-cell-nowrap',
-      render: (_, i) =>
-        i.paidAmount > 0 ? (
-          <Tooltip title={i.paidDate}>
-            <span>{formatMoney(i.paidAmount)}</span>
-          </Tooltip>
-        ) : null
+      render: (_, i) => (i.paidAmount > 0 ? formatMoney(i.paidAmount) : null)
+    },
+    {
+      title: t('invoices.PaidDate'),
+      key: 'paidDate',
+      className: 'table-cell-nowrap',
+      render: (_, i) => (i.paidAmount > 0 ? i.paidDate?.substring(0, 10) : null)
     },
     {
       title: t('invoices.Left'),
@@ -338,7 +360,7 @@ const InvoiceOverview = observer(() => {
               <Tooltip title={t('invoices.ChangeStatus')}>
                 <Button size="small" icon={<EditOutlined />} onClick={() => setStatusInvoices([invoice])} />
               </Tooltip>
-              {invoice.status === 'UNPAID' ? (
+              {canRemind([invoice]).length > 0 ? (
                 <Tooltip title={t('invoices.SendReminder')}>
                   <Button size="small" icon={<MailOutlined />} onClick={() => confirmRemind([invoice])} />
                 </Tooltip>
@@ -405,7 +427,7 @@ const InvoiceOverview = observer(() => {
         const paid = batch.invoices.filter(i => i.status === 'PAID' || i.status === 'OVERPAID').length;
         const overdue = batch.invoices.filter(i => i.isOverdue).length;
         const partlyPaid = batch.invoices.filter(isPartlyPaid).length;
-        const active = batch.invoices.filter(i => i.status !== 'CANCELLED').length;
+        const active = batch.invoices.filter(i => !isClosed(i)).length;
         return (
           <>
             <Tag color={paid === active ? 'green' : 'gold'}>{t('invoices.BatchSummary', { paid, count: active })}</Tag>
@@ -424,7 +446,7 @@ const InvoiceOverview = observer(() => {
         // What is left of the whole batch, also the rest of the partly paid invoices
         t('invoices.BatchSum', {
           paid: formatMoney(batch.invoices.reduce((sum, i) => sum + i.paidAmount, 0)),
-          total: formatMoney(batch.invoices.filter(i => i.status !== 'CANCELLED').reduce((sum, i) => sum + i.total, 0)),
+          total: formatMoney(batch.invoices.filter(i => !isClosed(i)).reduce((sum, i) => sum + i.total, 0)),
           left: formatMoney(batch.invoices.reduce((sum, i) => sum + invoiceLeft(i), 0))
         })
     }
@@ -485,13 +507,11 @@ const InvoiceOverview = observer(() => {
             <Button icon={<EditOutlined />} onClick={() => setStatusInvoices(selectedInvoices)}>
               {t('invoices.ChangeStatus')}
             </Button>
-            <Button
-              icon={<MailOutlined />}
-              disabled={selectedUnpaid.length === 0}
-              onClick={() => confirmRemind(selectedUnpaid)}
-            >
-              {t('invoices.SendReminders', { count: selectedUnpaid.length })}
-            </Button>
+            {selectedRemindable.length > 0 ? (
+              <Button icon={<MailOutlined />} onClick={() => confirmRemind(selectedUnpaid)}>
+                {remindText(selectedUnpaid)}
+              </Button>
+            ) : null}
             <Button onClick={() => setSelectedIds([])}>{t('invoices.SelectNone')}</Button>
           </>
         ) : null}
