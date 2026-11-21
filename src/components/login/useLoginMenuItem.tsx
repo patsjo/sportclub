@@ -46,7 +46,8 @@ export const useLoginMenuItem = () => {
       loggedInOrGuest ? 'LogoutIcon' : 'LoginIcon',
       loginText,
       onLoginOrLogout,
-      false,
+      // Logout is under "My pages"
+      loggedInOrGuest,
       1,
       loggingOut
     ),

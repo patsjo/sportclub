@@ -85,6 +85,14 @@ export interface IInvoiceProps {
   invoiceFee?: number;
 }
 
+/** Settings for the whole club saved in the database (see README "Menu order"), e.g. the order of the menu */
+export interface ISettingsProps {
+  /** e.g. https://yourclub.com/settings/jsonSettingsQuery.php */
+  queryUrl: string;
+  /** e.g. https://yourclub.com/settings/save.php, only for an administrator */
+  saveUrl: string;
+}
+
 interface IPaletteProps {
   primary: IColorProps;
   secondary: IColorProps;
@@ -507,6 +515,7 @@ export interface IMobxClubModelProps {
   facebookUrl?: string;
   invoice: IInvoiceProps;
   clubInfo: IClubInfoProps;
+  settings?: ISettingsProps;
 }
 
 export interface IMobxClubModel extends Omit<IMobxClubModelProps, 'map' | 'modules' | 'raceClubs' | 'eventor'> {
@@ -542,6 +551,7 @@ export class MobxClubModel implements IMobxClubModel {
   facebookUrl?: string;
   invoice: IInvoiceProps;
   clubInfo: IClubInfoProps;
+  settings?: ISettingsProps;
 
   constructor(options: PickRequired<IMobxClubModelProps, 'title' | 'logo' | 'theme' | 'clubInfo'>) {
     const { title, logo, theme, map, modules, raceClubs, eventor, invoice, clubInfo, ...rest } = options;
@@ -586,6 +596,7 @@ export class MobxClubModel implements IMobxClubModel {
       facebookUrl: observable,
       invoice: observable,
       clubInfo: observable,
+      settings: observable,
       setRaceClubs: actionBound
     });
   }

@@ -208,7 +208,8 @@ const App = observer(() => {
 
     document.title = clubModel.title;
     globalStateModel.fetchHtmlEditorMenu(htmlEditorModule, filesModule, sessionModel, messageApi);
-  }, [clubModel.modules, clubModel.title, globalStateModel, messageApi, sessionModel]);
+    globalStateModel.fetchMenuOrder(clubModel.settings);
+  }, [clubModel.modules, clubModel.settings, clubModel.title, globalStateModel, messageApi, sessionModel]);
 
   const Header = clubModel.titleLogo ? (
     <Link to="/">

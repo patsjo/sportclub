@@ -1,5 +1,6 @@
 import { cupEn, cupSv } from './i18n.cup';
 import { invoicesEn, invoicesSv } from './i18n.invoices';
+import { menuEn, menuSv } from './i18n.menu';
 import {
   accountsEn,
   accountsSv,
@@ -21,6 +22,7 @@ export const resources = {
       social: socialEn,
       accounts: accountsEn,
       invoices: invoicesEn,
+      menu: menuEn,
       formatting: formattingEn,
       common: {
         Menu: 'Menu',
@@ -43,6 +45,9 @@ export const resources = {
         Recalculate: 'Recalculate',
         RememberLogin: 'Remember me',
         OldHomePage: 'Old homepage',
+        MyPages: 'My pages',
+        Economy: 'Economy',
+        Administration: 'Administration',
         Yes: 'Yes',
         No: 'No',
         Previous: 'Previous',
@@ -490,7 +495,7 @@ export const resources = {
         TotalTimeBehind: 'Team time behind',
         TeamFailedReason: 'Team failed reason',
         TeamName: 'Team name',
-        InvoiceVerifier: 'Invoice verifier',
+        InvoiceVerifier: 'Verify invoices from events',
         InvoiceAlreadyVerified: 'Invoice verified',
         TotalNofStarts: 'Starts',
         StageResult: 'Result',
@@ -830,6 +835,7 @@ export const resources = {
       social: socialSv,
       accounts: accountsSv,
       invoices: invoicesSv,
+      menu: menuSv,
       formatting: formattingSv,
       common: {
         Menu: 'Meny',
@@ -852,6 +858,9 @@ export const resources = {
         Recalculate: 'Beräkna om',
         RememberLogin: 'Kom ihåg mig',
         OldHomePage: 'Gamla hemsidan',
+        MyPages: 'Mina sidor',
+        Economy: 'Ekonomi',
+        Administration: 'Administration',
         Yes: 'Ja',
         No: 'Nej',
         Previous: 'Tillbaka',
@@ -1300,7 +1309,7 @@ export const resources = {
         TotalTimeBehind: 'Lagets tid efter',
         TeamFailedReason: 'Lag orsak utan tid',
         TeamName: 'Lagnamn',
-        InvoiceVerifier: 'Kontroll av faktura',
+        InvoiceVerifier: 'Kontroll av fakturor från tävlingar',
         InvoiceAlreadyVerified: 'Faktura kontrollerad',
         TotalNofStarts: 'Antal starter',
         StageResult: 'Resultat',

@@ -15,10 +15,11 @@ export const useModuleSubMenu = () => {
   const { t } = useTranslation();
   const { clubModel, globalStateModel, sessionModel } = useMobxStore();
   const navigate = useNavigate();
-  const { addCalendarModal, subscribeCalendarModal, calendarMenuItems } = useCalendarSubMenus();
+  const { addCalendarModal, subscribeCalendarModal, calendarMenuItems, calendarMyPagesMenuItems } =
+    useCalendarSubMenus();
   const { addNewsModal, newsMenuItems } = useNewsSubMenus();
-  const { renounceModal, resultsMenuItems } = useResultsSubMenus();
-  const { cupMenuItems } = useCupSubMenus();
+  const { renounceModal, resultsMenuItems, resultsEconomyMenuItems, resultsMyPagesMenuItems } = useResultsSubMenus();
+  const { cupMenuItems, cupAdminMenuItems } = useCupSubMenus();
 
   const getModuleMenuItems = useCallback(
     (module: IModule): NonNullable<MenuProps['items']> => {
@@ -47,21 +48,6 @@ export const useModuleSubMenu = () => {
               globalStateModel.setDashboard(navigate, '/competitor/presentation');
             })
           ];
-        case 'Users':
-          return [
-            getMenuItem(
-              'menuItem#users',
-              'team',
-              t('modules.Users'),
-              () => {
-                globalStateModel.setRightMenuVisible(false);
-                globalStateModel.setDashboard(navigate, '/users');
-              },
-              false,
-              1,
-              !sessionModel.loggedIn
-            )
-          ];
         case 'Calendar':
           return calendarMenuItems;
         case 'News':
@@ -74,28 +60,19 @@ export const useModuleSubMenu = () => {
           return [];
       }
     },
-    [
-      calendarMenuItems,
-      clubModel.eventor,
-      cupMenuItems,
-      globalStateModel,
-      navigate,
-      newsMenuItems,
-      resultsMenuItems,
-      sessionModel.loggedIn,
-      t
-    ]
+    [calendarMenuItems, clubModel.eventor, cupMenuItems, globalStateModel, navigate, newsMenuItems, resultsMenuItems, t]
   );
 
   const allModuleMenuItems = useMemo(
     () =>
       clubModel.modules
         .filter(module => module.name !== 'HTMLEditor')
-        .map((module, index): NonNullable<MenuProps['items']> =>
+        .map((module): NonNullable<MenuProps['items']> =>
           module.hasSubMenus
             ? [
                 {
-                  key: 'subMenu#' + module.name + index,
+                  // Without the index, the key is saved in the menu order
+                  key: 'subMenu#' + module.name,
                   label: (
                     <span>
                       <MaterialIcon icon={(module.name + 'Icon') as MaterialIconsType} fontSize={18} marginRight={10} />
@@ -117,7 +94,49 @@ export const useModuleSubMenu = () => {
     [clubModel.modules, getModuleMenuItems, t]
   );
 
+  const hasModule = useCallback(
+    (name: string) => clubModel.modules.some(module => module.name === name),
+    [clubModel.modules]
+  );
+
+  // The module items under "My pages", only the ones the user has the authority to use
+  const myPagesModuleMenuItems = useMemo(
+    () => ({
+      economy: hasModule('Results') ? resultsEconomyMenuItems : [],
+      calendar: hasModule('Calendar') ? calendarMyPagesMenuItems : [],
+      results: hasModule('Results') ? resultsMyPagesMenuItems : [],
+      cups: hasModule('Cup') ? cupAdminMenuItems : [],
+      administration:
+        hasModule('Users') && sessionModel.loggedIn
+          ? [
+              getMenuItem(
+                'menuItem#users',
+                'team',
+                t('modules.Users'),
+                () => {
+                  globalStateModel.setRightMenuVisible(false);
+                  globalStateModel.setDashboard(navigate, '/users');
+                },
+                true
+              )
+            ]
+          : []
+    }),
+    [
+      calendarMyPagesMenuItems,
+      cupAdminMenuItems,
+      globalStateModel,
+      hasModule,
+      navigate,
+      resultsEconomyMenuItems,
+      resultsMyPagesMenuItems,
+      sessionModel.loggedIn,
+      t
+    ]
+  );
+
   return {
+    myPagesModuleMenuItems,
     allModuleModals: [addCalendarModal, subscribeCalendarModal, addNewsModal, renounceModal],
     allModuleMenuItems
   };

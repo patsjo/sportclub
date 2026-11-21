@@ -2,7 +2,7 @@
 
 export const invoicesSv = {
   MyInvoices: 'Mina fakturor',
-  Overview: 'Fakturor (ekonomi)',
+  Overview: 'Fakturor till medlemmar',
   OverdueWarning: 'Du har {{count}} förfallen faktura.',
   OverdueWarning_other: 'Du har {{count}} förfallna fakturor.',
   ShowMyInvoices: 'Visa mina fakturor',
@@ -152,7 +152,7 @@ export const invoicesSv = {
 
 export const invoicesEn: typeof invoicesSv = {
   MyInvoices: 'My invoices',
-  Overview: 'Invoices (economy)',
+  Overview: 'Invoices to members',
   OverdueWarning: 'You have {{count}} overdue invoice.',
   OverdueWarning_other: 'You have {{count}} overdue invoices.',
   ShowMyInvoices: 'Show my invoices',

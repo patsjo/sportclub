@@ -1,12 +1,12 @@
-import { message } from 'antd';
-import { actionBound, makeObservable, observable } from 'mobx';
+import { message, MenuProps } from 'antd';
+import { actionBound, makeObservable, observable, observableRef } from 'mobx';
 import { NavigateFunction } from 'react-router-dom';
 import { PostJsonData } from '../utils/api';
 import { getMenus } from '../utils/htmlEditorMenuHelper';
 import { IFolderResponse, IMenuResponse } from '../utils/responseInterfaces';
 import { GraphicAttributeTypesType, IGraphic } from './graphic';
 import { IMenu } from './htmlEditorModel';
-import { IModule } from './mobxClubModel';
+import { IModule, ISettingsProps } from './mobxClubModel';
 import { INewsModel, INewsModelProps, NewsModel } from './newsModel';
 import { ISessionModel } from './sessionModel';
 
@@ -21,6 +21,10 @@ interface IGlobalStateModelProps {
   htmlEditorMenu?: IMenu;
   darkHeader: boolean;
   fullWidthPage: boolean;
+  /** The saved order of the top level in the menu, [] = the default order */
+  menuOrder: string[];
+  /** The top level of the menu in the default order, as the user sees it (set by the menu) */
+  defaultTopMenuItems: NonNullable<MenuProps['items']>;
 }
 
 export interface IGlobalStateModel extends Omit<IGlobalStateModelProps, 'news'> {
@@ -42,6 +46,9 @@ export interface IGlobalStateModel extends Omit<IGlobalStateModelProps, 'news'> 
   setHtmlEditorMenu: (menu: IMenu) => void;
   setDarkHeader: (value: boolean) => void;
   setFullWidthPage: (value: boolean) => void;
+  setMenuOrder: (order: string[]) => void;
+  setDefaultTopMenuItems: (items: NonNullable<MenuProps['items']>) => void;
+  fetchMenuOrder: (settings: ISettingsProps | undefined) => Promise<void>;
   fetchHtmlEditorMenu: (
     htmlEditorModule: IModule | undefined,
     filesModule: IModule | undefined,
@@ -61,6 +68,8 @@ export class GlobalStateModel implements IGlobalStateModel {
   htmlEditorMenu?: IMenu;
   darkHeader = false;
   fullWidthPage = false;
+  menuOrder: string[] = [];
+  defaultTopMenuItems: NonNullable<MenuProps['items']> = [];
   updateGraphics: (graphics: IGraphic[]) => Promise<void> = async () => {
     console.warn('globalStateModel.updateGraphics not set.');
   };
@@ -94,7 +103,12 @@ export class GlobalStateModel implements IGlobalStateModel {
       setHtmlEditor: actionBound,
       setGraphics: actionBound,
       setHtmlEditorMenu: actionBound,
-      fetchHtmlEditorMenu: actionBound
+      fetchHtmlEditorMenu: actionBound,
+      menuOrder: observableRef,
+      defaultTopMenuItems: observableRef,
+      setMenuOrder: actionBound,
+      setDefaultTopMenuItems: actionBound,
+      fetchMenuOrder: actionBound
     });
   }
 
@@ -143,6 +157,29 @@ export class GlobalStateModel implements IGlobalStateModel {
 
   setFullWidthPage(value: boolean) {
     this.fullWidthPage = value;
+  }
+
+  setMenuOrder(order: string[]) {
+    this.menuOrder = order;
+  }
+
+  setDefaultTopMenuItems(items: NonNullable<MenuProps['items']>) {
+    this.defaultTopMenuItems = items;
+  }
+
+  async fetchMenuOrder(settings: ISettingsProps | undefined) {
+    if (!settings?.queryUrl) return;
+    try {
+      const order = await PostJsonData<string[]>(settings.queryUrl, { iKey: 'MENU_ORDER' }, true, {}, 1);
+      this.setMenuOrder(Array.isArray(order) ? order.filter(key => typeof key === 'string') : []);
+    } catch (e) {
+      // Not shown to the visitors, the menu works as before
+      console.warn(
+        `The menu order could not be loaded (${settings.queryUrl}): ${
+          (e as { message?: string })?.message ?? String(e)
+        }. The menu is shown in the default order, has mysql/patches/sportclub_patch_2.7.sql been run?`
+      );
+    }
   }
 
   setHtmlEditorMenu(menu: IMenu) {

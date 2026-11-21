@@ -20,6 +20,10 @@ const varendgn: IMobxClubModelProps = {
   },
   loginUrl: 'https://oknorrvirdarna.se/log_in.php',
   logoutUrl: 'https://oknorrvirdarna.se/log_out.php',
+  settings: {
+    queryUrl: 'https://oknorrvirdarna.se/settings/jsonSettingsQuery.php',
+    saveUrl: 'https://oknorrvirdarna.se/settings/save.php'
+  },
   attachmentUrl: 'https://oknorrvirdarna.se/showfile.php?iFileID=',
   invoice: {
     breakMonthDay: '1130',

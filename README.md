@@ -1,4 +1,4 @@
-# sportclub 2.6
+# sportclub 2.7
 
 This is a react app for sports like orienteering or any other sport, with the following key functionality:
 
@@ -357,3 +357,22 @@ invoice: {
   invoiceFee: 3 // the invoice fee added to every invoice
 },
 ```
+
+## Menu order
+
+An administrator drags the top level of the menu in the order that everyone sees, under _My pages → Administration → Menu order_. Dividers can be moved, added and deleted. _My pages_ (logged in) and _Login_ (not logged in) share the same place. New menu items (a new page, folder or module) are put after the item before them in the default order. _Reset to default order_ and save goes back to the default order, then new menu items keep their default place.
+
+### 1. Database
+
+Run `mysql/patches/sportclub_patch_2.7.sql` (a new database gets the same from `settingsTables.sql`).
+
+### 2. The club config file
+
+```ts
+settings: {
+  queryUrl: 'https://yourclub.com/settings/jsonSettingsQuery.php',
+  saveUrl: 'https://yourclub.com/settings/save.php'
+},
+```
+
+Without `settings` the menu is shown in the default order. If the order can't be loaded (e.g. the patch isn't run), the menu is shown in the default order and a warning with the url is written in the console of the browser.

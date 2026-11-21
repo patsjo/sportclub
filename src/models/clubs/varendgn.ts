@@ -20,6 +20,10 @@ const varendgn: IMobxClubModelProps = {
   },
   loginUrl: 'https://varendgn.se/log_in.php',
   logoutUrl: 'https://varendgn.se/log_out.php',
+  settings: {
+    queryUrl: 'https://varendgn.se/settings/jsonSettingsQuery.php',
+    saveUrl: 'https://varendgn.se/settings/save.php'
+  },
   attachmentUrl: 'https://varendgn.se/showfile.php?iFileID=',
   invoice: {
     breakMonthDay: '1130',

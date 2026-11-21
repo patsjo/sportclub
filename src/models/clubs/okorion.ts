@@ -300,6 +300,10 @@ const okorion: IMobxClubModelProps = {
   },
   loginUrl: 'https://okorion.com/log_in.php',
   logoutUrl: 'https://okorion.com/log_out.php',
+  settings: {
+    queryUrl: 'https://okorion.com/settings/jsonSettingsQuery.php',
+    saveUrl: 'https://okorion.com/settings/save.php'
+  },
   socialLogin: {
     googleUrl: 'https://okorion.com/oauth/google.php',
     googleClientId: '755769089258-89dgur1b750oqnhmnv875t1qj433hofe.apps.googleusercontent.com',

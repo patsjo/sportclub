@@ -25,6 +25,7 @@ const OtherRoutes = lazy(() => import('./components/routes/OhterRoutes'));
 const AllCompetitorsPresentation = lazy(() => import('./components/competitor/AllCompetitorsPresentation'));
 const MyInvoices = lazy(() => import('./components/invoices/MyInvoices'));
 const InvoiceOverview = lazy(() => import('./components/invoices/InvoiceOverview'));
+const MenuOrder = lazy(() => import('./components/menu/MenuOrder'));
 
 const NoMonthlyContainer = styled.div`
   & {
@@ -57,6 +58,7 @@ const AppContent = observer(() => {
         <Route path="/users" element={<UsersAndCompetitors key="users" />} />
         <Route path="/invoices/overview" element={<InvoiceOverview key="invoiceOverview" />} />
         <Route path="/invoices" element={<MyInvoices key="myInvoices" />} />
+        <Route path="/admin/menu" element={<MenuOrder key="menuOrder" />} />
         <Route path="/calendar/eventselector" element={<EventSelector key="eventSelector" />} />
         <Route
           path="/calendar"

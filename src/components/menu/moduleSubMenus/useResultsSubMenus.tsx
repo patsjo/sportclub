@@ -141,43 +141,48 @@ export const useResultsSubMenus = () => {
         true,
         1,
         !sessionModel.loggedIn
-      ),
-      getMenuItem(
-        'menuItem#resultsAdd',
-        'plus',
-        t('results.Add'),
-        () => {
-          globalStateModel.setRightMenuVisible(false);
-          globalStateModel.setDashboard(navigate, '/results/import');
-        },
-        true,
-        1,
-        !resultsModule?.addUrl || !sessionModel.loggedIn || !sessionModel.isAdmin
-      ),
-      getMenuItem(
-        'menuItem#resultsInvoiceVerifier',
-        <AuditOutlined style={{ verticalAlign: 'middle', fontSize: 18 }} />,
-        t('results.InvoiceVerifier'),
-        () => {
-          globalStateModel.setRightMenuVisible(false);
-          globalStateModel.setDashboard(navigate, '/results/verifyinvoice');
-        },
-        true,
-        1,
-        !resultsModule?.addUrl || !sessionModel.loggedIn || !sessionModel.isAdmin
-      ),
-      getMenuItem(
-        'menuItem#resultsFees',
-        'euro',
-        t('results.Invoices'),
-        () => {
-          globalStateModel.setRightMenuVisible(false);
-          globalStateModel.setDashboard(navigate, '/results/fees');
-        },
-        true,
-        1,
-        !sessionModel.loggedIn
-      ),
+      )
+    ],
+    // Under "My pages", only the items the user has the authority to use
+    resultsEconomyMenuItems: [
+      !!resultsModule?.addUrl && sessionModel.loggedIn && sessionModel.isAdmin
+        ? getMenuItem(
+            'menuItem#resultsInvoiceVerifier',
+            <AuditOutlined style={{ verticalAlign: 'middle', fontSize: 18 }} />,
+            t('results.InvoiceVerifier'),
+            () => {
+              globalStateModel.setRightMenuVisible(false);
+              globalStateModel.setDashboard(navigate, '/results/verifyinvoice');
+            },
+            true
+          )
+        : null,
+      sessionModel.loggedIn && (sessionModel.isAdmin || sessionModel.isEconomy)
+        ? getMenuItem(
+            'menuItem#resultsFees',
+            'euro',
+            t('results.Invoices'),
+            () => {
+              globalStateModel.setRightMenuVisible(false);
+              globalStateModel.setDashboard(navigate, '/results/fees');
+            },
+            true
+          )
+        : null
+    ].filter(item => item !== null),
+    resultsMyPagesMenuItems: [
+      !!resultsModule?.addUrl && sessionModel.loggedIn && sessionModel.isAdmin
+        ? getMenuItem(
+            'menuItem#resultsAdd',
+            'plus',
+            t('results.Add'),
+            () => {
+              globalStateModel.setRightMenuVisible(false);
+              globalStateModel.setDashboard(navigate, '/results/import');
+            },
+            true
+          )
+        : null,
       sessionModel.loggedIn &&
       (sessionModel.eventorPersonId || sessionModel.competitorId) &&
       (loadingCompetitor || (competitor && !competitor.excludeResults))

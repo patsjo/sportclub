@@ -113,31 +113,34 @@ export const useCalendarSubMenus = () => {
         true,
         1,
         !calendarModule?.addUrl || !sessionModel.loggedIn || !domains
-      ),
-      getMenuItem(
-        'menuItem#calendarSubscribe',
-        <LinkOutlined style={{ verticalAlign: 'middle', fontSize: 18 }} />,
-        t('calendar.Subscribe'),
-        () => {
-          globalStateModel.setRightMenuVisible(false);
-          setTimeout(() => setSubscribeModalIsOpen(true), 0);
-        },
-        true,
-        1,
-        !calendarModule?.queryUrl || !domains
-      ),
-      getMenuItem(
-        'menuItem#calendarEventSelector',
-        'star',
-        t('calendar.EventSelector'),
-        () => {
-          globalStateModel.setRightMenuVisible(false);
-          globalStateModel.setDashboard(navigate, '/calendar/eventselector');
-        },
-        true,
-        1,
-        !calendarModule?.addUrl || !resultsModule?.queryUrl || !sessionModel.loggedIn || !sessionModel.isAdmin
       )
-    ]
+    ],
+    // Under "My pages", only the items the user has the authority to use
+    calendarMyPagesMenuItems: [
+      calendarModule?.queryUrl && domains
+        ? getMenuItem(
+            'menuItem#calendarSubscribe',
+            <LinkOutlined style={{ verticalAlign: 'middle', fontSize: 18 }} />,
+            t('calendar.Subscribe'),
+            () => {
+              globalStateModel.setRightMenuVisible(false);
+              setTimeout(() => setSubscribeModalIsOpen(true), 0);
+            },
+            true
+          )
+        : null,
+      calendarModule?.addUrl && resultsModule?.queryUrl && sessionModel.loggedIn && sessionModel.isAdmin
+        ? getMenuItem(
+            'menuItem#calendarEventSelector',
+            'star',
+            t('calendar.EventSelector'),
+            () => {
+              globalStateModel.setRightMenuVisible(false);
+              globalStateModel.setDashboard(navigate, '/calendar/eventselector');
+            },
+            true
+          )
+        : null
+    ].filter(item => item !== null)
   };
 };

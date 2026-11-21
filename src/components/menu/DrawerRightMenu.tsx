@@ -2,10 +2,11 @@ import { AccountBookOutlined, FileTextOutlined } from '@ant-design/icons';
 import { Button, Col, Drawer, Form, Menu, MenuProps, message, Modal, Row, Spin, Typography } from 'antd';
 import i18next from 'i18next';
 import { observer } from 'mobx-react';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { styled } from 'styled-components';
+import { applyMenuOrder } from '../../utils/menuOrder';
 import { useMobxStore } from '../../utils/mobxStore';
 import { mobileMediaQuery } from '../../utils/useIsMobile';
 import { IFileUploadRequest, ISaveLinkRequest } from '../../utils/requestInterfaces';
@@ -21,6 +22,9 @@ import { getMenuItem } from './MenuItem';
 import { useModuleSubMenu } from './moduleSubMenus/useModuleSubMenu';
 
 const { Title } = Typography;
+type TopMenuItem = Exclude<NonNullable<MenuProps['items']>[number], null>;
+// The dividers at the top level have keys, they are ordered as the menu items (see the menu order page)
+const topMenuDivider = (key: string): TopMenuItem => ({ type: 'divider', key });
 const StyledMenu = styled(Menu)`
   &&&.ant-menu-inline {
     border-right: 0px;
@@ -35,6 +39,12 @@ const StyledMenu = styled(Menu)`
   }
   &&& .ant-menu-sub {
     background-color: #ffffff;
+  }
+  /* The sections under "My pages" */
+  &&& .ant-menu-item-group-title {
+    padding: 6px 0 2px 28px;
+    font-size: 12px;
+    line-height: 20px;
   }
   /* Bigger touch targets on a phone */
   ${mobileMediaQuery} {
@@ -58,7 +68,7 @@ const DrawerRightMenu = observer(() => {
   const [messageApi, contextHolder] = message.useMessage();
   const [modal, contextHolder2] = Modal.useModal();
   const { loginMenuItem, accessRequestMenuItem, loginForm } = useLoginMenuItem();
-  const { allModuleMenuItems, allModuleModals } = useModuleSubMenu();
+  const { allModuleMenuItems, allModuleModals, myPagesModuleMenuItems } = useModuleSubMenu();
   const htmlEditorMenu = globalStateModel.htmlEditorMenu;
   const htmlEditorMenuItems = useMemo(
     (): NonNullable<MenuProps['items']> =>
@@ -96,44 +106,56 @@ const DrawerRightMenu = observer(() => {
   );
   const editHtmlEditorMenuItems = useMemo(
     (): NonNullable<MenuProps['items']> =>
-      clubModel.modules.some(module => module.name === 'HTMLEditor')
+      clubModel.modules.some(module => module.name === 'HTMLEditor') && loggedIn && isAdmin
         ? [
-            getMenuItem('menuItem#htmlEditor', 'edit', t('modules.HTMLEditor'), () => {
-              globalStateModel.setHtmlEditor(navigate, '/page/new');
-            }),
-            getMenuItem('menuItem#createLink', 'edit', t('htmlEditor.MenuLink'), () => {
-              globalStateModel.setRightMenuVisible(false);
-              htmEditorLinkform?.setFieldsValue({
-                iLinkID: -1,
-                iMenuPath: DefaultMenuPath,
-                iUrl: 'https://'
-              });
-
-              HtmlEditorLinkModal(
-                t,
-                modal,
-                -1,
-                DefaultMenuPath,
-                'https://',
-                htmEditorLinkform,
-                globalStateModel,
-                sessionModel,
-                clubModel,
-                messageApi
-              )
-                .then()
-                .catch(error => {
-                  console.error(error);
+            getMenuItem(
+              'menuItem#htmlEditor',
+              'edit',
+              t('modules.HTMLEditor'),
+              () => {
+                globalStateModel.setHtmlEditor(navigate, '/page/new');
+              },
+              true
+            ),
+            getMenuItem(
+              'menuItem#createLink',
+              'edit',
+              t('htmlEditor.MenuLink'),
+              () => {
+                globalStateModel.setRightMenuVisible(false);
+                htmEditorLinkform?.setFieldsValue({
+                  iLinkID: -1,
+                  iMenuPath: DefaultMenuPath,
+                  iUrl: 'https://'
                 });
-            })
+
+                HtmlEditorLinkModal(
+                  t,
+                  modal,
+                  -1,
+                  DefaultMenuPath,
+                  'https://',
+                  htmEditorLinkform,
+                  globalStateModel,
+                  sessionModel,
+                  clubModel,
+                  messageApi
+                )
+                  .then()
+                  .catch(error => {
+                    console.error(error);
+                  });
+              },
+              true
+            )
           ]
         : [],
-    [clubModel, globalStateModel, htmEditorLinkform, messageApi, modal, navigate, sessionModel, t]
+    [clubModel, globalStateModel, htmEditorLinkform, isAdmin, loggedIn, messageApi, modal, navigate, sessionModel, t]
   );
 
   const filesMenuItems = useMemo(
     (): NonNullable<MenuProps['items']> =>
-      clubModel.modules.some(module => module.name === 'Files')
+      clubModel.modules.some(module => module.name === 'Files') && loggedIn && isAdmin
         ? [
             getMenuItem(
               'menuItem#uploadFile',
@@ -147,9 +169,7 @@ const DrawerRightMenu = observer(() => {
                     console.error(error);
                   });
               },
-              false,
-              1,
-              !loggedIn || !isAdmin
+              true
             ),
             getMenuItem(
               'menuItem#newFolder',
@@ -163,9 +183,7 @@ const DrawerRightMenu = observer(() => {
                     console.error(error);
                   });
               },
-              false,
-              1,
-              !loggedIn || !isAdmin
+              true
             )
           ]
         : [],
@@ -190,35 +208,104 @@ const DrawerRightMenu = observer(() => {
     []
   );
 
-  const menuItems: NonNullable<MenuProps['items']> = useMemo(
-    () =>
+  // Everything personal and everything the user has the authority to administer, hidden when not allowed
+  const myPagesMenuItem = useMemo((): NonNullable<MenuProps['items']>[number] | null => {
+    if (!loggedIn && !sessionModel.isGuest) return null;
+    const group = (
+      key: string,
+      label: string,
+      children: NonNullable<MenuProps['items']>
+    ): NonNullable<MenuProps['items']> => (children.length > 0 ? [{ type: 'group', key, label, children }] : []);
+    const economyMenuItems: NonNullable<MenuProps['items']> = [
+      clubModel.invoice.url && loggedIn
+        ? getMenuItem(
+            'menuItem#myInvoices',
+            <FileTextOutlined style={{ verticalAlign: 'middle', fontSize: 18 }} />,
+            sessionModel.unpaidInvoices > 0
+              ? `${t('invoices.MyInvoices')} (${sessionModel.unpaidInvoices})`
+              : t('invoices.MyInvoices'),
+            () => globalStateModel.setDashboard(navigate, '/invoices'),
+            true
+          )
+        : null,
+      clubModel.invoice.url && loggedIn && (isAdmin || sessionModel.isEconomy)
+        ? getMenuItem(
+            'menuItem#invoiceOverview',
+            <AccountBookOutlined style={{ verticalAlign: 'middle', fontSize: 18 }} />,
+            t('invoices.Overview'),
+            () => globalStateModel.setDashboard(navigate, '/invoices/overview'),
+            true
+          )
+        : null,
+      ...myPagesModuleMenuItems.economy
+    ].filter(item => item !== null);
+
+    return {
+      key: 'subMenu#myPages',
+      label: (
+        <span>
+          <MaterialIcon icon="user" fontSize={18} marginRight={10} />
+          <span>
+            {sessionModel.unpaidInvoices > 0
+              ? `${t('common.MyPages')} (${sessionModel.unpaidInvoices})`
+              : t('common.MyPages')}
+          </span>
+        </span>
+      ),
+      children: [
+        ...group('group#economy', t('common.Economy'), economyMenuItems),
+        ...group('group#calendar', t('modules.Calendar'), myPagesModuleMenuItems.calendar),
+        ...group('group#results', t('modules.Results'), myPagesModuleMenuItems.results),
+        ...group('group#cups', t('modules.Cup'), myPagesModuleMenuItems.cups),
+        ...group('group#administration', t('common.Administration'), [
+          ...myPagesModuleMenuItems.administration,
+          ...editHtmlEditorMenuItems,
+          ...filesMenuItems,
+          ...(clubModel.settings?.saveUrl && loggedIn && isAdmin
+            ? [
+                getMenuItem(
+                  'menuItem#menuOrder',
+                  'menu-fold',
+                  t('menu.MenuOrder'),
+                  () => globalStateModel.setDashboard(navigate, '/admin/menu'),
+                  true
+                )
+              ]
+            : [])
+        ]),
+        menuItemDivider,
+        ...(accessRequestMenuItem ? [accessRequestMenuItem] : []),
+        loginMenuItem
+      ]
+    };
+  }, [
+    accessRequestMenuItem,
+    clubModel.invoice.url,
+    clubModel.settings?.saveUrl,
+    editHtmlEditorMenuItems,
+    filesMenuItems,
+    globalStateModel,
+    isAdmin,
+    loggedIn,
+    loginMenuItem,
+    menuItemDivider,
+    myPagesModuleMenuItems,
+    navigate,
+    sessionModel.isEconomy,
+    sessionModel.isGuest,
+    sessionModel.unpaidInvoices,
+    t
+  ]);
+
+  // The top level in the default order, the saved order is applied below
+  const defaultMenuItems = useMemo(
+    (): TopMenuItem[] =>
       [
         getMenuItem('menuItem#home0', 'HomeIcon', t('modules.Home'), () => {
           globalStateModel.setDashboard(navigate, '/');
         }),
-        loginMenuItem,
-        accessRequestMenuItem,
-        clubModel.invoice.url && loggedIn
-          ? getMenuItem(
-              'menuItem#myInvoices',
-              <FileTextOutlined style={{ verticalAlign: 'middle', fontSize: 18 }} />,
-              sessionModel.unpaidInvoices > 0
-                ? `${t('invoices.MyInvoices')} (${sessionModel.unpaidInvoices})`
-                : t('invoices.MyInvoices'),
-              () => globalStateModel.setDashboard(navigate, '/invoices'),
-              true
-            )
-          : null,
-        clubModel.invoice.url && loggedIn && (isAdmin || sessionModel.isEconomy)
-          ? getMenuItem(
-              'menuItem#invoiceOverview',
-              <AccountBookOutlined style={{ verticalAlign: 'middle', fontSize: 18 }} />,
-              t('invoices.Overview'),
-              () => globalStateModel.setDashboard(navigate, '/invoices/overview'),
-              true
-            )
-          : null,
-        menuItemDivider,
+        myPagesMenuItem ?? loginMenuItem,
+        topMenuDivider('divider#1'),
         ...allModuleMenuItems,
         clubModel.map && (!clubModel.map.requireLogin || loggedIn)
           ? getMenuItem('menuItem#maps', 'map', t('modules.Maps'), () => {
@@ -230,11 +317,9 @@ const DrawerRightMenu = observer(() => {
               globalStateModel.setDashboard(navigate, i18next.language === 'sv-SE' ? '/spårkartor' : '/maps/tracks');
             })
           : null,
-        menuItemDivider,
+        topMenuDivider('divider#2'),
         ...htmlEditorMenuItems,
-        ...editHtmlEditorMenuItems,
-        ...filesMenuItems,
-        menuItemDivider,
+        topMenuDivider('divider#3'),
         clubModel.sponsors && clubModel.sponsors.length > 0
           ? getMenuItem('menuItem#ourSponsors', 'bank', t('common.OurSponsors'), () => {
               globalStateModel.setDashboard(navigate, '/sponsors');
@@ -246,27 +331,31 @@ const DrawerRightMenu = observer(() => {
               win?.focus();
             })
           : null
-      ].filter(item => item !== null),
+      ].filter(item => item !== null && item !== undefined),
     [
       allModuleMenuItems,
-      clubModel.invoice.url,
       clubModel.map,
       clubModel.oldUrl,
       clubModel.sponsors,
-      editHtmlEditorMenuItems,
-      filesMenuItems,
       globalStateModel,
       htmlEditorMenuItems,
       loggedIn,
       loginMenuItem,
-      accessRequestMenuItem,
-      isAdmin,
-      menuItemDivider,
+      myPagesMenuItem,
       navigate,
-      sessionModel.isEconomy,
-      sessionModel.unpaidInvoices,
       t
     ]
+  );
+
+  // The menu order page lists the menu items as the administrator sees them
+  useEffect(() => {
+    globalStateModel.setDefaultTopMenuItems(defaultMenuItems);
+  }, [defaultMenuItems, globalStateModel]);
+
+  const menuOrder = globalStateModel.menuOrder;
+  const menuItems = useMemo(
+    () => applyMenuOrder(defaultMenuItems, menuOrder, topMenuDivider),
+    [defaultMenuItems, menuOrder]
   );
 
   return (

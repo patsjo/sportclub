@@ -36,35 +36,40 @@ export const useCupSubMenus = () => {
           globalStateModel.setDashboard(navigate, '/cups');
         },
         true
-      ),
-      // Like the other administration items, shown but disabled when not logged in as administrator
-      getMenuItem(
-        'menuItem#cupsAdmin',
-        'edit',
-        t('cup.AdministerCups'),
-        () => {
-          globalStateModel.setRightMenuVisible(false);
-          globalStateModel.setDashboard(navigate, '/cups');
-        },
-        true,
-        1,
-        !isAdmin
-      ),
-      getMenuItem(
-        'menuItem#cupsNew',
-        'plus',
-        t('cup.NewCup'),
-        () => {
-          globalStateModel.setRightMenuVisible(false);
-          globalStateModel.setDashboard(navigate, '/cups?new=1');
-        },
-        true,
-        1,
-        !isAdmin
       )
     ],
-    [cups, globalStateModel, isAdmin, navigate, t]
+    [cups, globalStateModel, navigate, t]
   );
 
-  return { cupMenuItems };
+  // Under "My pages", only for an administrator
+  const cupAdminMenuItems = useMemo(
+    () =>
+      isAdmin
+        ? [
+            getMenuItem(
+              'menuItem#cupsAdmin',
+              'edit',
+              t('cup.AdministerCups'),
+              () => {
+                globalStateModel.setRightMenuVisible(false);
+                globalStateModel.setDashboard(navigate, '/cups');
+              },
+              true
+            ),
+            getMenuItem(
+              'menuItem#cupsNew',
+              'plus',
+              t('cup.NewCup'),
+              () => {
+                globalStateModel.setRightMenuVisible(false);
+                globalStateModel.setDashboard(navigate, '/cups?new=1');
+              },
+              true
+            )
+          ]
+        : [],
+    [globalStateModel, isAdmin, navigate, t]
+  );
+
+  return { cupMenuItems, cupAdminMenuItems };
 };
