@@ -392,6 +392,7 @@ function GetSessionInfo()
   $info->isEconomy = $user_id > 0 && ValidGroup($cECONOMY_GROUP_ID);
   $info->unpaidInvoices = 0;
   $info->overdueInvoices = 0;
+  $info->nextInvoiceDueDate = null;
 
   OpenDatabase();
   if ($user_id > 0)
@@ -416,6 +417,7 @@ function GetSessionInfo()
     $invoiceCounts = myInvoiceCounts($user_id);
     $info->unpaidInvoices = $invoiceCounts->unpaid;
     $info->overdueInvoices = $invoiceCounts->overdue;
+    $info->nextInvoiceDueDate = $invoiceCounts->nextDueDate;
   }
   if ($info->isAdmin)
   {

@@ -57,20 +57,22 @@ function myInvoicesWhere($iUserId)
          " OR i.USER_ID IN (SELECT fu.user_id FROM users fu WHERE fu.competitor_id IN (" . $familyCompetitors . ")))";
 }
 
-// The number of unpaid and overdue invoices of the user, both 0 when the invoice tables are missing
-// (the patch isn't run), so the login still works
+// The number of unpaid and overdue invoices of the user and the first due date of the unpaid ones (the web
+// colours the badge by it), 0 and null when the invoice tables are missing (the patch isn't run), so the login still works
 function myInvoiceCounts($iUserId)
 {
   $counts = new stdClass();
   $counts->unpaid = 0;
   $counts->overdue = 0;
+  $counts->nextDueDate = null;
   if (intval($iUserId) <= 0)
   {
     return $counts;
   }
   try
   {
-    $result = \db\mysql_query("SELECT COUNT(*) AS unpaid, SUM(CASE WHEN b.DUE_DATE < CURDATE() THEN 1 ELSE 0 END) AS overdue " .
+    $result = \db\mysql_query("SELECT COUNT(*) AS unpaid, SUM(CASE WHEN b.DUE_DATE < CURDATE() THEN 1 ELSE 0 END) AS overdue, " .
+                              "MIN(b.DUE_DATE) AS next_due_date " .
                               "FROM INVOICES i INNER JOIN INVOICE_BATCHES b ON (i.BATCH_ID = b.BATCH_ID) " .
                               "WHERE i.STATUS = 'UNPAID' AND " . myInvoicesWhere($iUserId));
     if ($result)
@@ -78,6 +80,7 @@ function myInvoiceCounts($iUserId)
       $row = \db\mysql_fetch_assoc($result);
       $counts->unpaid = intval($row['unpaid']);
       $counts->overdue = intval($row['overdue']);
+      $counts->nextDueDate = $row['next_due_date'];
       \db\mysql_free_result($result);
     }
   }

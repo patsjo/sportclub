@@ -60,6 +60,8 @@ export interface IMyInvoicesResponse {
   invoices: IInvoice[];
   unpaidInvoices: number;
   overdueInvoices: number;
+  /** The first due date of the unpaid invoices, missing from an older server */
+  nextInvoiceDueDate?: string | null;
 }
 
 export interface IInvoiceOverviewResponse {

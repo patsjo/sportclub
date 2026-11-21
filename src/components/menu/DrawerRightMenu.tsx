@@ -18,6 +18,7 @@ import { HtmlEditorLinkModal } from '../htmlEditor/HtmlEditorLinkModal';
 import { getHtmlEditorMenus } from '../htmlEditor/HtmlEditorMenus';
 import { useLoginMenuItem } from '../login/useLoginMenuItem';
 import MaterialIcon from '../materialIcon/MaterialIcon';
+import InvoicesBadge from '../invoices/InvoicesBadge';
 import { getMenuItem } from './MenuItem';
 import { useModuleSubMenu } from './moduleSubMenus/useModuleSubMenu';
 
@@ -45,6 +46,11 @@ const StyledMenu = styled(Menu)`
     padding: 6px 0 2px 28px;
     font-size: 12px;
     line-height: 20px;
+  }
+  /* The invoice badge goes up above the row, the short title needs no ellipsis */
+  &&& .my-pages-menu > .ant-menu-submenu-title,
+  &&& .my-pages-menu > .ant-menu-submenu-title .ant-menu-title-content {
+    overflow: visible;
   }
   /* Bigger touch targets on a phone */
   ${mobileMediaQuery} {
@@ -221,9 +227,7 @@ const DrawerRightMenu = observer(() => {
         ? getMenuItem(
             'menuItem#myInvoices',
             <FileTextOutlined style={{ verticalAlign: 'middle', fontSize: 18 }} />,
-            sessionModel.unpaidInvoices > 0
-              ? `${t('invoices.MyInvoices')} (${sessionModel.unpaidInvoices})`
-              : t('invoices.MyInvoices'),
+            <InvoicesBadge offset={[13, 0]}>{t('invoices.MyInvoices')}</InvoicesBadge>,
             () => globalStateModel.setDashboard(navigate, '/invoices'),
             true
           )
@@ -242,14 +246,11 @@ const DrawerRightMenu = observer(() => {
 
     return {
       key: 'subMenu#myPages',
+      className: 'my-pages-menu',
       label: (
         <span>
           <MaterialIcon icon="user" fontSize={18} marginRight={10} />
-          <span>
-            {sessionModel.unpaidInvoices > 0
-              ? `${t('common.MyPages')} (${sessionModel.unpaidInvoices})`
-              : t('common.MyPages')}
-          </span>
+          <InvoicesBadge offset={[13, 0]}>{t('common.MyPages')}</InvoicesBadge>
         </span>
       ),
       children: [
@@ -293,7 +294,6 @@ const DrawerRightMenu = observer(() => {
     navigate,
     sessionModel.isEconomy,
     sessionModel.isGuest,
-    sessionModel.unpaidInvoices,
     t
   ]);
 

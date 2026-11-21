@@ -18,6 +18,8 @@ export interface ISessionInfo {
   isEconomy?: boolean;
   unpaidInvoices?: number;
   overdueInvoices?: number;
+  /** The first due date (YYYY-MM-DD) of the unpaid invoices */
+  nextInvoiceDueDate?: string | null;
   token?: string;
   rememberLogin?: boolean;
 }
@@ -137,8 +139,10 @@ export interface ISessionModel extends ISessionModelProps {
   isEconomy: boolean;
   unpaidInvoices: number;
   overdueInvoices: number;
+  /** The first due date (YYYY-MM-DD) of the unpaid invoices, colours the badge */
+  nextInvoiceDueDate?: string;
   /** After a payment, or when the invoices are loaded */
-  setInvoiceCounts: (unpaid: number, overdue: number) => void;
+  setInvoiceCounts: (unpaid: number, overdue: number, nextDueDate?: string | null) => void;
   /** A user or a guest, can react and comment */
   canInteract: boolean;
   setSession: (info: ISessionInfo, username?: string) => void;
@@ -164,6 +168,7 @@ export class SessionModel implements ISessionModel {
   isEconomy = false;
   unpaidInvoices = 0;
   overdueInvoices = 0;
+  nextInvoiceDueDate?: string = undefined;
   canReadLocalStorage = false;
 
   constructor(options?: Partial<ISessionModelProps>) {
@@ -185,6 +190,7 @@ export class SessionModel implements ISessionModel {
       isEconomy: observable,
       unpaidInvoices: observable,
       overdueInvoices: observable,
+      nextInvoiceDueDate: observable,
       canReadLocalStorage: observable,
       setInvoiceCounts: actionBound,
       canInteract: computed,
@@ -215,6 +221,7 @@ export class SessionModel implements ISessionModel {
     this.isEconomy = this.loggedIn && !!info.isEconomy;
     this.unpaidInvoices = info.unpaidInvoices ?? 0;
     this.overdueInvoices = info.overdueInvoices ?? 0;
+    this.nextInvoiceDueDate = info.nextInvoiceDueDate ?? undefined;
 
     if (info.token) {
       this.token = info.token;
@@ -224,9 +231,10 @@ export class SessionModel implements ISessionModel {
     }
   }
 
-  public setInvoiceCounts(unpaid: number, overdue: number) {
+  public setInvoiceCounts(unpaid: number, overdue: number, nextDueDate?: string | null) {
     this.unpaidInvoices = unpaid;
     this.overdueInvoices = overdue;
+    this.nextInvoiceDueDate = nextDueDate ?? undefined;
   }
 
   public setFailedLogin() {
@@ -251,6 +259,7 @@ export class SessionModel implements ISessionModel {
     this.isEconomy = false;
     this.unpaidInvoices = 0;
     this.overdueInvoices = 0;
+    this.nextInvoiceDueDate = undefined;
     this.token = undefined;
     this.saveStorage();
   }

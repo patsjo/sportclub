@@ -1,3 +1,4 @@
+import { ReactNode } from 'react';
 import { styled } from 'styled-components';
 import MaterialIcon, { MaterialIconsType } from '../materialIcon/MaterialIcon';
 
@@ -45,10 +46,12 @@ interface IToolbarItemProps {
   name: string;
   onClick: () => void;
   disabled?: boolean;
+  /** e.g. a badge on the icon */
+  wrapIcon?: (icon: ReactNode) => ReactNode;
 }
-const ToolbarItem = ({ icon, name, onClick, disabled }: IToolbarItemProps) => (
+const ToolbarItem = ({ icon, name, onClick, disabled, wrapIcon }: IToolbarItemProps) => (
   <ToolbarItemHolder type="button" disabled={disabled} onClick={onClick}>
-    <MaterialIcon icon={icon} fontSize={20} />
+    {wrapIcon ? wrapIcon(<MaterialIcon icon={icon} fontSize={20} />) : <MaterialIcon icon={icon} fontSize={20} />}
     <MaterialIconText>{name}</MaterialIconText>
   </ToolbarItemHolder>
 );

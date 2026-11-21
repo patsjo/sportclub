@@ -302,6 +302,7 @@ switch ($input->iType)
     $counts = myInvoiceCounts($user_id);
     $rows->unpaidInvoices = $counts->unpaid;
     $rows->overdueInvoices = $counts->overdue;
+    $rows->nextInvoiceDueDate = $counts->nextDueDate;
     break;
 
   case 'SWISH_START':

@@ -12,7 +12,7 @@ const MenuText = styled.span`
 export const getMenuItem = (
   key: string,
   icon: MaterialIconsType | React.ReactElement,
-  label: string,
+  label: React.ReactNode,
   onClick: () => void,
   isSubMenu: boolean = false,
   level: number = 1,

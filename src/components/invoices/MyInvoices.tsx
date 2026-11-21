@@ -74,7 +74,7 @@ const MyInvoices = observer(() => {
       .then(response => {
         if (response) {
           setData(response);
-          sessionModel.setInvoiceCounts(response.unpaidInvoices, response.overdueInvoices);
+          sessionModel.setInvoiceCounts(response.unpaidInvoices, response.overdueInvoices, response.nextInvoiceDueDate);
         }
         setLoadError(undefined);
         setLoading(false);
