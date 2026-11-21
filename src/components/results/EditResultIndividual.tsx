@@ -20,7 +20,7 @@ import {
 import {
   GetAge,
   GetAward,
-  GetClassClassificationId,
+  GetClassClassificationIdForClass,
   GetClassLevel,
   GetClassShortName,
   GetCompetitorFee
@@ -537,11 +537,10 @@ const EditResultIndividual = ({
                             const shortClassName = GetClassShortName(e.currentTarget.value);
                             const classLevel = GetClassLevel(raceClubs.classLevels, shortClassName);
                             Object.assign(changes, {
-                              classClassificationId: GetClassClassificationId(
-                                result.deviantEventClassificationId
-                                  ? (result.deviantEventClassificationId as EventClassificationIdTypes)
-                                  : effectiveEventClassificationId,
-                                classLevel,
+                              classClassificationId: GetClassClassificationIdForClass(
+                                effectiveEventClassificationId,
+                                e.currentTarget.value,
+                                raceClubs.classLevels,
                                 raceClubs.eventClassifications
                               ),
                               difficulty: classLevel ? classLevel.difficulty : null
@@ -1106,14 +1105,13 @@ const EditResultIndividual = ({
                         }))}
                         onChange={(code?: EventClassificationIdTypes) => {
                           const changes: Partial<IExtendedRaceResult> = { deviantEventClassificationId: code };
-                          const shortClassName = GetClassShortName(result.className);
-                          const classLevel = GetClassLevel(raceClubs.classLevels, shortClassName);
-                          changes.classClassificationId = GetClassClassificationId(
-                            code ? (code as EventClassificationIdTypes) : effectiveEventClassificationId,
-                            classLevel,
+                          const newEventClassificationId = code ? code : eventClassificationId;
+                          changes.classClassificationId = GetClassClassificationIdForClass(
+                            newEventClassificationId,
+                            result.className,
+                            raceClubs.classLevels,
                             raceClubs.eventClassifications
                           );
-                          const newEventClassificationId = code ? code : effectiveEventClassificationId;
                           const raceEventClassification = raceClubs.eventClassifications.find(
                             ec => ec.eventClassificationId === newEventClassificationId
                           );

@@ -299,13 +299,13 @@ const ResultWizardStep2EditRace = observer(
       (eventIsRelay: boolean) => {
         if (!raceWizardModel.overwrite || !clubModel.raceClubs || !raceWizardModel.raceEvent) return;
         if (!eventIsRelay && clubModel.raceClubs.selectedClub) {
+          CalculateAllClassClassificationId(clubModel.raceClubs, raceWizardModel.raceEvent);
           CalculateCompetitorsFee(
             raceWizardModel.raceEvent,
             clubModel.raceClubs.selectedClub,
             clubModel.raceClubs.eventClassifications
           );
           CalculateAllAwards(clubModel.raceClubs, raceWizardModel.raceEvent);
-          CalculateAllClassClassificationId(clubModel.raceClubs, raceWizardModel.raceEvent);
           raceWizardModel.raceEvent.results.forEach(result => {
             if (result.missingTime?.substr(-5) !== ManuallyEditedMissingTimePostfix) {
               result.setStringValueOrNull('missingTime', result.missingTime);
@@ -3760,8 +3760,8 @@ const ResultWizardStep2EditRace = observer(
                           clubModel.raceClubs!.eventClassifications,
                           clubModel.raceClubs!.classLevels
                         );
-                        CalculateAllAwards(clubModel.raceClubs!, raceWizardModel.raceEvent!);
                         CalculateAllClassClassificationId(clubModel.raceClubs!, raceWizardModel.raceEvent!);
+                        CalculateAllAwards(clubModel.raceClubs!, raceWizardModel.raceEvent!);
                         onValidate(!!raceWizardModel.raceEvent?.valid);
                       }}
                     />

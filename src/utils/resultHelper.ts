@@ -22,6 +22,7 @@ import {
 } from './responseEventorInterfaces';
 import {
   AwardTypes,
+  ClassTypeShortName,
   EventClassificationIdTypes,
   LightConditionTypes,
   PaymentTypes,
@@ -477,7 +478,9 @@ export const CalculateCompetitorsFee = (
       const competitor = selectedClub.competitorById(result.competitorId);
       const age = competitor && raceEvent.raceDate ? GetAge(competitor.birthDay, raceEvent.raceDate) : null;
       const classClassification = eventClassifications
-        .find(ec => ec.eventClassificationId === raceEvent.eventClassificationId)
+        .find(
+          ec => ec.eventClassificationId === (result.deviantEventClassificationId ?? raceEvent.eventClassificationId)
+        )
         ?.classClassifications?.find(cc => cc.classClassificationId === result.classClassificationId);
 
       result.setNumberValueOrNull(
@@ -534,24 +537,96 @@ export const GetClassClassificationId = (
     return null;
   }
   const eventClassification = eventClassifications.find(ec => ec.eventClassificationId === eventClassificationId);
-  if (!eventClassification) {
+  if (!eventClassification?.classClassifications) {
     return null;
   }
-  const classClassification = eventClassification.classClassifications
-    ?.map(cc => ({
-      ...cc,
-      accuracy:
-        (cc.classTypeShortName && cc.classTypeShortName === classLevel.classTypeShortName ? 1 : 0) +
-        (!cc.ageUpperLimit || cc.ageUpperLimit >= classLevel.age ? 1 : 0) +
-        (!cc.ageLowerLimit || cc.ageLowerLimit <= classLevel.age ? 1 : 0)
-    }))
-    ?.filter(cc => cc.accuracy >= 2)
-    .sort((a, b) => b.accuracy - a.accuracy)
+  const typeMatch = (cc: IRaceClassClassificationProps) =>
+    cc.classTypeShortName && cc.classTypeShortName === classLevel.classTypeShortName ? 1 : 0;
+  const fitsUpper = (cc: IRaceClassClassificationProps) => !cc.ageUpperLimit || cc.ageUpperLimit >= classLevel.age;
+  const fitsLower = (cc: IRaceClassClassificationProps) => !cc.ageLowerLimit || cc.ageLowerLimit <= classLevel.age;
+  const nofAgeLimits = (cc: IRaceClassClassificationProps) => (cc.ageUpperLimit ? 1 : 0) + (cc.ageLowerLimit ? 1 : 0);
+
+  // Classifications whose age limits fit the class. Prefer same class type, then the most specific age
+  // limits (e.g. Junior/Ungdom before Senior), then the tightest limits. Stable sort keeps database order on ties.
+  const ageFitting = eventClassification.classClassifications.filter(cc => fitsUpper(cc) && fitsLower(cc));
+  let classClassification: IRaceClassClassificationProps | undefined = [...ageFitting]
+    .sort(
+      (a, b) =>
+        typeMatch(b) - typeMatch(a) ||
+        nofAgeLimits(b) - nofAgeLimits(a) ||
+        (a.ageUpperLimit || Number.MAX_SAFE_INTEGER) - (b.ageUpperLimit || Number.MAX_SAFE_INTEGER) ||
+        (b.ageLowerLimit || 0) - (a.ageLowerLimit || 0)
+    )
     .find(() => true);
+
   if (!classClassification) {
-    return null;
+    // Nothing fits the age limits, fall back to the best partial match
+    classClassification = eventClassification.classClassifications
+      .map(cc => ({ cc, accuracy: typeMatch(cc) + (fitsUpper(cc) ? 1 : 0) + (fitsLower(cc) ? 1 : 0) }))
+      .filter(x => x.accuracy >= 2)
+      .sort((a, b) => b.accuracy - a.accuracy)
+      .find(() => true)?.cc;
   }
-  return classClassification.classClassificationId;
+  return classClassification ? classClassification.classClassificationId : null;
+};
+
+/** Event classifications for championships where B-, C-, ... finals are classified as "SM(b-final)" */
+const championshipEventClassificationIds: EventClassificationIdTypes[] = ['A', 'B', 'C', 'D'];
+const lowerFinalEventClassificationId: EventClassificationIdTypes = 'E';
+/** Class types without a class classification in championships, classified as "Nationell tävling" */
+const nonChampionshipClassTypeShortNames: ClassTypeShortName[] = ['Ö', 'I', 'M', 'S'];
+const nonChampionshipEventClassificationId: EventClassificationIdTypes = 'F';
+/** Final letter, e.g. H21A, M21-A, H21 B, D20C-final. K, L and M are class suffixes (kort, lång, motion), not finals. */
+const finalClassNameRegExp = /^[HDMW]\d{1,2}\s*-?\s*([A-JN-Z])(?:\s*-?\s*final)?$/i;
+
+/**
+ * Class type for a lower final (B, C, D, ...) in a championship.
+ * B-final is "Huvudklass" (T), C-final and lower are "Ej högsta huvudklass" (S).
+ * A-final (H21, H21A, H21-A) and all other classes returns null.
+ */
+export const GetLowerFinalClassTypeShortName = (className?: string | null): ClassTypeShortName | null => {
+  const finalLetter = className?.trim().match(finalClassNameRegExp)?.[1]?.toUpperCase();
+  if (!finalLetter || finalLetter === 'A') return null;
+  return finalLetter === 'B' ? 'T' : 'S';
+};
+
+/** Class classification id for a class, with lower finals (B, C, ...) using their own class type */
+export const GetClassClassificationIdForClass = (
+  eventClassificationId: EventClassificationIdTypes | null | undefined,
+  className: string | null | undefined,
+  classLevels: IRaceClassLevelProps[],
+  eventClassifications: IRaceEventClassificationProps[] | null | undefined
+): number | null => {
+  let classLevel = GetClassLevel(classLevels, GetClassShortName(className));
+  const lowerFinalClassType = GetLowerFinalClassTypeShortName(className);
+  if (lowerFinalClassType && eventClassificationId === lowerFinalEventClassificationId) {
+    classLevel = {
+      classShortName: classLevel?.classShortName ?? className ?? '',
+      age: classLevel?.age ?? 21,
+      difficulty: classLevel?.difficulty ?? difficulties.black,
+      classTypeShortName: lowerFinalClassType
+    };
+  }
+  return GetClassClassificationId(eventClassificationId, classLevel, eventClassifications);
+};
+
+/**
+ * Deviant event classification for a class in a championship:
+ * - Lower finals (B, C, ...) get "SM(b-final)".
+ * - Classes that aren't championship classes, i.e. open courses (e.g. "Blå 3,0", "Öppen 5"), inskolning,
+ *   motion and short classes, get "Nationell tävling".
+ */
+export const GetDeviantEventClassificationIdForClass = (
+  eventClassificationId: EventClassificationIdTypes | null | undefined,
+  className: string | null | undefined,
+  classLevels: IRaceClassLevelProps[]
+): EventClassificationIdTypes | null => {
+  if (!eventClassificationId || !championshipEventClassificationIds.includes(eventClassificationId)) return null;
+  if (GetLowerFinalClassTypeShortName(className)) return lowerFinalEventClassificationId;
+  const classLevel = GetClassLevel(classLevels, GetClassShortName(className));
+  return classLevel && nonChampionshipClassTypeShortNames.includes(classLevel.classTypeShortName)
+    ? nonChampionshipEventClassificationId
+    : null;
 };
 
 export const GetAward = (
@@ -736,11 +811,11 @@ export const GetAward = (
 };
 
 export const CalculateAllAwards = (raceClubs: IRaceClubs, raceEvent: IRaceEvent) => {
-  const raceEventClassification = raceClubs.eventClassifications.find(
-    ec => ec.eventClassificationId === raceEvent.eventClassificationId
-  );
-  if (raceEventClassification)
-    raceEvent.results?.forEach(result => {
+  raceEvent.results?.forEach(result => {
+    const raceEventClassification = raceClubs.eventClassifications.find(
+      ec => ec.eventClassificationId === (result.deviantEventClassificationId ?? raceEvent.eventClassificationId)
+    );
+    if (raceEventClassification) {
       const competitor = raceClubs.selectedClub?.competitorById(result.competitorId);
       const age = competitor && raceEvent.raceDate ? GetAge(competitor.birthDay, raceEvent.raceDate) : 21;
 
@@ -755,7 +830,8 @@ export const CalculateAllAwards = (raceClubs: IRaceClubs, raceEvent: IRaceEvent)
             )
           : null
       );
-    });
+    }
+  });
 };
 
 export const CalculateAllClassClassificationId = (raceClubs: IRaceClubs, raceEvent: IRaceEvent) => {
@@ -764,14 +840,19 @@ export const CalculateAllClassClassificationId = (raceClubs: IRaceClubs, raceEve
   );
   if (raceEventClassification)
     raceEvent.results?.forEach(result => {
-      const shortClassName = GetClassShortName(result.className);
-      const classLevel = GetClassLevel(raceClubs.classLevels, shortClassName);
+      const deviantEventClassificationId =
+        result.deviantEventClassificationId ??
+        GetDeviantEventClassificationIdForClass(
+          raceEventClassification.eventClassificationId,
+          result.className,
+          raceClubs.classLevels
+        );
       result.setValues({
-        classClassificationId: GetClassClassificationId(
-          result.deviantEventClassificationId
-            ? (result.deviantEventClassificationId as EventClassificationIdTypes)
-            : raceEventClassification.eventClassificationId,
-          classLevel,
+        deviantEventClassificationId,
+        classClassificationId: GetClassClassificationIdForClass(
+          deviantEventClassificationId ?? raceEventClassification.eventClassificationId,
+          result.className,
+          raceClubs.classLevels,
           raceClubs.eventClassifications
         )
       });
