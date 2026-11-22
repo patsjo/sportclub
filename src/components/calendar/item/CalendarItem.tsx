@@ -75,13 +75,17 @@ const CalendarItem = observer(({ calendarObject, domains, children }: ICalendarI
           {children}
         </Activity>
       }
-      modalContent={
-        <ContentHolder>
+      modalTitle={
+        <>
           <CalendarHeader>{calendarObject.header}</CalendarHeader>
           <CalendarTime>
             {calendarObject.date}
             {calendarObject.time ? `, ${calendarObject.time}` : ''}
           </CalendarTime>
+        </>
+      }
+      modalContent={
+        <ContentHolder>
           <CalendarText>{`${t('calendar.ActivityType')}: ${
             domains.activityTypes.find(activityType => activityType.code === calendarObject.activityTypeId)?.description
           }`}</CalendarText>

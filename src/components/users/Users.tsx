@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { ICouncilModel, IGroupModel, IUserModel, IUserOAuthAccount } from '../../models/userModel';
 import { PostJsonData } from '../../utils/api';
 import { useMobxStore } from '../../utils/mobxStore';
+import { useTableScrollHeight } from '../../utils/useTableScrollHeight';
 import { MissingTag, NoWrap, SpinnerDiv, StyledIcon, StyledTable } from '../styled/styled';
 import { ProviderLogo, providerName } from '../login/ProviderLogos';
 import EditUser from './EditUser';
@@ -28,6 +29,8 @@ const userSort = (a: IUserModel, b: IUserModel) =>
 
 const Users = observer(() => {
   const { t } = useTranslation();
+  // The tabs and the table header stay, only the rows scroll
+  const { scrollHeight, tableRef } = useTableScrollHeight();
   const { clubModel, sessionModel } = useMobxStore();
   const [loaded, setLoaded] = useState(false);
   const [users, setUsers] = useState<IUserTable[]>([]);
@@ -282,7 +285,15 @@ const Users = observer(() => {
   return (
     <>
       {loaded && sessionModel.loggedIn ? (
-        <StyledTable columns={columns} dataSource={users} pagination={false} size="middle" scroll={{ x: true }} />
+        <div ref={tableRef}>
+          <StyledTable
+            columns={columns}
+            dataSource={users}
+            pagination={false}
+            size="middle"
+            scroll={{ x: true, y: scrollHeight }}
+          />
+        </div>
       ) : !loaded ? (
         <SpinnerDiv>
           <Spin size="large" />

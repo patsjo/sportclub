@@ -166,8 +166,10 @@ const EditResultRelay = ({
     });
   };
 
+  // On a phone the fields wrap, one per row
   return raceClubs ? (
     <Form
+      className="responsive-form-fields"
       form={form}
       id={formId}
       layout="vertical"
@@ -175,7 +177,7 @@ const EditResultRelay = ({
       onValuesChange={() => hasErrors(form).then(notValid => onValidate(!notValid))}
     >
       <Row gutter={8}>
-        <Col span={12}>
+        <Col xs={20} md={12}>
           <FormItem
             name="competitorId"
             label={t('results.Competitor')}
@@ -200,7 +202,7 @@ const EditResultRelay = ({
             />
           </FormItem>
         </Col>
-        <Col span={1} style={{ paddingTop: 28 }}>
+        <Col xs={4} md={1} style={{ paddingTop: 28 }}>
           <StyledIcon
             type="edit"
             onClick={() => {
@@ -241,7 +243,7 @@ const EditResultRelay = ({
             }}
           />
         </Col>
-        <Col span={11}>
+        <Col xs={24} md={11}>
           <FormItem
             name="teamName"
             label={t('results.TeamName')}
@@ -261,7 +263,7 @@ const EditResultRelay = ({
         </Col>
       </Row>
       <Row gutter={8}>
-        <Col span={4}>
+        <Col xs={24} sm={12} md={4}>
           <FormItem
             name="className"
             label={t('results.Class')}
@@ -347,7 +349,7 @@ const EditResultRelay = ({
             />
           </FormItem>
         </Col>
-        <Col span={4}>
+        <Col xs={24} sm={12} md={4}>
           <FormItem
             name="stage"
             label={t('results.Stage')}
@@ -403,7 +405,7 @@ const EditResultRelay = ({
             />
           </FormItem>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <FormItem
             name="classClassificationId"
             label={t('results.ClassClassification')}
@@ -436,7 +438,7 @@ const EditResultRelay = ({
             />
           </FormItem>
         </Col>
-        <Col span={4}>
+        <Col xs={24} sm={12} md={4}>
           <FormItem
             name="difficulty"
             label={t('results.Difficulty')}
@@ -511,7 +513,7 @@ const EditResultRelay = ({
             />
           </FormItem>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <FormItem
             name="lengthInMeter"
             label={t('results.LengthInMeter')}
@@ -527,7 +529,7 @@ const EditResultRelay = ({
         </Col>
       </Row>
       <Row gutter={8}>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <FormItem name="failedReason" label={t('results.FailedReason')}>
             <FormSelect
               allowClear={true}
@@ -547,7 +549,7 @@ const EditResultRelay = ({
             />
           </FormItem>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <FormItem
             name="competitorTime"
             label={t('results.Time')}
@@ -569,7 +571,7 @@ const EditResultRelay = ({
             />
           </FormItem>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <FormItem
             name="winnerTime"
             label={t('results.WinnerTime')}
@@ -624,7 +626,7 @@ const EditResultRelay = ({
             />
           </FormItem>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <FormItem
             name="secondTime"
             label={t('results.SecondTime')}
@@ -656,7 +658,7 @@ const EditResultRelay = ({
         </Col>
       </Row>
       <Row gutter={8}>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <FormItem
             name="position"
             label={t('results.Position')}
@@ -679,7 +681,7 @@ const EditResultRelay = ({
             />
           </FormItem>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <FormItem
             name="nofStartsInClass"
             label={t('results.NofStartsInClass')}
@@ -713,7 +715,7 @@ const EditResultRelay = ({
             />
           </FormItem>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <FormItem
             name="totalStages"
             label={t('results.TotalStages')}
@@ -747,7 +749,7 @@ const EditResultRelay = ({
             />
           </FormItem>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <FormItem name="missingTime" label={t('results.MissingTime')}>
             <InputTime
               format={timeFormat}
@@ -761,7 +763,7 @@ const EditResultRelay = ({
         </Col>
       </Row>
       <Row gutter={8}>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <FormItem name="deltaPositions" label={t('results.DeltaPositions')}>
             <InputNumber
               min={-1000}
@@ -772,7 +774,7 @@ const EditResultRelay = ({
             />
           </FormItem>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <FormItem name="deltaTimeBehind" label={t('results.DeltaTimeBehind')}>
             <InputTime
               format={timeFormat}
@@ -783,7 +785,7 @@ const EditResultRelay = ({
             />
           </FormItem>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <FormItem name="totalStagePosition" label={t('results.TotalStagePosition')}>
             <InputNumber
               min={-1000}
@@ -794,7 +796,7 @@ const EditResultRelay = ({
             />
           </FormItem>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <FormItem name="totalStageTimeBehind" label={t('results.TotalStageTimeBehind')}>
             <InputTime
               format={timeFormat}
@@ -807,7 +809,7 @@ const EditResultRelay = ({
         </Col>
       </Row>
       <Row gutter={8}>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <FormItem name="teamFailedReason" label={t('results.TeamFailedReason')}>
             <FormSelect
               allowClear={true}
@@ -820,7 +822,7 @@ const EditResultRelay = ({
             />
           </FormItem>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <FormItem
             name="totalPosition"
             label={t('results.TotalPosition')}
@@ -843,7 +845,7 @@ const EditResultRelay = ({
             />
           </FormItem>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <FormItem
             name="totalNofStartsInClass"
             label={t('results.TotalNofStartsInClass')}
@@ -877,7 +879,7 @@ const EditResultRelay = ({
             />
           </FormItem>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <FormItem
             name="totalTimeBehind"
             label={t('results.TotalTimeBehind')}
@@ -899,12 +901,12 @@ const EditResultRelay = ({
         </Col>
       </Row>
       <Row gutter={8}>
-        <Col span={4}>
+        <Col xs={24} sm={12} md={4}>
           <FormItem name="raceLightCondition" label={t('results.RaceLightCondition')}>
             <FormSelect disabled={true} options={raceLightConditionOptions(t)} />
           </FormItem>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <FormItem name="deviantRaceLightCondition" label={t('results.DeviantRaceLightCondition')}>
             <FormSelect
               allowClear={true}
@@ -913,15 +915,14 @@ const EditResultRelay = ({
             />
           </FormItem>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <FormItem name="eventClassificationId" label={t('results.EventClassification')}>
             <FormSelect disabled={true} options={raceClubs.eventClassificationOptions} />
           </FormItem>
         </Col>
-        <Col span={8}>
+        <Col xs={24} sm={12} md={8}>
           <FormItem name="deviantEventClassificationId" label={t('results.DeviantEventClassification')}>
             <FormSelect
-              popupMatchSelectWidth={false}
               allowClear={true}
               options={raceClubs.eventClassificationOptions.map(option => ({
                 ...option,
@@ -947,7 +948,7 @@ const EditResultRelay = ({
         </Col>
       </Row>
       <Row gutter={8}>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <FormItem
             name="serviceFeeToClub"
             label={t('results.ServiceFeeToClub')}
@@ -969,7 +970,7 @@ const EditResultRelay = ({
             />
           </FormItem>
         </Col>
-        <Col span={18}>
+        <Col xs={24} sm={24} md={18}>
           <FormItem name="serviceFeeDescription" label={t('results.ServiceFeeDescription')}>
             <Input
               style={{ width: '100%' }}

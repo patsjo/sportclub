@@ -29,6 +29,7 @@ import FormItem from '../formItems/FormItem';
 import { FormSelect } from '../formItems/FormSelect';
 import InputTime, { stringToMilliSeconds } from '../formItems/InputTime';
 import { StyledIcon } from '../styled/styled';
+import { useIsMobile } from '../../utils/useIsMobile';
 import { AddMapCompetitorConfirmModal, CompetitorInputAborted } from './AddMapCompetitorConfirmModal';
 
 interface IColorOptionContentProps {
@@ -122,6 +123,7 @@ const EditResultIndividual = ({
   const effectiveAward = isAwardTouched ? result.award : calculatedAward;
   // The total result of a multi day event, null when it is not a multi day event
   const [isMultiDay, setIsMultiDay] = useState(result.resultMultiDay != null);
+  const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState('result');
   const multiDayResultId = result.resultMultiDay?.multiDayResultId ?? -1;
   const initialValues: IRaceResultForm = useMemo(
@@ -183,10 +185,16 @@ const EditResultIndividual = ({
   };
 
   const multiDayFailedReason = Form.useWatch(['resultMultiDay', 'totalFailedReason'], form);
+  const multiDaySwitch = (
+    <Space>
+      <Switch checked={isMultiDay} onChange={toggleMultiDay} />
+      {t('results.MultiDayEnabled')}
+    </Space>
+  );
   const multiDayContent = (
     <>
       <Row gutter={8}>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <FormItem
             name={['resultMultiDay', 'stage']}
             label={t('results.MultiDayStage')}
@@ -212,7 +220,7 @@ const EditResultIndividual = ({
             />
           </FormItem>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <FormItem
             name={['resultMultiDay', 'totalStages']}
             label={t('results.MultiDayTotalStages')}
@@ -230,7 +238,7 @@ const EditResultIndividual = ({
             />
           </FormItem>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <FormItem name={['resultMultiDay', 'totalFailedReason']} label={t('results.TotalFailedReason')}>
             <FormSelect
               allowClear={true}
@@ -249,7 +257,7 @@ const EditResultIndividual = ({
             />
           </FormItem>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <FormItem name={['resultMultiDay', 'totalLengthInMeter']} label={t('results.TotalLengthInMeter')}>
             <InputNumber
               min={10}
@@ -262,7 +270,7 @@ const EditResultIndividual = ({
         </Col>
       </Row>
       <Row gutter={8}>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <FormItem
             name={['resultMultiDay', 'totalTime']}
             label={t('results.TotalTime')}
@@ -279,7 +287,7 @@ const EditResultIndividual = ({
             />
           </FormItem>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <FormItem
             name={['resultMultiDay', 'totalWinnerTime']}
             label={t('results.TotalWinnerTime')}
@@ -311,7 +319,7 @@ const EditResultIndividual = ({
             />
           </FormItem>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <FormItem
             name={['resultMultiDay', 'totalSecondTime']}
             label={t('results.TotalSecondTime')}
@@ -341,7 +349,7 @@ const EditResultIndividual = ({
         </Col>
       </Row>
       <Row gutter={8}>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <FormItem
             name={['resultMultiDay', 'totalPosition']}
             label={t('results.TotalMultiDayPosition')}
@@ -361,7 +369,7 @@ const EditResultIndividual = ({
             />
           </FormItem>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <FormItem
             name={['resultMultiDay', 'totalNofStartsInClass']}
             label={t('results.TotalMultiDayNofStartsInClass')}
@@ -394,8 +402,10 @@ const EditResultIndividual = ({
     </>
   );
 
+  // On a phone the fields wrap, one per row
   return raceClubs?.selectedClub ? (
     <Form
+      className="responsive-form-fields"
       form={form}
       id={formId}
       layout="vertical"
@@ -403,7 +413,7 @@ const EditResultIndividual = ({
       onValuesChange={() => hasErrors(form).then(notValid => onValidate(!notValid))}
     >
       <Row gutter={8}>
-        <Col span={18}>
+        <Col xs={20} md={18}>
           <FormItem
             name="competitorId"
             label={t('results.Competitor')}
@@ -428,7 +438,7 @@ const EditResultIndividual = ({
             />
           </FormItem>
         </Col>
-        <Col span={6} style={{ paddingTop: 28 }}>
+        <Col xs={4} md={6} style={{ paddingTop: 28 }}>
           <StyledIcon
             type="edit"
             onClick={() => {
@@ -472,14 +482,11 @@ const EditResultIndividual = ({
           />
         </Col>
       </Row>
+      {/* On a phone above the tabs, beside them it pushed the tabs out of the dialog */}
+      {isMobile ? multiDaySwitch : null}
       <Tabs
         activeKey={activeTab}
-        tabBarExtraContent={
-          <Space>
-            <Switch checked={isMultiDay} onChange={toggleMultiDay} />
-            {t('results.MultiDayEnabled')}
-          </Space>
-        }
+        tabBarExtraContent={isMobile ? undefined : multiDaySwitch}
         items={[
           {
             key: 'result',
@@ -488,7 +495,7 @@ const EditResultIndividual = ({
             children: (
               <>
                 <Row gutter={8}>
-                  <Col span={6}>
+                  <Col xs={24} sm={12} md={6}>
                     <FormItem
                       name="className"
                       label={t('results.Class')}
@@ -553,7 +560,7 @@ const EditResultIndividual = ({
                       />
                     </FormItem>
                   </Col>
-                  <Col span={6}>
+                  <Col xs={24} sm={12} md={6}>
                     <FormItem
                       name="classClassificationId"
                       label={t('results.ClassClassification')}
@@ -596,7 +603,7 @@ const EditResultIndividual = ({
                       />
                     </FormItem>
                   </Col>
-                  <Col span={6}>
+                  <Col xs={24} sm={12} md={6}>
                     <FormItem
                       name="difficulty"
                       label={t('results.Difficulty')}
@@ -670,7 +677,7 @@ const EditResultIndividual = ({
                       />
                     </FormItem>
                   </Col>
-                  <Col span={6}>
+                  <Col xs={24} sm={12} md={6}>
                     <FormItem
                       name="lengthInMeter"
                       label={t('results.LengthInMeter')}
@@ -715,7 +722,7 @@ const EditResultIndividual = ({
                   </Col>
                 </Row>
                 <Row gutter={8}>
-                  <Col span={6}>
+                  <Col xs={24} sm={12} md={6}>
                     <FormItem name="failedReason" label={t('results.FailedReason')}>
                       <FormSelect
                         allowClear={true}
@@ -746,7 +753,7 @@ const EditResultIndividual = ({
                       />
                     </FormItem>
                   </Col>
-                  <Col span={6}>
+                  <Col xs={24} sm={12} md={6}>
                     <FormItem
                       name="competitorTime"
                       label={t('results.Time')}
@@ -768,7 +775,7 @@ const EditResultIndividual = ({
                       />
                     </FormItem>
                   </Col>
-                  <Col span={6}>
+                  <Col xs={24} sm={12} md={6}>
                     <FormItem
                       name="winnerTime"
                       label={t('results.WinnerTime')}
@@ -825,7 +832,7 @@ const EditResultIndividual = ({
                       />
                     </FormItem>
                   </Col>
-                  <Col span={6}>
+                  <Col xs={24} sm={12} md={6}>
                     <FormItem
                       name="secondTime"
                       label={t('results.SecondTime')}
@@ -857,7 +864,7 @@ const EditResultIndividual = ({
                   </Col>
                 </Row>
                 <Row gutter={8}>
-                  <Col span={6}>
+                  <Col xs={24} sm={12} md={6}>
                     <FormItem
                       name="position"
                       label={t('results.Position')}
@@ -880,7 +887,7 @@ const EditResultIndividual = ({
                       />
                     </FormItem>
                   </Col>
-                  <Col span={6}>
+                  <Col xs={24} sm={12} md={6}>
                     <FormItem
                       name="nofStartsInClass"
                       label={t('results.NofStartsInClass')}
@@ -914,7 +921,7 @@ const EditResultIndividual = ({
                       />
                     </FormItem>
                   </Col>
-                  <Col span={6}>
+                  <Col xs={24} sm={12} md={6}>
                     <FormItem name="award" label={t('results.Award')}>
                       <Select
                         allowClear={true}
@@ -926,21 +933,23 @@ const EditResultIndividual = ({
                       />
                     </FormItem>
                   </Col>
-                  <Col span={6}>
+                  <Col xs={24} sm={12} md={6}>
                     <FormItem name="missingTime" label={t('results.MissingTime')}>
                       <InputTime
                         format={timeFormat}
                         allowClear={true}
                         style={{ width: '100%' }}
                         onChange={time => {
-                          onChange({ missingTime: time != null ? `${time}${ManuallyEditedMissingTimePostfix}` : null });
+                          onChange({
+                            missingTime: time != null ? `${time}${ManuallyEditedMissingTimePostfix}` : null
+                          });
                         }}
                       />
                     </FormItem>
                   </Col>
                 </Row>
                 <Row gutter={8}>
-                  <Col span={6}>
+                  <Col xs={24} sm={12} md={6}>
                     <FormItem
                       name="originalFee"
                       label={t('results.OriginalFee')}
@@ -981,7 +990,7 @@ const EditResultIndividual = ({
                       />
                     </FormItem>
                   </Col>
-                  <Col span={6}>
+                  <Col xs={24} sm={12} md={6}>
                     <FormItem
                       name="lateFee"
                       label={t('results.LateFee')}
@@ -1019,7 +1028,7 @@ const EditResultIndividual = ({
                       />
                     </FormItem>
                   </Col>
-                  <Col span={6}>
+                  <Col xs={24} sm={12} md={6}>
                     <FormItem
                       name="feeToClub"
                       label={t('results.FeeToClub')}
@@ -1048,7 +1057,7 @@ const EditResultIndividual = ({
                   </Col>
                 </Row>
                 <Row gutter={8}>
-                  <Col span={6}>
+                  <Col xs={24} sm={12} md={6}>
                     <FormItem
                       name="serviceFeeToClub"
                       label={t('results.ServiceFeeToClub')}
@@ -1075,7 +1084,7 @@ const EditResultIndividual = ({
                       />
                     </FormItem>
                   </Col>
-                  <Col span={12}>
+                  <Col xs={24} sm={24} md={12}>
                     <FormItem name="serviceFeeDescription" label={t('results.ServiceFeeDescription')}>
                       <Input
                         style={{ width: '100%' }}
@@ -1083,19 +1092,19 @@ const EditResultIndividual = ({
                       />
                     </FormItem>
                   </Col>
-                  <Col span={6}>
+                  <Col xs={24} sm={12} md={6}>
                     <FormItem name="totalFeeToClub" label={t('results.TotalFeeToClub')}>
                       <InputNumber disabled={true} precision={2} decimalSeparator="," style={{ width: '100%' }} />
                     </FormItem>
                   </Col>
                 </Row>
                 <Row gutter={8}>
-                  <Col span={12}>
+                  <Col xs={24} sm={24} md={12}>
                     <FormItem name="eventClassificationId" label={t('results.EventClassification')}>
                       <FormSelect disabled={true} options={raceClubs.eventClassificationOptions} />
                     </FormItem>
                   </Col>
-                  <Col span={12}>
+                  <Col xs={24} sm={24} md={12}>
                     <FormItem name="deviantEventClassificationId" label={t('results.DeviantEventClassification')}>
                       <FormSelect
                         allowClear={true}

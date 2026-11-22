@@ -278,8 +278,9 @@ const ResultWizardStep2EditRace = observer(
     }, []);
     useResizeObserver(tableElement, measureTable);
     const tablePagerHeight = 64;
+    // At least 5 runners, if they don't fit the content scrolls between the steps and the buttons
     const tablePageSize = Math.max(
-      1,
+      5,
       Math.floor((height - aboveTableHeight - tableMetrics.header - tablePagerHeight) / tableMetrics.row)
     );
     // The course lengths of every class and relay leg in Livelox, and how many results got their length from it
@@ -3492,7 +3493,8 @@ const ResultWizardStep2EditRace = observer(
         ) : raceWizardModel.raceEvent && clubModel.raceClubs && loaded && visible ? (
           <Form id={formId} form={form} layout="vertical" initialValues={raceWizardModel.raceEvent}>
             {/* Everything above the table, the rows of the table are as many as fit below it */}
-            <div ref={setAboveTableElement}>
+            {/* On a phone the fields wrap, one per row */}
+            <div ref={setAboveTableElement} className="responsive-form-fields">
               {warningsList ? (
                 <Alert
                   closable
@@ -3529,11 +3531,10 @@ const ResultWizardStep2EditRace = observer(
                     <Typography.Text type="secondary">{importStatus}</Typography.Text>
                   ) : null}
                   <Row gutter={8} align="bottom" style={{ marginTop: 8 }}>
-                    <Col span={4}>
+                    <Col xs={24} sm={12} md={4}>
                       <FormItem label={t('results.ImportSource')}>
                         <Select
                           value={totalSource}
-                          popupMatchSelectWidth={false}
                           options={[
                             { value: 'oeTotal', label: t('results.TotalSourceOE') },
                             { value: 'stages', label: t('results.TotalSourceStages') }
@@ -3542,7 +3543,7 @@ const ResultWizardStep2EditRace = observer(
                         />
                       </FormItem>
                     </Col>
-                    <Col span={13}>
+                    <Col xs={24} sm={24} md={13}>
                       {totalSource === 'stages' ? (
                         <FormItem label={t('results.TotalStageLinks')} tooltip={t('results.TotalStageLinksTooltip')}>
                           <StageResultsInput value={totalStageResults} onChange={setTotalStageResults} />
@@ -3558,7 +3559,7 @@ const ResultWizardStep2EditRace = observer(
                         </FormItem>
                       )}
                     </Col>
-                    <Col span={3}>
+                    <Col xs={24} sm={12} md={3}>
                       <FormItem label={t('results.TotalStage')} tooltip={t('results.TotalStageTooltip')}>
                         <InputNumber
                           min={1}
@@ -3573,7 +3574,7 @@ const ResultWizardStep2EditRace = observer(
                         />
                       </FormItem>
                     </Col>
-                    <Col span={4}>
+                    <Col xs={24} sm={12} md={4}>
                       <Button
                         block
                         icon={<ImportOutlined />}
@@ -3589,7 +3590,7 @@ const ResultWizardStep2EditRace = observer(
                     </Col>
                   </Row>
                   <Row gutter={8} style={{ marginTop: 4 }}>
-                    <Col span={20}>
+                    <Col xs={24} sm={24} md={20}>
                       <FormItem
                         label={t('results.TotalEarlierStages')}
                         tooltip={t('results.TotalEarlierStagesTooltip')}
@@ -3621,7 +3622,7 @@ const ResultWizardStep2EditRace = observer(
                 </Card>
               ) : null}
               <Row gutter={8}>
-                <Col span={6}>
+                <Col xs={24} sm={12} md={6}>
                   <FormItem
                     name="name"
                     label={t('results.Name')}
@@ -3640,7 +3641,7 @@ const ResultWizardStep2EditRace = observer(
                     />
                   </FormItem>
                 </Col>
-                <Col span={6}>
+                <Col xs={24} sm={12} md={6}>
                   <FormItem
                     name="organiserName"
                     label={t('results.Club')}
@@ -3659,7 +3660,7 @@ const ResultWizardStep2EditRace = observer(
                     />
                   </FormItem>
                 </Col>
-                <Col span={4}>
+                <Col xs={24} sm={12} md={4}>
                   <FormItem
                     name="raceDate"
                     label={t('results.Date')}
@@ -3682,7 +3683,7 @@ const ResultWizardStep2EditRace = observer(
                     />
                   </FormItem>
                 </Col>
-                <Col span={4}>
+                <Col xs={24} sm={12} md={4}>
                   <FormItem name="raceTime" label={t('results.Time')}>
                     <InputTime
                       format={shortTimeFormat}
@@ -3695,7 +3696,7 @@ const ResultWizardStep2EditRace = observer(
                   </FormItem>
                 </Col>
                 {['OL', 'SKIO', 'MTBO'].includes(raceWizardModel.raceEvent.sportCode) ? (
-                  <Col span={4}>
+                  <Col xs={24} sm={12} md={4}>
                     <FormItem
                       name="meetsAwardRequirements"
                       label={t('results.MeetsAwardRequirements')}
@@ -3712,7 +3713,7 @@ const ResultWizardStep2EditRace = observer(
                 ) : null}
               </Row>
               <Row gutter={8}>
-                <Col span={2}>
+                <Col xs={24} sm={12} md={2}>
                   <FormItem name="longitude" label={t('map.ChooseMapPosition')}>
                     <Tooltip
                       title={
@@ -3738,7 +3739,7 @@ const ResultWizardStep2EditRace = observer(
                     </Tooltip>
                   </FormItem>
                 </Col>
-                <Col span={5}>
+                <Col xs={24} sm={12} md={5}>
                   <FormItem
                     name="eventClassificationId"
                     label={t('results.EventClassification')}
@@ -3750,7 +3751,6 @@ const ResultWizardStep2EditRace = observer(
                     ]}
                   >
                     <FormSelect
-                      popupMatchSelectWidth={false}
                       allowClear={false}
                       options={clubModel.raceClubs.eventClassificationOptions}
                       onChange={code => {
@@ -3767,7 +3767,7 @@ const ResultWizardStep2EditRace = observer(
                     />
                   </FormItem>
                 </Col>
-                <Col span={5}>
+                <Col xs={24} sm={12} md={5}>
                   <FormItem
                     name="paymentModel"
                     label={t('results.PaymentModel')}
@@ -3796,7 +3796,7 @@ const ResultWizardStep2EditRace = observer(
                     />
                   </FormItem>
                 </Col>
-                <Col span={3}>
+                <Col xs={24} sm={12} md={3}>
                   <FormItem
                     name="sportCode"
                     label={t('results.Sport')}
@@ -3819,7 +3819,7 @@ const ResultWizardStep2EditRace = observer(
                     />
                   </FormItem>
                 </Col>
-                <Col span={3}>
+                <Col xs={24} sm={12} md={3}>
                   <FormItem name="isRelay" label={t('results.IsRelay')} valuePropName="checked">
                     <Switch
                       disabled={
@@ -3832,7 +3832,7 @@ const ResultWizardStep2EditRace = observer(
                     />
                   </FormItem>
                 </Col>
-                <Col span={3}>
+                <Col xs={24} sm={12} md={3}>
                   <FormItem
                     name="raceDistance"
                     label={t('results.RaceDistance')}
@@ -3853,7 +3853,7 @@ const ResultWizardStep2EditRace = observer(
                     />
                   </FormItem>
                 </Col>
-                <Col span={3}>
+                <Col xs={24} sm={12} md={3}>
                   <FormItem
                     name="raceLightCondition"
                     label={t('results.RaceLightCondition')}
@@ -3877,7 +3877,7 @@ const ResultWizardStep2EditRace = observer(
               </Row>
               {liveloxNeeded || livelox || liveloxError ? (
                 <Row gutter={8} align="bottom" style={{ marginBottom: 8 }}>
-                  <Col span={10}>
+                  <Col xs={24} sm={12} md={10}>
                     <FormItem label={t('results.LiveloxLink')} tooltip={t('results.LiveloxLinkTooltip')}>
                       <Input.Search
                         allowClear
@@ -3892,7 +3892,7 @@ const ResultWizardStep2EditRace = observer(
                       />
                     </FormItem>
                   </Col>
-                  <Col span={14} style={{ paddingBottom: 5 }}>
+                  <Col xs={24} sm={24} md={14} style={{ paddingBottom: 5 }}>
                     {liveloxError ? (
                       <Typography.Text type="danger">{liveloxError}</Typography.Text>
                     ) : livelox ? (

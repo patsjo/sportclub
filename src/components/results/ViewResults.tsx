@@ -958,7 +958,6 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
                 }}
                 disabled={loading}
                 style={{ width: '100%' }}
-                popupMatchSelectWidth={false}
                 options={
                   loading || !clubModel.raceClubs ? [] : (clubModel.raceClubs.selectedClub?.competitorsOptions ?? [])
                 }
@@ -975,7 +974,6 @@ const ViewResults = observer(({ isIndividual }: IViewResultsProps) => {
                 }}
                 disabled={loading}
                 style={{ width: '100%' }}
-                popupMatchSelectWidth={false}
                 options={eventOptions}
                 onChange={eventId => updateEvent(eventId)}
               />

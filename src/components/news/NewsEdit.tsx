@@ -10,16 +10,37 @@ import { fileAsBase64, getFileType } from '../../utils/fileHelper';
 import { dateFormat, errorRequiredField, hasErrors, IFile, maxByteSize } from '../../utils/formHelper';
 import { useMobxStore } from '../../utils/mobxStore';
 import { INewsEditRequest, INewsFileRequest } from '../../utils/requestInterfaces';
+import { mobileMediaQuery, useIsMobile } from '../../utils/useIsMobile';
 import FormItem from '../formItems/FormItem';
 import SimpleHtmlHelp from '../simpleHtml/SimpleHtmlHelp';
 import UploadDragger from '../formItems/UploadDragger';
 
 const { TextArea } = Input;
+// The dialog fits the screen: the title and the save buttons stay, only the body scrolls.
+// dvh is the visible height on a phone (vh includes the area behind the browser bars), vh is the fallback.
 const StyledModal = styled(Modal)`
+  &&& .ant-modal-container {
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 80px);
+    max-height: calc(100dvh - 80px);
+  }
+  &&& .ant-modal-header,
+  &&& .ant-modal-footer {
+    flex: none;
+  }
   &&& .ant-modal-body {
-    max-height: calc(100vh - 200px);
-    overflow-y: scroll;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
     overflow-x: hidden;
+    overscroll-behavior: contain;
+  }
+  ${mobileMediaQuery} {
+    &&& .ant-modal-container {
+      max-height: calc(100vh - 32px);
+      max-height: calc(100dvh - 32px);
+    }
   }
 `;
 const StyledModalContent = styled.div``;
@@ -41,6 +62,7 @@ interface INewsEditProps {
 const NewsEdit = observer(({ newsObject, open, onClose, onChange }: INewsEditProps) => {
   const { t } = useTranslation();
   const { clubModel, sessionModel } = useMobxStore();
+  const isMobile = useIsMobile();
   const [form] = Form.useForm<INewsEditForm>();
   const [valid, setValid] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -114,8 +136,8 @@ const NewsEdit = observer(({ newsObject, open, onClose, onChange }: INewsEditPro
       okButtonProps={{ disabled: !valid, loading: saving }}
       cancelText={t('common.Cancel')}
       cancelButtonProps={{ loading: saving }}
-      style={{ top: 40 }}
-      width={800}
+      style={{ top: isMobile ? 8 : 40, paddingBottom: isMobile ? 8 : undefined }}
+      width="min(800px, calc(100% - 16px))"
       onOk={() => {
         form.validateFields().then(values => {
           onSave(values);

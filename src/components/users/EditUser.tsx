@@ -40,6 +40,7 @@ const EditUser = ({
 
   return (
     <Form
+      className="responsive-form-fields"
       form={form}
       id={formId}
       layout="vertical"
@@ -47,7 +48,7 @@ const EditUser = ({
       onValuesChange={() => hasErrors(form).then(notValid => onValidate(!notValid))}
     >
       <Row gutter={8}>
-        <Col span={8}>
+        <Col xs={24} sm={12} md={8}>
           <FormItem
             name="firstName"
             label={t('users.FirstName')}
@@ -61,7 +62,7 @@ const EditUser = ({
             <Input onChange={e => onChange({ firstName: e.currentTarget.value })} />
           </FormItem>
         </Col>
-        <Col span={8}>
+        <Col xs={24} sm={12} md={8}>
           <FormItem
             name="lastName"
             label={t('users.LastName')}
@@ -75,7 +76,7 @@ const EditUser = ({
             <Input onChange={e => onChange({ lastName: e.currentTarget.value })} />
           </FormItem>
         </Col>
-        <Col span={8}>
+        <Col xs={24} sm={12} md={8}>
           <FormItem
             name="birthDay"
             label={t('users.BirthDay')}
@@ -91,17 +92,17 @@ const EditUser = ({
         </Col>
       </Row>
       <Row gutter={8}>
-        <Col span={8}>
+        <Col xs={24} sm={12} md={8}>
           <FormItem name="address" label={t('users.Address')}>
             <Input onChange={e => onChange({ address: e.currentTarget.value })} />
           </FormItem>
         </Col>
-        <Col span={8}>
+        <Col xs={24} sm={12} md={8}>
           <FormItem name="zip" label={t('users.Zip')}>
             <Input onChange={e => onChange({ zip: e.currentTarget.value })} />
           </FormItem>
         </Col>
-        <Col span={8}>
+        <Col xs={24} sm={12} md={8}>
           <FormItem name="city" label={t('users.City')}>
             <Input onChange={e => onChange({ city: e.currentTarget.value })} />
           </FormItem>
@@ -115,24 +116,24 @@ const EditUser = ({
         </Col>
       </Row>
       <Row gutter={8}>
-        <Col span={8}>
+        <Col xs={24} sm={12} md={8}>
           <FormItem name="phoneNo" label={t('users.PhoneNo')}>
             <Input onChange={e => onChange({ phoneNo: e.currentTarget.value })} />
           </FormItem>
         </Col>
-        <Col span={8}>
+        <Col xs={24} sm={12} md={8}>
           <FormItem name="mobilePhoneNo" label={t('users.MobilePhoneNo')}>
             <Input onChange={e => onChange({ mobilePhoneNo: e.currentTarget.value })} />
           </FormItem>
         </Col>
-        <Col span={8}>
+        <Col xs={24} sm={12} md={8}>
           <FormItem name="workPhoneNo" label={t('users.WorkPhoneNo')}>
             <Input onChange={e => onChange({ workPhoneNo: e.currentTarget.value })} />
           </FormItem>
         </Col>
       </Row>
       <Row gutter={8}>
-        <Col span={8}>
+        <Col xs={24} sm={12} md={8}>
           <FormItem name="councilId" label={t('users.Council')}>
             <FormSelect
               options={councils.map(c => ({ code: c.councilId, description: c.name }))}
@@ -140,7 +141,7 @@ const EditUser = ({
             />
           </FormItem>
         </Col>
-        <Col span={16}>
+        <Col xs={24} sm={24} md={16}>
           <FormItem name="responsibility" label={t('users.Responsibility')}>
             <Input onChange={e => onChange({ responsibility: e.currentTarget.value })} />
           </FormItem>

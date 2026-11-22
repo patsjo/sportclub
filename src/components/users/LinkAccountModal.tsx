@@ -147,7 +147,7 @@ const LinkAccountModal = ({
           : request?.userName}
       </p>
       {request?.message ? <p style={{ fontStyle: 'italic' }}>”{request.message}”</p> : null}
-      <Form form={form} layout="vertical" initialValues={initialValues}>
+      <Form className="responsive-form-fields" form={form} layout="vertical" initialValues={initialValues}>
         {chooseUser ? (
           <FormItem name="userMode" label={t('accounts.User')}>
             <Radio.Group
@@ -180,17 +180,17 @@ const LinkAccountModal = ({
         ) : null}
         {chooseUser && userMode === 'new' ? (
           <Row gutter={8}>
-            <Col span={8}>
+            <Col xs={24} sm={12} md={8}>
               <FormItem name="firstName" label={t('users.FirstName')} rules={[{ required: true, max: 16 }]}>
                 <Input />
               </FormItem>
             </Col>
-            <Col span={8}>
+            <Col xs={24} sm={12} md={8}>
               <FormItem name="lastName" label={t('users.LastName')} rules={[{ required: true, max: 32 }]}>
                 <Input />
               </FormItem>
             </Col>
-            <Col span={8}>
+            <Col xs={24} sm={12} md={8}>
               <FormItem name="email" label={t('users.Email')} rules={[{ max: 64 }]}>
                 <Input />
               </FormItem>

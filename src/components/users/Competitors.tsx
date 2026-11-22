@@ -9,6 +9,7 @@ import { PostJsonData } from '../../utils/api';
 import { getTextColorBasedOnBackground, lightenColor } from '../../utils/colorHelper';
 import { IOption } from '../../utils/formHelper';
 import { useMobxStore } from '../../utils/mobxStore';
+import { useTableScrollHeight } from '../../utils/useTableScrollHeight';
 import { genderOptions } from '../../utils/resultConstants';
 import { IStyledTableProps, NoWrap, SpinnerDiv, StyledIcon } from '../styled/styled';
 import EditCompetitor from './EditCompetitor';
@@ -83,6 +84,8 @@ const competitorSort = (a: ICompetitorTable, b: ICompetitorTable) =>
 
 const Competitors = observer(() => {
   const { t } = useTranslation();
+  // The tabs and the table header stay, only the rows scroll
+  const { scrollHeight, tableRef } = useTableScrollHeight();
   const { clubModel, sessionModel } = useMobxStore();
   const [loaded, setLoaded] = useState(!sessionModel.isAdmin);
   const [, setSaving] = useState(false);
@@ -377,23 +380,25 @@ const Competitors = observer(() => {
   return (
     <>
       {loaded && sessionModel.isAdmin ? (
-        <CompetitorTable
-          familyBackgroundColor={clubBgColor}
-          familyTextColor={clubTextColor}
-          columns={columns}
-          dataSource={familesAndCompetitors}
-          pagination={false}
-          scroll={{ x: true }}
-          size="middle"
-          expandable={{
-            defaultExpandAllRows: true,
-            expandedRowKeys: familyTableKeys,
-            expandedRowClassName: () => 'table-row-familymember',
-            rowExpandable: () => false,
-            showExpandColumn: false
-          }}
-          rowClassName={record => (record.isFamily ? 'table-row-club' : '')}
-        />
+        <div ref={tableRef}>
+          <CompetitorTable
+            familyBackgroundColor={clubBgColor}
+            familyTextColor={clubTextColor}
+            columns={columns}
+            dataSource={familesAndCompetitors}
+            pagination={false}
+            scroll={{ x: true, y: scrollHeight }}
+            size="middle"
+            expandable={{
+              defaultExpandAllRows: true,
+              expandedRowKeys: familyTableKeys,
+              expandedRowClassName: () => 'table-row-familymember',
+              rowExpandable: () => false,
+              showExpandColumn: false
+            }}
+            rowClassName={record => (record.isFamily ? 'table-row-club' : '')}
+          />
+        </div>
       ) : !loaded ? (
         <SpinnerDiv>
           <Spin size="large" />

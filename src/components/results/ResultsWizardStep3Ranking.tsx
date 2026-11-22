@@ -105,7 +105,9 @@ const ResultWizardStep3Ranking = observer(({ saving, onValidate }: IResultWizard
     raceWizardModel.raceEvent &&
     raceWizardModel.raceEvent.sportCode !== 'INOL' &&
     raceWizardModel.raceEvent.sportCode !== 'PREO' ? (
+    // On a phone the fields wrap, one per row
     <Form
+      className="responsive-form-fields"
       form={form}
       id={formId}
       layout="vertical"
@@ -164,10 +166,9 @@ const ResultWizardStep3Ranking = observer(({ saving, onValidate }: IResultWizard
           />
           <Row gutter={8}>
             {winnerOptionGroups.length ? (
-              <Col span={12}>
+              <Col xs={24} sm={24} md={12}>
                 <FormItem name="winnerTime" label={t('results.WinnerTime')}>
                   <Select
-                    popupMatchSelectWidth={false}
                     allowClear={true}
                     showSearch={{ optionFilterProp: 'label' }}
                     options={winnerOptionGroups}
@@ -197,10 +198,9 @@ const ResultWizardStep3Ranking = observer(({ saving, onValidate }: IResultWizard
               </Col>
             ) : null}
             {raceWizardModel.raceEvent.sportCode === 'OL' ? (
-              <Col span={12}>
+              <Col xs={24} sm={24} md={12}>
                 <FormItem name="areaTime" label={t('results.Area')}>
                   <FormSelect
-                    popupMatchSelectWidth={false}
                     allowClear={true}
                     options={
                       raceWizardModel.raceEvent.raceLightCondition === lightConditions.night
@@ -233,7 +233,7 @@ const ResultWizardStep3Ranking = observer(({ saving, onValidate }: IResultWizard
         </>
       ) : null}
       <Row gutter={8}>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <FormItem
             name="rankingBasetimePerKilometer"
             label={t('results.TimePerKilometer')}
@@ -256,7 +256,7 @@ const ResultWizardStep3Ranking = observer(({ saving, onValidate }: IResultWizard
             />
           </FormItem>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <FormItem
             name="rankingBasepoint"
             label={t('results.Ranking')}

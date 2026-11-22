@@ -1,4 +1,4 @@
-import { Layout, message, Spin } from 'antd';
+import { ConfigProvider, Layout, message, Spin } from 'antd';
 import { observer } from 'mobx-react';
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -238,41 +238,45 @@ const App = observer(() => {
         socialModel: socialModel
       }}
     >
-      {contextHolder}
-      <ThemeProvider theme={clubModel.theme}>
-        <Suspense
-          fallback={
-            <SpinnerDiv>
-              <Spin size="large" />
-            </SpinnerDiv>
-          }
-        >
-          <Router>
-            <StyledLayout>
-              <StickyHolder top={scrollStickyPos}>
-                <LayoutHeader $dark={globalStateModel.darkHeader}>
-                  <Link to="/">
-                    <StyledLogo
-                      $grayscale={globalStateModel.darkHeader}
-                      src={clubModel.logo.url}
-                      width={logoWidth}
-                      height={logoHeight}
-                    />
-                  </Link>
-                  {Header}
-                  <Toolbar />
-                </LayoutHeader>
-              </StickyHolder>
-              <LayoutContent $fullWidth={globalStateModel.fullWidthPage}>
-                <AppContent />
-              </LayoutContent>
-            </StyledLayout>
-            {globalStateModel.loginModalVisible ? (
-              <LoginForm open={true} onClose={() => globalStateModel.setLoginModalVisible(false)} />
-            ) : null}
-          </Router>
-        </Suspense>
-      </ThemeProvider>
+      {/* A select list may be wider than its field (at least as wide), the texts are not cut. On a phone
+          index.css keeps it inside the screen. */}
+      <ConfigProvider popupMatchSelectWidth={false}>
+        {contextHolder}
+        <ThemeProvider theme={clubModel.theme}>
+          <Suspense
+            fallback={
+              <SpinnerDiv>
+                <Spin size="large" />
+              </SpinnerDiv>
+            }
+          >
+            <Router>
+              <StyledLayout>
+                <StickyHolder top={scrollStickyPos}>
+                  <LayoutHeader $dark={globalStateModel.darkHeader}>
+                    <Link to="/">
+                      <StyledLogo
+                        $grayscale={globalStateModel.darkHeader}
+                        src={clubModel.logo.url}
+                        width={logoWidth}
+                        height={logoHeight}
+                      />
+                    </Link>
+                    {Header}
+                    <Toolbar />
+                  </LayoutHeader>
+                </StickyHolder>
+                <LayoutContent $fullWidth={globalStateModel.fullWidthPage}>
+                  <AppContent />
+                </LayoutContent>
+              </StyledLayout>
+              {globalStateModel.loginModalVisible ? (
+                <LoginForm open={true} onClose={() => globalStateModel.setLoginModalVisible(false)} />
+              ) : null}
+            </Router>
+          </Suspense>
+        </ThemeProvider>
+      </ConfigProvider>
     </MobxStoreProvider>
   );
 });

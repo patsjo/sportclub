@@ -3,49 +3,17 @@ import { Avatar, Button, Input, message, Popconfirm, Popover, Spin } from 'antd'
 import type { TextAreaRef } from 'antd/es/input/TextArea';
 import dayjs from 'dayjs';
 import { observer } from 'mobx-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { styled } from 'styled-components';
 import { socialKey, SocialTargetType } from '../../models/socialModel';
+import { codesToEmojis, emojiCodes, emojisToCodes, typedToEmojis } from '../../utils/emojiCodes';
 import { useMobxStore } from '../../utils/mobxStore';
 import SocialBar from './SocialBar';
 
-/** The most common ones, and some for orienteering */
-const emojis = [
-  '😀',
-  '😂',
-  '😊',
-  '😍',
-  '🥰',
-  '😎',
-  '🤩',
-  '😮',
-  '😅',
-  '😢',
-  '😡',
-  '🤔',
-  '👍',
-  '👎',
-  '👏',
-  '🙌',
-  '💪',
-  '🙏',
-  '❤️',
-  '🔥',
-  '🎉',
-  '🏆',
-  '🥇',
-  '🥈',
-  '🥉',
-  '🏃',
-  '🧭',
-  '🗺️',
-  '🌲',
-  '☀️',
-  '🌧️',
-  '❄️'
-];
+// The saved text (with the emojis as codes) may be at most this long
 const maxLength = 1000;
+const fitsMaxLength = (text: string) => emojisToCodes(text).length <= maxLength;
 
 const Section = styled.section`
   margin-top: 12px;
@@ -129,6 +97,8 @@ const SocialSection = observer(({ targetType, targetId }: ISocialSectionProps) =
   const [text, setText] = useState('');
   const [emojiOpen, setEmojiOpen] = useState(false);
   const textAreaRef = useRef<TextAreaRef>(null);
+  // Where the cursor goes when a typed code has become an emoji (the text got shorter)
+  const pendingCursor = useRef<number | null>(null);
   const details = socialModel.details.get(socialKey(targetType, targetId));
 
   useEffect(() => {
@@ -140,26 +110,46 @@ const SocialSection = observer(({ targetType, targetId }: ISocialSectionProps) =
       .finally(() => setLoading(false));
   }, [clubModel, messageApi, socialModel, t, targetId, targetType]);
 
+  // Right after the new text is shown, before the next key (a timeout came too late when typing fast)
+  useLayoutEffect(() => {
+    if (pendingCursor.current == null) return;
+    textAreaRef.current?.resizableTextArea?.textArea.setSelectionRange(pendingCursor.current, pendingCursor.current);
+    pendingCursor.current = null;
+  }, [text]);
+
   if (!socialModel.enabled) return null;
 
   const insertEmoji = (emoji: string) => {
     const textArea = textAreaRef.current?.resizableTextArea?.textArea;
     const start = textArea?.selectionStart ?? text.length;
     const end = textArea?.selectionEnd ?? text.length;
-    const newText = (text.slice(0, start) + emoji + text.slice(end)).slice(0, maxLength);
-    setText(newText);
+    const newText = text.slice(0, start) + emoji + text.slice(end);
     setEmojiOpen(false);
+    if (!fitsMaxLength(newText)) return;
+    setText(newText);
     setTimeout(() => {
       textArea?.focus();
       textArea?.setSelectionRange(start + emoji.length, start + emoji.length);
     }, 0);
   };
 
+  // A typed code, e.g. ":-)", is shown as the emoji, the cursor stays after it
+  const onChangeText = (textArea: HTMLTextAreaElement) => {
+    const value = textArea.value;
+    const cursor = textArea.selectionEnd ?? value.length;
+    const beforeCursor = typedToEmojis(value.slice(0, cursor));
+    const newText = beforeCursor + value.slice(cursor);
+    if (!fitsMaxLength(newText)) return;
+    if (newText !== value) pendingCursor.current = beforeCursor.length;
+    setText(newText);
+  };
+
   const onSend = () => {
     if (!text.trim() || sending) return;
     setSending(true);
     socialModel
-      .comment(targetType, targetId, text.trim())
+      // The emojis are saved as codes, the database can't save them
+      .comment(targetType, targetId, emojisToCodes(text.trim()))
       .then(() => setText(''))
       .catch(e => messageApi.error(e?.message))
       .finally(() => setSending(false));
@@ -198,7 +188,7 @@ const SocialSection = observer(({ targetType, targetId }: ISocialSectionProps) =
                   </Popconfirm>
                 ) : null}
               </CommentHeader>
-              <CommentText>{comment.text}</CommentText>
+              <CommentText>{codesToEmojis(comment.text)}</CommentText>
             </CommentBody>
           </Comment>
         ))}
@@ -212,7 +202,7 @@ const SocialSection = observer(({ targetType, targetId }: ISocialSectionProps) =
             autoSize={{ minRows: 1, maxRows: 6 }}
             placeholder={t('social.WriteComment')}
             aria-label={t('social.WriteComment')}
-            onChange={e => setText(e.target.value)}
+            onChange={e => onChangeText(e.target)}
             onPressEnter={e => {
               if (!e.shiftKey) {
                 e.preventDefault();
@@ -225,8 +215,15 @@ const SocialSection = observer(({ targetType, targetId }: ISocialSectionProps) =
             trigger="click"
             content={
               <EmojiGrid>
-                {emojis.map(emoji => (
-                  <button key={emoji} type="button" aria-label={emoji} onClick={() => insertEmoji(emoji)}>
+                {emojiCodes.map(({ emoji, code }) => (
+                  <button
+                    key={emoji}
+                    type="button"
+                    aria-label={emoji}
+                    // The code can also be typed, e.g. :-)
+                    title={code}
+                    onClick={() => insertEmoji(emoji)}
+                  >
                     {emoji}
                   </button>
                 ))}

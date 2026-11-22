@@ -143,10 +143,14 @@ const BannerItem = observer(({ ref, newsObject }: IBannerItemProps) => {
           {Image ? Image : <NewsHeader>{newsObject.header}</NewsHeader>}
         </BannerHolder>
       }
-      modalContent={
-        <ContentHolder>
+      modalTitle={
+        <>
           {Header}
           <NewsTime>{newsObject.modificationDate}</NewsTime>
+        </>
+      }
+      modalContent={
+        <ContentHolder>
           {ImagesBig}
           <NewsIntroduction>
             <SimpleHtmlText text={newsObject.introduction} />

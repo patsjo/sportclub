@@ -6,6 +6,7 @@ import { styled } from 'styled-components';
 import { IModule } from '../../models/mobxClubModel';
 import { SocialTargetType } from '../../models/socialModel';
 import { useMobxStore } from '../../utils/mobxStore';
+import { mobileMediaQuery, useIsMobile } from '../../utils/useIsMobile';
 import { useSize } from '../../utils/useSize';
 import SocialBar from '../social/SocialBar';
 import SocialSection from '../social/SocialSection';
@@ -37,6 +38,34 @@ const ItemFadeOut = styled.div<IItemProps & { height: number | undefined }>`
   `}
 `;
 
+// The dialog fits the screen: the title and the buttons stay, only the body scrolls (whatever the title height).
+// dvh is the visible height on a phone (vh includes the area behind the browser bars), vh is the fallback.
+const StyledModal = styled(Modal)`
+  &&& .ant-modal-container {
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 80px);
+    max-height: calc(100dvh - 80px);
+  }
+  &&& .ant-modal-header,
+  &&& .ant-modal-footer {
+    flex: none;
+  }
+  &&& .ant-modal-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+  }
+  ${mobileMediaQuery} {
+    &&& .ant-modal-container {
+      max-height: calc(100vh - 32px);
+      max-height: calc(100dvh - 32px);
+    }
+  }
+`;
+
 interface IContentProps {
   columns: number;
 }
@@ -65,6 +94,8 @@ interface IFadeOutItemProps {
   social?: IFadeOutItemSocial;
   content: React.ReactNode;
   module: IModule;
+  /** Stays at the top of the dialog when the content scrolls */
+  modalTitle?: React.ReactNode;
   modalContent: React.ReactNode;
   modalColumns: number;
   editFormContent?: React.ReactElement<{ open?: boolean; onClose?: () => void }>;
@@ -80,6 +111,7 @@ const FadeOutItem = observer(
     ref,
     content,
     module,
+    modalTitle,
     modalContent,
     modalColumns,
     editFormContent,
@@ -93,6 +125,7 @@ const FadeOutItem = observer(
   }: IFadeOutItemProps) => {
     const { sessionModel } = useMobxStore();
     const { t } = useTranslation();
+    const isMobile = useIsMobile();
     const [saving, setSaving] = useState(false);
     const [showModalItem, setShowModalItem] = useState(false);
     const [showEdit, setShowEdit] = useState(false);
@@ -201,12 +234,14 @@ const FadeOutItem = observer(
             onComments={openModal}
           />
         ) : null}
-        <Modal
+        <StyledModal
           closable={false}
           maskClosable={false}
           open={showModalItem}
-          width="calc(100% - 80px)"
-          style={{ top: 40, minWidth: 'min(560px, calc(100vw - 16px))', maxWidth: 800 }}
+          title={modalTitle}
+          // % of the visible area (100vw also counts a scrollbar and made the dialog wider than the screen)
+          width="min(800px, max(min(560px, calc(100% - 16px)), calc(100% - 80px)))"
+          style={{ top: isMobile ? 8 : 40, paddingBottom: isMobile ? 8 : undefined }}
           footer={[
             ShowDeleteAllButton,
             ShowDeleteButton,
@@ -219,7 +254,7 @@ const FadeOutItem = observer(
         >
           <StyledModalContent columns={modalColumns}>{modalContent}</StyledModalContent>
           {social && showModalItem ? <SocialSection targetType={social.targetType} targetId={social.targetId} /> : null}
-        </Modal>
+        </StyledModal>
         {EditFormContent}
       </ItemHolder>
     );

@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import { describe, expect, it } from 'vitest';
-import { isEventFeePeriodValid, suggestEventFeePeriod } from './invoicePeriod';
+import { eventFeePeriodStartWarning, isEventFeePeriodValid, suggestEventFeePeriod } from './invoicePeriod';
 
 const period = (periodFrom: string, periodTo: string) => ({ batchId: 1, title: '', periodFrom, periodTo });
 const day = (date: string) => dayjs(date);
@@ -44,8 +44,23 @@ describe('isEventFeePeriodValid', () => {
 
   it('allows the suggested period', () => expect(isEventFeePeriodValid(s, s.from, s.to)).toBe(true));
   it('allows an earlier end', () => expect(isEventFeePeriodValid(s, s.from, day('2026-05-31'))).toBe(true));
-  it('stops an overlap', () => expect(isEventFeePeriodValid(s, day('2025-10-31'), s.to)).toBe(false));
-  it('stops a gap', () => expect(isEventFeePeriodValid(s, day('2025-11-02'), s.to)).toBe(false));
+  it('allows an overlap', () => expect(isEventFeePeriodValid(s, day('2025-10-31'), s.to)).toBe(true));
+  it('allows a gap', () => expect(isEventFeePeriodValid(s, day('2025-11-02'), s.to)).toBe(true));
+  it('stops a start after the end', () =>
+    expect(isEventFeePeriodValid(s, day('2026-06-02'), day('2026-06-01'))).toBe(false));
   it('stops yesterday', () => expect(isEventFeePeriodValid(s, s.from, day('2026-11-16'))).toBe(false));
   it('allows two days ago', () => expect(isEventFeePeriodValid(s, s.from, day('2026-11-15'))).toBe(true));
+});
+
+describe('eventFeePeriodStartWarning', () => {
+  const s = suggestEventFeePeriod([period('2024-11-01', '2025-10-31')], '1031', day('2026-11-17'));
+
+  it('has no warning the day after the last period', () =>
+    expect(eventFeePeriodStartWarning(s, s.from)).toBeUndefined());
+  it('warns for an overlap', () => expect(eventFeePeriodStartWarning(s, day('2025-10-31'))).toBe('OVERLAP'));
+  it('warns for a gap', () => expect(eventFeePeriodStartWarning(s, day('2025-11-02'))).toBe('GAP'));
+  it('has no warning without invoiced periods', () =>
+    expect(
+      eventFeePeriodStartWarning(suggestEventFeePeriod([], '1031', day('2026-11-17')), day('2025-03-01'))
+    ).toBeUndefined());
 });

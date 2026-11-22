@@ -175,6 +175,7 @@ const CalendarEdit = observer(({ title, calendarObject, domains, open, onClose, 
     >
       <StyledModalContent>
         <Form
+          className="responsive-form-fields"
           form={form}
           id={formId}
           layout="vertical"
@@ -206,7 +207,7 @@ const CalendarEdit = observer(({ title, calendarObject, domains, open, onClose, 
             <Input type="hidden" />
           </FormItem>
           <Row gutter={8}>
-            <Col span={12}>
+            <Col xs={24} sm={24} md={12}>
               <FormItem
                 name="iActivityTypeID"
                 label={t('calendar.ActivityType')}
@@ -220,7 +221,7 @@ const CalendarEdit = observer(({ title, calendarObject, domains, open, onClose, 
                 <FormSelect style={{ minWidth: 174 }} options={domains.activityTypes} />
               </FormItem>
             </Col>
-            <Col span={12}>
+            <Col xs={24} sm={24} md={12}>
               <FormItem
                 name="iGroupID"
                 label={t('calendar.Group')}
@@ -248,7 +249,7 @@ const CalendarEdit = observer(({ title, calendarObject, domains, open, onClose, 
             <Input maxLength={32} />
           </FormItem>
           <Row gutter={8}>
-            <Col span={8}>
+            <Col xs={24} sm={12} md={8}>
               <FormItem
                 name="iActivityDay"
                 label={t('calendar.ActivityDay')}
@@ -264,12 +265,12 @@ const CalendarEdit = observer(({ title, calendarObject, domains, open, onClose, 
                 <DatePicker disabled={repeatingDisabled} format={dateFormat} style={{ width: '100%' }} />
               </FormItem>
             </Col>
-            <Col span={8}>
+            <Col xs={24} sm={12} md={8}>
               <FormItem name="iActivityTime" label={t('calendar.ActivityTime')}>
                 <InputTime format={shortTimeFormat} allowClear={true} style={{ width: '100%' }} />
               </FormItem>
             </Col>
-            <Col span={8}>
+            <Col xs={24} sm={12} md={8}>
               <FormItem name="iActivityDurationMinutes" label={t('calendar.DurationMinutes')}>
                 <InputNumber min={0} max={1440} step={15} style={{ width: '100%' }} />
               </FormItem>
@@ -290,7 +291,7 @@ const CalendarEdit = observer(({ title, calendarObject, domains, open, onClose, 
           </FormItem>
           {isRepeating ? (
             <Row gutter={8}>
-              <Col span={16}>
+              <Col xs={24} sm={24} md={16}>
                 <FormItem
                   name="iRepeatingDates"
                   label={t('calendar.RepeatingDates')}
@@ -313,7 +314,7 @@ const CalendarEdit = observer(({ title, calendarObject, domains, open, onClose, 
                   <RangePicker picker="week" format={weekFormat} allowClear={true} style={{ width: '100%' }} />
                 </FormItem>
               </Col>
-              <Col span={8}>
+              <Col xs={24} sm={12} md={8}>
                 <FormItem name="iRepeatingModified" label={t('calendar.RepeatingModified')} valuePropName="checked">
                   <Switch disabled={repeatingModifiedDisabled} />
                 </FormItem>
@@ -324,17 +325,17 @@ const CalendarEdit = observer(({ title, calendarObject, domains, open, onClose, 
             <Input maxLength={64} />
           </FormItem>
           <Row gutter={8}>
-            <Col span={8}>
+            <Col xs={24} sm={12} md={8}>
               <MapButton icon={<GlobalOutlined />} onClick={onChooseMapPosition}>
                 {t('map.ChooseMapPosition')}
               </MapButton>
             </Col>
-            <Col span={8}>
+            <Col xs={24} sm={12} md={8}>
               <FormItem name="iLongitude" label={t('map.Longitude')}>
                 <InputNumber step="0.000001" style={{ width: '100%' }} />
               </FormItem>
             </Col>
-            <Col span={8}>
+            <Col xs={24} sm={12} md={8}>
               <FormItem name="iLatitude" label={t('map.Latitude')}>
                 <InputNumber step="0.000001" style={{ width: '100%' }} />
               </FormItem>

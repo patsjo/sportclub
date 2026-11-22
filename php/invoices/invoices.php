@@ -569,12 +569,7 @@ switch ($input->iType)
       {
         trigger_error('Perioden måste sluta senast ' . addDays($today, -2) . ' (minst två dagar sedan).', E_USER_ERROR);
       }
-      // Locked until the batch is saved, so two can't invoice the same period at the same time
-      $last = sqlFirstRow("SELECT MAX(PERIOD_TO) AS PERIOD_TO FROM INVOICE_BATCHES WHERE BATCH_TYPE = 'EVENT_FEES' FOR UPDATE");
-      if (!is_null($last) && !is_null($last['PERIOD_TO']) && $periodFrom != addDays($last['PERIOD_TO'], 1))
-      {
-        trigger_error('Perioden måste börja ' . addDays($last['PERIOD_TO'], 1) . ', dagen efter den senast fakturerade perioden (inget överlapp eller glapp).', E_USER_ERROR);
-      }
+      // The period should start the day after the last invoiced period, an overlap or a gap is only a warning in the client
     }
 
     $recipients = array();

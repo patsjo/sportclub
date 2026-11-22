@@ -115,13 +115,82 @@ h6 {
   }
 }
 
-/* Mobile first: a dialog uses the width of the phone, with less padding */
+/* Mobile first: a dialog uses the width and height of the phone, with less padding.
+   The title and the buttons stay, only the body scrolls (not the page behind). */
 @media screen and (max-width: 767px) {
   .ant-modal {
-    max-width: calc(100vw - 16px) !important;
+    /* % of the visible area, 100vw also counts a scrollbar */
+    max-width: calc(100% - 16px) !important;
+    top: 8px !important;
+    padding-bottom: 8px !important;
   }
+  /* antd 6 calls the dialog frame ant-modal-container (ant-modal-content in antd 5) */
+  .ant-modal .ant-modal-container,
   .ant-modal .ant-modal-content {
     padding: 16px 12px;
+    display: flex;
+    flex-direction: column;
+    /* dvh is the visible height on a phone (vh includes the area behind the browser bars), vh is the fallback */
+    max-height: calc(100vh - 32px);
+    max-height: calc(100dvh - 32px);
+  }
+  .ant-modal .ant-modal-header,
+  .ant-modal .ant-modal-footer {
+    flex: none;
+  }
+  .ant-modal .ant-modal-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  /* modal.confirm has its title and buttons in the body, there only the content scrolls */
+  .ant-modal.ant-modal-confirm .ant-modal-body {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .ant-modal-confirm .ant-modal-confirm-body-wrapper {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  .ant-modal-confirm .ant-modal-confirm-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    align-items: stretch;
+  }
+  /* The icon stays beside the title */
+  .ant-modal-confirm .ant-modal-confirm-body > .anticon {
+    align-self: flex-start;
+  }
+  .ant-modal-confirm .ant-modal-confirm-paragraph {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+  }
+  .ant-modal-confirm .ant-modal-confirm-title,
+  .ant-modal-confirm .ant-modal-confirm-btns {
+    flex: none;
+  }
+  .ant-modal-confirm .ant-modal-confirm-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+  }
+}
+
+/* Mobile first: form fields in a Row of Cols (xs={24} sm={12} md={…}) wrap, one per row on a phone.
+   The pickers, selects and numbers then also use the whole width of their Col, as the text inputs do. */
+@media screen and (max-width: 767px) {
+  .responsive-form-fields .ant-picker,
+  .responsive-form-fields .ant-input-number,
+  .responsive-form-fields .ant-select {
+    width: 100% !important;
   }
 }
 

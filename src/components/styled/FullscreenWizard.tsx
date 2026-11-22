@@ -18,13 +18,18 @@ const TitleContainer = styled.div`
 `;
 
 interface IContentContainerProps {
-  reduceHeight: number;
+  $reduceHeight: number;
 }
 const ContentContainer = styled.div<IContentContainerProps>`
-  height: calc(100% - ${({ reduceHeight }) => reduceHeight}px);
+  height: calc(100% - ${({ $reduceHeight }) => $reduceHeight}px);
   width: 100%;
   overflow-x: hidden;
   overflow-y: auto;
+`;
+
+const StepsContainer = styled.div`
+  width: 100%;
+  padding-bottom: 8px;
 `;
 
 const FooterContainer = styled.div`
@@ -35,6 +40,8 @@ const FooterContainer = styled.div`
 
 interface IFullScreenModalProps {
   title: ReactNode;
+  /** The steps of the wizard, they stay at the top, only the content below them scrolls */
+  steps?: ReactNode;
   footer: ReactNode;
   children: ReactNode;
   height?: string;
@@ -43,6 +50,7 @@ interface IFullScreenModalProps {
 
 const FullScreenWizard = ({
   title,
+  steps,
   footer,
   children,
   height = 'calc(100vh - 92px)',
@@ -50,7 +58,9 @@ const FullScreenWizard = ({
 }: IFullScreenModalProps) => {
   const footerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const stepsRef = useRef<HTMLDivElement>(null);
   const { height: footerHeight } = useSize(footerRef, false, true, 'client');
+  const { height: stepsHeight } = useSize(stepsRef, false, true, 'offset');
   const { height: contentHeight } = useSize(contentRef, false, true, 'offset');
 
   useEffect(() => {
@@ -64,7 +74,11 @@ const FullScreenWizard = ({
           {title}
         </Title>
       </TitleContainer>
-      <ContentContainer ref={contentRef} reduceHeight={52 + Math.max(32, footerHeight ?? 32) + 16}>
+      {steps ? <StepsContainer ref={stepsRef}>{steps}</StepsContainer> : null}
+      <ContentContainer
+        ref={contentRef}
+        $reduceHeight={52 + (steps ? (stepsHeight ?? 32) : 0) + Math.max(32, footerHeight ?? 32) + 16}
+      >
         {children}
       </ContentContainer>
       <FooterContainer ref={footerRef}>

@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { IAccessRequest, IAccountsList, ILinkAccountRequest, IOAuthAccount } from '../../models/accountModel';
 import { PostJsonData } from '../../utils/api';
 import { useMobxStore } from '../../utils/mobxStore';
+import { useTableScrollHeight } from '../../utils/useTableScrollHeight';
 import { ProviderLogo, providerName } from '../login/ProviderLogos';
 import LinkAccountModal from './LinkAccountModal';
 import { useCompetitorOptions } from './useCompetitorOptions';
@@ -18,6 +19,8 @@ const formatDate = (date: string) => dayjs(date).format('YYYY-MM-DD HH:mm');
 /** Accounts from Google/Facebook and the access requests, for administrators */
 const Accounts = observer(() => {
   const { t } = useTranslation();
+  // The tabs and the table header stay, only the rows scroll
+  const { scrollHeight, tableRef } = useTableScrollHeight();
   const { clubModel, sessionModel } = useMobxStore();
   const [messageApi, contextHolder] = message.useMessage();
   const [data, setData] = useState<IAccountsList>();
@@ -214,15 +217,17 @@ const Accounts = observer(() => {
           <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t('accounts.NoPendingRequests')} />
         )}
       </Card>
-      <Table<IOAuthAccount>
-        size="small"
-        rowKey="oauthId"
-        columns={columns}
-        dataSource={data?.accounts ?? []}
-        pagination={{ pageSize: 50, hideOnSinglePage: true }}
-        scroll={{ x: true }}
-        locale={{ emptyText: t('accounts.NoAccounts') }}
-      />
+      <div ref={tableRef}>
+        <Table<IOAuthAccount>
+          size="small"
+          rowKey="oauthId"
+          columns={columns}
+          dataSource={data?.accounts ?? []}
+          pagination={{ pageSize: 50, hideOnSinglePage: true }}
+          scroll={{ x: true, y: scrollHeight }}
+          locale={{ emptyText: t('accounts.NoAccounts') }}
+        />
+      </div>
       {linking && data ? (
         <LinkAccountModal
           account={linking.account}

@@ -34,6 +34,7 @@ const EditCompetitor = ({ competitor, familyOptions, onChange, onValidate }: IEd
 
   return (
     <Form
+      className="responsive-form-fields"
       id={formId}
       form={form}
       layout="vertical"
@@ -41,7 +42,7 @@ const EditCompetitor = ({ competitor, familyOptions, onChange, onValidate }: IEd
       onValuesChange={() => hasErrors(form).then(notValid => onValidate(!notValid))}
     >
       <Row gutter={8}>
-        <Col span={12}>
+        <Col xs={24} sm={24} md={12}>
           <FormItem
             name="firstName"
             label={t('users.FirstName')}
@@ -55,7 +56,7 @@ const EditCompetitor = ({ competitor, familyOptions, onChange, onValidate }: IEd
             <Input onChange={e => onChange({ firstName: e.currentTarget.value })} />
           </FormItem>
         </Col>
-        <Col span={12}>
+        <Col xs={24} sm={24} md={12}>
           <FormItem
             name="lastName"
             label={t('users.LastName')}
@@ -71,7 +72,7 @@ const EditCompetitor = ({ competitor, familyOptions, onChange, onValidate }: IEd
         </Col>
       </Row>
       <Row gutter={8}>
-        <Col span={12}>
+        <Col xs={24} sm={24} md={12}>
           <FormItem
             name="birthDay"
             label={t('users.BirthDay')}
@@ -84,7 +85,7 @@ const EditCompetitor = ({ competitor, familyOptions, onChange, onValidate }: IEd
             />
           </FormItem>
         </Col>
-        <Col span={12}>
+        <Col xs={24} sm={24} md={12}>
           <FormItem name="gender" label={t('users.Gender')}>
             <FormSelect
               style={{ minWidth: 60, maxWidth: 100 }}
@@ -95,7 +96,7 @@ const EditCompetitor = ({ competitor, familyOptions, onChange, onValidate }: IEd
         </Col>
       </Row>
       <Row gutter={8}>
-        <Col span={12}>
+        <Col xs={24} sm={24} md={12}>
           <FormItem
             name="startDate"
             label={t('results.StartDate')}
@@ -109,7 +110,7 @@ const EditCompetitor = ({ competitor, familyOptions, onChange, onValidate }: IEd
             />
           </FormItem>
         </Col>
-        <Col span={12}>
+        <Col xs={24} sm={24} md={12}>
           <FormItem
             name="endDate"
             label={t('results.EndDate')}
@@ -125,7 +126,7 @@ const EditCompetitor = ({ competitor, familyOptions, onChange, onValidate }: IEd
         </Col>
       </Row>
       <Row gutter={8}>
-        <Col span={12}>
+        <Col xs={24} sm={24} md={12}>
           <FormItem name="familyId" label={t('users.FamilySelect')}>
             <FormSelect
               allowClear
@@ -161,7 +162,7 @@ const EditCompetitor = ({ competitor, familyOptions, onChange, onValidate }: IEd
             />
           </FormItem>
         </Col>
-        <Col span={12}>
+        <Col xs={24} sm={24} md={12}>
           <FormItem
             name="eventorCompetitorIds"
             label="Eventor Id"

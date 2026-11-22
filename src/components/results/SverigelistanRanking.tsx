@@ -218,7 +218,6 @@ const SverigelistanRanking = observer(({ onChoose }: ISverigelistanRankingProps)
           {options.length ? (
             <Select
               style={{ width: '100%' }}
-              popupMatchSelectWidth={false}
               placeholder={t('results.Sverigelistan')}
               value={chosen}
               options={options.map(option => ({ value: option.className, label: label(option) }))}

@@ -68,6 +68,8 @@ export interface IEventFeesPreset {
   dueDate: dayjs.Dayjs;
   periodFrom: string;
   periodTo: string;
+  /** The period doesn't start the day after the last invoiced period (overlap or gap) */
+  periodWarning?: string;
   /** Competitors without family, and families, with the fees */
   recipients: ICreateInvoiceRecipient[];
   /** The specification of the selected recipients (loaded from the results when the invoices are created) */
@@ -424,7 +426,11 @@ const CreateInvoiceModal = observer(({ batchType, eventFees, onClose }: ICreateI
             </>
           ) : (
             <Col xs={24} md={8}>
-              <FormItem label={t('results.QueryStartDate') + ' – ' + t('results.QueryEndDate')}>
+              <FormItem
+                label={t('results.QueryStartDate') + ' – ' + t('results.QueryEndDate')}
+                validateStatus={eventFees?.periodWarning ? 'warning' : undefined}
+                help={eventFees?.periodWarning}
+              >
                 <Input disabled value={`${eventFees?.periodFrom} – ${eventFees?.periodTo}`} />
               </FormItem>
             </Col>

@@ -28,7 +28,6 @@ import {
   GetRanking
 } from '../../utils/resultHelper';
 import { ResultWizardStoreProvider } from '../../utils/resultWizardStore';
-import { useSize } from '../../utils/useSize';
 import FullScreenWizard from '../styled/FullscreenWizard';
 import { SpinnerDiv, StyledIcon } from '../styled/styled';
 import { ConfirmEditMode } from './ConfirmEditModePromise';
@@ -44,10 +43,6 @@ import ResultWizardStep3Ranking from './ResultsWizardStep3Ranking';
 import { SelectEventorIdConfirmModal } from './SelectEventorIdConfirmModal';
 import WizardSteps from '../styled/WizardSteps';
 
-const StyledFullWidth = styled.div`
-  width: 100%;
-  padding-bottom: 8px;
-`;
 const StyledModalContent = styled.div``;
 
 const ResultsWizard = observer(() => {
@@ -61,8 +56,6 @@ const ResultsWizard = observer(() => {
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
   const [contentOffsetHeight, setContentOffsetHeight] = useState(0);
-  const stepsRef = useRef<HTMLDivElement>(null);
-  const { height: stepsHeight } = useSize(stepsRef, false, true, 'offset');
   const [ctrlAltDown, setCtrlAltDown] = useState(false);
   const [autoUpdateResultWithSameClass, setAutoUpdateResultWithSameClass] = useState(true);
   const navigate = useNavigate();
@@ -586,24 +579,25 @@ const ResultsWizard = observer(() => {
             </Button>
           )
         ].filter(component => !!component)}
+        // The steps stay at the top, only the content between them and the buttons scrolls
+        steps={
+          <WizardSteps
+            current={wizardStep}
+            items={[
+              { title: t('results.Step0Input') },
+              { title: t('results.Step1ChooseRace') },
+              { title: t('results.Step2EditRace') },
+              { title: t('results.Step3Ranking') }
+            ]}
+          />
+        }
         onContentOffsetHeight={setContentOffsetHeight}
       >
         <StyledModalContent>
-          <StyledFullWidth ref={stepsRef}>
-            <WizardSteps
-              current={wizardStep}
-              items={[
-                { title: t('results.Step0Input') },
-                { title: t('results.Step1ChooseRace') },
-                { title: t('results.Step2EditRace') },
-                { title: t('results.Step3Ranking') }
-              ]}
-            />
-          </StyledFullWidth>
           {wizardStep === 0 ? <ResultWizardStep0Input /> : null}
           {wizardStep >= 1 && raceWizardModel.current.existInEventor ? (
             <ResultWizardStep1ChooseRace
-              height={Math.max(128, contentOffsetHeight - (stepsHeight ?? 32))}
+              height={Math.max(128, contentOffsetHeight)}
               visible={wizardStep === 1}
               onValidate={onValidate}
               onFailed={prev}
@@ -614,7 +608,7 @@ const ResultsWizard = observer(() => {
           ) : null}
           {wizardStep >= 2 ? (
             <ResultWizardStep2EditRace
-              height={Math.max(276, contentOffsetHeight - (stepsHeight ?? 32))}
+              height={Math.max(276, contentOffsetHeight)}
               autoUpdateResultWithSameClass={autoUpdateResultWithSameClass}
               visible={wizardStep === 2}
               onValidate={onValidate}

@@ -8,6 +8,7 @@ import { IofXmlToJson } from '../../utils/iofXmlToJson';
 import { ParsePastedResults, ResultsBookmarklet } from '../../utils/resultPages';
 import { FetchWinSplitsResults, ToExternalResultList, WinSplitsDatabaseId } from '../../utils/resultSources';
 import FormItem from '../formItems/FormItem';
+import { useIsMobile } from '../../utils/useIsMobile';
 
 // The names of races and files are shown by React, not as HTML
 const noEscape = { interpolation: { escapeValue: false } };
@@ -64,6 +65,7 @@ const ImportExternalResults = ({
   onError
 }: IImportExternalResultsProps) => {
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
   const [source, setSource] = useState<ImportSource>('winsplits');
   const [link, setLink] = useState('');
   const bookmarkRef = useRef<HTMLAnchorElement>(null);
@@ -135,11 +137,10 @@ const ImportExternalResults = ({
 
   return (
     <Row gutter={8} align="bottom">
-      <Col span={4}>
+      <Col xs={24} sm={12} md={4}>
         <FormItem label={t('results.ImportSource')}>
           <Select
             value={source}
-            popupMatchSelectWidth={false}
             options={[
               { value: 'winsplits', label: 'WinSplits Online' },
               { value: 'page', label: t('results.ImportSourcePage') },
@@ -149,7 +150,7 @@ const ImportExternalResults = ({
           />
         </FormItem>
       </Col>
-      <Col span={9}>
+      <Col xs={24} sm={12} md={9}>
         {source === 'winsplits' ? (
           <FormItem label={t('results.ImportLink')} tooltip={t('results.ImportWinSplitsTooltip')}>
             <Input
@@ -177,13 +178,14 @@ const ImportExternalResults = ({
           </FormItem>
         )}
       </Col>
-      <Col span={7}>
+      <Col xs={24} sm={12} md={7}>
         <FormItem label={t('results.ImportClubNames')} tooltip={t('results.ImportClubNamesTooltip')}>
           <Input value={clubNames} onChange={e => onClubNamesChange(e.currentTarget.value)} />
         </FormItem>
       </Col>
-      <Col span={4}>
-        <FormItem label=" ">
+      <Col xs={24} sm={12} md={4}>
+        {/* The empty label puts the button in line with the fields, on a phone it is on a row of its own */}
+        <FormItem label={isMobile ? undefined : ' '}>
           {source === 'winsplits' ? (
             <Button
               block

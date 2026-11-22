@@ -148,9 +148,11 @@ export const invoicesSv = {
   PreviousPeriods: 'Tidigare fakturerade perioder',
   NoPreviousPeriods: 'Inga perioder är fakturerade än.',
   PeriodRule:
-    'Perioden börjar {{from}}, dagen efter den senast fakturerade, och måste sluta senast {{maxDate}} (minst två dagar sedan).',
+    'Perioden bör börja {{from}}, dagen efter den senast fakturerade, och måste sluta senast {{maxDate}} (minst två dagar sedan).',
   PeriodRuleFirst: 'Perioden måste sluta senast {{maxDate}} (minst två dagar sedan).',
   PeriodEmpty: 'Det finns ingen period att fakturera, den senast fakturerade slutar {{to}}.',
+  PeriodOverlap: 'Överlappar föregående period, bör vara {{expected}}',
+  PeriodGap: 'Glapp mot föregående period, bör vara {{expected}}',
   LoadingFees: 'Hämtar tävlingsavgifterna',
   LoadFailed: 'Kunde inte hämta fakturorna ({{error}}).',
   LoadPeriodsFailed:
@@ -308,9 +310,11 @@ export const invoicesEn: typeof invoicesSv = {
   PreviousPeriods: 'Previously invoiced periods',
   NoPreviousPeriods: 'No periods are invoiced yet.',
   PeriodRule:
-    'The period starts {{from}}, the day after the last invoiced, and must end {{maxDate}} at the latest (at least two days ago).',
+    'The period should start {{from}}, the day after the last invoiced, and must end {{maxDate}} at the latest (at least two days ago).',
   PeriodRuleFirst: 'The period must end {{maxDate}} at the latest (at least two days ago).',
   PeriodEmpty: 'There is no period to invoice, the last invoiced ends {{to}}.',
+  PeriodOverlap: 'Overlaps the previous period, should be {{expected}}',
+  PeriodGap: 'Gap to the previous period, should be {{expected}}',
   LoadingFees: 'Loading the event fees',
   LoadFailed: "Couldn't load the invoices ({{error}}).",
   LoadPeriodsFailed:

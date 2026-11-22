@@ -343,19 +343,25 @@ const InvoiceWizardStep2EditRace = observer(
     );
 
     return loaded && raceWizardModel.raceEvent && visible ? (
-      <Form form={form} id={formId} layout="vertical" initialValues={raceWizardModel.raceEvent}>
+      <Form
+        className="responsive-form-fields"
+        form={form}
+        id={formId}
+        layout="vertical"
+        initialValues={raceWizardModel.raceEvent}
+      >
         <Row gutter={8}>
-          <Col span={8}>
+          <Col xs={24} sm={12} md={8}>
             <FormItem name="name" label={t('results.Name')}>
               <Input disabled={true} />
             </FormItem>
           </Col>
-          <Col span={8}>
+          <Col xs={24} sm={12} md={8}>
             <FormItem name="organiserName" label={t('results.Club')}>
               <Input disabled={true} />
             </FormItem>
           </Col>
-          <Col span={4}>
+          <Col xs={24} sm={12} md={4}>
             <FormItem
               name="raceDate"
               label={t('results.Date')}
@@ -365,7 +371,7 @@ const InvoiceWizardStep2EditRace = observer(
               <DatePicker format={dateFormat} disabled={true} />
             </FormItem>
           </Col>
-          <Col span={4}>
+          <Col xs={24} sm={12} md={4}>
             <FormItem name="raceTime" label={t('results.Time')}>
               <InputTime format={shortTimeFormat} disabled={true} />
             </FormItem>

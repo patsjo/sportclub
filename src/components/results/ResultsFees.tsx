@@ -9,7 +9,12 @@ import { PickRequired } from '../../models/typescriptPartial';
 import { PostJsonData } from '../../utils/api';
 import { getTextColorBasedOnBackground } from '../../utils/colorHelper';
 import { dateFormat, errorRequiredField } from '../../utils/formHelper';
-import { IEventFeePeriodSuggestion, isEventFeePeriodValid, suggestEventFeePeriod } from '../../utils/invoicePeriod';
+import {
+  eventFeePeriodStartWarning,
+  IEventFeePeriodSuggestion,
+  isEventFeePeriodValid,
+  suggestEventFeePeriod
+} from '../../utils/invoicePeriod';
 import { useMobxStore } from '../../utils/mobxStore';
 import { IPrintTableColumn } from '../../utils/pdf';
 import {
@@ -507,6 +512,14 @@ const ResultsFees = observer(() => {
   );
 
   const periodValid = !!suggestion && !!fromDate && !!toDate && isEventFeePeriodValid(suggestion, fromDate, toDate);
+  // Allowed, but the start isn't the day after the last invoiced period (overlap or gap)
+  const periodStartWarning = useMemo(() => {
+    if (!suggestion?.fixedFrom || !fromDate) return undefined;
+    const warning = eventFeePeriodStartWarning(suggestion, fromDate);
+    if (!warning) return undefined;
+    const expected = suggestion.fixedFrom.format(dateFormat);
+    return warning === 'OVERLAP' ? t('invoices.PeriodOverlap', { expected }) : t('invoices.PeriodGap', { expected });
+  }, [fromDate, suggestion, t]);
 
   const onCreateInvoices = useCallback(() => {
     if (!fromDate || !toDate || !fees) return;
@@ -528,6 +541,7 @@ const ResultsFees = observer(() => {
         dueDate && !dueDate.isBefore(dayjs(), 'day') ? dueDate : dayjs().add(clubModel.invoice.daysToDueDate, 'days'),
       periodFrom: fromDate.format(dateFormat),
       periodTo: toDate.format(dateFormat),
+      periodWarning: periodStartWarning,
       recipients,
       // The same specification as the PDF invoices
       loadRows: async (selected, onProgress) => {
@@ -554,7 +568,7 @@ const ResultsFees = observer(() => {
         return rows;
       }
     });
-  }, [clubModel.invoice.daysToDueDate, dueDate, fees, fromDate, getPrintObject, t, toDate]);
+  }, [clubModel.invoice.daysToDueDate, dueDate, fees, fromDate, getPrintObject, periodStartWarning, t, toDate]);
 
   const Spinner = (
     <SpinnerDiv>
@@ -579,6 +593,9 @@ const ResultsFees = observer(() => {
         <FormItem
           name="FromDate"
           label={t('results.QueryStartDate')}
+          // Allowed, but warns when it isn't the day after the last invoiced period
+          validateStatus={periodStartWarning ? 'warning' : undefined}
+          help={periodStartWarning}
           rules={[
             {
               required: true,
@@ -591,7 +608,6 @@ const ResultsFees = observer(() => {
           <DatePicker
             format={dateFormat}
             allowClear={false}
-            disabled={!!suggestion?.fixedFrom}
             disabledDate={date =>
               !!suggestion && (date.isAfter(suggestion.maxTo, 'day') || (!!toDate && date.isAfter(toDate, 'day')))
             }
@@ -642,7 +658,6 @@ const ResultsFees = observer(() => {
             }}
             disabled={loading}
             style={{ maxWidth: 600, minWidth: 200 }}
-            popupMatchSelectWidth={false}
             options={
               loading || !fees
                 ? []

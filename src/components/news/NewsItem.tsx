@@ -127,13 +127,17 @@ const NewsItem = observer(({ ref, newsObject }: INewsItemProps) => {
           <NewsBy>{newsObject.modifiedBy}</NewsBy>
         </ContentHolder>
       }
-      modalContent={
-        <ContentHolder>
+      modalTitle={
+        <>
           <NewsHeader>
             {FileDownloads}
             {newsObject.header}
           </NewsHeader>
           <NewsTime>{newsObject.modificationDate}</NewsTime>
+        </>
+      }
+      modalContent={
+        <ContentHolder>
           {ImagesBig}
           <NewsIntroduction>
             <SimpleHtmlText text={newsObject.introduction} />

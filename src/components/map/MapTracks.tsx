@@ -46,11 +46,57 @@ const ContentArea = styled.div`
     }
   }
 `;
+type SplitterLayout = 'vertical' | 'horizontal';
+interface IListSize {
+  size: number;
+  /** Only a phone can fold away a panel */
+  mapCollapsed: boolean;
+}
+type ListSizes = Partial<Record<SplitterLayout, IListSize>>;
+
+// The dragged size of the list is remembered to the next visit, on a phone and a bigger screen separately
+const listSizesStorageKey = 'mapTracksListSizes';
+const readListSizes = (): ListSizes => {
+  try {
+    const saved = JSON.parse(localStorage.getItem(listSizesStorageKey) ?? '{}');
+    const listSizes: ListSizes = {};
+    (['vertical', 'horizontal'] as const).forEach(layout => {
+      const size = saved?.[layout]?.size;
+      if (typeof size === 'number' && size > 0) listSizes[layout] = { size, mapCollapsed: false };
+    });
+    return listSizes;
+  } catch {
+    return {};
+  }
+};
+const writeListSize = (layout: SplitterLayout, size: number) => {
+  try {
+    localStorage.setItem(listSizesStorageKey, JSON.stringify({ ...readListSizes(), [layout]: { size } }));
+  } catch {
+    // Not possible to remember, e.g. a private window
+  }
+};
+
+// A panel can't be dragged smaller than this, on a phone both the list and the map stay usable
+const minPanelSize = 250;
+// The gap beside the divider is padding (inside the size the splitter sets), a margin made the panels overflow
+// Where the splitter is, measured to keep the list size in pixels.
+// dvh is the visible height on a phone (vh includes the area behind the browser bars).
+const SplitterArea = styled.div`
+  position: absolute;
+  top: 64px;
+  left: 0;
+  width: 100%;
+  height: calc(100dvh - 64px);
+`;
 const StyledSplitter = styled(Splitter)<{ vertical: boolean }>`
+  &&& .list-panel {
+    padding-right: ${props => (props.vertical ? '0' : '6px')};
+    padding-bottom: ${props => (props.vertical ? '6px' : '0')};
+  }
   &&& .map-panel {
-    flex-basis: 100% !important;
-    margin-left: ${props => (props.vertical ? '0' : '6px')};
-    margin-top: ${props => (props.vertical ? '6px' : '0')};
+    padding-left: ${props => (props.vertical ? '0' : '6px')};
+    padding-top: ${props => (props.vertical ? '6px' : '0')};
   }
 `;
 
@@ -60,6 +106,8 @@ const MapTracks = () => {
   const [form] = Form.useForm<IMapTracksFormProps>();
   const ref = useRef<HTMLDivElement>(null);
   const { width, height } = useSize(ref, true, true);
+  const splitterAreaRef = useRef<HTMLDivElement>(null);
+  const splitterArea = useSize(splitterAreaRef, true, true);
   const tracks = Form.useWatch('tracks', form);
   const [map, setMap] = useState<Map>();
   const [loadedValues, setLoadedValues] = useState<IMapTracksFormProps['tracks']>();
@@ -159,6 +207,22 @@ const MapTracks = () => {
     [t]
   );
   const isVertical = useMemo(() => width !== undefined && width < 700, [width]);
+  const layout: SplitterLayout = isVertical ? 'vertical' : 'horizontal';
+  // The size the list got by dragging, kept in pixels when the window is resized (not in % as antd does)
+  const [draggedListSizes, setDraggedListSizes] = useState<ListSizes>(readListSizes);
+  const listMinSize = isVertical ? minPanelSize : 400;
+  const listMaxSize = isVertical ? undefined : 1000;
+  const splitterSize = isVertical ? splitterArea.height : splitterArea.width;
+  const listSize = useMemo(() => {
+    if (splitterSize === undefined) return undefined;
+    const dragged = draggedListSizes[layout];
+    if (dragged?.size === 0) return 0;
+    if (dragged?.mapCollapsed) return splitterSize;
+    // At start 35% of the screen. Never outside the limits, the map keeps at least minPanelSize.
+    const size = dragged?.size ?? Math.round(splitterSize * 0.35);
+    const maxSize = Math.min(listMaxSize ?? splitterSize, splitterSize - minPanelSize);
+    return Math.max(listMinSize, Math.min(size, maxSize));
+  }, [draggedListSizes, layout, listMaxSize, listMinSize, splitterSize]);
 
   const onRemove = useCallback(
     (trackId: string | string[], index: number | number[], removeFn: (index: number | number[]) => void) => {
@@ -292,175 +356,190 @@ const MapTracks = () => {
       <MapContainer ref={ref}>
         <Form.List name="tracks">
           {(fields, { add, remove }) => (
-            <StyledSplitter
-              vertical={isVertical}
-              style={{ position: 'absolute', top: 64, left: 0, height: 'calc(100vh - 64px)', width: '100vw' }}
-            >
-              <Splitter.Panel
-                collapsible
-                defaultSize="35%"
-                min={isVertical ? undefined : 400}
-                max={1000}
-                style={{ minWidth: isVertical ? undefined : 400, minHeight: 400, marginRight: 6, marginBottom: 6 }}
-              >
-                <ContentArea>
-                  <FullScreenWizard
-                    title={t('map.Tracks')}
-                    height="100%"
-                    footer={
-                      editable
-                        ? [
-                            <Button
-                              key="saveButton"
-                              type="primary"
-                              disabled={!submittable || saving}
-                              loading={saving}
-                              onClick={() => {
-                                form.validateFields().then(values => {
-                                  onSave(values);
-                                });
-                              }}
-                            >
-                              {t('common.Save')}
-                            </Button>,
-                            <Button key="cancelButton" loading={false} onClick={onCancel}>
-                              {t('common.Cancel')}
-                            </Button>
-                          ]
-                        : sessionModel.isAdmin
-                          ? [
-                              <Button
-                                key="editButton"
-                                disabled={!width || !height || width < 1200 || height < 800}
-                                type="primary"
-                                onClick={() => setEditable(true)}
-                              >
-                                {t('common.Edit')}
-                              </Button>
-                            ]
-                          : undefined
-                    }
+            <SplitterArea ref={splitterAreaRef}>
+              {listSize === undefined ? null : (
+                <StyledSplitter
+                  vertical={isVertical}
+                  style={{ height: '100%', width: '100%' }}
+                  onResize={sizes =>
+                    setDraggedListSizes(previous => ({
+                      ...previous,
+                      [layout]: { size: sizes[0], mapCollapsed: isVertical && sizes[1] === 0 }
+                    }))
+                  }
+                  // A folded away panel isn't remembered, the next visit shows both again
+                  onResizeEnd={sizes => {
+                    if (sizes[0] > 0 && sizes[1] > 0) writeListSize(layout, Math.round(sizes[0]));
+                  }}
+                >
+                  <Splitter.Panel
+                    // Only a phone can fold away a panel, on a bigger screen the limits always apply
+                    collapsible={isVertical}
+                    className="list-panel"
+                    size={listSize}
+                    min={listMinSize}
+                    max={listMaxSize}
                   >
-                    <Space vertical style={{ display: 'flex' }}>
-                      {editable ? (
-                        <>
-                          <Alert showIcon title={t('map.createTrackByStartDrawInMap')} type="info" />
-                          <Upload
-                            accept=".gpx"
-                            showUploadList={false}
-                            fileList={[]}
-                            style={{ width: '100%' }}
-                            beforeUpload={async file => {
-                              try {
-                                const geometry = await parseGpx(file);
-                                add({
-                                  trackId: uuidv4(),
-                                  line: geometry,
-                                  symbolSvg: undefined,
-                                  showByDefault: false,
-                                  orderBy: tracks?.length ?? 0
-                                });
-                                message.success(t('map.gpxImported'));
-                              } catch (e) {
-                                if (e && (e as { message: string }).message)
-                                  message.error((e as { message: string }).message);
+                    <ContentArea>
+                      <FullScreenWizard
+                        title={t('map.Tracks')}
+                        height="100%"
+                        footer={
+                          editable
+                            ? [
+                                <Button
+                                  key="saveButton"
+                                  type="primary"
+                                  disabled={!submittable || saving}
+                                  loading={saving}
+                                  onClick={() => {
+                                    form.validateFields().then(values => {
+                                      onSave(values);
+                                    });
+                                  }}
+                                >
+                                  {t('common.Save')}
+                                </Button>,
+                                <Button key="cancelButton" loading={false} onClick={onCancel}>
+                                  {t('common.Cancel')}
+                                </Button>
+                              ]
+                            : sessionModel.isAdmin
+                              ? [
+                                  <Button
+                                    key="editButton"
+                                    disabled={!width || !height || width < 1200 || height < 800}
+                                    type="primary"
+                                    onClick={() => setEditable(true)}
+                                  >
+                                    {t('common.Edit')}
+                                  </Button>
+                                ]
+                              : undefined
+                        }
+                      >
+                        <Space vertical style={{ display: 'flex' }}>
+                          {editable ? (
+                            <>
+                              <Alert showIcon title={t('map.createTrackByStartDrawInMap')} type="info" />
+                              <Upload
+                                accept=".gpx"
+                                showUploadList={false}
+                                fileList={[]}
+                                style={{ width: '100%' }}
+                                beforeUpload={async file => {
+                                  try {
+                                    const geometry = await parseGpx(file);
+                                    add({
+                                      trackId: uuidv4(),
+                                      line: geometry,
+                                      symbolSvg: undefined,
+                                      showByDefault: false,
+                                      orderBy: tracks?.length ?? 0
+                                    });
+                                    message.success(t('map.gpxImported'));
+                                  } catch (e) {
+                                    if (e && (e as { message: string }).message)
+                                      message.error((e as { message: string }).message);
+                                  }
+                                  return false;
+                                }}
+                              >
+                                <Button block type="dashed" size="large" icon={<UploadOutlined />}>
+                                  {t('map.uploadGpx')}
+                                </Button>
+                              </Upload>
+                            </>
+                          ) : null}
+                          {fields.map(field => (
+                            <MapTrack
+                              key={`map-track-${form.getFieldValue(['tracks', field.name, 'trackId'])}`}
+                              map={map}
+                              form={form}
+                              field={field}
+                              defaultTrackMarkings={defaultTrackMarkings}
+                              visibleTrackIds={visibleTrackIds}
+                              editable={editable}
+                              remove={(trackId: string | string[], index: number | number[]) =>
+                                onRemove(trackId, index, remove)
                               }
-                              return false;
+                              moveUp={moveUp}
+                              moveDown={moveDown}
+                              setSvgModalVisible={setSvgModalVisible}
+                              setEditingSvg={setEditingSvg}
+                              setEditingIndex={setEditingIndex}
+                              setEditTrackIds={setEditTrackIds}
+                              toggleLayerVisibility={toggleLayerVisibility}
+                              toggleGroupLayerVisibility={toggleGroupLayerVisibility}
+                            />
+                          ))}
+                        </Space>
+                        {editable ? (
+                          <Modal
+                            title={t('map.EditSvg') || 'Edit SVG'}
+                            open={svgModalVisible}
+                            onOk={() => {
+                              if (editingIndex !== null) {
+                                form.setFieldValue(['tracks', editingIndex, 'symbolSvg'], editingSvg);
+                              }
+                              setSvgModalVisible(false);
+                              setEditingIndex(null);
+                            }}
+                            onCancel={() => {
+                              setSvgModalVisible(false);
+                              setEditingIndex(null);
                             }}
                           >
-                            <Button block type="dashed" size="large" icon={<UploadOutlined />}>
-                              {t('map.uploadGpx')}
-                            </Button>
-                          </Upload>
-                        </>
-                      ) : null}
-                      {fields.map(field => (
-                        <MapTrack
-                          key={`map-track-${form.getFieldValue(['tracks', field.name, 'trackId'])}`}
-                          map={map}
-                          form={form}
-                          field={field}
-                          defaultTrackMarkings={defaultTrackMarkings}
-                          visibleTrackIds={visibleTrackIds}
-                          editable={editable}
-                          remove={(trackId: string | string[], index: number | number[]) =>
-                            onRemove(trackId, index, remove)
+                            <Input.TextArea
+                              value={editingSvg}
+                              autoSize={{ minRows: 4, maxRows: 20 }}
+                              onChange={e => setEditingSvg(e.target.value)}
+                            />
+                          </Modal>
+                        ) : null}
+                      </FullScreenWizard>
+                    </ContentArea>
+                  </Splitter.Panel>
+                  <Splitter.Panel className="map-panel" collapsible={isVertical} min={minPanelSize}>
+                    <OSMOrienteeringMap
+                      key="mapOnly"
+                      useAllWidgets
+                      height="100%"
+                      width="100%"
+                      containerId="mapOnly"
+                      mapCenter={clubModel.map?.center}
+                      defaultExtent={defaultExtent}
+                      onLoaded={setMap}
+                    >
+                      {editable ? (
+                        <EditableMapTracksLayer
+                          key="editableTracks"
+                          tracks={tracks}
+                          editTrackIds={editTrackIds}
+                          onDrawComplete={geometry =>
+                            add({
+                              trackId: uuidv4(),
+                              line: geometry,
+                              symbolSvg: undefined,
+                              showByDefault: false,
+                              orderBy: tracks?.length ?? 0
+                            })
                           }
-                          moveUp={moveUp}
-                          moveDown={moveDown}
-                          setSvgModalVisible={setSvgModalVisible}
-                          setEditingSvg={setEditingSvg}
-                          setEditingIndex={setEditingIndex}
-                          setEditTrackIds={setEditTrackIds}
-                          toggleLayerVisibility={toggleLayerVisibility}
-                          toggleGroupLayerVisibility={toggleGroupLayerVisibility}
-                        />
-                      ))}
-                    </Space>
-                    {editable ? (
-                      <Modal
-                        title={t('map.EditSvg') || 'Edit SVG'}
-                        open={svgModalVisible}
-                        onOk={() => {
-                          if (editingIndex !== null) {
-                            form.setFieldValue(['tracks', editingIndex, 'symbolSvg'], editingSvg);
+                          onModifyComplete={features =>
+                            features.forEach(feature => {
+                              const index = tracks.findIndex(track => track.trackId === feature.trackId);
+                              if (index >= 0) form.setFieldValue(['tracks', index, 'line'], feature.geometry);
+                            })
                           }
-                          setSvgModalVisible(false);
-                          setEditingIndex(null);
-                        }}
-                        onCancel={() => {
-                          setSvgModalVisible(false);
-                          setEditingIndex(null);
-                        }}
-                      >
-                        <Input.TextArea
-                          value={editingSvg}
-                          autoSize={{ minRows: 4, maxRows: 20 }}
-                          onChange={e => setEditingSvg(e.target.value)}
                         />
-                      </Modal>
-                    ) : null}
-                  </FullScreenWizard>
-                </ContentArea>
-              </Splitter.Panel>
-              <Splitter.Panel collapsible className="map-panel">
-                <OSMOrienteeringMap
-                  key="mapOnly"
-                  useAllWidgets
-                  height="100%"
-                  width="100%"
-                  containerId="mapOnly"
-                  mapCenter={clubModel.map?.center}
-                  defaultExtent={defaultExtent}
-                  onLoaded={setMap}
-                >
-                  {editable ? (
-                    <EditableMapTracksLayer
-                      key="editableTracks"
-                      tracks={tracks}
-                      editTrackIds={editTrackIds}
-                      onDrawComplete={geometry =>
-                        add({
-                          trackId: uuidv4(),
-                          line: geometry,
-                          symbolSvg: undefined,
-                          showByDefault: false,
-                          orderBy: tracks?.length ?? 0
-                        })
-                      }
-                      onModifyComplete={features =>
-                        features.forEach(feature => {
-                          const index = tracks.findIndex(track => track.trackId === feature.trackId);
-                          if (index >= 0) form.setFieldValue(['tracks', index, 'line'], feature.geometry);
-                        })
-                      }
-                    />
-                  ) : (
-                    <MapTracksLayers key="nonEditableTracks" onLoad={setLoadedValues} />
-                  )}
-                </OSMOrienteeringMap>
-              </Splitter.Panel>
-            </StyledSplitter>
+                      ) : (
+                        <MapTracksLayers key="nonEditableTracks" onLoad={setLoadedValues} />
+                      )}
+                    </OSMOrienteeringMap>
+                  </Splitter.Panel>
+                </StyledSplitter>
+              )}
+            </SplitterArea>
           )}
         </Form.List>
       </MapContainer>

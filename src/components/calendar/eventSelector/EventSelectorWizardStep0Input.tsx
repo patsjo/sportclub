@@ -11,6 +11,7 @@ import { useMobxStore } from '../../../utils/mobxStore';
 import { IEventorOrganisation } from '../../../utils/responseEventorInterfaces';
 import FormItem from '../../formItems/FormItem';
 import OSMOrienteeringMap from '../../map/OSMOrienteeringMap';
+import { useIsMobile } from '../../../utils/useIsMobile';
 
 export const MaxDistance = 2000;
 const { RangePicker } = DatePicker;
@@ -22,6 +23,14 @@ const MapContainer = styled.div<IMapContainerProps>`
   float: right;
   height: ${({ height }) => height}px;
   width: calc(100% - 400px);
+`;
+
+// On a phone the map is in the form, after the distances it shows (beside the form there is no room)
+const mobileMapHeight = 250;
+const MobileMapContainer = styled.div`
+  height: ${mobileMapHeight}px;
+  width: 100%;
+  margin-bottom: 16px;
 `;
 
 const StyledFullWidth = styled.div`
@@ -46,6 +55,7 @@ const EventSelectorWizardStep0Input = observer(
   ({ eventSelectorWizardModel, eventorOrganisations, height, onMount }: IEventSelectorWizardStep0InputProps) => {
     const { t } = useTranslation();
     const { clubModel } = useMobxStore();
+    const isMobile = useIsMobile();
     const [form] = Form.useForm<IEventSelectorWizardStep0FormProps>();
     const [mounted, setMounted] = useState(false);
     const formId = useMemo(() => 'eventSelectorWizardForm' + Math.floor(Math.random() * 10000000000000000), []);
@@ -122,83 +132,84 @@ const EventSelectorWizardStep0Input = observer(
       }
     }, [mounted, onMount, form]);
 
+    const DistanceMap = (mapHeight: number) =>
+      clubModel.map?.center ? (
+        <OSMOrienteeringMap
+          key="eventSelector#maxDistanceMap"
+          height={`${mapHeight}px`}
+          width="100%"
+          containerId="maxDistanceMap"
+          mapCenter={clubModel.map.center}
+          useDefaultGraphicsAsHome={true}
+          defaultGraphics={
+            (
+              [
+                eventSelectorWizardModel.maxDistanceNational
+                  ? {
+                      geometry: {
+                        type: 'circle',
+                        center: clubModel.map.center,
+                        geodesic: true,
+                        radius: eventSelectorWizardModel.maxDistanceNational * 1000
+                      },
+                      symbol: {
+                        type: 'gradient-fill',
+                        color: [255, 240, 128, 0.75],
+                        style: 'solid',
+                        outline: {
+                          color: [255, 240, 128, 0.75],
+                          width: 2
+                        }
+                      }
+                    }
+                  : undefined,
+                eventSelectorWizardModel.maxDistanceDistrict
+                  ? {
+                      geometry: {
+                        type: 'circle',
+                        center: clubModel.map.center,
+                        geodesic: true,
+                        radius: eventSelectorWizardModel.maxDistanceDistrict * 1000
+                      },
+                      symbol: {
+                        type: 'gradient-fill',
+                        color: [128, 128, 255, 0.75],
+                        style: 'solid',
+                        outline: {
+                          color: [128, 128, 255, 0.75],
+                          width: 2
+                        }
+                      }
+                    }
+                  : undefined,
+                eventSelectorWizardModel.maxDistanceNearbyAndClub
+                  ? {
+                      geometry: {
+                        type: 'circle',
+                        center: clubModel.map.center,
+                        geodesic: true,
+                        radius: eventSelectorWizardModel.maxDistanceNearbyAndClub * 1000
+                      },
+                      symbol: {
+                        type: 'gradient-fill',
+                        color: [255, 128, 128, 0.75],
+                        style: 'solid',
+                        outline: {
+                          color: [255, 128, 128, 0.75],
+                          width: 2
+                        }
+                      }
+                    }
+                  : undefined
+              ] as (IGraphic | undefined)[]
+            ).filter(graphic => graphic) as IGraphic[]
+          }
+        />
+      ) : null;
+
     return (
       <StyledFullWidth>
-        {clubModel.map?.center ? (
-          <MapContainer height={height}>
-            <OSMOrienteeringMap
-              key="eventSelector#maxDistanceMap"
-              height={`${height}px`}
-              width="100%"
-              containerId="maxDistanceMap"
-              mapCenter={clubModel.map.center}
-              useDefaultGraphicsAsHome={true}
-              defaultGraphics={
-                (
-                  [
-                    eventSelectorWizardModel.maxDistanceNational
-                      ? {
-                          geometry: {
-                            type: 'circle',
-                            center: clubModel.map.center,
-                            geodesic: true,
-                            radius: eventSelectorWizardModel.maxDistanceNational * 1000
-                          },
-                          symbol: {
-                            type: 'gradient-fill',
-                            color: [255, 240, 128, 0.75],
-                            style: 'solid',
-                            outline: {
-                              color: [255, 240, 128, 0.75],
-                              width: 2
-                            }
-                          }
-                        }
-                      : undefined,
-                    eventSelectorWizardModel.maxDistanceDistrict
-                      ? {
-                          geometry: {
-                            type: 'circle',
-                            center: clubModel.map.center,
-                            geodesic: true,
-                            radius: eventSelectorWizardModel.maxDistanceDistrict * 1000
-                          },
-                          symbol: {
-                            type: 'gradient-fill',
-                            color: [128, 128, 255, 0.75],
-                            style: 'solid',
-                            outline: {
-                              color: [128, 128, 255, 0.75],
-                              width: 2
-                            }
-                          }
-                        }
-                      : undefined,
-                    eventSelectorWizardModel.maxDistanceNearbyAndClub
-                      ? {
-                          geometry: {
-                            type: 'circle',
-                            center: clubModel.map.center,
-                            geodesic: true,
-                            radius: eventSelectorWizardModel.maxDistanceNearbyAndClub * 1000
-                          },
-                          symbol: {
-                            type: 'gradient-fill',
-                            color: [255, 128, 128, 0.75],
-                            style: 'solid',
-                            outline: {
-                              color: [255, 128, 128, 0.75],
-                              width: 2
-                            }
-                          }
-                        }
-                      : undefined
-                  ] as (IGraphic | undefined)[]
-                ).filter(graphic => graphic) as IGraphic[]
-              }
-            />
-          </MapContainer>
-        ) : null}
+        {!isMobile && clubModel.map?.center ? <MapContainer height={height}>{DistanceMap(height)}</MapContainer> : null}
         <Form
           form={form}
           id={formId}
@@ -302,10 +313,12 @@ const EventSelectorWizardStep0Input = observer(
               onChange={(value: number | null) => eventSelectorWizardModel.setMaxDistanceNearbyAndClub(value ?? null)}
             />
           </FormItem>
+          {isMobile && clubModel.map?.center ? (
+            <MobileMapContainer>{DistanceMap(mobileMapHeight)}</MobileMapContainer>
+          ) : null}
           <FormItem name="parentOrganisationIdsNational" label={t('results.parentOrganisationIdsNational')}>
             <Select
               allowClear
-              popupMatchSelectWidth={false}
               mode="multiple"
               options={parentOrganisationIdsNationalOptions}
               onChange={(values: string[]) => eventSelectorWizardModel.setParentOrganisationIdsNational(values)}
@@ -314,7 +327,6 @@ const EventSelectorWizardStep0Input = observer(
           <FormItem name="parentOrganisationIdsDistrict" label={t('results.parentOrganisationIdsDistrict')}>
             <Select
               allowClear
-              popupMatchSelectWidth={false}
               mode="multiple"
               options={parentOrganisationIdsDistrictOptions}
               onChange={(values: string[]) => eventSelectorWizardModel.setParentOrganisationIdsDistrict(values)}
@@ -323,7 +335,6 @@ const EventSelectorWizardStep0Input = observer(
           <FormItem name="organisationIdsNearbyAndClub" label={t('results.organisationIdsNearbyAndClub')}>
             <Select
               allowClear
-              popupMatchSelectWidth={false}
               mode="multiple"
               options={organisationIdsNearbyAndClubOptions}
               onChange={(values: string[]) => eventSelectorWizardModel.setOrganisationIdsNearbyAndClub(values)}

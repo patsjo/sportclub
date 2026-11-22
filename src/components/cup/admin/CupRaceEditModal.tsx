@@ -115,7 +115,8 @@ const CupRaceEditModal = ({ season, race, open, onClose, onSaved }: ICupRaceEdit
             disabledDate={d => d.format(dateFormat) < season.startDate || d.format(dateFormat) > season.endDate}
           />
         </Form.Item>
-        <div style={{ display: 'flex', gap: 16 }}>
+        {/* Wraps on a narrow phone */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', columnGap: 16 }}>
           <Form.Item name="eventorId" label={t('cup.EventorId')} extra={t('cup.EventorIdInfo')}>
             <InputNumber min={1} style={{ width: 140 }} />
           </Form.Item>

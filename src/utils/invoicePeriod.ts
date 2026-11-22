@@ -47,9 +47,17 @@ export const suggestEventFeePeriod = (
   return { from: seasonEnd.add(-1, 'year').add(1, 'day'), to, maxTo, empty: false };
 };
 
-/** Why the period can't be invoiced, undefined when it is allowed (the same check as the server) */
+/** The period can be invoiced (the same check as the server), the start is only a warning (eventFeePeriodStartWarning) */
 export const isEventFeePeriodValid = (suggestion: IEventFeePeriodSuggestion, from: Dayjs, to: Dayjs) =>
-  !suggestion.empty &&
-  !from.isAfter(to, 'day') &&
-  !to.isAfter(suggestion.maxTo, 'day') &&
-  (!suggestion.fixedFrom || from.isSame(suggestion.fixedFrom, 'day'));
+  !from.isAfter(to, 'day') && !to.isAfter(suggestion.maxTo, 'day');
+
+/** The start isn't the day after the last invoiced period: an overlap (fees invoiced twice) or a gap (fees not invoiced) */
+export const eventFeePeriodStartWarning = (
+  suggestion: IEventFeePeriodSuggestion,
+  from: Dayjs
+): 'OVERLAP' | 'GAP' | undefined =>
+  !suggestion.fixedFrom || from.isSame(suggestion.fixedFrom, 'day')
+    ? undefined
+    : from.isBefore(suggestion.fixedFrom, 'day')
+      ? 'OVERLAP'
+      : 'GAP';
