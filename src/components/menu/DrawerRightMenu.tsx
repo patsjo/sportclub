@@ -1,4 +1,4 @@
-import { AccountBookOutlined, FileTextOutlined } from '@ant-design/icons';
+import { AccountBookOutlined, FileTextOutlined, UserOutlined } from '@ant-design/icons';
 import { Button, Col, Drawer, Form, Menu, MenuProps, message, Modal, Row, Spin, Typography } from 'antd';
 import i18next from 'i18next';
 import { observer } from 'mobx-react';
@@ -18,6 +18,7 @@ import { HtmlEditorLinkModal } from '../htmlEditor/HtmlEditorLinkModal';
 import { getHtmlEditorMenus } from '../htmlEditor/HtmlEditorMenus';
 import { useLoginMenuItem } from '../login/useLoginMenuItem';
 import MaterialIcon from '../materialIcon/MaterialIcon';
+import MyPagesBadge from '../badges/MyPagesBadge';
 import InvoicesBadge from '../invoices/InvoicesBadge';
 import { getMenuItem } from './MenuItem';
 import { useModuleSubMenu } from './moduleSubMenus/useModuleSubMenu';
@@ -47,9 +48,11 @@ const StyledMenu = styled(Menu)`
     font-size: 12px;
     line-height: 20px;
   }
-  /* The invoice badge goes up above the row, the short title needs no ellipsis */
-  &&& .my-pages-menu > .ant-menu-submenu-title,
-  &&& .my-pages-menu > .ant-menu-submenu-title .ant-menu-title-content {
+  /* A badge (invoices, access requests) goes up above the row and isn't clipped, these short titles need no ellipsis */
+  &&& .ant-menu-item:has(.ant-badge),
+  &&& .ant-menu-item:has(.ant-badge) > .ant-menu-title-content,
+  &&& .ant-menu-submenu-title:has(.ant-badge),
+  &&& .ant-menu-submenu-title:has(.ant-badge) > .ant-menu-title-content {
     overflow: visible;
   }
   /* Bigger touch targets on a phone */
@@ -246,11 +249,11 @@ const DrawerRightMenu = observer(() => {
 
     return {
       key: 'subMenu#myPages',
-      className: 'my-pages-menu',
       label: (
         <span>
-          <MaterialIcon icon="user" fontSize={18} marginRight={10} />
-          <InvoicesBadge offset={[13, 0]}>{t('common.MyPages')}</InvoicesBadge>
+          {/* An antd icon in the label, not the icon prop, so it needs its own gap to the text */}
+          <UserOutlined style={{ verticalAlign: 'middle', fontSize: 18, marginRight: 10 }} />
+          <MyPagesBadge offset={[13, 0]}>{t('common.MyPages')}</MyPagesBadge>
         </span>
       ),
       children: [

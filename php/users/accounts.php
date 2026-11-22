@@ -18,8 +18,8 @@
 //#   LINK            oauthId, userId (0 = create a new user #
 //#                   from firstName, lastName, email),      #
 //#                   competitorId (null = no competitor)    #
-//#   APPROVE         requestId, groupId, and for a guest    #
-//#                   the same as LINK                       #
+//#   APPROVE         requestId, groupIds (or groupId), and  #
+//#                   for a guest the same as LINK           #
 //#   REJECT          requestId                              #
 //#   UNLINK          oauthId                                #
 //#   DELETE_ACCOUNT  oauthId, also its reactions/comments   #
@@ -31,6 +31,8 @@
 //# 2026-11-13  PatSjo  Initial version                      #
 //# 2026-11-17  PatSjo  The economy responsible can't be     #
 //#                     requested                            #
+//# 2026-11-22  PatSjo  Approve several groups, the groups   #
+//#                     of the users in LIST                 #
 //############################################################
 
 include_once($_SERVER["DOCUMENT_ROOT"] . "/include/db.php");
@@ -159,13 +161,18 @@ function linkAccount($iInput, $iOAuthId)
   // The pending requests of the guest now belongs to the user
   sqlQueryOrError(sprintf("UPDATE user_access_requests SET user_id = %d WHERE oauth_id = %d AND status = 'PENDING'",
                           $userId, $iOAuthId));
-  // A linked user is a member, so those requests are done, and also the ones for groups the user already has
+  approveFulfilledRequests($userId);
+  return $userId;
+}
+
+// A linked user is a member, so those pending requests are done, and also the ones for groups the user already has
+function approveFulfilledRequests($iUserId)
+{
   global $user_id;
   sqlQueryOrError(sprintf("UPDATE user_access_requests SET status = 'APPROVED', handled_by_user_id = %d, handled_date = NOW() " .
                           "WHERE user_id = %d AND status = 'PENDING' AND " .
                           "(group_id = 0 OR group_id IN (SELECT group_id FROM user_groups WHERE user_id = %d))",
-                          intval($user_id), $userId, $userId));
-  return $userId;
+                          intval($user_id), intval($iUserId), intval($iUserId)));
 }
 
 function handleRequest($iRequestId, $iStatus)
@@ -276,6 +283,15 @@ elseif ($input->iType == "LIST")
   }
   \db\mysql_free_result($result);
 
+  // The groups of each user, they can't be chosen again when a request is approved
+  $userGroups = array();
+  $result = sqlQueryOrError("SELECT user_id, group_id FROM user_groups");
+  while ($row = \db\mysql_fetch_assoc($result))
+  {
+    $userGroups[intval($row['user_id'])][] = intval($row['group_id']);
+  }
+  \db\mysql_free_result($result);
+
   $rows->users = array();
   $result = sqlQueryOrError("SELECT user_id, first_name, last_name, email, competitor_id FROM users ORDER BY last_name, first_name");
   while ($row = \db\mysql_fetch_assoc($result))
@@ -285,6 +301,7 @@ elseif ($input->iType == "LIST")
     $x->name = trim($row['first_name'] . ' ' . $row['last_name']);
     $x->email = $row['email'];
     $x->competitorId = is_null($row['competitor_id']) ? null : intval($row['competitor_id']);
+    $x->groupIds = isset($userGroups[$x->userId]) ? $userGroups[$x->userId] : array();
     array_push($rows->users, $x);
   }
   \db\mysql_free_result($result);
@@ -329,12 +346,19 @@ elseif ($input->iType == "APPROVE")
   {
     accountsError('Förfrågan saknar användare.');
   }
-  $groupId = inputInt($input, 'groupId');
-  if ($groupId > 0)
+  // Several groups (groupIds), or one (groupId) from an older web page, 0 = only a member
+  $groupIds = isset($input->groupIds) && is_array($input->groupIds) ? $input->groupIds : array(inputInt($input, 'groupId'));
+  foreach ($groupIds as $groupId)
   {
-    sqlQueryOrError(sprintf("INSERT IGNORE INTO user_groups (user_id, group_id) VALUES (%d, %d)", $userId, $groupId));
+    if (is_numeric($groupId) && intval($groupId) > 0)
+    {
+      sqlQueryOrError(sprintf("INSERT IGNORE INTO user_groups (user_id, group_id) SELECT %d, group_id FROM `groups` WHERE group_id = %d",
+                              $userId, intval($groupId)));
+    }
   }
   handleRequest($requestId, 'APPROVED');
+  // The user's other requests for the groups just added are done as well
+  approveFulfilledRequests($userId);
   $rows->userId = $userId;
 }
 elseif ($input->iType == "REJECT")

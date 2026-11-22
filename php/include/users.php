@@ -388,6 +388,10 @@ function GetSessionInfo()
   $info->provider = $user_id <= 0 && !is_null($oauthGuest) ? $oauthGuest['p'] : null;
   $info->pictureUrl = $user_id <= 0 && !is_null($oauthGuest) ? guestProfile($oauthGuest)->pictureUrl : null;
   $info->pendingAccessRequests = 0;
+  // The oldest pending request, the web colours the badge by how long it has waited
+  $info->oldestAccessRequestDate = null;
+  // The user's or guest's own requests that wait for an answer, the menu shows them instead of a new request
+  $info->myPendingAccessRequests = 0;
   // Only the economy responsible verifies the invoices, an administrator can only create them
   $info->isEconomy = $user_id > 0 && ValidGroup($cECONOMY_GROUP_ID);
   $info->unpaidInvoices = 0;
@@ -421,10 +425,46 @@ function GetSessionInfo()
   }
   if ($info->isAdmin)
   {
-    $row = sqlFirstRow("SELECT COUNT(*) AS number_of FROM user_access_requests WHERE status = 'PENDING'");
+    $row = sqlFirstRow("SELECT COUNT(*) AS number_of, MIN(cre_date) AS oldest_date FROM user_access_requests WHERE status = 'PENDING'");
     $info->pendingAccessRequests = is_null($row) ? 0 : intval($row['number_of']);
+    $info->oldestAccessRequestDate = is_null($row) ? null : $row['oldest_date'];
   }
+  $info->myPendingAccessRequests = myPendingAccessRequests($user_id, $oauth_id);
   return $info;
+}
+
+// The number of the user's (or the guest's) own pending access requests, the same ones as under "My requests",
+// 0 when the table is missing (social login isn't installed), so the login still works
+function myPendingAccessRequests($iUserId, $iOAuthId)
+{
+  if (intval($iUserId) > 0)
+  {
+    $who = sprintf("user_id = %d", $iUserId);
+  }
+  elseif (intval($iOAuthId) > 0)
+  {
+    $who = sprintf("oauth_id = %d AND user_id IS NULL", $iOAuthId);
+  }
+  else
+  {
+    return 0;
+  }
+  $count = 0;
+  try
+  {
+    $result = \db\mysql_query("SELECT COUNT(*) AS number_of FROM user_access_requests WHERE status = 'PENDING' AND " . $who);
+    if ($result)
+    {
+      $row = \db\mysql_fetch_assoc($result);
+      $count = intval($row['number_of']);
+      \db\mysql_free_result($result);
+    }
+  }
+  catch (\Throwable $e)
+  {
+    // The table is missing
+  }
+  return $count;
 }
 
 // Answers the login, $token only when a new login token is created

@@ -1,3 +1,4 @@
+import { ClockCircleOutlined } from '@ant-design/icons';
 import { lazy, Suspense, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PostJsonData } from '../../utils/api';
@@ -51,17 +52,31 @@ export const useLoginMenuItem = () => {
       1,
       loggingOut
     ),
-    // Guests can ask to become members, and members to get into a group
-    accessRequestMenuItem:
-      clubModel.socialLogin?.accountsUrl && loggedInOrGuest
+    // Guests can ask to become users, and users to get into groups. While a request waits for an answer the
+    // menu only tells about it (disabled, leads nowhere).
+    accessRequestMenuItem: !(clubModel.socialLogin?.accountsUrl && loggedInOrGuest)
+      ? null
+      : sessionModel.myPendingAccessRequests > 0
         ? getMenuItem(
+            'menuItem#accessRequest',
+            <ClockCircleOutlined style={{ verticalAlign: 'middle', fontSize: 18 }} />,
+            <span title={t('login.PendingRequestInfo')}>
+              {sessionModel.isGuest
+                ? t('login.PendingMembership')
+                : t('login.PendingAccess', { count: sessionModel.myPendingAccessRequests })}
+            </span>,
+            () => undefined,
+            true,
+            1,
+            true
+          )
+        : getMenuItem(
             'menuItem#accessRequest',
             'user',
             sessionModel.isGuest ? t('login.RequestMembership') : t('login.RequestAccess'),
             () => setShowAccessRequest(true),
             true
-          )
-        : null,
+          ),
     loginForm: showAccessRequest ? (
       <Suspense fallback={null}>
         <AccessRequestModal open={showAccessRequest} onClose={() => setShowAccessRequest(false)} />

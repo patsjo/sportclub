@@ -15,12 +15,8 @@ const providerIcon = (provider: string) => (
 );
 const formatDate = (date: string) => dayjs(date).format('YYYY-MM-DD HH:mm');
 
-interface IAccountsProps {
-  onPendingChange?: (count: number) => void;
-}
-
 /** Accounts from Google/Facebook and the access requests, for administrators */
-const Accounts = observer(({ onPendingChange }: IAccountsProps) => {
+const Accounts = observer(() => {
   const { t } = useTranslation();
   const { clubModel, sessionModel } = useMobxStore();
   const [messageApi, contextHolder] = message.useMessage();
@@ -29,6 +25,7 @@ const Accounts = observer(({ onPendingChange }: IAccountsProps) => {
   const [saving, setSaving] = useState(false);
   const [linking, setLinking] = useState<{ account?: IOAuthAccount; request?: IAccessRequest }>();
   const url = clubModel.socialLogin?.accountsUrl;
+  const { setPendingAccessRequests } = sessionModel;
 
   const load = useCallback(() => {
     if (!url || !sessionModel.isAdmin) return;
@@ -37,12 +34,19 @@ const Accounts = observer(({ onPendingChange }: IAccountsProps) => {
       .then(json => {
         if (json) {
           setData(json);
-          onPendingChange?.(json.requests.length);
+          // The badges on the tab and in the menu, by the oldest request
+          setPendingAccessRequests(
+            json.requests.length,
+            json.requests.reduce<string | undefined>(
+              (oldest, request) => (!oldest || request.creDate < oldest ? request.creDate : oldest),
+              undefined
+            )
+          );
         }
       })
       .catch(e => messageApi.error(`${t('accounts.LoadFailed')} (${url}: ${e?.message})`))
       .finally(() => setLoading(false));
-  }, [messageApi, onPendingChange, sessionModel.authorizationHeader, sessionModel.isAdmin, t, url]);
+  }, [messageApi, sessionModel.authorizationHeader, sessionModel.isAdmin, setPendingAccessRequests, t, url]);
 
   useEffect(() => load(), [load]);
 

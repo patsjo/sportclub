@@ -14,6 +14,10 @@ export interface ISessionInfo {
   provider?: OAuthProvider | null;
   pictureUrl?: string | null;
   pendingAccessRequests?: number;
+  /** When the oldest pending access request came in (YYYY-MM-DD HH:mm:ss) */
+  oldestAccessRequestDate?: string | null;
+  /** The user's or guest's own access requests that wait for an answer */
+  myPendingAccessRequests?: number;
   /** In the group Ekonomiansvarig, verifies the invoices */
   isEconomy?: boolean;
   unpaidInvoices?: number;
@@ -135,6 +139,14 @@ export interface ISessionModel extends ISessionModelProps {
   provider?: OAuthProvider;
   pictureUrl?: string;
   pendingAccessRequests: number;
+  /** When the oldest pending access request came in, colours the badge */
+  oldestAccessRequestDate?: string;
+  /** When the access requests are loaded or handled under Accounts */
+  setPendingAccessRequests: (count: number, oldestDate?: string | null) => void;
+  /** The user's or guest's own access requests that wait for an answer, the menu shows them instead of a new request */
+  myPendingAccessRequests: number;
+  /** When the own requests are loaded, sent or cancelled */
+  setMyPendingAccessRequests: (count: number) => void;
   /** In the group Ekonomiansvarig, only the economy responsible verifies the invoices (an administrator only creates) */
   isEconomy: boolean;
   unpaidInvoices: number;
@@ -165,6 +177,8 @@ export class SessionModel implements ISessionModel {
   provider?: OAuthProvider;
   pictureUrl?: string;
   pendingAccessRequests = 0;
+  oldestAccessRequestDate?: string = undefined;
+  myPendingAccessRequests = 0;
   isEconomy = false;
   unpaidInvoices = 0;
   overdueInvoices = 0;
@@ -187,6 +201,10 @@ export class SessionModel implements ISessionModel {
       provider: observable,
       pictureUrl: observable,
       pendingAccessRequests: observable,
+      oldestAccessRequestDate: observable,
+      setPendingAccessRequests: actionBound,
+      myPendingAccessRequests: observable,
+      setMyPendingAccessRequests: actionBound,
       isEconomy: observable,
       unpaidInvoices: observable,
       overdueInvoices: observable,
@@ -218,6 +236,8 @@ export class SessionModel implements ISessionModel {
     this.provider = info.provider ?? undefined;
     this.pictureUrl = info.pictureUrl ?? undefined;
     this.pendingAccessRequests = info.pendingAccessRequests ?? 0;
+    this.oldestAccessRequestDate = info.oldestAccessRequestDate ?? undefined;
+    this.myPendingAccessRequests = info.myPendingAccessRequests ?? 0;
     this.isEconomy = this.loggedIn && !!info.isEconomy;
     this.unpaidInvoices = info.unpaidInvoices ?? 0;
     this.overdueInvoices = info.overdueInvoices ?? 0;
@@ -235,6 +255,15 @@ export class SessionModel implements ISessionModel {
     this.unpaidInvoices = unpaid;
     this.overdueInvoices = overdue;
     this.nextInvoiceDueDate = nextDueDate ?? undefined;
+  }
+
+  public setPendingAccessRequests(count: number, oldestDate?: string | null) {
+    this.pendingAccessRequests = count;
+    this.oldestAccessRequestDate = oldestDate ?? undefined;
+  }
+
+  public setMyPendingAccessRequests(count: number) {
+    this.myPendingAccessRequests = count;
   }
 
   public setFailedLogin() {
@@ -256,6 +285,8 @@ export class SessionModel implements ISessionModel {
     this.provider = undefined;
     this.pictureUrl = undefined;
     this.pendingAccessRequests = 0;
+    this.oldestAccessRequestDate = undefined;
+    this.myPendingAccessRequests = 0;
     this.isEconomy = false;
     this.unpaidInvoices = 0;
     this.overdueInvoices = 0;

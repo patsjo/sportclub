@@ -23,7 +23,8 @@ interface ILinkAccountForm {
   lastName?: string;
   email?: string;
   competitorId?: number | null;
-  groupId?: number;
+  /** 0 = only to become a user */
+  groupIds?: number[];
 }
 
 const normalize = (value?: string | null) => (value ?? '').trim().toLowerCase();
@@ -58,6 +59,7 @@ const LinkAccountModal = ({
   const { t } = useTranslation();
   const [form] = Form.useForm<ILinkAccountForm>();
   const userMode = Form.useWatch('userMode', form);
+  const userId = Form.useWatch('userId', form);
   const chooseUser = !!account;
 
   const initialValues = useMemo((): ILinkAccountForm => {
@@ -74,7 +76,7 @@ const LinkAccountModal = ({
       lastName: account?.lastName ?? account?.name.split(' ').slice(1).join(' ') ?? '',
       email: account?.email ?? '',
       competitorId: user ? user.competitorId : (competitorByName?.code ?? null),
-      groupId: request?.groupId
+      groupIds: request ? [request.groupId] : []
     };
   }, [account, competitorOptions, request, users]);
 
@@ -86,10 +88,27 @@ const LinkAccountModal = ({
     value: user.userId,
     label: user.email ? `${user.name} (${user.email})` : user.name
   }));
+  // An existing user is already a user and keeps its groups, they are shown but can't be chosen
+  const existingUser = chooseUser
+    ? userMode === 'new'
+      ? undefined
+      : users.find(u => u.userId === userId)
+    : users.find(u => u.userId === request?.userId);
+  const excludedGroupIds = useMemo(() => (existingUser ? [0, ...(existingUser.groupIds ?? [])] : []), [existingUser]);
   const groupOptions = [
     { value: 0, label: t('login.Member') },
     ...groups.map(group => ({ value: group.groupId, label: group.description }))
-  ];
+  ].map(option => ({ ...option, disabled: excludedGroupIds.includes(option.value) }));
+
+  // Another user is chosen, the groups it already has are taken away from the choice
+  useEffect(() => {
+    const selected = (form.getFieldValue('groupIds') as number[] | undefined) ?? [];
+    if (selected.some(groupId => excludedGroupIds.includes(groupId)))
+      form.setFieldValue(
+        'groupIds',
+        selected.filter(groupId => !excludedGroupIds.includes(groupId))
+      );
+  }, [excludedGroupIds, form]);
 
   return (
     <Modal
@@ -103,11 +122,12 @@ const LinkAccountModal = ({
       onCancel={onCancel}
       onOk={() =>
         form.validateFields().then(values => {
+          const groupIds = (values.groupIds ?? []).filter(groupId => groupId > 0);
           const link: ILinkAccountRequest = {
             oauthId: account?.oauthId,
             requestId: request?.requestId,
             competitorId: values.competitorId ?? null,
-            groupId: values.groupId
+            ...(request ? { groupIds, groupId: groupIds[0] ?? 0 } : {})
           };
           if (chooseUser) {
             link.userId = values.userMode === 'new' ? newUserId : values.userId;
@@ -186,8 +206,13 @@ const LinkAccountModal = ({
           />
         </FormItem>
         {request ? (
-          <FormItem name="groupId" label={t('login.RequestGroup')} rules={[{ required: true }]}>
-            <Select options={groupOptions} />
+          <FormItem
+            name="groupIds"
+            label={t('login.RequestGroup')}
+            // A guest is approved by the link to a user, a user's request needs a group
+            rules={chooseUser ? [] : [{ required: true, message: t('login.RequestGroup') }]}
+          >
+            <Select mode="multiple" options={groupOptions} />
           </FormItem>
         ) : null}
       </Form>

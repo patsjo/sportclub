@@ -1,29 +1,37 @@
-import { Badge, Space, Tabs } from 'antd';
+import { Space, Tabs } from 'antd';
 import { observer } from 'mobx-react';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { styled } from 'styled-components';
 import { useMobxStore } from '../../utils/mobxStore';
 import { AppleLogo, FacebookLogo, GoogleLogo } from '../login/ProviderLogos';
+import AccessRequestsBadge from './AccessRequestsBadge';
 import Accounts from './Accounts';
 import Competitors from './Competitors';
 import SystemGroupsAlert from './SystemGroupsAlert';
 import Users from './Users';
 
+/* The tab row clips what is outside it (it scrolls the tabs on a phone), room above the tabs for the badge on
+   Accounts without moving the tabs */
+const StyledTabs = styled(Tabs)`
+  &&& > .ant-tabs-nav > .ant-tabs-nav-wrap {
+    padding-top: 12px;
+    margin-top: -12px;
+  }
+`;
+
 const UsersAndCompetitors = observer(() => {
   const { t } = useTranslation();
   const { clubModel, sessionModel } = useMobxStore();
-  const [pending, setPending] = useState<number>();
   const showAccounts = sessionModel.isAdmin && !!clubModel.socialLogin?.accountsUrl;
   const showGoogle = !!clubModel.socialLogin?.googleUrl;
   const showFacebook = !!clubModel.socialLogin?.facebookUrl;
   const showApple = !!clubModel.socialLogin?.appleUrl;
-  const pendingCount = pending ?? sessionModel.pendingAccessRequests;
 
   // destroyOnHidden: loaded again when shown, e.g. the linked accounts after a link under Accounts
   return (
     <>
       <SystemGroupsAlert />
-      <Tabs
+      <StyledTabs
         destroyOnHidden
         defaultActiveKey="users"
         items={[
@@ -42,16 +50,16 @@ const UsersAndCompetitors = observer(() => {
                 {
                   key: 'accounts',
                   label: (
-                    <Badge count={pendingCount} size="small" offset={[8, -2]}>
+                    <AccessRequestsBadge offset={[8, -2]}>
                       <Space size={4}>
                         {showGoogle ? <GoogleLogo size={16} /> : null}
                         {showFacebook ? <FacebookLogo size={16} /> : null}
                         {showApple ? <AppleLogo size={16} /> : null}
                         {t('accounts.Accounts')}
                       </Space>
-                    </Badge>
+                    </AccessRequestsBadge>
                   ),
-                  children: <Accounts onPendingChange={setPending} />
+                  children: <Accounts />
                 }
               ]
             : [])

@@ -43,6 +43,8 @@ export interface IAccountUser {
   name: string;
   email: string | null;
   competitorId: number | null;
+  /** The groups the user has, missing from an older server */
+  groupIds?: number[];
 }
 
 export interface IAccountsList {
@@ -61,5 +63,8 @@ export interface ILinkAccountRequest {
   lastName?: string;
   email?: string;
   competitorId?: number | null;
+  /** The first of groupIds (0 = only a member), for an older server */
   groupId?: number;
+  /** APPROVE: the groups to add to the user */
+  groupIds?: number[];
 }

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { styled } from 'styled-components';
 import { useMobxStore } from '../../utils/mobxStore';
 import { useCups } from '../cup/useCup';
-import InvoicesBadge from '../invoices/InvoicesBadge';
+import MyPagesBadge from '../badges/MyPagesBadge';
 import { MaterialIconsType } from '../materialIcon/MaterialIcon';
 import DrawerRightMenu from '../menu/DrawerRightMenu';
 import ToolbarItem from './ToolbarItem';
@@ -89,9 +89,9 @@ const Toolbar = observer(() => {
       <ToolbarItem
         icon={globalStateModel.rightMenuVisible ? 'menu-unfold' : 'menu-fold'}
         name={t('common.Menu')}
-        // The unpaid invoices, while the menu is closed (in the open menu they are on My pages)
+        // The unpaid invoices and the access requests, while the menu is closed (in the open menu they are on My pages)
         wrapIcon={
-          globalStateModel.rightMenuVisible ? undefined : icon => <InvoicesBadge offset={[6, 0]}>{icon}</InvoicesBadge>
+          globalStateModel.rightMenuVisible ? undefined : icon => <MyPagesBadge offset={[6, 0]}>{icon}</MyPagesBadge>
         }
         onClick={() => globalStateModel.setRightMenuVisible(!globalStateModel.rightMenuVisible)}
       />

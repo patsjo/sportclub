@@ -1,14 +1,16 @@
-import { Badge, theme } from 'antd';
 import dayjs from 'dayjs';
 import { observer } from 'mobx-react';
 import { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMobxStore } from '../../utils/mobxStore';
+import AlertBadge, { AlertLevel, IAlert } from '../badges/AlertBadge';
 
 /** More days than this left to the first due date is blue, otherwise yellow */
 export const DUE_SOON_DAYS = 5;
 
 export type InvoicesBadgeStatus = 'overdue' | 'dueSoon' | 'unpaid';
+
+const statusLevel: Record<InvoicesBadgeStatus, AlertLevel> = { overdue: 'error', dueSoon: 'warning', unpaid: 'info' };
 
 /** Overdue (red), at most five days to the first due date (yellow), or more (blue) */
 export const invoicesBadgeStatus = (
@@ -23,6 +25,19 @@ export const invoicesBadgeStatus = (
   return daysLeft <= DUE_SOON_DAYS ? 'dueSoon' : 'unpaid';
 };
 
+/** The unpaid invoices of the logged in user, undefined when there are none (call it in an observer) */
+export const useInvoicesAlert = (): IAlert | undefined => {
+  const { t } = useTranslation();
+  const { clubModel, sessionModel } = useMobxStore();
+  const count = sessionModel.unpaidInvoices;
+  if (!clubModel.invoice.url || !sessionModel.loggedIn || count <= 0) return undefined;
+  return {
+    count,
+    level: statusLevel[invoicesBadgeStatus(sessionModel.overdueInvoices, sessionModel.nextInvoiceDueDate)],
+    title: t('invoices.UnpaidBadge', { count })
+  };
+};
+
 interface IInvoicesBadgeProps {
   /** The badge is put up to the right of the children, an icon or a text */
   children: ReactNode;
@@ -30,35 +45,10 @@ interface IInvoicesBadgeProps {
 }
 
 /** The number of unpaid invoices of the logged in user, only the children when there are none */
-const InvoicesBadge = observer(({ children, offset }: IInvoicesBadgeProps) => {
-  const { t } = useTranslation();
-  const { clubModel, sessionModel } = useMobxStore();
-  const { token } = theme.useToken();
-  const count = sessionModel.unpaidInvoices;
-  // The standard colours of the theme
-  const badgeColors: Record<InvoicesBadgeStatus, string> = {
-    overdue: token.colorError,
-    dueSoon: token.colorWarning,
-    unpaid: token.colorInfo
-  };
-
-  if (!clubModel.invoice.url || !sessionModel.loggedIn || count <= 0) return <>{children}</>;
-
-  const status = invoicesBadgeStatus(sessionModel.overdueInvoices, sessionModel.nextInvoiceDueDate);
-  return (
-    <Badge
-      count={count}
-      offset={offset}
-      title={t('invoices.UnpaidBadge', { count })}
-      // The children keep their own colour and font (antd sets the text colour on the badge)
-      styles={{
-        root: { color: 'inherit', fontSize: 'inherit', fontFamily: 'inherit' },
-        indicator: { backgroundColor: badgeColors[status], color: token.colorTextLightSolid, boxShadow: 'none' }
-      }}
-    >
-      {children}
-    </Badge>
-  );
-});
+const InvoicesBadge = observer(({ children, offset }: IInvoicesBadgeProps) => (
+  <AlertBadge alert={useInvoicesAlert()} offset={offset}>
+    {children}
+  </AlertBadge>
+));
 
 export default InvoicesBadge;

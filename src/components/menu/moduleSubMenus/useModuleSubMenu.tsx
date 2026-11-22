@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { IModule } from '../../../models/mobxClubModel';
 import { useMobxStore } from '../../../utils/mobxStore';
 import MaterialIcon, { MaterialIconsType } from '../../materialIcon/MaterialIcon';
+import AccessRequestsBadge from '../../users/AccessRequestsBadge';
 import { getMenuItem } from '../MenuItem';
 import { useCalendarSubMenus } from './useCalendarSubMenus';
 import { useCupSubMenus } from './useCupSubMenus';
@@ -112,7 +113,7 @@ export const useModuleSubMenu = () => {
               getMenuItem(
                 'menuItem#users',
                 'team',
-                t('modules.Users'),
+                <AccessRequestsBadge offset={[13, 0]}>{t('modules.Users')}</AccessRequestsBadge>,
                 () => {
                   globalStateModel.setRightMenuVisible(false);
                   globalStateModel.setDashboard(navigate, '/users');
