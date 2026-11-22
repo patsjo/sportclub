@@ -29,7 +29,7 @@ const varendgn: IMobxClubModelProps = {
     breakMonthDay: '1130',
     daysToDueDate: 21,
     account: '10 68 79-0',
-    accountType: 'Postgiro',
+    accountType: 'PlusGirot',
     message: 'Tävlingsavgift, {name}',
     // Invoices paid with Swish, see README "Invoices and Swish"
     // url: 'https://varendgn.se/invoices/invoices.php',

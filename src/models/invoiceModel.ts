@@ -25,6 +25,8 @@ export interface IInvoice {
   familyId: number | null;
   invoiceDate: string;
   dueDate: string;
+  /** The end of the period of the event fees (YYYY-MM-DD), missing from an older server */
+  periodTo?: string | null;
   amount: number;
   invoiceFee: number;
   /** amount + invoiceFee */

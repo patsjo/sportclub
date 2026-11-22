@@ -124,7 +124,7 @@ function addDays($iDate, $iDays)
 
 $cINVOICE_SELECT = "SELECT i.INVOICE_ID, i.BATCH_ID, i.USER_ID, i.COMPETITOR_ID, i.FAMILY_ID, i.RECIPIENT_NAME, i.MESSAGE, " .
                    "  i.AMOUNT, i.INVOICE_FEE, i.STATUS, i.PAID_AMOUNT, i.PAID_DATE, i.REMINDERS, i.LAST_REMINDER_DATE, " .
-                   "  b.BATCH_TYPE, b.TITLE, b.INVOICE_DATE, b.DUE_DATE " .
+                   "  b.BATCH_TYPE, b.TITLE, b.INVOICE_DATE, b.DUE_DATE, b.PERIOD_TO " .
                    "FROM INVOICES i INNER JOIN INVOICE_BATCHES b ON (i.BATCH_ID = b.BATCH_ID) ";
 
 function invoiceFromRow($iRow)
@@ -141,6 +141,8 @@ function invoiceFromRow($iRow)
   $x->familyId = is_null($iRow['FAMILY_ID']) ? null : intval($iRow['FAMILY_ID']);
   $x->invoiceDate = $iRow['INVOICE_DATE'];
   $x->dueDate = $iRow['DUE_DATE'];
+  // The end of the period of the event fees, its year is in the payment message
+  $x->periodTo = $iRow['PERIOD_TO'];
   $x->amount = invoiceMoney($iRow['AMOUNT']);
   $x->invoiceFee = invoiceMoney($iRow['INVOICE_FEE']);
   $x->total = invoiceMoney($x->amount + $x->invoiceFee);

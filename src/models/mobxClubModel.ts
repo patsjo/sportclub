@@ -72,7 +72,7 @@ export interface IInvoiceProps {
   breakMonthDay: string;
   daysToDueDate: number;
   account?: string;
-  accountType?: 'Bankgiro' | 'Postgiro' | 'IBAN';
+  accountType?: 'Bankgiro' | 'PlusGirot' | 'IBAN';
   swishNumber?: string;
   message?: string;
   taxPercentage?: number;

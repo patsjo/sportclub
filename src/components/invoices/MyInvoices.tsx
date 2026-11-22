@@ -26,6 +26,8 @@ import { generatePdfStatus, getInvoicePdf, IFeesRecord } from '../../utils/pdfIn
 import { useIsMobile } from '../../utils/useIsMobile';
 import { SpinnerDiv } from '../styled/styled';
 import InvoiceRowsTable from './InvoiceRowsTable';
+import PaymentQrCode from './PaymentQrCode';
+import { paymentMessage, paymentQrs } from './paymentQr';
 import { errorText, formatMoney, invoiceLeft, InvoiceStatusTag, isClosed, isPartlyPaid } from './invoiceHelper';
 import SwishPaymentModal from './SwishPaymentModal';
 
@@ -46,6 +48,12 @@ const CardRow = styled.div`
 const ButtonRow = styled.div`
   display: flex;
   gap: 8px;
+  margin-top: 8px;
+`;
+
+const QrRow = styled.div`
+  display: flex;
+  justify-content: flex-end;
   margin-top: 8px;
 `;
 
@@ -163,6 +171,25 @@ const MyInvoices = observer(() => {
     [clubModel, t]
   );
 
+  const invoiceQrs = (invoice: IInvoice) =>
+    paymentQrs(
+      clubModel.invoice,
+      clubModel.clubInfo,
+      {
+        invoiceId: invoice.invoiceId,
+        message: paymentMessage(invoice, t('invoice.invoiceMessage')),
+        invoiceDate: invoice.invoiceDate,
+        dueDate: invoice.dueDate,
+        amount: invoiceLeft(invoice)
+      },
+      !!data?.swishEnabled
+    );
+  const hasQrs = !!data?.invoices.some(invoice => invoiceQrs(invoice).length > 0);
+  // With the Swish payment on the web page the QR code is an alternative, only a button that shows it
+  const qrCollapsed = !!data?.swishEnabled;
+  const collapsedQrButton = (invoice: IInvoice) =>
+    qrCollapsed && invoiceQrs(invoice).length > 0 ? <PaymentQrCode collapsed qrs={invoiceQrs(invoice)} /> : null;
+
   if (!invoicesUrl) return <Alert showIcon type="info" title={t('invoices.NotConfigured')} />;
   if (!sessionModel.loggedIn) return <Alert showIcon type="info" title={t('invoices.RequireLogin')} />;
 
@@ -247,10 +274,22 @@ const MyInvoices = observer(() => {
       render: (_, invoice) => (
         <Space size="small" wrap={false}>
           {payButton(invoice)}
+          {collapsedQrButton(invoice)}
           {pdfButton(invoice)}
         </Space>
       )
-    }
+    },
+    // Rightmost, to pay in the bank app or with Swish when the Swish payment on the web page is off
+    ...(hasQrs && !qrCollapsed
+      ? [
+          {
+            title: t('invoices.QrPay'),
+            key: 'qr',
+            align: 'center' as const,
+            render: (_: unknown, invoice: IInvoice) => <PaymentQrCode qrs={invoiceQrs(invoice)} />
+          }
+        ]
+      : [])
   ];
 
   // Disabled with the reason when Swish isn't turned on
@@ -315,8 +354,14 @@ const MyInvoices = observer(() => {
           {invoiceLeft(invoice) >= 1 || invoice.batchType === 'EVENT_FEES' ? (
             <ButtonRow>
               {invoiceLeft(invoice) >= 1 ? <div style={{ flex: 1 }}>{payButton(invoice, true)}</div> : null}
+              {collapsedQrButton(invoice)}
               {pdfButton(invoice)}
             </ButtonRow>
+          ) : null}
+          {!qrCollapsed && invoiceQrs(invoice).length > 0 ? (
+            <QrRow>
+              <PaymentQrCode qrs={invoiceQrs(invoice)} size={104} />
+            </QrRow>
           ) : null}
           {invoice.rows.length > 0 ? (
             <Collapse
@@ -342,7 +387,12 @@ const MyInvoices = observer(() => {
         />
       ) : null}
       {data && !data.swishEnabled && data.invoices.some(i => invoiceLeft(i) > 0) ? (
-        <Alert showIcon type="info" title={t('invoices.SwishOff')} style={{ marginBottom: 12 }} />
+        <Alert
+          showIcon
+          type="info"
+          title={hasQrs ? t('invoices.SwishOffUseQr') : t('invoices.SwishOff')}
+          style={{ marginBottom: 12 }}
+        />
       ) : null}
       {loading && !data ? (
         <SpinnerDiv>
