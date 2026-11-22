@@ -5,8 +5,12 @@ import { useSize } from '../../utils/useSize';
 
 const Title = Typography.Title;
 
-const FullScreenContainer = styled.div<{ height: string }>`
-  height: ${props => props.height};
+// The window below the header, a height given to the wizard replaces it (style).
+// dvh is the visible height on a phone (vh includes the area behind the browser bars and pushed the buttons out
+// of sight), vh is the fallback for an older browser.
+const FullScreenContainer = styled.div`
+  height: calc(100vh - 92px);
+  height: calc(100dvh - 92px);
   width: 100%;
   overflow: hidden;
 `;
@@ -48,14 +52,7 @@ interface IFullScreenModalProps {
   onContentOffsetHeight?: (height: number) => void;
 }
 
-const FullScreenWizard = ({
-  title,
-  steps,
-  footer,
-  children,
-  height = 'calc(100vh - 92px)',
-  onContentOffsetHeight
-}: IFullScreenModalProps) => {
+const FullScreenWizard = ({ title, steps, footer, children, height, onContentOffsetHeight }: IFullScreenModalProps) => {
   const footerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const stepsRef = useRef<HTMLDivElement>(null);
@@ -68,7 +65,7 @@ const FullScreenWizard = ({
   }, [contentHeight, onContentOffsetHeight]);
 
   return (
-    <FullScreenContainer height={height}>
+    <FullScreenContainer style={height ? { height } : undefined}>
       <TitleContainer>
         <Title level={2} ellipsis={{ expandable: false, tooltip: false, rows: 1 }} style={{ margin: 0 }}>
           {title}

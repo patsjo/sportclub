@@ -29,8 +29,10 @@ import dimondRightWhite from './trackMarkings/dimondRightWhite.svg?raw';
 import dimondUpperLeftWhite from './trackMarkings/dimondUpperLeftWhite.svg?raw';
 import { mapProjection } from './useOpenLayersMap';
 
+// dvh is the visible height on a phone (vh includes the area behind the browser bars), vh is the fallback
 const MapContainer = styled.div`
   height: calc(100vh - 88px);
+  height: calc(100dvh - 88px);
   width: 100%;
 `;
 
@@ -81,12 +83,13 @@ const writeListSize = (layout: SplitterLayout, size: number) => {
 const minPanelSize = 250;
 // The gap beside the divider is padding (inside the size the splitter sets), a margin made the panels overflow
 // Where the splitter is, measured to keep the list size in pixels.
-// dvh is the visible height on a phone (vh includes the area behind the browser bars).
+// dvh is the visible height on a phone (vh includes the area behind the browser bars), vh is the fallback.
 const SplitterArea = styled.div`
   position: absolute;
   top: 64px;
   left: 0;
   width: 100%;
+  height: calc(100vh - 64px);
   height: calc(100dvh - 64px);
 `;
 const StyledSplitter = styled(Splitter)<{ vertical: boolean }>`

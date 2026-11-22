@@ -15,25 +15,10 @@ import FormItem from '../../formItems/FormItem';
 import { FormSelect } from '../../formItems/FormSelect';
 import InputTime from '../../formItems/InputTime';
 import { GetPositionModal } from '../../map/GetPositionModal';
+import { ScrollBodyModal } from '../../styled/ScrollBodyModal';
 
 const { RangePicker } = DatePicker;
 const { TextArea } = Input;
-const StyledModal = styled(Modal)`
-  &&& .ant-modal-body {
-    max-height: calc(100vh - 200px);
-    overflow-y: scroll;
-    overflow-x: hidden;
-  }
-  @media screen and (max-width: 550px) {
-    &&& .ant-row {
-      display: block;
-    }
-    &&& .ant-col {
-      display: block !important;
-      max-width: 100% !important;
-    }
-  }
-`;
 const StyledModalContent = styled.div``;
 
 const MapButton = styled(Button)`
@@ -155,7 +140,7 @@ const CalendarEdit = observer(({ title, calendarObject, domains, open, onClose, 
   }, [clubModel, form, globalStateModel, sessionModel, t, modal]);
 
   return (
-    <StyledModal
+    <ScrollBodyModal
       closable={false}
       maskClosable={false}
       title={title}
@@ -365,7 +350,7 @@ const CalendarEdit = observer(({ title, calendarObject, domains, open, onClose, 
         </Form>
       </StyledModalContent>
       {contextHolder}
-    </StyledModal>
+    </ScrollBodyModal>
   );
 });
 

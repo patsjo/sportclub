@@ -81,7 +81,9 @@ const StyledScope = styled.div`
   font-size: 15px;
   margin: -24px -12px 0 -12px;
   padding: 0 0 64px 0;
+  /* dvh is the visible height on a phone (vh includes the area behind the browser bars), vh is the fallback */
   min-height: calc(100vh - 80px);
+  min-height: calc(100dvh - 80px);
   /* Shadows and stamps must not make the page scroll sideways on phones */
   overflow-x: clip;
 

@@ -365,7 +365,8 @@ const CupRaceResultsModal = ({ season, race, results, open, onClose, onSaved }: 
       title={`${t('cup.Results')}: ${race.name}`}
       open={open}
       // All columns fit on a big screen, a horizontal scroll only on smaller screens
-      width="min(1480px, calc(100vw - 32px))"
+      // % of the visible area, 100vw also counts a scrollbar and made the dialog wider than the window
+      width="min(1480px, calc(100% - 32px))"
       okText={t('common.Save')}
       cancelText={t('common.Cancel')}
       okButtonProps={{ loading: saving, disabled: invalid }}

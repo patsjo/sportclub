@@ -11,9 +11,7 @@ const ImageHolder = styled.div<{ $floatRight?: boolean }>`
   align-items: flex-start;
   gap: 8px;
   margin-bottom: 8px;
-  break-inside: avoid-column;
-  page-break-inside: avoid;
-  -webkit-column-break-inside: avoid;
+  break-inside: avoid;
   max-width: 100%;
   ${({ $floatRight }) => ($floatRight ? 'float: right; margin-left: 10px; margin-bottom: 2px;' : '')}
 `;

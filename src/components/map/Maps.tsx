@@ -9,7 +9,9 @@ const MapContainer = styled.div`
   position: absolute;
   top: 64px;
   left: 0;
+  /* dvh is the visible height on a phone (vh includes the area behind the browser bars), vh is the fallback */
   height: calc(100vh - 64px);
+  height: calc(100dvh - 64px);
   width: 100vw;
 `;
 

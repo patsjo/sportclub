@@ -4,6 +4,10 @@ import { TFunction } from 'i18next';
 import { styled } from 'styled-components';
 import { IPrintSettings, IPrintSettingsColumn } from '../../utils/responseInterfaces';
 
+// dvh is the visible height on a phone (vh includes the area behind the browser bars), vh is the fallback.
+// A value for antd (not CSS), so not two lines as in the styles.
+const screenHeight = typeof CSS !== 'undefined' && CSS.supports('height', '100dvh') ? '100dvh' : '100vh';
+
 const { TabPane } = Tabs;
 const Label = styled.div`
   margin-bottom: 2px;
@@ -103,7 +107,7 @@ export const TableSettingModal = (
             <Table
               showHeader={false}
               pagination={false}
-              scroll={{ y: 'calc(100vh - 295px)' }}
+              scroll={{ y: `calc(${screenHeight} - 295px)` }}
               columns={selectColumns}
               dataSource={settings.table.columns}
             />
@@ -142,7 +146,7 @@ export const TableSettingModal = (
               <Table
                 showHeader={false}
                 pagination={false}
-                scroll={{ y: 'calc(100vh - 393px)' }}
+                scroll={{ y: `calc(${screenHeight} - 393px)` }}
                 columns={selectColumns}
                 dataSource={settings.pdf.columns}
               />

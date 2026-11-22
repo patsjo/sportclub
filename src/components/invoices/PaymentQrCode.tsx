@@ -93,7 +93,6 @@ const Face = styled.div<{ $back?: boolean }>`
   position: absolute;
   inset: 0;
   backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
   border-radius: 6px;
   background: #fff;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);

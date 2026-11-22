@@ -67,9 +67,6 @@ const WeekColText = styled.p`
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) rotate(-90deg);
-  -webkit-transform: translate(-50%, -50%) rotate(-90deg);
-  -moz-transform: translate(-50%, -50%) rotate(-90deg);
-  -o-transform: translate(-50%, -50%) rotate(-90deg);
 `;
 
 const DayContainerCol = styled(Col)`

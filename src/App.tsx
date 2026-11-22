@@ -50,9 +50,7 @@ const LayoutHeader = styled(Layout.Header)<{ theme: IThemeProps; $dark?: boolean
     display: flex;
     box-sizing: border-box;
     flex-shrink: 0;
-    -webkit-box-align: center;
     align-items: center;
-    -webkit-box-pack: justify;
     justify-content: space-between;
     box-shadow:
       0px 2px 4px -1px rgba(0, 0, 0, 0.2),

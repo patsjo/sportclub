@@ -1,4 +1,4 @@
-import { Button, message, Modal, Popconfirm } from 'antd';
+import { Button, message, Popconfirm } from 'antd';
 import { observer } from 'mobx-react';
 import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -6,10 +6,11 @@ import { styled } from 'styled-components';
 import { IModule } from '../../models/mobxClubModel';
 import { SocialTargetType } from '../../models/socialModel';
 import { useMobxStore } from '../../utils/mobxStore';
-import { mobileMediaQuery, useIsMobile } from '../../utils/useIsMobile';
+import { useIsMobile } from '../../utils/useIsMobile';
 import { useSize } from '../../utils/useSize';
 import SocialBar from '../social/SocialBar';
 import SocialSection from '../social/SocialSection';
+import { ScrollBodyModal } from '../styled/ScrollBodyModal';
 
 interface IItemProps {
   maxHeight?: number;
@@ -20,9 +21,7 @@ const ItemHolder = styled.div<IItemProps & { paddingBottom: number; extraHeight:
   padding-bottom: ${({ paddingBottom }) => paddingBottom}px;
 `;
 const ItemFadeOut = styled.div<IItemProps & { height: number | undefined }>`
-  -webkit-column-break-inside: avoid;
-  page-break-inside: avoid;
-  break-inside: avoid-column;
+  break-inside: avoid;
   max-height: ${({ maxHeight }) => (maxHeight ? maxHeight : 300)}px;
   overflow: hidden;
   padding-left: 0;
@@ -33,51 +32,16 @@ const ItemFadeOut = styled.div<IItemProps & { height: number | undefined }>`
     height != null &&
     height > (maxHeight ? maxHeight : 300) &&
     `
-  -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 70px), transparent);
   mask-image: linear-gradient(to bottom, black calc(100% - 70px), transparent);
   `}
-`;
-
-// The dialog fits the screen: the title and the buttons stay, only the body scrolls (whatever the title height).
-// dvh is the visible height on a phone (vh includes the area behind the browser bars), vh is the fallback.
-const StyledModal = styled(Modal)`
-  &&& .ant-modal-container {
-    display: flex;
-    flex-direction: column;
-    max-height: calc(100vh - 80px);
-    max-height: calc(100dvh - 80px);
-  }
-  &&& .ant-modal-header,
-  &&& .ant-modal-footer {
-    flex: none;
-  }
-  &&& .ant-modal-body {
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow-y: auto;
-    overflow-x: hidden;
-    overscroll-behavior: contain;
-  }
-  ${mobileMediaQuery} {
-    &&& .ant-modal-container {
-      max-height: calc(100vh - 32px);
-      max-height: calc(100dvh - 32px);
-    }
-  }
 `;
 
 interface IContentProps {
   columns: number;
 }
 const StyledModalContent = styled.div<IContentProps>`
-  -webkit-columns: ${props => props.columns} 200px;
-  -moz-columns: ${props => props.columns} 200px;
   columns: ${props => props.columns} 200px;
-  -webkit-column-gap: 1em;
-  -moz-column-gap: 1em;
   column-gap: 1em;
-  -webkit-column-rule: 1px dotted #ccc;
-  -moz-column-rule: 1px dotted #ccc;
   column-rule: 1px dotted #ccc;
 `;
 
@@ -234,7 +198,7 @@ const FadeOutItem = observer(
             onComments={openModal}
           />
         ) : null}
-        <StyledModal
+        <ScrollBodyModal
           closable={false}
           maskClosable={false}
           open={showModalItem}
@@ -254,7 +218,7 @@ const FadeOutItem = observer(
         >
           <StyledModalContent columns={modalColumns}>{modalContent}</StyledModalContent>
           {social && showModalItem ? <SocialSection targetType={social.targetType} targetId={social.targetId} /> : null}
-        </StyledModal>
+        </ScrollBodyModal>
         {EditFormContent}
       </ItemHolder>
     );

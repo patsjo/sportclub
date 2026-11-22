@@ -1,4 +1,4 @@
-import { Form, Input, Modal, Select } from 'antd';
+import { Form, Input, Select } from 'antd';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { styled } from 'styled-components';
@@ -12,15 +12,9 @@ import FormItem from '../../formItems/FormItem';
 import SimpleHtmlHelp from '../../simpleHtml/SimpleHtmlHelp';
 import UploadDragger from '../../formItems/UploadDragger';
 import { showCupError, useCupApi } from '../useCup';
+import { ScrollBodyModal } from '../../styled/ScrollBodyModal';
 
 const { TextArea } = Input;
-const StyledModal = styled(Modal)`
-  &&& .ant-modal-body {
-    max-height: calc(100vh - 200px);
-    overflow-y: scroll;
-    overflow-x: hidden;
-  }
-`;
 const StyledUploadContainer = styled.div`
   margin-top: 16px;
   margin-bottom: 8px;
@@ -89,7 +83,7 @@ const CupReportEditModal = ({ season, report, cupRaceId, open, onClose, onSaved 
   };
 
   return (
-    <StyledModal
+    <ScrollBodyModal
       destroyOnHidden
       closable={false}
       maskClosable={false}
@@ -173,7 +167,7 @@ const CupReportEditModal = ({ season, report, cupRaceId, open, onClose, onSaved 
           />
         </StyledUploadContainer>
       </Form>
-    </StyledModal>
+    </ScrollBodyModal>
   );
 };
 

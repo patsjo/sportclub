@@ -1,4 +1,4 @@
-import { Form, Input, message, Modal } from 'antd';
+import { Form, Input, message } from 'antd';
 import { observer } from 'mobx-react';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -11,14 +11,8 @@ import { ICompetitorInfoRequest } from '../../utils/requestInterfaces';
 import { ICompetitorInfo } from '../../utils/responseCompetitorInterfaces';
 import FormItem from '../formItems/FormItem';
 import UploadDragger from '../formItems/UploadDragger';
+import { ScrollBodyModal } from '../styled/ScrollBodyModal';
 
-const StyledModal = styled(Modal)`
-  &&& .ant-modal-body {
-    max-height: calc(100vh - 200px);
-    overflow-y: scroll;
-    overflow-x: hidden;
-  }
-`;
 const StyledModalContent = styled.div``;
 
 interface ICompetitorInfoFormProps extends ICompetitorInfoRequest {
@@ -83,7 +77,7 @@ const CompetitorPresentationModal = observer(
     );
 
     return (
-      <StyledModal
+      <ScrollBodyModal
         closable={false}
         maskClosable={false}
         title={`${t('competitor.Edit')} - ${name}`}
@@ -151,7 +145,7 @@ const CompetitorPresentationModal = observer(
             </FormItem>
           </Form>
         </StyledModalContent>
-      </StyledModal>
+      </ScrollBodyModal>
     );
   }
 );
