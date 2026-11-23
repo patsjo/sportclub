@@ -187,13 +187,13 @@ QGIS:
    - Drag it into map
    - (Use openstreetmap layer to see that your layer ends up correctly)
    - Edit properities for map layer
-     - Symbology > Set min scale to 1:20000
-     - Rendering > Resampling Cubic + Oversampling 4,0
+     - Rendering > Set min scale to 1:20000
+     - Symbology > Resampling Cubic + Oversampling 4,0
    - Edit properities for purple map layer
-     - Symbology > Set max scale to 1:20000
-     - Rendering > Resampling Cubic + Oversampling 4,0
+     - Rendering > Set max scale to 1:20000
+     - Symbology > Resampling Cubic + Oversampling 4,0
    - Edit properities for course layer
-     - Rendering > Resampling Linear + Oversampling 4,0
+     - Symbology > Resampling Linear + Oversampling 4,0
 2. Raster > Generate XYZ tiles
    - Only show the layers you want to export (all maps at once, or one course layer at a time)
    - Extent > By your layer is a simple choice

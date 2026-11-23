@@ -1,8 +1,11 @@
+import { Ecc, QrCode } from '@rc-component/qrcode/es/libs/qrcodegen';
 import dayjs, { Dayjs } from 'dayjs';
 import i18next from 'i18next';
 import JSZip from 'jszip';
 import pdfMake from 'pdfmake/build/pdfmake';
 import { Column, Content, TDocumentDefinitions } from 'pdfmake/interfaces';
+import { bankQr, IPaymentQr } from '../components/invoices/paymentQr';
+import { qrIcons } from '../components/invoices/paymentQrIcons';
 import { IClubInfoProps, IInvoiceProps } from '../models/mobxClubModel';
 import { dateFormat } from './formHelper';
 import { getBase64, getLogo, IPdfSettings } from './pdf';
@@ -39,8 +42,8 @@ export interface IInvoicePrintObject {
   invoiceNumber?: string;
   /** A saved invoice, its date instead of today */
   invoiceDate?: Dayjs;
-  /** The amount in the Swish QR code instead of the total, no QR code when less than 1 (e.g. paid) */
-  swishAmount?: number;
+  /** The amount in the payment QR codes instead of the total, no QR codes when less than 1 (e.g. paid) */
+  qrAmount?: number;
   /** A saved invoice that is paid (fully or partly), shown with what is left to pay */
   payment?: IInvoicePayment;
 }
@@ -173,6 +176,81 @@ const getInvoiceSwishLogo = async (amount: number, message: string, swishNumber:
   });
 };
 
+/** The pixels of a module in the QR code image, and the white modules around it */
+const qrModulePixels = 10;
+const qrQuietModules = 1;
+/** The logo in the middle, the same share of the width as on the web page */
+const qrIconShare = 0.24;
+
+const loadImage = (src: string): Promise<HTMLImageElement | null> =>
+  new Promise(resolve => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => resolve(null);
+    image.src = src;
+  });
+
+/** An SVG without width and height has no size in some browsers (Firefox) and can't be drawn on a canvas */
+const loadIcon = async (src: string): Promise<HTMLImageElement | null> => {
+  if (!/\.svg(\?|$)|^data:image\/svg/.test(src)) return loadImage(src);
+  try {
+    const svg = await (await fetch(src)).text();
+    const sized = svg.replace(/<svg\b(?![^>]*\swidth=)/, '<svg width="250" height="250"');
+    return loadImage(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(sized)}`);
+  } catch {
+    return loadImage(src);
+  }
+};
+
+/** The payment QR code with its logo in the middle as a PNG, the same as on the web page. Null without a canvas. */
+const paymentQrImage = async (qr: IPaymentQr): Promise<string | null> => {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+  const modules = QrCode.encodeText(qr.value, Ecc.MEDIUM).getModules();
+  const count = modules.length;
+  const icon = await loadIcon(qrIcons[qr.type]);
+  // The modules under the logo are left out (white), the error correction makes up for them
+  const iconModules = icon ? Math.round(count * qrIconShare) : 0;
+  const iconStart = Math.floor((count - iconModules) / 2);
+  const underIcon = (n: number) => n >= iconStart && n < iconStart + iconModules;
+  canvas.width = canvas.height = (count + 2 * qrQuietModules) * qrModulePixels;
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#000';
+  modules.forEach((row, y) =>
+    row.forEach((dark, x) => {
+      if (dark && !(underIcon(x) && underIcon(y))) {
+        ctx.fillRect(
+          (x + qrQuietModules) * qrModulePixels,
+          (y + qrQuietModules) * qrModulePixels,
+          qrModulePixels,
+          qrModulePixels
+        );
+      }
+    })
+  );
+  if (icon) {
+    const inset = qrModulePixels / 2;
+    const side = iconModules * qrModulePixels - 2 * inset;
+    const start = (iconStart + qrQuietModules) * qrModulePixels + inset;
+    ctx.drawImage(icon, start, start, side, side);
+  }
+  return canvas.toDataURL('image/png');
+};
+
+/** The size of the QR codes in the PDF (pt) */
+const pdfQrSize = 80;
+
+/** A QR code with a small help text in italic below it */
+const qrColumn = (image: string, helpText: string): Column => ({
+  width: pdfQrSize,
+  stack: [
+    { image, fit: [pdfQrSize, pdfQrSize] },
+    { text: helpText, italics: true, fontSize: 7, alignment: 'center', margin: [0, 1, 0, 0] }
+  ]
+});
+
 const getPdfDocDefinition = async (
   proxyurl: string,
   logo: string | null,
@@ -234,11 +312,34 @@ const getPdfDocDefinition = async (
     const totalFeeToClub = printObject.details.map(detail => detail.feeToClub).reduce((prev, curr) => prev + curr, 0);
     const taxFee = (totalFeeToClub * (invoiceMetaData.taxPercentage ?? 0)) / 100;
     const excludingTax = totalFeeToClub - taxFee;
-    const swishAmount = printObject.swishAmount ?? totalFeeToClub;
+    const invoiceDate = printObject.invoiceDate ?? dayjs();
+    const invoiceNumber =
+      printObject.invoiceNumber ??
+      `${invoiceMetaData.endDate.format('YYYY')}-TÄVL-AVG-${printObject.details.find(() => true)?.competitorId ?? 99999}`;
+    const qrAmount = printObject.qrAmount ?? totalFeeToClub;
     const swishLogo =
-      swishAmount >= 1
-        ? await getInvoiceSwishLogo(swishAmount, printObject.invoiceMessage, invoiceMetaData.swishNumber)
+      qrAmount >= 1
+        ? await getInvoiceSwishLogo(qrAmount, printObject.invoiceMessage, invoiceMetaData.swishNumber)
         : null;
+    const bankQrImage =
+      qrAmount >= 1 && invoiceMetaData.accountType && invoiceMetaData.account?.trim()
+        ? await paymentQrImage(
+            bankQr(invoiceMetaData.accountType, invoiceMetaData.account, clubInfo, {
+              invoiceId: invoiceNumber,
+              message: printObject.invoiceMessage,
+              invoiceDate: invoiceDate.format('YYYY-MM-DD'),
+              dueDate: invoiceMetaData.dueDate.format('YYYY-MM-DD'),
+              amount: qrAmount
+            })
+          )
+        : null;
+    // The bank account first and then Swish, the same as on the web page
+    const qrColumns: Column[] = [
+      ...(bankQrImage
+        ? [qrColumn(bankQrImage, i18next.t('invoice.qrScanBank', { type: invoiceMetaData.accountType }))]
+        : []),
+      ...(swishLogo ? [qrColumn(swishLogo, i18next.t('invoice.qrScanSwish'))] : [])
+    ];
     const payment = paymentContent(printObject.payment);
     const headerData: Column = {
       width: '*',
@@ -275,15 +376,8 @@ const getPdfDocDefinition = async (
               alignment: 'left',
               width: 'auto',
               stack: [
-                { text: (printObject.invoiceDate ?? dayjs()).format(dateFormat), style: 'bold' },
-                {
-                  text:
-                    printObject.invoiceNumber ??
-                    `${invoiceMetaData.endDate.format('YYYY')}-TÄVL-AVG-${
-                      printObject.details.find(() => true)?.competitorId ?? 99999
-                    }`,
-                  style: 'bold'
-                },
+                { text: invoiceDate.format(dateFormat), style: 'bold' },
+                { text: invoiceNumber, style: 'bold' },
                 {
                   text: invoiceMetaData.dueDate.format(dateFormat),
                   style: 'bold'
@@ -459,13 +553,7 @@ const getPdfDocDefinition = async (
                       : null
                   ].filter(stack => stack != null)
                 },
-                {
-                  width: 'auto',
-                  alignment: 'right',
-                  stack: [swishLogo ? { image: swishLogo, fit: [80, 80] } : null].filter(
-                    stack => stack != null
-                  ) as Content[]
-                }
+                ...(qrColumns.length > 0 ? [{ width: 'auto', columns: qrColumns, columnGap: 10 } as Column] : [])
               ]
             }
           ]

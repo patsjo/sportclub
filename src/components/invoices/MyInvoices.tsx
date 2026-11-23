@@ -147,7 +147,7 @@ const MyInvoices = observer(() => {
               details,
               invoiceNumber: String(invoice.invoiceId),
               invoiceDate,
-              swishAmount: invoiceLeft(invoice),
+              qrAmount: invoiceLeft(invoice),
               // Paid fully or partly, a cancelled invoice isn't shown as paid
               payment:
                 !isClosed(invoice) && invoice.paidAmount > 0

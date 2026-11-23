@@ -193,6 +193,8 @@ export const resources = {
         partlyPaidStamp: 'PARTLY PAID',
         paidAmount: 'Paid',
         leftToPay: 'LEFT TO PAY',
+        qrScanBank: 'Scan with your bank app ({{type}})',
+        qrScanSwish: 'Scan with the Swish app',
         generatePdf: 'Generate PDF'
       },
       map: {
@@ -1007,6 +1009,8 @@ export const resources = {
         partlyPaidStamp: 'DELBETALD',
         paidAmount: 'Betalt',
         leftToPay: 'KVAR ATT BETALA',
+        qrScanBank: 'Skanna med din bankapp ({{type}})',
+        qrScanSwish: 'Skanna med Swish-appen',
         generatePdf: 'Skapar PDF'
       },
       map: {

@@ -4,19 +4,8 @@ import { CSSProperties, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { keyframes, styled } from 'styled-components';
-import bankgiroIcon from '../../images/payment/bankgiro.png';
-import ibanIcon from '../../images/payment/iban.png';
-import plusgirotIcon from '../../images/payment/plusgirot.svg';
-import swishIcon from '../../images/payment/swish.svg';
-import { IPaymentQr, PaymentQrType } from './paymentQr';
-
-// The logos in the middle of the QR code
-const qrIcons: Record<PaymentQrType, string> = {
-  Bankgiro: bankgiroIcon,
-  PlusGirot: plusgirotIcon,
-  IBAN: ibanIcon,
-  Swish: swishIcon
-};
+import { IPaymentQr } from './paymentQr';
+import { qrIcons } from './paymentQrIcons';
 
 const reducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
 

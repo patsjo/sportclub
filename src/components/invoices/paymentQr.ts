@@ -11,7 +11,8 @@ export interface IPaymentQr {
 }
 
 export interface IPaymentQrInvoice {
-  invoiceId: number;
+  /** The invoice number, the reference when there is no message */
+  invoiceId: number | string;
   /** The message of the payment, see paymentMessage */
   message: string;
   invoiceDate: string;
